@@ -1,0 +1,151 @@
+JobsOnqueue			jobs na wala pang number 1-25, wala pa sa queue,
+					kapag nagkaroon na ng JobNo, delete here or no need to insert, insert sa JobsOngoing
+	asdfasdf
+		DateQ:		date this ticket created
+		QueueStat:	ForPickup, ForSorting
+					ForPickup - customer ask for pickup
+					ForSorting - after pickup by rider, he can tag it as ForSorting
+		InitialPackage:	0, 155, 310, 465, 620, 775, 930, 1085
+		InitialExcess: 0, 180, 225, 250, 275, 300
+		Customer:	customer name
+		Basket:		ilan ang basket ng customer
+		Bag:		ilan ang bag ng customer
+		PaymentStat:	Unpaid, PaidCash, PaidGcash, WaitingGcash, Kulang, MaySukli
+					Unpaid
+					PaidCash
+					PaidGcash
+					WaitingGcash - instead of unpaid, mark waitinggcash to inform us that we are waiting for SS.
+					Kulang - nakabayad pero may kulang
+					MaySukli - nakabayad pero indi nasuklian
+		PaymentReceivedby: DonP, Ket, Jeng, Abi, Rowel, Seigi, Let
+		Kulang: 	kulang ng customer
+		MaySukli:	kulang ng wkl
+		AddDry:		15php(10min dry)
+					30php(20min dry)
+					45php(30min dry)
+					49php(40min dry)
+		AddFab:		Reg, Max
+		PickupRequest:	10/31 		*kelan gusto magpa-pickup sa rider
+		DeliverRequest:	11/02		*kelan gusto magpa-deliver sa rider
+		PickupDate:		11/01		*actual pickup date ng rider
+		DeliveredDate:	11/02		*actual delivered date ng rider
+		Remarks:	dont mix, no fold, etc
+
+JobsOngoing			jobs na may assigned number 1-25
+					pede parin mabago ang Jobno habang OnQueue
+					kapag ClotheStat ay naging WaitCustomer, WaitPickup, WaitDelivery, WaitRider, NasaCustomer, delete record here, insert sa JobsDone
+	asdfasdf
+		DateQ:		Date ng JobsOnque
+		DateW:		Date ng Washing
+		Jobno:		1-25
+		ClotheStat:	OnQueue, Washing, Drying, Folding
+		InitialPackage:	0, 155, 310, 465, 620, 775, 930, 1085
+		InitialExcess: 0, 180, 225, 250, 275, 300
+		Customer:	customer name
+		FinalPackage:	0, 155, 310, 465, 620, 775, 930, 1085
+		FinalExcess:	0, 180, 225, 250, 275, 300
+				ex. 6 loads
+					FinalPackage: 4(loads) - 155
+					FinalExcess: 2(loads) - 250
+				ex. 6 loads
+					FinalPackage: 5(loads) - 155
+					FinalExcess: 1(load) - 180
+				ex. 6 loads
+					FinalPackage: 6(loads) - 155
+					FinalExcess: 0
+				ex. 1 load
+					FinalPackage: 0 - 0
+					FinalExcess: 180
+		Basket:		ilan ang basket ng customer
+		Bag:		ilan ang bag ng customer
+		PaymentStat:	Unpaid, PaidCash, PaidGcash, WaitingGcash, Kulang, MaySukli
+					WaitingGcash - instead of unpaid, mark waitinggcash to inform us that we are waiting for SS.
+					Kulang - nakabayad pero may kulang
+					MaySukli - nakabayad pero indi nasuklian
+		PaymentReceivedby: DonP, Ket, Jeng, Abi, Rowel, Seigi, Let
+		Kulang: 	kulang ng customer
+		MaySukli:	kulang ng wkl
+		AddDry:		15php(10min dry)
+					30php(20min dry)
+					45php(30min dry)
+					49php(40min dry)
+		AddFab:		Reg, Max
+		PickupRequest:	kelan gusto magpa-pickup sa rider
+		DeliverRequest:	kelan gusto magpa-deliver sa rider
+		PickupDate:	actual pickup date ng rider
+		DeliveredDate:	actual delivered date ng rider
+		Remarks:	dont mix, no fold, etc
+		PickupbyRider: sinung rider nag pickup
+		DeliverbyRider: sinung rider nagdeliver
+				
+JobsDone			waiting nalang sa customer either for pickup ng customer, or for delivery ng rider
+					indi na pede mabago ng Jobno. 
+					trigger owner to move to history, meaning close narin sa loyvers
+	asdfasdf
+		DateQ:		Date ng JobsOnque
+		DateW:		Date ng Washing
+		DateD:		Date ng Ready for pickup or delivery
+		Jobno:		1-25
+		ClotheStat:	WaitCustomer, WaitPickup, WaitDelivery, WaitRider, NasaCustomer
+					WaitCustomer - indi alam kung pipickupin
+					WaitPickup - tapos na, waiting nalang kunin ng customer
+					WaitDeliver - tapos na, waiting nlang sa customer kung papadeliver
+					WaitRider - tapos na, waiting nalang kung pede ang rider
+					NasaCustomer - nasa customer na ang damit
+		InitialPackage:	0, 155, 310, 465, 620, 775, 930, 1085
+		InitialExcess: 0, 180, 225, 250, 275, 300
+		Customer:	customer name
+		FinalPackage:	0, 155, 310, 465, 620, 775, 930, 1085
+		FinalExcess:	0, 180, 225, 250, 275, 300
+				ex. 6 loads
+					FinalPackage: 4(loads) - 155
+					FinalExcess: 2(loads) - 250
+				ex. 6 loads
+					FinalPackage: 5(loads) - 155
+					FinalExcess: 1(load) - 180
+				ex. 6 loads
+					FinalPackage: 6(loads) - 155
+					FinalExcess: 0
+				ex. 1 load
+					FinalPackage: 0 - 0
+					FinalExcess: 180
+		Basket:		ilan ang basket ng customer
+		Bag:		ilan ang bag ng customer
+		PaymentStat:	Unpaid, PaidCash, PaidGcash, WaitingGcash, Kulang, MaySukli, DoneLoyverse
+					WaitingGcash - instead of unpaid, mark waitinggcash to inform us that we are waiting for SS.
+					Kulang - nakabayad pero may kulang
+					MaySukli - nakabayad pero indi nasuklian
+		PaymentReceivedby: DonP, Ket, Jeng, Abi, Rowel, Seigi, Let
+		Kulang: 	kulang ng customer
+		MaySukli:	kulang ng wkl
+		AddDry:		15php(10min dry)
+					30php(20min dry)
+					45php(30min dry)
+					49php(40min dry)
+		AddFab:		Reg, Max
+		PickupRequest:	kelan gusto magpa-pickup sa rider
+		DeliverRequest:	kelan gusto magpa-deliver sa rider
+		PickupDate:	actual pickup date ng rider
+		DeliveredDate:	actual delivered date ng rider
+		Remarks:	dont mix, no fold, etc			
+		PickupbyRider: sinung rider nag pickup
+		DeliverbyRider: sinung rider nagdeliver
+
+JobsHistory			same fields, delete ung data sa JobsDone insert here. 
+				ang nakadisplay lang sa web ay JobsOnQueue, JobsOngoing at JobsDone.
+
+OwnerNotes			nakadipslay sa web, trigger owner to move to history
+	asdfasdf
+		Date:		date created
+		Note:		2 bote nlng ung sof
+		Stat:		waiting, done
+		DateDone:	date done
+		DoneRemarks:	nakabili na
+	asdfasdf
+		Date: 		date created
+		Note:		2 bag nlng ung plastic
+		Stat:		waiting, done
+		DateDone:	date done
+
+OwnerNotesHistory		indi na nakadipslay sa web
+	asdfasdf

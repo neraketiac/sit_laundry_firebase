@@ -1,0 +1,30 @@
+JobsOnqueue	
+
+	Lhizley
+	P(11/02)						*after pickup, this will be replaced by D(11/02) once pickup is done	
+
+	Alice				
+	D(11/03)						*done pickup, no number of loads yet, for sorting
+
+	Francis M(1BK,1BG) 310(2), 225(2) MF DM 
+	PaidCash(535)-Jeng D(10/31)
+
+	Winwin(1BK) 310(2)
+	Unpaid(310) D(10/31) 					*default delivery date is 2 days 
+
+JobsOngoing
+
+	Joanne(1BK) 155(1) DRY(20min)
+	Unpaid(185)
+	D(10/31)			
+
+JobsDone
+
+	She 310(2) MF
+	Kulang(10) PaidCash(300)-DonP D(11/01)-DonP 		Deliverd by DonP
+
+	Sheng 620(4) 
+	WaitingGcash(620) D(11/01) 				For delivery
+
+	Charlie 310(2)
+	Unpaid(310Php)			For customer pickup
