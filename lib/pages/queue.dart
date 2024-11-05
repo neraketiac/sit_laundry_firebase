@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:laundry_firebase/pages/queue_mobile.dart';
 import 'package:laundry_firebase/variables/variables.dart';
 
@@ -24,6 +25,22 @@ class _MyQueueState extends State<MyQueue> {
   TextEditingController productController = TextEditingController();
   TextEditingController amountController = TextEditingController();
   TextEditingController remarkController = TextEditingController();
+
+  TextEditingController customerController = TextEditingController();
+  TextEditingController initialLoadController = TextEditingController();
+  TextEditingController initialPriceController = TextEditingController();
+  TextEditingController queueStatController = TextEditingController();
+  TextEditingController paymentStatController = TextEditingController();
+  TextEditingController paymentReceivedByController = TextEditingController();
+  TextEditingController needOnController = TextEditingController();
+  TextEditingController riderDeliverController = TextEditingController();
+  TextEditingController riderPickupController = TextEditingController();
+  TextEditingController actRiderDeliverController = TextEditingController();
+  TextEditingController actRiderPickupController = TextEditingController();
+
+  TextEditingController kulangController = TextEditingController();
+  TextEditingController maySukliController = TextEditingController();
+
   int _initialJob = 0,
       _initialSelection = 0,
       _initialDet = 0,
@@ -32,6 +49,25 @@ class _MyQueueState extends State<MyQueue> {
       _initialOth = 0,
       _initialCount = -1;
 
+  String _sCreatedBy = "Jeng";
+  String _sCustomer = "xxx";
+  int _iInitialLoad = 0;
+  int _iInitialPrice = 0;
+  late String _sQueueStatus;
+  late String _sPaymentStatus;
+  late String _sPaymentReceivedBy;
+  late DateTime _dNeedOn = DateTime.now().add(Duration(minutes: 210));
+  late String _sNeedOn;
+  bool _bMaxFab = false;
+  bool _bFold = true;
+  bool _bMix = true;
+  int _iBasket = 0;
+  int _iBag = 0;
+  int _iKulang = 0;
+  int _iMaySukli = 0;
+  //
+  final _formKey = GlobalKey<FormState>();
+
   String selectedValue = 'Option 1';
 
   //open new expense box
@@ -39,226 +75,475 @@ class _MyQueueState extends State<MyQueue> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text("Used products?"),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            DropdownMenu(
-              inputDecorationTheme: getThemeDropDown(),
-              controller: jobidController,
-              hintText: "Select Job Id",
-              dropdownMenuEntries: const [
-                DropdownMenuEntry(value: 1, label: "#1"),
-                DropdownMenuEntry(value: 2, label: "#2"),
-                DropdownMenuEntry(value: 3, label: "#3"),
-                DropdownMenuEntry(value: 4, label: "#4"),
-                DropdownMenuEntry(value: 5, label: "#5"),
-                DropdownMenuEntry(value: 6, label: "#6"),
-                DropdownMenuEntry(value: 7, label: "#7"),
-                DropdownMenuEntry(value: 8, label: "#8"),
-                DropdownMenuEntry(value: 9, label: "#9"),
-                DropdownMenuEntry(value: 10, label: "#10"),
-              ],
-              onSelected: (val) {
-                setState(() {
-                  _initialJob = val!;
-                });
-              },
-              initialSelection: _initialJob,
-            ),
-            DropdownMenu(
-              inputDecorationTheme: getThemeDropDown(),
-              controller: typeController,
-              hintText: "Select type.",
-              dropdownMenuEntries: const [
-                DropdownMenuEntry(
-                  value: menuDetDVal,
-                  label: "Detergent",
+        title: Text(
+          "New Laundry ${DateTime.now().toString().substring(5, 13)}",
+          style: TextStyle(backgroundColor: Colors.amber[300]),
+        ),
+        content: SingleChildScrollView(
+          scrollDirection: Axis.vertical,
+          child: StatefulBuilder(
+              builder: (BuildContext context, StateSetter setState) {
+            return Container(
+              padding: EdgeInsets.all(8.0),
+              decoration: BoxDecoration(
+                  border: Border.all(color: Colors.blueAccent, width: 2.0)),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(
+                      height: 5,
+                    ),
+                    //QueueStat
+                    DropdownMenu(
+                      label: Text("Status",
+                          style: TextStyle(
+                            fontSize: 12.0,
+                          )),
+                      inputDecorationTheme: getThemeDropDown(),
+                      controller: queueStatController,
+                      hintText: "Status",
+                      dropdownMenuEntries: const [
+                        DropdownMenuEntry(
+                            value: "ForSorting", label: "ForSorting"),
+                        DropdownMenuEntry(
+                            value: "RiderPickup", label: "RiderPickup"),
+                      ],
+                      onSelected: (val) {
+                        setState(() {
+                          _sQueueStatus = val.toString();
+                        });
+                      },
+                      initialSelection: "ForSorting",
+                    ),
+                    SizedBox(
+                      height: 5,
+                    ),
+                    //Customer Name
+                    Container(
+                      padding: EdgeInsets.all(1.0),
+                      decoration: BoxDecoration(
+                          border:
+                              Border.all(color: Color(0xffD4D4D4), width: 2.0)),
+                      child: TextFormField(
+                        textAlign: TextAlign.center,
+                        controller: customerController,
+                        decoration: InputDecoration(
+                            labelText: 'Customer Name',
+                            hintText: 'Enter Customer Name'),
+                        validator: (val) {
+                          if (val!.isEmpty) {
+                            return "Required";
+                          }
+                        },
+                      ),
+                    ),
+                    SizedBox(
+                      height: 5,
+                    ),
+                    //InitialLoad Estimate Load
+                    Container(
+                      padding: EdgeInsets.all(1.0),
+                      decoration: BoxDecoration(
+                          border:
+                              Border.all(color: Color(0xffD4D4D4), width: 2.0)),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          IconButton(
+                            onPressed: () {
+                              setState(() => _iInitialLoad--);
+                            },
+                            icon: const Icon(Icons.remove),
+                            color: Colors.blueAccent,
+                          ),
+                          Text("Estimated Load: $_iInitialLoad"),
+                          IconButton(
+                            onPressed: () {
+                              setState(() => _iInitialLoad++);
+                            },
+                            icon: const Icon(Icons.add),
+                            color: Colors.blueAccent,
+                          ),
+                        ],
+                      ),
+                    ),
+                    //Initial Price
+                    SizedBox(
+                      height: 5,
+                    ),
+                    Container(
+                      padding: EdgeInsets.all(1.0),
+                      decoration: BoxDecoration(
+                          border:
+                              Border.all(color: Color(0xffD4D4D4), width: 2.0)),
+                      child: TextFormField(
+                        keyboardType: TextInputType.number,
+                        inputFormatters: <TextInputFormatter>[
+                          FilteringTextInputFormatter.allow(RegExp(r'[0-9]')),
+                          FilteringTextInputFormatter.digitsOnly
+                        ],
+                        textAlign: TextAlign.center,
+                        controller: initialPriceController,
+                        decoration: InputDecoration(
+                            labelText: 'Estimated Price',
+                            hintText: 'Initial Price'),
+                        validator: (val) {},
+                      ),
+                    ),
+                    SizedBox(
+                      height: 5,
+                    ),
+                    //Basket
+                    Container(
+                      padding: EdgeInsets.all(1.0),
+                      decoration: BoxDecoration(
+                          border:
+                              Border.all(color: Color(0xffD4D4D4), width: 2.0)),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          IconButton(
+                            onPressed: () {
+                              setState(() => _iBasket--);
+                            },
+                            icon: const Icon(Icons.remove),
+                            color: Colors.blueAccent,
+                          ),
+                          Text("Basket: $_iBasket"),
+                          IconButton(
+                            onPressed: () {
+                              setState(() => _iBasket++);
+                            },
+                            icon: const Icon(Icons.add),
+                            color: Colors.blueAccent,
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(
+                      height: 5,
+                    ),
+                    //Bag
+                    Container(
+                      padding: EdgeInsets.all(1.0),
+                      decoration: BoxDecoration(
+                          border:
+                              Border.all(color: Color(0xffD4D4D4), width: 2.0)),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          IconButton(
+                            onPressed: () {
+                              setState(() => _iBag--);
+                            },
+                            icon: const Icon(Icons.remove),
+                            color: Colors.blueAccent,
+                          ),
+                          Text("Bag: $_iBag"),
+                          IconButton(
+                            onPressed: () {
+                              setState(() => _iBag++);
+                            },
+                            icon: const Icon(Icons.add),
+                            color: Colors.blueAccent,
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(
+                      height: 5,
+                    ),
+                    //Payment
+                    DropdownMenu(
+                      label: Text("Payment",
+                          style: TextStyle(
+                            fontSize: 12.0,
+                          )),
+                      inputDecorationTheme: getThemeDropDown(),
+                      controller: paymentStatController,
+                      hintText: "Payment",
+                      dropdownMenuEntries: const [
+                        DropdownMenuEntry(value: "Unpaid", label: "Unpaid"),
+                        DropdownMenuEntry(value: "PaidCash", label: "PaidCash"),
+                        DropdownMenuEntry(
+                            value: "PaidGcash", label: "PaidGcash"),
+                        DropdownMenuEntry(
+                            value: "WaitingGcash", label: "WaitingGcash"),
+                        DropdownMenuEntry(value: "Kulang", label: "Kulang"),
+                        DropdownMenuEntry(value: "MaySukli", label: "MaySukli"),
+                      ],
+                      onSelected: (val) {},
+                      initialSelection: "Unpaid",
+                    ),
+                    SizedBox(
+                      height: 5,
+                    ),
+                    //Payment Received By
+                    DropdownMenu(
+                      label: Text("Payment Received By",
+                          style: TextStyle(
+                            fontSize: 12.0,
+                          )),
+                      inputDecorationTheme: getThemeDropDown(),
+                      controller: paymentReceivedByController,
+                      hintText: "Select Staff",
+                      dropdownMenuEntries: const [
+                        DropdownMenuEntry(value: "N/a", label: "N/a"),
+                        DropdownMenuEntry(value: "Jeng", label: "Jeng"),
+                        DropdownMenuEntry(value: "Abi", label: "Abi"),
+                        DropdownMenuEntry(value: "Ket", label: "Ket"),
+                        DropdownMenuEntry(value: "DonP", label: "DonP"),
+                        DropdownMenuEntry(value: "Rowel", label: "Rowel"),
+                        DropdownMenuEntry(value: "Seigi", label: "Seigi"),
+                        DropdownMenuEntry(value: "Let", label: "Let"),
+                      ],
+                      onSelected: (val) {
+                        setState(() {});
+                      },
+                      initialSelection: "N/a",
+                    ),
+                    SizedBox(
+                      height: 5,
+                    ),
+                    //Need On Date +
+                    Container(
+                      padding: EdgeInsets.all(1.0),
+                      decoration: BoxDecoration(
+                          border:
+                              Border.all(color: Color(0xffD4D4D4), width: 2.0)),
+                      child: Column(
+                        children: [
+                          Container(
+                            padding: EdgeInsets.all(1.0),
+                            decoration: BoxDecoration(
+                                border: Border.all(
+                                    color: Color.fromARGB(0, 212, 212, 212),
+                                    width: 0)),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text("-1 day"),
+                                IconButton(
+                                  onPressed: () {
+                                    setState(() => _dNeedOn =
+                                        _dNeedOn.add(Duration(days: -1)));
+                                  },
+                                  icon:
+                                      const Icon(Icons.remove_circle_outlined),
+                                  color: Colors.blueAccent,
+                                ),
+                                IconButton(
+                                  onPressed: () {
+                                    setState(() => _dNeedOn =
+                                        _dNeedOn.add(Duration(days: 1)));
+                                  },
+                                  icon: const Icon(Icons.add_circle),
+                                  color: Colors.blueAccent,
+                                ),
+                                Text("+1 day"),
+                              ],
+                            ),
+                          ),
+                          //Need On date?
+                          Container(
+                            padding: EdgeInsets.all(1.0),
+                            decoration: BoxDecoration(
+                                border: Border.all(
+                                    color: Color.fromARGB(0, 212, 212, 212),
+                                    width: 0)),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  "Need On: ${_dNeedOn.toString().substring(5, 14)}00",
+                                ),
+                              ],
+                            ),
+                          ),
+                          //Need On Date +
+                          Container(
+                            padding: EdgeInsets.all(1.0),
+                            decoration: BoxDecoration(
+                                border: Border.all(
+                                    color: Color.fromARGB(0, 212, 212, 212),
+                                    width: 0)),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text("-1 hr"),
+                                IconButton(
+                                  onPressed: () {
+                                    setState(() => _dNeedOn =
+                                        _dNeedOn.add(Duration(hours: -1)));
+                                  },
+                                  icon: const Icon(Icons.remove_circle_outline),
+                                  color: Colors.blueAccent,
+                                ),
+                                IconButton(
+                                  onPressed: () {
+                                    setState(() => _dNeedOn =
+                                        _dNeedOn.add(Duration(hours: 1)));
+                                  },
+                                  icon: const Icon(Icons.add_circle_outline),
+                                  color: Colors.blueAccent,
+                                ),
+                                Text("+1 hr"),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(
+                      height: 5,
+                    ),
+                    //Max Fab?
+                    Container(
+                      alignment: Alignment.center,
+                      padding: EdgeInsets.all(1.0),
+                      decoration: BoxDecoration(
+                          border:
+                              Border.all(color: Color(0xffD4D4D4), width: 2.0)),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text("Reg Fab"),
+                          Switch.adaptive(
+                            value: _bMaxFab,
+                            onChanged: (bool value) {
+                              setState(() {
+                                _bMaxFab = value;
+                              });
+                            },
+                          ),
+                          Text("Max 100ml"),
+                        ],
+                      ),
+                    ),
+                    SizedBox(
+                      height: 5,
+                    ),
+                    //No Fold
+                    Container(
+                      alignment: Alignment.center,
+                      padding: EdgeInsets.all(1.0),
+                      decoration: BoxDecoration(
+                          border:
+                              Border.all(color: Color(0xffD4D4D4), width: 2.0)),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text("No Fold"),
+                          Switch.adaptive(
+                            value: _bFold,
+                            onChanged: (bool value) {
+                              setState(() {
+                                _bFold = value;
+                              });
+                            },
+                          ),
+                          Text("Fold"),
+                        ],
+                      ),
+                    ),
+                    SizedBox(
+                      height: 5,
+                    ),
+                    //Dont mix
+                    Container(
+                      alignment: Alignment.center,
+                      padding: EdgeInsets.all(1.0),
+                      decoration: BoxDecoration(
+                          border:
+                              Border.all(color: Color(0xffD4D4D4), width: 2.0)),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text("Dont Mix"),
+                          Switch.adaptive(
+                            value: _bMix,
+                            onChanged: (bool value) {
+                              setState(() {
+                                _bMix = value;
+                              });
+                            },
+                          ),
+                          Text("Mix"),
+                        ],
+                      ),
+                    ),
+                    SizedBox(
+                      height: 5,
+                    ),
+                    //Kulang
+                    Container(
+                      padding: EdgeInsets.all(1.0),
+                      decoration: BoxDecoration(
+                          border:
+                              Border.all(color: Color(0xffD4D4D4), width: 2.0)),
+                      child: TextFormField(
+                        keyboardType: TextInputType.number,
+                        inputFormatters: <TextInputFormatter>[
+                          FilteringTextInputFormatter.allow(RegExp(r'[0-9]')),
+                          FilteringTextInputFormatter.digitsOnly
+                        ],
+                        textAlign: TextAlign.center,
+                        controller: kulangController,
+                        decoration: InputDecoration(
+                            labelText: 'Kulang bayad',
+                            hintText: 'Magkano kulang?'),
+                        validator: (val) {},
+                      ),
+                    ),
+                    SizedBox(
+                      height: 5,
+                    ),
+                    //May Sukli
+                    Container(
+                      padding: EdgeInsets.all(1.0),
+                      decoration: BoxDecoration(
+                          border:
+                              Border.all(color: Color(0xffD4D4D4), width: 2.0)),
+                      child: TextFormField(
+                        keyboardType: TextInputType.number,
+                        inputFormatters: <TextInputFormatter>[
+                          FilteringTextInputFormatter.allow(RegExp(r'[0-9]')),
+                          FilteringTextInputFormatter.digitsOnly
+                        ],
+                        textAlign: TextAlign.center,
+                        controller: maySukliController,
+                        decoration: InputDecoration(
+                            labelText: 'May Sukli', hintText: 'Magkano sukli?'),
+                        validator: (val) {},
+                      ),
+                    ),
+
+                    //Submit
+                    /*
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 16.0),
+                      child: ElevatedButton(
+                        onPressed: () {
+                          // Validate returns true if the form is valid, or false otherwise.
+                          if (_formKey.currentState!.validate()) {
+                            // If the form is valid, display a snackbar. In the real world,
+                            // you'd often call a server or save the information in a database.
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                  content: Text('Processing Data' + )),
+                            );
+                          }
+                        },
+                        child: const Text('Submit'),
+                      ),
+                    ), */
+                  ],
                 ),
-                DropdownMenuEntry(value: menuFabDVal, label: "Fabcon"),
-                DropdownMenuEntry(value: menuBleDVal, label: "Bleach"),
-                DropdownMenuEntry(value: menuOthDVal, label: "Others"),
-              ],
-              onSelected: (val) {
-                setState(() {
-                  _initialSelection = val!;
-                  showDet = false;
-                  showFab = false;
-                  showBle = false;
-                  showOth = false;
-                  if (val == menuDetDVal) {
-                    showDet = true;
-                  } else if (val == menuFabDVal) {
-                    showFab = true;
-                  } else if (val == menuBleDVal) {
-                    showBle = true;
-                  } else if (val == menuOthDVal) {
-                    showOth = true;
-                  }
-                  reopenBox();
-                });
-              },
-              initialSelection: _initialSelection,
-            ),
-            //det
-            Visibility(
-              visible: showDet,
-              child: DropdownMenu(
-                inputDecorationTheme: getThemeDropDown(),
-                controller: productController,
-                hintText: "Select product.",
-                dropdownMenuEntries: [
-                  DropdownMenuEntry(
-                      value: menuDetBreezeDVal,
-                      label: mapDetNames[menuDetBreezeDVal].toString()),
-                  DropdownMenuEntry(
-                      value: menuDetArielDVal,
-                      label: mapDetNames[menuDetArielDVal].toString()),
-                  DropdownMenuEntry(
-                      value: menuDetTideDVal,
-                      label: mapDetNames[menuDetTideDVal].toString()),
-                  DropdownMenuEntry(
-                      value: menuDetWingsBlueDVal,
-                      label: mapDetNames[menuDetWingsBlueDVal].toString()),
-                  DropdownMenuEntry(
-                      value: menuDetWingsRedDVal,
-                      label: mapDetNames[menuDetWingsRedDVal].toString()),
-                  DropdownMenuEntry(
-                      value: menuDetPowerCleanDVal,
-                      label: mapDetNames[menuDetPowerCleanDVal].toString()),
-                  DropdownMenuEntry(
-                      value: menuDetSurfDVal,
-                      label: mapDetNames[menuDetSurfDVal].toString()),
-                  DropdownMenuEntry(
-                      value: menuDetKlinDVal,
-                      label: mapDetNames[menuDetKlinDVal].toString()),
-                ],
-                onSelected: (val) {
-                  _initialDet = val!;
-                },
-                initialSelection: _initialDet,
               ),
-            ),
-            //fab
-            Visibility(
-              visible: showFab,
-              child: DropdownMenu(
-                inputDecorationTheme: getThemeDropDown(),
-                controller: productController,
-                hintText: "Select product.",
-                dropdownMenuEntries: [
-                  DropdownMenuEntry(
-                      value: menuFabSurf24mlDVal,
-                      label: mapFabNames[menuFabSurf24mlDVal].toString()),
-                  DropdownMenuEntry(
-                      value: menuFabDowny24mlDVal,
-                      label: mapFabNames[menuFabDowny24mlDVal].toString()),
-                  DropdownMenuEntry(
-                      value: menuFabDownyTripidDVal,
-                      label: mapFabNames[menuFabDownyTripidDVal].toString()),
-                  DropdownMenuEntry(
-                      value: menuFabDowny36mlDVal,
-                      label: mapFabNames[menuFabDowny36mlDVal].toString()),
-                  DropdownMenuEntry(
-                      value: menuFabSurfTripidDVal,
-                      label: mapFabNames[menuFabSurfTripidDVal].toString()),
-                  DropdownMenuEntry(
-                      value: menuFabWKL24mlDVal,
-                      label: mapFabNames[menuFabWKL24mlDVal].toString()),
-                ],
-                onSelected: (val) {
-                  _initialFab = val!;
-                },
-                initialSelection: _initialFab,
-              ),
-            ),
-            //ble
-            Visibility(
-              visible: showBle,
-              child: DropdownMenu(
-                inputDecorationTheme: getThemeDropDown(),
-                controller: productController,
-                hintText: "Select product.",
-                dropdownMenuEntries: [
-                  DropdownMenuEntry(
-                      value: menuBleColorSafeDVal,
-                      label: mapBleNames[menuBleColorSafeDVal].toString()),
-                  DropdownMenuEntry(
-                      value: menuBleOriginalDVal,
-                      label: mapBleNames[menuBleOriginalDVal].toString()),
-                ],
-                onSelected: (val) {
-                  _initialBle = val!;
-                },
-                initialSelection: _initialBle,
-              ),
-            ),
-            //oth
-            Visibility(
-              visible: showOth,
-              child: DropdownMenu(
-                inputDecorationTheme: getThemeDropDown(),
-                controller: productController,
-                hintText: "Select product.",
-                dropdownMenuEntries: [
-                  DropdownMenuEntry(
-                      value: menuOthPlasticDVal,
-                      label: mapOthNames[menuOthPlasticDVal].toString()),
-                  DropdownMenuEntry(
-                      value: menuOthScatchTapeDVal,
-                      label: mapOthNames[menuOthScatchTapeDVal].toString()),
-                ],
-                onSelected: (val) {
-                  _initialOth = val!;
-                },
-                initialSelection: _initialOth,
-              ),
-            ),
-            DropdownMenu(
-              inputDecorationTheme: getThemeDropDown(),
-              controller: amountController,
-              hintText: "Select amount.",
-              dropdownMenuEntries: const [
-                DropdownMenuEntry(value: -1, label: "-1"),
-                DropdownMenuEntry(value: -2, label: "-2"),
-                DropdownMenuEntry(value: -3, label: "-3"),
-                DropdownMenuEntry(value: -4, label: "-4"),
-                DropdownMenuEntry(value: -5, label: "-5"),
-                DropdownMenuEntry(value: -6, label: "-6"),
-                DropdownMenuEntry(value: -7, label: "-7"),
-                DropdownMenuEntry(value: -8, label: "-8"),
-                DropdownMenuEntry(value: -9, label: "-9"),
-                DropdownMenuEntry(value: -10, label: "-10"),
-              ],
-              onSelected: (val) {
-                setState(() {
-                  _initialCount = val!;
-                });
-              },
-              initialSelection: _initialCount,
-            ),
-            DropdownButton<String>(
-              value: selectedValue,
-              onChanged: (String? newValue) {
-                setState(() {
-                  selectedValue = newValue!;
-                });
-              },
-              items: <String>['Option 1', 'Option 2', 'Option 3', 'Option 4']
-                  .map<DropdownMenuItem<String>>((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value),
-                );
-              }).toList(),
-            ),
-            /*
-            TextField(
-              controller: remarkController,
-              decoration: const InputDecoration(hintText: "enter remarks"),
-            ),
-            */
-          ],
+            );
+          }),
         ),
         actions: [
           //cancel button
@@ -292,7 +577,7 @@ class _MyQueueState extends State<MyQueue> {
         onPressed: () {
           openNewExpenseBox();
         },
-        child: const Icon(Icons.remove_circle),
+        child: const Icon(Icons.add),
       ),
     );
   }
@@ -314,18 +599,38 @@ class _MyQueueState extends State<MyQueue> {
   Widget _createNewRecord() {
     return MaterialButton(
       onPressed: () {
-        //pop box
-        Navigator.pop(context);
+        if (_formKey.currentState!.validate()) {
+          // If the form is valid, display a snackbar. In the real world,
+          // you'd often call a server or save the information in a database.
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Processing Data')),
+          );
 
-        //run firebase add
-        if (_initialSelection == menuDetDVal) {
-          insertData(_initialJob, "Det", _initialDet, _initialCount);
-        } else if (_initialSelection == menuFabDVal) {
-          insertData(_initialJob, "Fab", _initialFab, _initialCount);
-        } else if (_initialSelection == menuBleDVal) {
-          insertData(_initialJob, "Ble", _initialBle, _initialCount);
-        } else if (_initialSelection == menuOthDVal) {
-          insertData(_initialJob, "Oth", _initialOth, _initialCount);
+          //pop box
+          Navigator.pop(context);
+
+          insertDataJobsOnQueue(
+            _sCreatedBy,
+            customerController.text,
+            _iInitialLoad,
+            int.parse(initialPriceController.text.isEmpty
+                ? "0"
+                : initialPriceController.text),
+            queueStatController.text,
+            paymentStatController.text,
+            paymentReceivedByController.text,
+            _dNeedOn,
+            _bMaxFab,
+            _bFold,
+            _bMix,
+            _iBasket,
+            _iBag,
+            int.parse(
+                kulangController.text.isEmpty ? "0" : kulangController.text),
+            int.parse(maySukliController.text.isEmpty
+                ? "0"
+                : maySukliController.text),
+          );
         }
       },
       child: const Text("Save"),
@@ -361,6 +666,55 @@ class _MyQueueState extends State<MyQueue> {
         })
         .then((value) => {
               messageResult(context, "Insert Done."),
+            })
+        // ignore: invalid_return_type_for_catch_error
+        .catchError((error) => messageResult(context, "Failed : $error"));
+
+    //re-read
+  }
+
+  //insert
+
+  void insertDataJobsOnQueue(
+      String sCreatedBy,
+      String sCustomer,
+      int iInitialLoad,
+      int iInitialPrice,
+      String sQueueStatus,
+      String sPaymentStatus,
+      String sPaymentReceivedBy,
+      DateTime dNeedOn,
+      bool bMaxFab,
+      bool bFold,
+      bool bMix,
+      int iBasket,
+      int iBag,
+      int iKulang,
+      int iMaySukli) {
+    //insert
+    CollectionReference collRef =
+        FirebaseFirestore.instance.collection('JobsOnQueue');
+    collRef
+        .add({
+          'DateQ': DateTime.now(),
+          'CreatedBy': sCreatedBy,
+          'Customer': sCustomer,
+          'InitialLoad': iInitialLoad,
+          'InitialPrice': iInitialPrice,
+          'QueueStat': sQueueStatus,
+          'PaymentStat': sPaymentStatus,
+          'PaymentReceivedBy': sPaymentReceivedBy,
+          'NeedOn': dNeedOn,
+          'MaxFab': bMaxFab,
+          'Fold': bFold,
+          'Mix': bMix,
+          'Basket': iBasket,
+          'Bag': iBag,
+          'Kulang': iKulang,
+          'MaySukli': iMaySukli,
+        })
+        .then((value) => {
+              messageResult(context, "Insert Done." + sCustomer),
             })
         // ignore: invalid_return_type_for_catch_error
         .catchError((error) => messageResult(context, "Failed : $error"));
