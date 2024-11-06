@@ -149,3 +149,17 @@ OwnerNotes			nakadipslay sa web, trigger owner to move to history
 
 OwnerNotesHistory		indi na nakadipslay sa web
 	asdfasdf
+
+JobsOngoing
+	buttons when click the container
+		- 
+		- insert to # / append
+			- if selected # has customer, move down then insert current customer.
+			- if selected # has no customer, change JobsId to selected #.
+		- swap
+			- if selected # has customer, swap JobsId.
+			- if selected # has no customer, change JobsId.
+		- go back to queue / move to queue
+			- remove JobsId and put back to JobsOnQueue
+		- close
+			- close alert_dialog
