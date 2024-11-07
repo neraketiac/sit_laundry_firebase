@@ -127,6 +127,10 @@ class _MyQueueState extends State<MyQueue> {
                           border:
                               Border.all(color: Color(0xffD4D4D4), width: 2.0)),
                       child: TextFormField(
+                        textCapitalization: TextCapitalization.words,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.deny(RegExp(r'\s\b\w*'))
+                        ],
                         textAlign: TextAlign.center,
                         controller: customerController,
                         decoration: InputDecoration(
@@ -714,6 +718,21 @@ class _MyQueueState extends State<MyQueue> {
           'MaySukli': iMaySukli,
         })
         .then((value) => {
+              _sCreatedBy = "",
+              customerController.clear(),
+              _iInitialLoad = 0,
+              initialPriceController.clear(),
+              queueStatController.clear(),
+              paymentStatController.clear(),
+              paymentReceivedByController.clear(),
+              dNeedOn = DateTime.now(),
+              _bMaxFab = false,
+              _bFold = true,
+              _bMix = true,
+              _iBasket = 0,
+              _iBag = 0,
+              kulangController.clear(),
+              maySukliController.clear(),
               messageResult(context, "Insert Done." + sCustomer),
             })
         // ignore: invalid_return_type_for_catch_error

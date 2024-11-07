@@ -23,6 +23,24 @@ class MyQueueMobile extends StatefulWidget {
 class _MyQueueMobileState extends State<MyQueueMobile> {
   bool bHeader = true;
 
+  //JobsOnQueue Colors
+  final Color _gcRiderPickup = Color.fromRGBO(1, 1, 1, 1);
+  final Color _gcForSorting = Color.fromRGBO(1, 1, 1, 1);
+
+  //JobsOnGoing Colors
+  final Color _gcOnQueue = Color.fromRGBO(1, 1, 1, 1);
+  final Color _gcWashing = Color.fromRGBO(1, 1, 1, 1);
+  final Color _gcDrying = Color.fromRGBO(1, 1, 1, 1);
+  final Color _gcFolding = Color.fromRGBO(1, 1, 1, 1);
+
+  //JobsDone Colors
+  final Color _gcWaitCustomer = Color.fromRGBO(1, 1, 1, 1);
+  final Color _gcWaitCustomerPickup = Color.fromRGBO(1, 1, 1, 1);
+  final Color _gcWaitRiderDelivery = Color.fromRGBO(1, 1, 1, 1);
+  final Color _gcNasaCustomerNa = Color.fromRGBO(1, 1, 1, 1); //indi pa bayad
+  final Color _gcDone =
+      Color.fromRGBO(1, 1, 1, 1); //Bayad na nasa customer narin
+
   //List<ProductsRemaining> listRemaining = [];
 
   //JobsOnQueue
@@ -57,6 +75,8 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
       _giTempJobsId,
       _giFinalVacantJobsId;
   late bool _gbOneOccupied, _gb25Occupied;
+  late int _giJobsId;
+  late Timestamp _gtDateW;
 
   final _formKeyQueueMobile = GlobalKey<FormState>();
 
@@ -113,7 +133,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                   const SizedBox(
                     height: 1,
                   ),
-                  _readDataJobsOnQueue('Det', context),
+                  _readDataJobsDone('JobsDone', context),
                 ]),
               ),
             ),
@@ -160,6 +180,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
               zebra = true;
             }
 
+            //required initialize start
             _gbWithFinalLoad = false;
             try {
               _giFinalLoad = buffRecord['FinalLoad'];
@@ -173,6 +194,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
               _gbWithFinalPrice = true;
             } on Exception catch (exception) {
             } catch (error) {}
+            //required initialize end
 
             final rowData = TableRow(
                 decoration:
@@ -226,6 +248,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                         child: _conDisplay(
                             Color.fromRGBO(250, 175, 175, 1),
                             buffRecord['Customer'],
+                            buffRecord['QueueStat'],
                             buffRecord['InitialLoad'],
                             buffRecord['Basket'],
                             buffRecord['Bag'],
@@ -303,6 +326,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
   Container _conDisplay(
       Color buffColor,
       String buffCustomer,
+      String buffQueueStat,
       int buffInitialLoad,
       int buffBasket,
       int buffBag,
@@ -333,7 +357,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
               style: const TextStyle(fontSize: 10),
             ),
             Text(
-              displayDate(convertTimeStamp(buffNeedOn)),
+              displayDate(convertTimeStamp(buffNeedOn)) + " " + buffQueueStat,
               style: const TextStyle(fontSize: 10),
             ),
           ],
@@ -380,6 +404,22 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
           _gb25Occupied = false;
 
           for (var buffRecord in buffRecords!) {
+            //required initialize start
+            _gbWithFinalLoad = false;
+            try {
+              _giFinalLoad = buffRecord['FinalLoad'];
+              _gbWithFinalLoad = true;
+            } on Exception catch (exception) {
+            } catch (error) {}
+
+            _gbWithFinalPrice = false;
+            try {
+              _giFinalPrice = buffRecord['FinalPrice'];
+              _gbWithFinalPrice = true;
+            } on Exception catch (exception) {
+            } catch (error) {}
+            //required initialize end
+
             _giTempJobsId = buffRecord['JobsId'];
 
             if (_giTempJobsId == 1) {
@@ -406,47 +446,51 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                         onTap: () {
                           _gsId = buffRecord.id.toString();
                           _gtDateQ = buffRecord['DateQ'];
-                          // _gsCreatedBy = buffRecord['CreatedBy'];
+                          _gsCreatedBy = buffRecord['CreatedBy'];
                           _gsCustomer = buffRecord['Customer'];
-                          // _giInitialLoad = buffRecord['InitialLoad'];
-                          // _giInitialPrice = buffRecord['InitialPrice'];
-                          // _gsQueueStat = buffRecord['QueueStat'];
-                          // _gsPaymentStat = buffRecord['PaymentStat'];
-                          // _gsPaymentReceivedBy =
-                          //     buffRecord['PaymentReceivedBy'];
-                          // _gtNeedOn = buffRecord['NeedOn'];
-                          // _gbMaxFab = buffRecord['MaxFab'];
-                          // _gbFold = buffRecord['Fold'];
-                          // _gbMix = buffRecord['Mix'];
-                          // _giBasket = buffRecord['Basket'];
-                          // _giBag = buffRecord['Bag'];
-                          // _giKulang = buffRecord['Kulang'];
-                          // _giMaySukli = buffRecord['MaySukli'];
+                          _giInitialLoad = buffRecord['InitialLoad'];
+                          _giInitialPrice = buffRecord['InitialPrice'];
+                          _gsQueueStat = buffRecord['QueueStat'];
+                          _gsPaymentStat = buffRecord['PaymentStat'];
+                          _gsPaymentReceivedBy =
+                              buffRecord['PaymentReceivedBy'];
+                          _gtNeedOn = buffRecord['NeedOn'];
+                          _gbMaxFab = buffRecord['MaxFab'];
+                          _gbFold = buffRecord['Fold'];
+                          _gbMix = buffRecord['Mix'];
+                          _giBasket = buffRecord['Basket'];
+                          _giBag = buffRecord['Bag'];
+                          _giKulang = buffRecord['Kulang'];
+                          _giMaySukli = buffRecord['MaySukli'];
 
-                          // try {
-                          //   _giFinalLoad = buffRecord['FinalLoad'];
-                          // } on Exception catch (exception) {
-                          //   _giFinalLoad = buffRecord['InitialLoad'];
-                          // } catch (error) {
-                          //   _giFinalLoad = buffRecord['InitialLoad'];
-                          // }
+                          _gtDateW = buffRecord['DateW'];
+                          _giJobsId = buffRecord['JobsId'];
 
-                          // try {
-                          //   _giFinalPrice = buffRecord['FinalPrice'];
-                          // } on Exception catch (exception) {
-                          //   _giFinalPrice = buffRecord['InitialPrice'];
-                          // } catch (error) {
-                          //   _giFinalPrice = buffRecord['InitialPrice'];
-                          // }
+                          try {
+                            _giFinalLoad = buffRecord['FinalLoad'];
+                          } on Exception catch (exception) {
+                            _giFinalLoad = buffRecord['InitialLoad'];
+                          } catch (error) {
+                            _giFinalLoad = buffRecord['InitialLoad'];
+                          }
 
-                          // _gdNeedOn = _gtNeedOn.toDate();
+                          try {
+                            _giFinalPrice = buffRecord['FinalPrice'];
+                          } on Exception catch (exception) {
+                            _giFinalPrice = buffRecord['InitialPrice'];
+                          } catch (error) {
+                            _giFinalPrice = buffRecord['InitialPrice'];
+                          }
 
-                          // alterQueueMobile();
+                          _gdNeedOn = _gtNeedOn.toDate();
+
+                          alterOnGoingMobile();
                         },
                         //Container display JobsOnGoing
                         child: _conDisplay(
                           Color.fromRGBO(168, 173, 168, 1),
                           buffRecord['Customer'],
+                          buffRecord['QueueStat'],
                           buffRecord['FinalLoad'],
                           buffRecord['Basket'],
                           buffRecord['Bag'],
@@ -520,6 +564,93 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
           } else if (!_gb25Occupied) {
             //1,2,3,4,,,,,    - 5
             _giFinalVacantJobsId = _giLowestVacantJobsId + 1;
+          }
+        }
+
+        return Table(
+          children: rowDatas,
+        );
+      },
+    );
+  }
+
+  //read JobsOnGoing
+  Widget _readDataJobsDone(String streamName, BuildContext context) {
+    bool zebra = false;
+    //read
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('JobsDone')
+          .orderBy('DateD')
+          .snapshots(),
+      builder: (context, snapshot) {
+        bHeader = true;
+        List<TableRow> rowDatas = [];
+        if (snapshot.hasData) {
+          //header
+          if (bHeader) {
+            const rowData = TableRow(
+                decoration: BoxDecoration(color: Colors.green),
+                children: [
+                  Text(
+                    "Jobs Done",
+                    style: TextStyle(fontSize: 10),
+                  ),
+                ]);
+            rowDatas.add(rowData);
+            bHeader = false;
+          }
+
+          //body
+          final buffRecords = snapshot.data?.docs.toList();
+
+          for (var buffRecord in buffRecords!) {
+            //required initialize start
+            _gbWithFinalLoad = false;
+            try {
+              _giFinalLoad = buffRecord['FinalLoad'];
+              _gbWithFinalLoad = true;
+            } on Exception catch (exception) {
+            } catch (error) {}
+
+            _gbWithFinalPrice = false;
+            try {
+              _giFinalPrice = buffRecord['FinalPrice'];
+              _gbWithFinalPrice = true;
+            } on Exception catch (exception) {
+            } catch (error) {}
+            //required initialize end
+
+            final rowData = TableRow(
+                decoration:
+                    BoxDecoration(color: zebra ? Colors.black : Colors.black),
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(2.0),
+                    child: Center(
+                      child: GestureDetector(
+                        onTap: () {},
+                        //Container display JobsOnGoing
+                        child: _conDisplay(
+                          Color.fromRGBO(32, 163, 180, 1),
+                          buffRecord['Customer'],
+                          buffRecord['QueueStat'],
+                          buffRecord['FinalLoad'],
+                          buffRecord['Basket'],
+                          buffRecord['Bag'],
+                          buffRecord['MaxFab'],
+                          buffRecord['Mix'],
+                          buffRecord['Fold'],
+                          buffRecord['PaymentStat'],
+                          buffRecord['FinalPrice'],
+                          buffRecord['NeedOn'],
+                          buffRecord['JobsId'],
+                        ),
+                      ),
+                    ),
+                  )
+                ]);
+            rowDatas.add(rowData);
           }
         }
 
@@ -1035,13 +1166,504 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
           _cancelButton(),
 
           //save button
-          _createNewRecord(),
+          _udpateQueueRecord(),
 
           //move to JobsOnGoing automatically
           _autoOnGoing(),
 
           //move to JobsOnGoing manually
-          _manualOnGoing(),
+          _deleteQueue(),
+        ],
+      ),
+    );
+  }
+
+  //open new expense box
+  void alterOnGoingMobile() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(
+          "Change OnGoing",
+          style: TextStyle(backgroundColor: Colors.green[50]),
+        ),
+        content: SingleChildScrollView(
+          scrollDirection: Axis.vertical,
+          child: StatefulBuilder(
+              builder: (BuildContext context, StateSetter setState) {
+            return Container(
+              padding: EdgeInsets.all(8.0),
+              decoration: BoxDecoration(
+                  border: Border.all(color: Colors.blueAccent, width: 2.0)),
+              child: Form(
+                key: _formKeyQueueMobile,
+                //Alter Display
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(
+                      height: 5,
+                    ),
+                    //QueueStat
+                    DropdownMenu(
+                      label: Text("Status",
+                          style: TextStyle(
+                            fontSize: 12.0,
+                          )),
+                      inputDecorationTheme: getThemeDropDownQueueMobile(),
+                      hintText: "Status",
+                      dropdownMenuEntries: const [
+                        DropdownMenuEntry(
+                            value: "ForSorting", label: "ForSorting"),
+                        DropdownMenuEntry(
+                            value: "RiderPickup", label: "RiderPickup"),
+                      ],
+                      onSelected: (val) {
+                        _gsQueueStat = val!;
+                      },
+                      initialSelection: _gsQueueStat,
+                    ),
+                    SizedBox(
+                      height: 5,
+                    ),
+                    //Customer
+                    Container(
+                      padding: EdgeInsets.all(1.0),
+                      decoration: BoxDecoration(
+                          border:
+                              Border.all(color: Color(0xffD4D4D4), width: 2.0)),
+                      child: TextFormField(
+                        textAlign: TextAlign.center,
+                        decoration: InputDecoration(
+                            labelText: 'Customer Name',
+                            hintText: 'Enter Customer Name'),
+                        validator: (val) {},
+                        initialValue: _gsCustomer,
+                        enabled: false,
+                      ),
+                    ),
+                    SizedBox(
+                      height: 5,
+                    ),
+                    //Final Estimate Load
+                    Container(
+                      padding: EdgeInsets.all(1.0),
+                      decoration: BoxDecoration(
+                          border:
+                              Border.all(color: Color(0xffD4D4D4), width: 2.0)),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            "Initial Load: $_giInitialLoad",
+                            style: TextStyle(fontSize: 10),
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              IconButton(
+                                onPressed: () {
+                                  setState(() => _giFinalLoad--);
+                                },
+                                icon: const Icon(Icons.remove),
+                                color: Colors.blueAccent,
+                              ),
+                              Text("Final Load: $_giFinalLoad"),
+                              IconButton(
+                                onPressed: () {
+                                  setState(() => _giFinalLoad++);
+                                },
+                                icon: const Icon(Icons.add),
+                                color: Colors.blueAccent,
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    //Final Price
+                    SizedBox(
+                      height: 5,
+                    ),
+                    Container(
+                      padding: EdgeInsets.all(1.0),
+                      decoration: BoxDecoration(
+                          border:
+                              Border.all(color: Color(0xffD4D4D4), width: 2.0)),
+                      child: Column(
+                        children: [
+                          Text(
+                            "Initial Price: $_giInitialPrice",
+                            style: TextStyle(fontSize: 10),
+                          ),
+                          TextFormField(
+                            keyboardType: TextInputType.number,
+                            inputFormatters: <TextInputFormatter>[
+                              FilteringTextInputFormatter.allow(
+                                  RegExp(r'[0-9]')),
+                              FilteringTextInputFormatter.digitsOnly
+                            ],
+                            textAlign: TextAlign.center,
+                            decoration: InputDecoration(
+                                labelText: 'Final Price',
+                                hintText: 'Initial Price'),
+                            validator: (val) {
+                              _giFinalPrice = int.parse(val!);
+                            },
+                            initialValue: _giFinalPrice.toString(),
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(
+                      height: 5,
+                    ),
+                    //Basket
+                    Container(
+                      padding: EdgeInsets.all(1.0),
+                      decoration: BoxDecoration(
+                          border:
+                              Border.all(color: Color(0xffD4D4D4), width: 2.0)),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          IconButton(
+                            onPressed: () {
+                              setState(() => _giBasket--);
+                            },
+                            icon: const Icon(Icons.remove),
+                            color: Colors.blueAccent,
+                          ),
+                          Text("Basket: $_giBasket"),
+                          IconButton(
+                            onPressed: () {
+                              setState(() => _giBasket++);
+                            },
+                            icon: const Icon(Icons.add),
+                            color: Colors.blueAccent,
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(
+                      height: 5,
+                    ),
+                    //Bag
+                    Container(
+                      padding: EdgeInsets.all(1.0),
+                      decoration: BoxDecoration(
+                          border:
+                              Border.all(color: Color(0xffD4D4D4), width: 2.0)),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          IconButton(
+                            onPressed: () {
+                              setState(() => _giBag--);
+                            },
+                            icon: const Icon(Icons.remove),
+                            color: Colors.blueAccent,
+                          ),
+                          Text("Bag: $_giBag"),
+                          IconButton(
+                            onPressed: () {
+                              setState(() => _giBag++);
+                            },
+                            icon: const Icon(Icons.add),
+                            color: Colors.blueAccent,
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(
+                      height: 5,
+                    ),
+                    //Payment
+                    DropdownMenu(
+                      label: Text("Payment",
+                          style: TextStyle(
+                            fontSize: 12.0,
+                          )),
+                      inputDecorationTheme: getThemeDropDownQueueMobile(),
+                      hintText: "Payment",
+                      dropdownMenuEntries: const [
+                        DropdownMenuEntry(value: "Unpaid", label: "Unpaid"),
+                        DropdownMenuEntry(value: "PaidCash", label: "PaidCash"),
+                        DropdownMenuEntry(
+                            value: "PaidGcash", label: "PaidGcash"),
+                        DropdownMenuEntry(
+                            value: "WaitingGcash", label: "WaitingGcash"),
+                        DropdownMenuEntry(value: "Kulang", label: "Kulang"),
+                        DropdownMenuEntry(value: "MaySukli", label: "MaySukli"),
+                      ],
+                      onSelected: (val) {
+                        _gsPaymentStat = val!;
+                      },
+                      initialSelection: _gsPaymentStat,
+                    ),
+                    SizedBox(
+                      height: 5,
+                    ),
+                    //Payment Received By
+                    DropdownMenu(
+                      label: Text("Payment Received By",
+                          style: TextStyle(
+                            fontSize: 12.0,
+                          )),
+                      inputDecorationTheme: getThemeDropDownQueueMobile(),
+                      hintText: "Select Staff",
+                      dropdownMenuEntries: const [
+                        DropdownMenuEntry(value: "N/a", label: "N/a"),
+                        DropdownMenuEntry(value: "Jeng", label: "Jeng"),
+                        DropdownMenuEntry(value: "Abi", label: "Abi"),
+                        DropdownMenuEntry(value: "Ket", label: "Ket"),
+                        DropdownMenuEntry(value: "DonP", label: "DonP"),
+                        DropdownMenuEntry(value: "Rowel", label: "Rowel"),
+                        DropdownMenuEntry(value: "Seigi", label: "Seigi"),
+                        DropdownMenuEntry(value: "Let", label: "Let"),
+                      ],
+                      onSelected: (val) {
+                        _gsPaymentReceivedBy = val!;
+                      },
+                      initialSelection: _gsPaymentReceivedBy,
+                    ),
+                    SizedBox(
+                      height: 5,
+                    ),
+                    //Need On Date +
+                    Container(
+                      padding: EdgeInsets.all(1.0),
+                      decoration: BoxDecoration(
+                          border:
+                              Border.all(color: Color(0xffD4D4D4), width: 2.0)),
+                      child: Column(
+                        children: [
+                          Container(
+                            padding: EdgeInsets.all(1.0),
+                            decoration: BoxDecoration(
+                                border: Border.all(
+                                    color: Color.fromARGB(0, 212, 212, 212),
+                                    width: 0)),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text("-1 day"),
+                                IconButton(
+                                  onPressed: () {
+                                    setState(() => _gdNeedOn =
+                                        _gdNeedOn.add(Duration(days: -1)));
+                                  },
+                                  icon:
+                                      const Icon(Icons.remove_circle_outlined),
+                                  color: Colors.blueAccent,
+                                ),
+                                IconButton(
+                                  onPressed: () {
+                                    setState(() => _gdNeedOn =
+                                        _gdNeedOn.add(Duration(days: 1)));
+                                  },
+                                  icon: const Icon(Icons.add_circle),
+                                  color: Colors.blueAccent,
+                                ),
+                                Text("+1 day"),
+                              ],
+                            ),
+                          ),
+                          //Need On date?
+                          Container(
+                            padding: EdgeInsets.all(1.0),
+                            decoration: BoxDecoration(
+                                border: Border.all(
+                                    color: Color.fromARGB(0, 212, 212, 212),
+                                    width: 0)),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  "Need On: ${_gdNeedOn.toString().substring(5, 14)}00",
+                                ),
+                              ],
+                            ),
+                          ),
+                          //Need On Date +
+                          Container(
+                            padding: EdgeInsets.all(1.0),
+                            decoration: BoxDecoration(
+                                border: Border.all(
+                                    color: Color.fromARGB(0, 212, 212, 212),
+                                    width: 0)),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text("-1 hr"),
+                                IconButton(
+                                  onPressed: () {
+                                    setState(() => _gdNeedOn =
+                                        _gdNeedOn.add(Duration(hours: -1)));
+                                  },
+                                  icon: const Icon(Icons.remove_circle_outline),
+                                  color: Colors.blueAccent,
+                                ),
+                                IconButton(
+                                  onPressed: () {
+                                    setState(() => _gdNeedOn =
+                                        _gdNeedOn.add(Duration(hours: 1)));
+                                  },
+                                  icon: const Icon(Icons.add_circle_outline),
+                                  color: Colors.blueAccent,
+                                ),
+                                Text("+1 hr"),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(
+                      height: 5,
+                    ),
+                    //Max Fab?
+                    Container(
+                      alignment: Alignment.center,
+                      padding: EdgeInsets.all(1.0),
+                      decoration: BoxDecoration(
+                          border:
+                              Border.all(color: Color(0xffD4D4D4), width: 2.0)),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text("Reg Fab"),
+                          Switch.adaptive(
+                            value: _gbMaxFab,
+                            onChanged: (bool value) {
+                              setState(() {
+                                _gbMaxFab = value;
+                              });
+                            },
+                          ),
+                          Text("Max 100ml"),
+                        ],
+                      ),
+                    ),
+                    SizedBox(
+                      height: 5,
+                    ),
+                    //No Fold
+                    Container(
+                      alignment: Alignment.center,
+                      padding: EdgeInsets.all(1.0),
+                      decoration: BoxDecoration(
+                          border:
+                              Border.all(color: Color(0xffD4D4D4), width: 2.0)),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text("No Fold"),
+                          Switch.adaptive(
+                            value: _gbFold,
+                            onChanged: (bool value) {
+                              setState(() {
+                                _gbFold = value;
+                              });
+                            },
+                          ),
+                          Text("Fold"),
+                        ],
+                      ),
+                    ),
+                    SizedBox(
+                      height: 5,
+                    ),
+                    //Dont mix
+                    Container(
+                      alignment: Alignment.center,
+                      padding: EdgeInsets.all(1.0),
+                      decoration: BoxDecoration(
+                          border:
+                              Border.all(color: Color(0xffD4D4D4), width: 2.0)),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text("Dont Mix"),
+                          Switch.adaptive(
+                            value: _gbMix,
+                            onChanged: (bool value) {
+                              setState(() {
+                                _gbMix = value;
+                              });
+                            },
+                          ),
+                          Text("Mix"),
+                        ],
+                      ),
+                    ),
+                    SizedBox(
+                      height: 5,
+                    ),
+                    //Kulang
+                    Container(
+                      padding: EdgeInsets.all(1.0),
+                      decoration: BoxDecoration(
+                          border:
+                              Border.all(color: Color(0xffD4D4D4), width: 2.0)),
+                      child: TextFormField(
+                        keyboardType: TextInputType.number,
+                        inputFormatters: <TextInputFormatter>[
+                          FilteringTextInputFormatter.allow(RegExp(r'[0-9]')),
+                          FilteringTextInputFormatter.digitsOnly
+                        ],
+                        textAlign: TextAlign.center,
+                        decoration: InputDecoration(
+                            labelText: 'Kulang bayad',
+                            hintText: 'Magkano kulang?'),
+                        validator: (val) {
+                          _giKulang = int.parse(val!);
+                        },
+                        initialValue: _giKulang.toString(),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 5,
+                    ),
+                    //May Sukli
+                    Container(
+                      padding: EdgeInsets.all(1.0),
+                      decoration: BoxDecoration(
+                          border:
+                              Border.all(color: Color(0xffD4D4D4), width: 2.0)),
+                      child: TextFormField(
+                        keyboardType: TextInputType.number,
+                        inputFormatters: <TextInputFormatter>[
+                          FilteringTextInputFormatter.allow(RegExp(r'[0-9]')),
+                          FilteringTextInputFormatter.digitsOnly
+                        ],
+                        textAlign: TextAlign.center,
+                        decoration: InputDecoration(
+                            labelText: 'May Sukli', hintText: 'Magkano sukli?'),
+                        validator: (val) {
+                          _giMaySukli = int.parse(val!);
+                        },
+                        initialValue: _giMaySukli.toString(),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }),
+        ),
+        actions: [
+          //cancel button
+          _cancelButton(),
+
+          //save button
+          _udpateOnGoingRecord(),
+
+          //move to JobsDone
+          _autoDone(),
+
+          //go back to Queue
+          //_deleteQueue(),
         ],
       ),
     );
@@ -1056,7 +1678,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
         child: const Text("Cancel"));
   }
 
-  Widget _createNewRecord() {
+  Widget _udpateQueueRecord() {
     return MaterialButton(
       onPressed: () {
         if (_formKeyQueueMobile.currentState!.validate()) {
@@ -1076,6 +1698,26 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
     );
   }
 
+  Widget _udpateOnGoingRecord() {
+    return MaterialButton(
+      onPressed: () {
+        if (_formKeyQueueMobile.currentState!.validate()) {
+          // If the form is valid, display a snackbar. In the real world,
+          // you'd often call a server or save the information in a database.
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Processing Data')),
+          );
+
+          //pop box
+          Navigator.pop(context);
+
+          _updateDataOnGoingMobile();
+        }
+      },
+      child: const Text("Save"),
+    );
+  }
+
   Widget _autoOnGoing() {
     return MaterialButton(
       onPressed: () {
@@ -1088,7 +1730,19 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
           messageResultQueueMobile(context, "On Going is full");
         }
       },
-      child: Text("Auto"),
+      child: Text("OnGoing"),
+    );
+  }
+
+  Widget _autoDone() {
+    return MaterialButton(
+      onPressed: () {
+        //pop box
+        Navigator.pop(context);
+
+        insertDataJobsDone();
+      },
+      child: Text("Done"),
     );
   }
 
@@ -1129,26 +1783,138 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
     //re-read
   }
 
-  Widget _manualOnGoing() {
+  void insertDataJobsDone() {
+    //insert
+    CollectionReference collRef =
+        FirebaseFirestore.instance.collection('JobsDone');
+    collRef
+        .add({
+          'JobsId': _giFinalVacantJobsId,
+          'DateD': DateTime.now(),
+          'DateW': _gtDateW,
+          'DateQ': _gtDateQ,
+          'CreatedBy': _gsCreatedBy,
+          'Customer': _gsCustomer,
+          'InitialLoad': _giInitialLoad,
+          'InitialPrice': _giInitialPrice,
+          'FinalLoad': _giFinalLoad,
+          'FinalPrice': _giFinalPrice,
+          'QueueStat': "WaitCustomer",
+          'PaymentStat': _gsPaymentStat,
+          'PaymentReceivedBy': _gsPaymentReceivedBy,
+          'NeedOn': _gtNeedOn,
+          'MaxFab': _gbMaxFab,
+          'Fold': _gbFold,
+          'Mix': _gbMix,
+          'Basket': _giBasket,
+          'Bag': _giBag,
+          'Kulang': _giKulang,
+          'MaySukli': _giMaySukli,
+        })
+        .then((value) => {
+              _deleteDataOnGoingMobile(),
+              messageResult(context, "Move to ongoing.$_gsCustomer"),
+            })
+        // ignore: invalid_return_type_for_catch_error
+        .catchError((error) => messageResult(context, "Failed : $error"));
+
+    //re-read
+  }
+
+  Widget _deleteQueue() {
     return MaterialButton(
       onPressed: () {
-        if (_gbOneOccupied && _gb25Occupied) {
-          messageResultQueueMobile(context,
-              "Cannot assign new job, please set status to done if already done to free jobs ongoing.");
-        } else {
-          if (_formKeyQueueMobile.currentState!.validate()) {
-            // If the form is valid, display a snackbar. In the real world,
-            // you'd often call a server or save the information in a database.
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Processing Data')),
-            );
-          }
-        }
         //pop box
         Navigator.pop(context);
+
+        showDeleteQueueDialog(context, "Do you want to delete $_gsCustomer?");
       },
-      child: const Text("Manual"),
+      child: const Text("Delete"),
     );
+  }
+
+  Widget _deleteOnGoing() {
+    return MaterialButton(
+      onPressed: () {
+        //pop box
+        Navigator.pop(context);
+
+        showDeleteOnGoingDialog(context, "Mark Done for $_gsCustomer?");
+      },
+      child: const Text("Delete"),
+    );
+  }
+
+  Future<bool> showDeleteQueueDialog(
+      BuildContext context, String message) async {
+    // set up the buttons
+    Widget cancelButton = ElevatedButton(
+      child: Text("No"),
+      onPressed: () {
+        // returnValue = false;
+        Navigator.of(context).pop(false);
+      },
+    );
+    Widget continueButton = ElevatedButton(
+      child: Text("Yes"),
+      onPressed: () {
+        _deleteDataQueueMobile();
+
+        // returnValue = true;
+        Navigator.of(context).pop(true);
+      },
+    ); // set up the AlertDialog
+    AlertDialog alert = AlertDialog(
+      title: Text("Alert!"),
+      content: Text(message),
+      actions: [
+        cancelButton,
+        continueButton,
+      ],
+    ); // show the dialog
+    final result = await showDialog<bool?>(
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
+    );
+    return result ?? false;
+  }
+
+  Future<bool> showDeleteOnGoingDialog(
+      BuildContext context, String message) async {
+    // set up the buttons
+    Widget cancelButton = ElevatedButton(
+      child: Text("No"),
+      onPressed: () {
+        // returnValue = false;
+        Navigator.of(context).pop(false);
+      },
+    );
+    Widget continueButton = ElevatedButton(
+      child: Text("Yes"),
+      onPressed: () {
+        _deleteDataOnGoingMobile();
+
+        // returnValue = true;
+        Navigator.of(context).pop(true);
+      },
+    ); // set up the AlertDialog
+    AlertDialog alert = AlertDialog(
+      title: Text("Alert!"),
+      content: Text(message),
+      actions: [
+        cancelButton,
+        continueButton,
+      ],
+    ); // show the dialog
+    final result = await showDialog<bool?>(
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
+    );
+    return result ?? false;
   }
 
   void messageResultQueueMobile(BuildContext context, String sMsg) {
@@ -1209,9 +1975,56 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
             (error) => messageResultQueueMobile(context, "Failed : $error"));
   }
 
+  void _updateDataOnGoingMobile() {
+    CollectionReference collRef =
+        FirebaseFirestore.instance.collection('JobsOnGoing');
+    collRef
+        .doc(_gsId)
+        .set({
+          'JobsId': _giJobsId,
+          'DateW': _gtDateW,
+          'DateQ': _gtDateQ,
+          'CreatedBy': _gsCreatedBy,
+          'Customer': _gsCustomer,
+          'InitialLoad': _giInitialLoad,
+          'InitialPrice': _giInitialPrice,
+          'FinalLoad': _giFinalLoad,
+          'FinalPrice': _giFinalPrice,
+          'QueueStat': _gsQueueStat,
+          'PaymentStat': _gsPaymentStat,
+          'PaymentReceivedBy': _gsPaymentReceivedBy,
+          'NeedOn': _gtNeedOn,
+          'MaxFab': _gbMaxFab,
+          'Fold': _gbFold,
+          'Mix': _gbMix,
+          'Basket': _giBasket,
+          'Bag': _giBag,
+          'Kulang': _giKulang,
+          'MaySukli': _giMaySukli,
+        })
+        .then((value) => {
+              messageResultQueueMobile(context, "Updates Done on $_gsCustomer"),
+            })
+        // ignore: invalid_return_type_for_catch_error
+        .catchError(
+            (error) => messageResultQueueMobile(context, "Failed : $error"));
+  }
+
   void _deleteDataQueueMobile() {
     CollectionReference collRef =
         FirebaseFirestore.instance.collection('JobsOnQueue');
+    collRef
+        .doc(_gsId)
+        .delete()
+        .then((value) => {})
+        // ignore: invalid_return_type_for_catch_error
+        .catchError(
+            (error) => messageResultQueueMobile(context, "Failed : $error"));
+  }
+
+  void _deleteDataOnGoingMobile() {
+    CollectionReference collRef =
+        FirebaseFirestore.instance.collection('JobsOnGoing');
     collRef
         .doc(_gsId)
         .delete()
