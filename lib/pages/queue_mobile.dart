@@ -24,23 +24,21 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
   bool bHeader = true;
 
   //JobsOnQueue Colors
-  final Color _gcRiderPickup = Color.fromRGBO(1, 1, 1, 1);
-  final Color _gcForSorting = Color.fromRGBO(1, 1, 1, 1);
+  final Color _gcRiderPickup = Color.fromRGBO(214, 47, 178, 1); //rider
+  final Color _gcForSorting = Color.fromRGBO(203, 203, 203, 1);
 
   //JobsOnGoing Colors
-  final Color _gcOnQueue = Color.fromRGBO(1, 1, 1, 1);
-  final Color _gcWashing = Color.fromRGBO(1, 1, 1, 1);
-  final Color _gcDrying = Color.fromRGBO(1, 1, 1, 1);
-  final Color _gcFolding = Color.fromRGBO(1, 1, 1, 1);
+  final Color _gcOnQueue = Color.fromRGBO(203, 203, 203, 1);
+  final Color _gcWashing = Color.fromRGBO(31, 255, 244, 1); //same washing, drying, folding
+  final Color _gcDrying = Color.fromRGBO(31, 255, 244, 1); //same washing, drying, folding
+  final Color _gcFolding = Color.fromRGBO(31, 255, 244, 1); //same washing, drying, folding
 
   //JobsDone Colors
-  final Color _gcWaitCustomer = Color.fromRGBO(1, 1, 1, 1);
-  final Color _gcWaitCustomerPickup = Color.fromRGBO(1, 1, 1, 1);
-  final Color _gcWaitRiderDelivery = Color.fromRGBO(1, 1, 1, 1);
-  final Color _gcNasaCustomerNa = Color.fromRGBO(1, 1, 1, 1); //indi pa bayad
-  final Color _gcDone =
-      Color.fromRGBO(1, 1, 1, 1); //Bayad na nasa customer narin
-
+  final Color _gcWaitCustomerPickup = Color.fromRGBO(203, 203, 203, 1);
+  final Color _gcWaitRiderDelivery = Color.fromRGBO(62, 255, 45, 1); //rider
+  final Color _gcNasaCustomerNa = Color.fromRGBO(241, 42, 255, 1); 
+  final Color _gcRiderOnDelivery = Color.fromRGBO(62, 255, 45, 1); //rider
+  
   //List<ProductsRemaining> listRemaining = [];
 
   //JobsOnQueue
@@ -339,7 +337,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
       [int buffJobsId = 0]) {
     return Container(
       height: 60,
-      color: buffColor,
+      color: _getCOlorStatus(buffQueueStat),
       child: Center(
         child: Column(
           children: [
@@ -1761,7 +1759,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
           'InitialPrice': _giInitialPrice,
           'FinalLoad': _giFinalLoad,
           'FinalPrice': _giFinalPrice,
-          'QueueStat': _gsQueueStat,
+          'QueueStat': "OnQueue",
           'PaymentStat': _gsPaymentStat,
           'PaymentReceivedBy': _gsPaymentReceivedBy,
           'NeedOn': _gtNeedOn,
@@ -2032,5 +2030,33 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
         // ignore: invalid_return_type_for_catch_error
         .catchError(
             (error) => messageResultQueueMobile(context, "Failed : $error"));
+  }
+
+  Color _getCOlorStatus(String stat) {
+//JobsOnQueue Colors
+  if (stat == "ForPickup") {
+    return _gcRiderPickup;
+  } else if (stat == "ForSorting") {
+    return _gcForSorting;
+  } else if (stat == "OnQueue") {
+    return _gcOnQueue;
+  } else if (stat == "Washing") {
+    return _gcWashing;
+  } else if (stat == "Drying") {
+    return _gcDrying;
+  } else if (stat == "Folding") {
+    return _gcFolding;
+  } else if (stat == "WaitCustomerPickup") {
+    return _gcWaitCustomerPickup;
+  } else if (stat == "WaitRiderDeivery") {
+    return _gcWaitRiderDelivery;
+  } else if (stat == "NasaCustomerNa") {
+    return _gcNasaCustomerNa;
+  } else if (stat == "RiderOnDelivery") {
+    return _gcRiderOnDelivery;
+  } else {
+    return _gcRiderOnDelivery;
+  };
+  
   }
 }
