@@ -5,6 +5,14 @@ import 'package:intl/intl.dart';
 //import 'package:laundry_firebase/variables/item_count_helper.dart';
 import 'package:laundry_firebase/variables/variables.dart';
 
+/*
+cd C:\Users\haali\Documents\GIT_SIT\sit_laundry_firebase
+C:\Users\haali\Documents\GIT_SIT\sit_laundry_firebase> git status
+C:\Users\haali\Documents\GIT_SIT\sit_laundry_firebase> git add .
+C:\Users\haali\Documents\GIT_SIT\sit_laundry_firebase> git commit -m "JobsOnGoing"
+C:\Users\haali\Documents\GIT_SIT\sit_laundry_firebase> git push
+*/
+
 class MyQueueMobile extends StatefulWidget {
   const MyQueueMobile({super.key});
 
@@ -214,8 +222,21 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
 
                           alterQueueMobile();
                         },
-                        //Container display
-                        child: Container(
+                        //Container display JobsOnQueue
+                        child: _conDisplay(
+                            Color.fromRGBO(250, 175, 175, 1),
+                            buffRecord['Customer'],
+                            buffRecord['InitialLoad'],
+                            buffRecord['Basket'],
+                            buffRecord['Bag'],
+                            buffRecord['MaxFab'],
+                            buffRecord['Mix'],
+                            buffRecord['Fold'],
+                            buffRecord['PaymentStat'],
+                            buffRecord['InitialPrice'],
+                            buffRecord['NeedOn']),
+
+                        /*Container(
                           height: 60,
                           color: Colors.red[200],
                           child: Center(
@@ -262,6 +283,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                             ),
                           ),
                         ),
+                        */
                       ),
                     ),
                   )
@@ -274,6 +296,49 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
           children: rowDatas,
         );
       },
+    );
+  }
+
+  //Display
+  Container _conDisplay(
+      Color buffColor,
+      String buffCustomer,
+      int buffInitialLoad,
+      int buffBasket,
+      int buffBag,
+      bool buffMaxFab,
+      bool buffMix,
+      bool buffFold,
+      String buffPaymentStat,
+      int buffInitialPrice,
+      Timestamp buffNeedOn,
+      [int buffJobsId = 0]) {
+    return Container(
+      height: 60,
+      color: buffColor,
+      child: Center(
+        child: Column(
+          children: [
+            Text(
+              "${buffJobsId == 0 ? "" : "#$buffJobsId"} $buffCustomer-(${_gbWithFinalLoad ? _giFinalLoad.toString() : buffInitialLoad.toString()}) ${buffBasket == 0 ? "" : "${buffBasket}BK"} ${buffBag == 0 ? "" : "${buffBag}BG"}",
+              style: const TextStyle(fontSize: 10),
+              textAlign: TextAlign.center,
+            ),
+            Text(
+              "${buffMaxFab ? "MaxFab" : ""} ${buffMix ? "" : "DM"} ${buffFold ? "" : "NF"}",
+              style: const TextStyle(fontSize: 10),
+            ),
+            Text(
+              "$buffPaymentStat: ${_gbWithFinalPrice ? _giFinalPrice.toString() : buffInitialPrice.toString()} Php",
+              style: const TextStyle(fontSize: 10),
+            ),
+            Text(
+              displayDate(convertTimeStamp(buffNeedOn)),
+              style: const TextStyle(fontSize: 10),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -378,8 +443,24 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
 
                           // alterQueueMobile();
                         },
-                        //Container display
-                        child: Container(
+                        //Container display JobsOnGoing
+                        child: _conDisplay(
+                          Color.fromRGBO(168, 173, 168, 1),
+                          buffRecord['Customer'],
+                          buffRecord['FinalLoad'],
+                          buffRecord['Basket'],
+                          buffRecord['Bag'],
+                          buffRecord['MaxFab'],
+                          buffRecord['Mix'],
+                          buffRecord['Fold'],
+                          buffRecord['PaymentStat'],
+                          buffRecord['FinalPrice'],
+                          buffRecord['NeedOn'],
+                          buffRecord['JobsId'],
+                        ),
+
+                        /*
+                        Container(
                           height: 60,
                           color: Colors.blueGrey,
                           child: Center(
@@ -407,6 +488,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                             ),
                           ),
                         ),
+                        */
                       ),
                     ),
                   )
@@ -428,16 +510,16 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
           }
         } else if (_gbOneOccupied) {
           if (_gb25Occupied) {
-            if (_giLowestVacantJobsId > 25) {
+            if (_giLowestVacantJobsId == 25) {
               //1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25
-              _giFinalVacantJobsId = 0;
+              _giFinalVacantJobsId = 26;
             } else {
               //1,,,,,23,24,25  - 2
-              _giFinalVacantJobsId = _giLowestVacantJobsId;
+              _giFinalVacantJobsId = _giLowestVacantJobsId + 1;
             }
           } else if (!_gb25Occupied) {
             //1,2,3,4,,,,,    - 5
-            _giFinalVacantJobsId = _giLowestVacantJobsId;
+            _giFinalVacantJobsId = _giLowestVacantJobsId + 1;
           }
         }
 
@@ -997,23 +1079,16 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
   Widget _autoOnGoing() {
     return MaterialButton(
       onPressed: () {
-        if (_giFinalVacantJobsId == 0) {
-          messageResultQueueMobile(
-              context, "Cannot assign new job, jobs ongoing number is full.");
-        } else {
-          if (_formKeyQueueMobile.currentState!.validate()) {
-            // If the form is valid, display a snackbar. In the real world,
-            // you'd often call a server or save the information in a database.
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Processing Data')),
-            );
-            insertDataJobsOnGoing();
-          }
-        }
         //pop box
         Navigator.pop(context);
+
+        if (_giFinalVacantJobsId <= 25) {
+          insertDataJobsOnGoing();
+        } else {
+          messageResultQueueMobile(context, "On Going is full");
+        }
       },
-      child: const Text("Auto"),
+      child: Text("Auto"),
     );
   }
 
