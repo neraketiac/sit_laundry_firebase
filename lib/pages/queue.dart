@@ -41,6 +41,8 @@ class _MyQueueState extends State<MyQueue> {
   TextEditingController kulangController = TextEditingController();
   TextEditingController maySukliController = TextEditingController();
 
+  final Color _gcButtons = Color.fromRGBO(134, 218, 252, 0.733);
+
   int _initialJob = 0,
       _initialSelection = 0,
       _initialDet = 0,
@@ -597,6 +599,7 @@ class _MyQueueState extends State<MyQueue> {
           amountController.clear();
           remarkController.clear();
         },
+        color: _gcButtons,
         child: const Text("Cancel"));
   }
 
@@ -637,6 +640,7 @@ class _MyQueueState extends State<MyQueue> {
           );
         }
       },
+      color: _gcButtons,
       child: const Text("Save"),
     );
   }
@@ -649,6 +653,7 @@ class _MyQueueState extends State<MyQueue> {
               actions: [
                 MaterialButton(
                   onPressed: () => Navigator.pop(context),
+                  color: _gcButtons,
                   child: const Text("Ok"),
                 ),
               ],

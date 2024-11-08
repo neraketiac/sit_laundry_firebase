@@ -11,6 +11,16 @@ C:\Users\haali\Documents\GIT_SIT\sit_laundry_firebase> git status
 C:\Users\haali\Documents\GIT_SIT\sit_laundry_firebase> git add .
 C:\Users\haali\Documents\GIT_SIT\sit_laundry_firebase> git commit -m "JobsOnGoing"
 C:\Users\haali\Documents\GIT_SIT\sit_laundry_firebase> git push
+
+flutter build web
+firebase login
+firebase init hosting
+  public (yes)
+  rewrite index (yes)
+  github (no)
+firebase deploy
+
+open file firebase.json change public to build/web
 */
 
 class MyQueueMobile extends StatefulWidget {
@@ -28,17 +38,22 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
   final Color _gcForSorting = Color.fromRGBO(203, 203, 203, 1);
 
   //JobsOnGoing Colors
-  final Color _gcOnQueue = Color.fromRGBO(203, 203, 203, 1);
-  final Color _gcWashing = Color.fromRGBO(31, 255, 244, 1); //same washing, drying, folding
-  final Color _gcDrying = Color.fromRGBO(31, 255, 244, 1); //same washing, drying, folding
-  final Color _gcFolding = Color.fromRGBO(31, 255, 244, 1); //same washing, drying, folding
+  final Color _gcWaiting = Color.fromRGBO(203, 203, 203, 1);
+  final Color _gcWashing =
+      Color.fromRGBO(31, 255, 244, 1); //same washing, drying, folding
+  final Color _gcDrying =
+      Color.fromRGBO(31, 255, 244, 1); //same washing, drying, folding
+  final Color _gcFolding =
+      Color.fromRGBO(31, 255, 244, 1); //same washing, drying, folding
 
   //JobsDone Colors
   final Color _gcWaitCustomerPickup = Color.fromRGBO(203, 203, 203, 1);
   final Color _gcWaitRiderDelivery = Color.fromRGBO(62, 255, 45, 1); //rider
-  final Color _gcNasaCustomerNa = Color.fromRGBO(241, 42, 255, 1); 
+  final Color _gcNasaCustomerNa = Color.fromRGBO(241, 42, 255, 1);
   final Color _gcRiderOnDelivery = Color.fromRGBO(62, 255, 45, 1); //rider
-  
+
+  final Color _gcButtons = Color.fromRGBO(134, 218, 252, 0.733);
+
   //List<ProductsRemaining> listRemaining = [];
 
   //JobsOnQueue
@@ -72,9 +87,10 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
       _giHighestVacantJobsId,
       _giTempJobsId,
       _giFinalVacantJobsId;
-  late bool _gbOneOccupied, _gb25Occupied;
+  late bool _gbOneOccupied = false, _gb25Occupied = false;
   late int _giJobsId;
-  late Timestamp _gtDateW;
+  late Timestamp _gtDateW, _gtDateD;
+  late bool _gbShowUpArrow = false;
 
   final _formKeyQueueMobile = GlobalKey<FormState>();
 
@@ -244,6 +260,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                         },
                         //Container display JobsOnQueue
                         child: _conDisplay(
+                            false,
                             Color.fromRGBO(250, 175, 175, 1),
                             buffRecord['Customer'],
                             buffRecord['QueueStat'],
@@ -322,6 +339,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
 
   //Display
   Container _conDisplay(
+      bool showUpArrow,
       Color buffColor,
       String buffCustomer,
       String buffQueueStat,
@@ -336,30 +354,61 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
       Timestamp buffNeedOn,
       [int buffJobsId = 0]) {
     return Container(
-      height: 60,
+      height: 70,
       color: _getCOlorStatus(buffQueueStat),
-      child: Center(
-        child: Column(
-          children: [
-            Text(
-              "${buffJobsId == 0 ? "" : "#$buffJobsId"} $buffCustomer-(${_gbWithFinalLoad ? _giFinalLoad.toString() : buffInitialLoad.toString()}) ${buffBasket == 0 ? "" : "${buffBasket}BK"} ${buffBag == 0 ? "" : "${buffBag}BG"}",
-              style: const TextStyle(fontSize: 10),
-              textAlign: TextAlign.center,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Column(
+            children: [
+              Text(
+                (buffJobsId == 0 ? "" : "#$buffJobsId"),
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.left,
+              ),
+              Visibility(
+                visible: showUpArrow,
+                child: IconButton(
+                  onPressed: () {},
+                  icon: const Icon(Icons.arrow_upward),
+                  color: Colors.blueAccent,
+                ),
+              ),
+            ],
+          ),
+          Expanded(
+            child: Column(
+              mainAxisSize: MainAxisSize.max,
+              children: [
+                Text(
+                  "$buffCustomer (${_gbWithFinalLoad ? _giFinalLoad.toString() : buffInitialLoad.toString()}) ${buffBasket == 0 ? "" : "${buffBasket}BK"} ${buffBag == 0 ? "" : "${buffBag}BG"}",
+                  style: const TextStyle(fontSize: 10),
+                  textAlign: TextAlign.end,
+                ),
+                Text(
+                  "${buffMaxFab ? "MaxFab" : ""} ${buffMix ? "" : "DM"} ${buffFold ? "" : "NF"}",
+                  style: const TextStyle(fontSize: 10),
+                ),
+                Text(
+                  "$buffPaymentStat: ${_gbWithFinalPrice ? _giFinalPrice.toString() : buffInitialPrice.toString()} Php",
+                  style: const TextStyle(fontSize: 10),
+                ),
+                Text(
+                  displayDate(convertTimeStamp(buffNeedOn)),
+                  style: const TextStyle(fontSize: 10),
+                  textAlign: TextAlign.right,
+                ),
+                Text(
+                  buffQueueStat,
+                  style: const TextStyle(fontSize: 10),
+                  textAlign: TextAlign.right,
+                ),
+              ],
             ),
-            Text(
-              "${buffMaxFab ? "MaxFab" : ""} ${buffMix ? "" : "DM"} ${buffFold ? "" : "NF"}",
-              style: const TextStyle(fontSize: 10),
-            ),
-            Text(
-              "$buffPaymentStat: ${_gbWithFinalPrice ? _giFinalPrice.toString() : buffInitialPrice.toString()} Php",
-              style: const TextStyle(fontSize: 10),
-            ),
-            Text(
-              displayDate(convertTimeStamp(buffNeedOn)) + " " + buffQueueStat,
-              style: const TextStyle(fontSize: 10),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -380,7 +429,8 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
           //header
           if (bHeader) {
             const rowData = TableRow(
-                decoration: BoxDecoration(color: Colors.green),
+                decoration:
+                    BoxDecoration(color: Color.fromARGB(255, 81, 229, 248)),
                 children: [
                   Text(
                     "Jobs On Going",
@@ -486,6 +536,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                         },
                         //Container display JobsOnGoing
                         child: _conDisplay(
+                          true,
                           Color.fromRGBO(168, 173, 168, 1),
                           buffRecord['Customer'],
                           buffRecord['QueueStat'],
@@ -627,9 +678,53 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                     padding: const EdgeInsets.all(2.0),
                     child: Center(
                       child: GestureDetector(
-                        onTap: () {},
-                        //Container display JobsOnGoing
+                        onTap: () {
+                          _gsId = buffRecord.id.toString();
+                          _gtDateD = buffRecord['DateD'];
+                          _gtDateW = buffRecord['DateW'];
+                          _gtDateQ = buffRecord['DateQ'];
+                          _gsCreatedBy = buffRecord['CreatedBy'];
+                          _gsCustomer = buffRecord['Customer'];
+                          _giInitialLoad = buffRecord['InitialLoad'];
+                          _giInitialPrice = buffRecord['InitialPrice'];
+                          _gsQueueStat = buffRecord['QueueStat'];
+                          _gsPaymentStat = buffRecord['PaymentStat'];
+                          _gsPaymentReceivedBy =
+                              buffRecord['PaymentReceivedBy'];
+                          _gtNeedOn = buffRecord['NeedOn'];
+                          _gbMaxFab = buffRecord['MaxFab'];
+                          _gbFold = buffRecord['Fold'];
+                          _gbMix = buffRecord['Mix'];
+                          _giBasket = buffRecord['Basket'];
+                          _giBag = buffRecord['Bag'];
+                          _giKulang = buffRecord['Kulang'];
+                          _giMaySukli = buffRecord['MaySukli'];
+
+                          _giJobsId = buffRecord['JobsId'];
+
+                          try {
+                            _giFinalLoad = buffRecord['FinalLoad'];
+                          } on Exception catch (exception) {
+                            _giFinalLoad = buffRecord['InitialLoad'];
+                          } catch (error) {
+                            _giFinalLoad = buffRecord['InitialLoad'];
+                          }
+
+                          try {
+                            _giFinalPrice = buffRecord['FinalPrice'];
+                          } on Exception catch (exception) {
+                            _giFinalPrice = buffRecord['InitialPrice'];
+                          } catch (error) {
+                            _giFinalPrice = buffRecord['InitialPrice'];
+                          }
+
+                          _gdNeedOn = _gtNeedOn.toDate();
+
+                          alterDoneMobile();
+                        },
+                        //Container display JobsDone
                         child: _conDisplay(
+                          false,
                           Color.fromRGBO(32, 163, 180, 1),
                           buffRecord['Customer'],
                           buffRecord['QueueStat'],
@@ -659,6 +754,29 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
     );
   }
 
+  //read then move up
+  Widget _readDataOnGoingMoveUp(int currentJobId, BuildContext context) {
+    bool zebra = false;
+    //read
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('JobsOnGoing')
+          .orderBy('JobsId')
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          final buffRecords = snapshot.data?.docs.toList();
+
+          for (var buffRecord in buffRecords!) {}
+        }
+
+        return SizedBox(
+          height: 0,
+        );
+      },
+    );
+  }
+
   static displayDate(String s) {
     return "${s.substring(0, s.indexOf(',') + 1)} ${s.substring(s.indexOf(':') - 2, s.indexOf(':'))} ${s.substring(s.indexOf(':') + 4, s.indexOf(':') + 6)}";
   }
@@ -679,6 +797,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
               actions: [
                 MaterialButton(
                   onPressed: () => Navigator.pop(context),
+                  color: _gcButtons,
                   child: const Text("Ok"),
                 ),
               ],
@@ -1164,7 +1283,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
           _cancelButton(),
 
           //save button
-          _udpateQueueRecord(),
+          _updateQueueRecord(),
 
           //move to JobsOnGoing automatically
           _autoOnGoing(),
@@ -1211,10 +1330,10 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                       inputDecorationTheme: getThemeDropDownQueueMobile(),
                       hintText: "Status",
                       dropdownMenuEntries: const [
-                        DropdownMenuEntry(
-                            value: "ForSorting", label: "ForSorting"),
-                        DropdownMenuEntry(
-                            value: "RiderPickup", label: "RiderPickup"),
+                        DropdownMenuEntry(value: "Waiting", label: "Waiting"),
+                        DropdownMenuEntry(value: "Washing", label: "Washing"),
+                        DropdownMenuEntry(value: "Drying", label: "Drying"),
+                        DropdownMenuEntry(value: "Folding", label: "Folding"),
                       ],
                       onSelected: (val) {
                         _gsQueueStat = val!;
@@ -1313,6 +1432,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                         ],
                       ),
                     ),
+                    /*
                     SizedBox(
                       height: 5,
                     ),
@@ -1373,6 +1493,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                         ],
                       ),
                     ),
+                    */
                     SizedBox(
                       height: 5,
                     ),
@@ -1425,6 +1546,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                       },
                       initialSelection: _gsPaymentReceivedBy,
                     ),
+                    /*
                     SizedBox(
                       height: 5,
                     ),
@@ -1595,6 +1717,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                         ],
                       ),
                     ),
+                    */
                     SizedBox(
                       height: 5,
                     ),
@@ -1661,7 +1784,199 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
           _autoDone(),
 
           //go back to Queue
-          //_deleteQueue(),
+          _deleteOnGoing(),
+        ],
+      ),
+    );
+  }
+
+  //open new expense box
+  void alterDoneMobile() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(
+          "Change JobsDone",
+          style: TextStyle(backgroundColor: Colors.green[50]),
+        ),
+        content: SingleChildScrollView(
+          scrollDirection: Axis.vertical,
+          child: StatefulBuilder(
+              builder: (BuildContext context, StateSetter setState) {
+            return Container(
+              padding: EdgeInsets.all(8.0),
+              decoration: BoxDecoration(
+                  border: Border.all(color: Colors.blueAccent, width: 2.0)),
+              child: Form(
+                key: _formKeyQueueMobile,
+                //Alter Display
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(
+                      height: 5,
+                    ),
+                    //QueueStat
+                    DropdownMenu(
+                      label: Text("Status",
+                          style: TextStyle(
+                            fontSize: 12.0,
+                          )),
+                      inputDecorationTheme: getThemeDropDownQueueMobile(),
+                      hintText: "Status",
+                      dropdownMenuEntries: const [
+                        DropdownMenuEntry(
+                            value: "WaitCustomerPickup",
+                            label: "WaitCustomerPickup"),
+                        DropdownMenuEntry(
+                            value: "WaitRiderDelivery",
+                            label: "WaitRiderDelivery"),
+                        DropdownMenuEntry(
+                            value: "NasaCustomerNa", label: "NasaCustomerNa"),
+                        DropdownMenuEntry(
+                            value: "RiderOnDelivery", label: "RiderOnDelivery"),
+                      ],
+                      onSelected: (val) {
+                        _gsQueueStat = val!;
+                      },
+                      initialSelection: _gsQueueStat,
+                    ),
+                    SizedBox(
+                      height: 5,
+                    ),
+                    //Customer
+                    Container(
+                      padding: EdgeInsets.all(1.0),
+                      decoration: BoxDecoration(
+                          border:
+                              Border.all(color: Color(0xffD4D4D4), width: 2.0)),
+                      child: TextFormField(
+                        textAlign: TextAlign.center,
+                        decoration: InputDecoration(
+                            labelText: 'Customer Name',
+                            hintText: 'Enter Customer Name'),
+                        validator: (val) {},
+                        initialValue: _gsCustomer,
+                        enabled: false,
+                      ),
+                    ),
+                    SizedBox(
+                      height: 5,
+                    ),
+                    //Payment
+                    DropdownMenu(
+                      label: Text("Payment",
+                          style: TextStyle(
+                            fontSize: 12.0,
+                          )),
+                      inputDecorationTheme: getThemeDropDownQueueMobile(),
+                      hintText: "Payment",
+                      dropdownMenuEntries: const [
+                        DropdownMenuEntry(value: "Unpaid", label: "Unpaid"),
+                        DropdownMenuEntry(value: "PaidCash", label: "PaidCash"),
+                        DropdownMenuEntry(
+                            value: "PaidGcash", label: "PaidGcash"),
+                        DropdownMenuEntry(
+                            value: "WaitingGcash", label: "WaitingGcash"),
+                        DropdownMenuEntry(value: "Kulang", label: "Kulang"),
+                        DropdownMenuEntry(value: "MaySukli", label: "MaySukli"),
+                      ],
+                      onSelected: (val) {
+                        _gsPaymentStat = val!;
+                      },
+                      initialSelection: _gsPaymentStat,
+                    ),
+                    SizedBox(
+                      height: 5,
+                    ),
+                    //Payment Received By
+                    DropdownMenu(
+                      label: Text("Payment Received By",
+                          style: TextStyle(
+                            fontSize: 12.0,
+                          )),
+                      inputDecorationTheme: getThemeDropDownQueueMobile(),
+                      hintText: "Select Staff",
+                      dropdownMenuEntries: const [
+                        DropdownMenuEntry(value: "N/a", label: "N/a"),
+                        DropdownMenuEntry(value: "Jeng", label: "Jeng"),
+                        DropdownMenuEntry(value: "Abi", label: "Abi"),
+                        DropdownMenuEntry(value: "Ket", label: "Ket"),
+                        DropdownMenuEntry(value: "DonP", label: "DonP"),
+                        DropdownMenuEntry(value: "Rowel", label: "Rowel"),
+                        DropdownMenuEntry(value: "Seigi", label: "Seigi"),
+                        DropdownMenuEntry(value: "Let", label: "Let"),
+                      ],
+                      onSelected: (val) {
+                        _gsPaymentReceivedBy = val!;
+                      },
+                      initialSelection: _gsPaymentReceivedBy,
+                    ),
+                    SizedBox(
+                      height: 5,
+                    ),
+                    //Kulang
+                    Container(
+                      padding: EdgeInsets.all(1.0),
+                      decoration: BoxDecoration(
+                          border:
+                              Border.all(color: Color(0xffD4D4D4), width: 2.0)),
+                      child: TextFormField(
+                        keyboardType: TextInputType.number,
+                        inputFormatters: <TextInputFormatter>[
+                          FilteringTextInputFormatter.allow(RegExp(r'[0-9]')),
+                          FilteringTextInputFormatter.digitsOnly
+                        ],
+                        textAlign: TextAlign.center,
+                        decoration: InputDecoration(
+                            labelText: 'Kulang bayad',
+                            hintText: 'Magkano kulang?'),
+                        validator: (val) {
+                          _giKulang = int.parse(val!);
+                        },
+                        initialValue: _giKulang.toString(),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 5,
+                    ),
+                    //May Sukli
+                    Container(
+                      padding: EdgeInsets.all(1.0),
+                      decoration: BoxDecoration(
+                          border:
+                              Border.all(color: Color(0xffD4D4D4), width: 2.0)),
+                      child: TextFormField(
+                        keyboardType: TextInputType.number,
+                        inputFormatters: <TextInputFormatter>[
+                          FilteringTextInputFormatter.allow(RegExp(r'[0-9]')),
+                          FilteringTextInputFormatter.digitsOnly
+                        ],
+                        textAlign: TextAlign.center,
+                        decoration: InputDecoration(
+                            labelText: 'May Sukli', hintText: 'Magkano sukli?'),
+                        validator: (val) {
+                          _giMaySukli = int.parse(val!);
+                        },
+                        initialValue: _giMaySukli.toString(),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }),
+        ),
+        actions: [
+          //cancel button
+          _cancelButton(),
+
+          //save button
+          _udpateDoneRecord(),
+
+          //move to JobsDone
+
+          //go back to Queue
         ],
       ),
     );
@@ -1673,10 +1988,11 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
           //pop box
           Navigator.pop(context);
         },
+        color: _gcButtons,
         child: const Text("Cancel"));
   }
 
-  Widget _udpateQueueRecord() {
+  Widget _updateQueueRecord() {
     return MaterialButton(
       onPressed: () {
         if (_formKeyQueueMobile.currentState!.validate()) {
@@ -1692,6 +2008,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
           _updateDataQueueMobile();
         }
       },
+      color: _gcButtons,
       child: const Text("Save"),
     );
   }
@@ -1712,6 +2029,28 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
           _updateDataOnGoingMobile();
         }
       },
+      color: _gcButtons,
+      child: const Text("Save"),
+    );
+  }
+
+  Widget _udpateDoneRecord() {
+    return MaterialButton(
+      onPressed: () {
+        if (_formKeyQueueMobile.currentState!.validate()) {
+          // If the form is valid, display a snackbar. In the real world,
+          // you'd often call a server or save the information in a database.
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Processing Data')),
+          );
+
+          //pop box
+          Navigator.pop(context);
+
+          _updateDataDoneMobile();
+        }
+      },
+      color: _gcButtons,
       child: const Text("Save"),
     );
   }
@@ -1728,6 +2067,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
           messageResultQueueMobile(context, "On Going is full");
         }
       },
+      color: _gcButtons,
       child: Text("OnGoing"),
     );
   }
@@ -1740,7 +2080,8 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
 
         insertDataJobsDone();
       },
-      child: Text("Done"),
+      color: _gcButtons,
+      child: Text("JobsDone"),
     );
   }
 
@@ -1759,7 +2100,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
           'InitialPrice': _giInitialPrice,
           'FinalLoad': _giFinalLoad,
           'FinalPrice': _giFinalPrice,
-          'QueueStat': "OnQueue",
+          'QueueStat': "Waiting",
           'PaymentStat': _gsPaymentStat,
           'PaymentReceivedBy': _gsPaymentReceivedBy,
           'NeedOn': _gtNeedOn,
@@ -1787,7 +2128,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
         FirebaseFirestore.instance.collection('JobsDone');
     collRef
         .add({
-          'JobsId': _giFinalVacantJobsId,
+          'JobsId': _giJobsId,
           'DateD': DateTime.now(),
           'DateW': _gtDateW,
           'DateQ': _gtDateQ,
@@ -1797,7 +2138,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
           'InitialPrice': _giInitialPrice,
           'FinalLoad': _giFinalLoad,
           'FinalPrice': _giFinalPrice,
-          'QueueStat': "WaitCustomer",
+          'QueueStat': "WaitCustomerPickup",
           'PaymentStat': _gsPaymentStat,
           'PaymentReceivedBy': _gsPaymentReceivedBy,
           'NeedOn': _gtNeedOn,
@@ -1827,6 +2168,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
 
         showDeleteQueueDialog(context, "Do you want to delete $_gsCustomer?");
       },
+      color: _gcButtons,
       child: const Text("Delete"),
     );
   }
@@ -1837,8 +2179,9 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
         //pop box
         Navigator.pop(context);
 
-        showDeleteOnGoingDialog(context, "Mark Done for $_gsCustomer?");
+        showDeleteOnGoingDialog(context, "Delete ongoing for $_gsCustomer?");
       },
+      color: _gcButtons,
       child: const Text("Delete"),
     );
   }
@@ -1923,6 +2266,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
               actions: [
                 MaterialButton(
                   onPressed: () => Navigator.pop(context),
+                  color: _gcButtons,
                   child: const Text("Ok"),
                 ),
               ],
@@ -1956,7 +2300,8 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
           'QueueStat': _gsQueueStat,
           'PaymentStat': _gsPaymentStat,
           'PaymentReceivedBy': _gsPaymentReceivedBy,
-          'NeedOn': _gtNeedOn,
+          //'NeedOn': _gtNeedOn,
+          'NeedOn': Timestamp.fromDate(_gdNeedOn),
           'MaxFab': _gbMaxFab,
           'Fold': _gbFold,
           'Mix': _gbMix,
@@ -1980,6 +2325,42 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
         .doc(_gsId)
         .set({
           'JobsId': _giJobsId,
+          'DateW': _gtDateW,
+          'DateQ': _gtDateQ,
+          'CreatedBy': _gsCreatedBy,
+          'Customer': _gsCustomer,
+          'InitialLoad': _giInitialLoad,
+          'InitialPrice': _giInitialPrice,
+          'FinalLoad': _giFinalLoad,
+          'FinalPrice': _giFinalPrice,
+          'QueueStat': _gsQueueStat,
+          'PaymentStat': _gsPaymentStat,
+          'PaymentReceivedBy': _gsPaymentReceivedBy,
+          'NeedOn': _gtNeedOn,
+          'MaxFab': _gbMaxFab,
+          'Fold': _gbFold,
+          'Mix': _gbMix,
+          'Basket': _giBasket,
+          'Bag': _giBag,
+          'Kulang': _giKulang,
+          'MaySukli': _giMaySukli,
+        })
+        .then((value) => {
+              messageResultQueueMobile(context, "Updates Done on $_gsCustomer"),
+            })
+        // ignore: invalid_return_type_for_catch_error
+        .catchError(
+            (error) => messageResultQueueMobile(context, "Failed : $error"));
+  }
+
+  void _updateDataDoneMobile() {
+    CollectionReference collRef =
+        FirebaseFirestore.instance.collection('JobsDone');
+    collRef
+        .doc(_gsId)
+        .set({
+          'JobsId': _giJobsId,
+          'DateD': _gtDateD,
           'DateW': _gtDateW,
           'DateQ': _gtDateQ,
           'CreatedBy': _gsCreatedBy,
@@ -2034,29 +2415,29 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
 
   Color _getCOlorStatus(String stat) {
 //JobsOnQueue Colors
-  if (stat == "ForPickup") {
-    return _gcRiderPickup;
-  } else if (stat == "ForSorting") {
-    return _gcForSorting;
-  } else if (stat == "OnQueue") {
-    return _gcOnQueue;
-  } else if (stat == "Washing") {
-    return _gcWashing;
-  } else if (stat == "Drying") {
-    return _gcDrying;
-  } else if (stat == "Folding") {
-    return _gcFolding;
-  } else if (stat == "WaitCustomerPickup") {
-    return _gcWaitCustomerPickup;
-  } else if (stat == "WaitRiderDeivery") {
-    return _gcWaitRiderDelivery;
-  } else if (stat == "NasaCustomerNa") {
-    return _gcNasaCustomerNa;
-  } else if (stat == "RiderOnDelivery") {
-    return _gcRiderOnDelivery;
-  } else {
-    return _gcRiderOnDelivery;
-  };
-  
+    if (stat == "RiderPicup") {
+      return _gcRiderPickup;
+    } else if (stat == "ForSorting") {
+      return _gcForSorting;
+    } else if (stat == "Waiting") {
+      return _gcWaiting;
+    } else if (stat == "Washing") {
+      return _gcWashing;
+    } else if (stat == "Drying") {
+      return _gcDrying;
+    } else if (stat == "Folding") {
+      return _gcFolding;
+    } else if (stat == "WaitCustomerPickup") {
+      return _gcWaitCustomerPickup;
+    } else if (stat == "WaitRiderDeivery") {
+      return _gcWaitRiderDelivery;
+    } else if (stat == "NasaCustomerNa") {
+      return _gcNasaCustomerNa;
+    } else if (stat == "RiderOnDelivery") {
+      return _gcRiderOnDelivery;
+    } else {
+      return _gcRiderOnDelivery;
+    }
+    ;
   }
 }
