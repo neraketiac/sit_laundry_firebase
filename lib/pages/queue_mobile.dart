@@ -1,3 +1,6 @@
+//import 'dart:io';
+//import 'dart:nativewrappers/_internal/vm/lib/internal_patch.dart';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -34,11 +37,11 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
   bool bHeader = true;
 
   //JobsOnQueue Colors
-  final Color _gcRiderPickup = Color.fromRGBO(214, 47, 178, 1); //rider
-  final Color _gcForSorting = Color.fromRGBO(203, 203, 203, 1);
+  final Color _gcRiderPickup = Color.fromRGBO(62, 255, 45, 1); //rider
+  final Color _gcForSorting = Color.fromRGBO(170, 170, 170, 1);
 
   //JobsOnGoing Colors
-  final Color _gcWaiting = Color.fromRGBO(203, 203, 203, 1);
+  final Color _gcWaiting = Color.fromRGBO(170, 170, 170, 1);
   final Color _gcWashing =
       Color.fromRGBO(31, 255, 244, 1); //same washing, drying, folding
   final Color _gcDrying =
@@ -47,14 +50,12 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
       Color.fromRGBO(31, 255, 244, 1); //same washing, drying, folding
 
   //JobsDone Colors
-  final Color _gcWaitCustomerPickup = Color.fromRGBO(203, 203, 203, 1);
+  final Color _gcWaitCustomerPickup = Color.fromRGBO(170, 170, 170, 1);
   final Color _gcWaitRiderDelivery = Color.fromRGBO(62, 255, 45, 1); //rider
-  final Color _gcNasaCustomerNa = Color.fromRGBO(241, 42, 255, 1);
+  final Color _gcNasaCustomerNa = Color.fromRGBO(92, 91, 91, 1);
   final Color _gcRiderOnDelivery = Color.fromRGBO(62, 255, 45, 1); //rider
 
   final Color _gcButtons = Color.fromRGBO(134, 218, 252, 0.733);
-
-  //List<ProductsRemaining> listRemaining = [];
 
   //JobsOnQueue
 
@@ -90,12 +91,49 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
   late bool _gbOneOccupied = false, _gb25Occupied = false;
   late int _giJobsId;
   late Timestamp _gtDateW, _gtDateD;
-  late bool _gbShowUpArrow = false;
+  late int _giVisibleCounter; //when 0 visible false;
+
+  List<DropdownMenuItem<String>> dropdownItems = [];
+
+  final List<String> finListNumbering = [
+    "#1",
+    "#2",
+    "#3",
+    "#4",
+    "#5",
+    "#6",
+    "#7",
+    "#8",
+    "#9",
+    "#10",
+    "#11",
+    "#12",
+    "#13",
+    "#14",
+    "#15",
+    "#16",
+    "#17",
+    "#18",
+    "#19",
+    "#20",
+    "#21",
+    "#22",
+    "#23",
+    "#24",
+    "#25"
+  ];
+
+  late List<String> listNumbering;
+
+  String _selectedNumber = "#1";
+  String selectedNumberx = "Option 1";
 
   final _formKeyQueueMobile = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
+    _giTempJobsId = 0;
+
     return Scaffold(
       backgroundColor: Colors.deepPurple[100],
       appBar: AppBar(
@@ -260,6 +298,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                         },
                         //Container display JobsOnQueue
                         child: _conDisplay(
+                            context,
                             false,
                             Color.fromRGBO(250, 175, 175, 1),
                             buffRecord['Customer'],
@@ -273,55 +312,6 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                             buffRecord['PaymentStat'],
                             buffRecord['InitialPrice'],
                             buffRecord['NeedOn']),
-
-                        /*Container(
-                          height: 60,
-                          color: Colors.red[200],
-                          child: Center(
-                            child: Column(
-                              children: [
-                                Text(
-                                  buffRecord['Customer'] +
-                                      " (" +
-                                      (_gbWithFinalLoad
-                                          ? _giFinalLoad.toString()
-                                          : buffRecord['InitialLoad']
-                                              .toString()) +
-                                      ") " +
-                                      (buffRecord['Basket'] == 0
-                                          ? ""
-                                          : "${buffRecord['Basket']}BK") +
-                                      " " +
-                                      (buffRecord['Bag'] == 0
-                                          ? ""
-                                          : "${buffRecord['Bag']}BG"),
-                                  style: const TextStyle(fontSize: 10),
-                                  textAlign: TextAlign.center,
-                                ),
-                                Text(
-                                  "${buffRecord['MaxFab'] ? "MaxFab" : ""} ${buffRecord['Mix'] ? "" : "DM"} ${buffRecord['Fold'] ? "" : "NF"}",
-                                  style: const TextStyle(fontSize: 10),
-                                ),
-                                Text(
-                                  buffRecord['PaymentStat'] +
-                                      ": " +
-                                      (_gbWithFinalPrice
-                                          ? _giFinalPrice.toString()
-                                          : buffRecord['InitialPrice']
-                                              .toString()) +
-                                      " Php",
-                                  style: const TextStyle(fontSize: 10),
-                                ),
-                                Text(
-                                  displayDate(
-                                      convertTimeStamp(buffRecord['NeedOn'])),
-                                  style: const TextStyle(fontSize: 10),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        */
                       ),
                     ),
                   )
@@ -334,82 +324,6 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
           children: rowDatas,
         );
       },
-    );
-  }
-
-  //Display
-  Container _conDisplay(
-      bool showUpArrow,
-      Color buffColor,
-      String buffCustomer,
-      String buffQueueStat,
-      int buffInitialLoad,
-      int buffBasket,
-      int buffBag,
-      bool buffMaxFab,
-      bool buffMix,
-      bool buffFold,
-      String buffPaymentStat,
-      int buffInitialPrice,
-      Timestamp buffNeedOn,
-      [int buffJobsId = 0]) {
-    return Container(
-      height: 70,
-      color: _getCOlorStatus(buffQueueStat),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Column(
-            children: [
-              Text(
-                (buffJobsId == 0 ? "" : "#$buffJobsId"),
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                ),
-                textAlign: TextAlign.left,
-              ),
-              Visibility(
-                visible: showUpArrow,
-                child: IconButton(
-                  onPressed: () {},
-                  icon: const Icon(Icons.arrow_upward),
-                  color: Colors.blueAccent,
-                ),
-              ),
-            ],
-          ),
-          Expanded(
-            child: Column(
-              mainAxisSize: MainAxisSize.max,
-              children: [
-                Text(
-                  "$buffCustomer (${_gbWithFinalLoad ? _giFinalLoad.toString() : buffInitialLoad.toString()}) ${buffBasket == 0 ? "" : "${buffBasket}BK"} ${buffBag == 0 ? "" : "${buffBag}BG"}",
-                  style: const TextStyle(fontSize: 10),
-                  textAlign: TextAlign.end,
-                ),
-                Text(
-                  "${buffMaxFab ? "MaxFab" : ""} ${buffMix ? "" : "DM"} ${buffFold ? "" : "NF"}",
-                  style: const TextStyle(fontSize: 10),
-                ),
-                Text(
-                  "$buffPaymentStat: ${_gbWithFinalPrice ? _giFinalPrice.toString() : buffInitialPrice.toString()} Php",
-                  style: const TextStyle(fontSize: 10),
-                ),
-                Text(
-                  displayDate(convertTimeStamp(buffNeedOn)),
-                  style: const TextStyle(fontSize: 10),
-                  textAlign: TextAlign.right,
-                ),
-                Text(
-                  buffQueueStat,
-                  style: const TextStyle(fontSize: 10),
-                  textAlign: TextAlign.right,
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
     );
   }
 
@@ -450,8 +364,24 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
           _giHighestVacantJobsId = 25;
           _gbOneOccupied = false;
           _gb25Occupied = false;
+          _giVisibleCounter = 0;
+          bool b25isWaiting = true;
+
+          for (var buffRecord in buffRecords!.reversed) {
+            if (buffRecord['JobsId'] == 25 &&
+                buffRecord['QueueStat'] != "Waiting") {
+              b25isWaiting = false;
+            }
+            break;
+          }
+
+          listNumbering = finListNumbering;
 
           for (var buffRecord in buffRecords!) {
+            if (buffRecord['QueueStat'] != "Waiting") {
+              listNumbering.remove("#${buffRecord['JobsId']}");
+            }
+
             //required initialize start
             _gbWithFinalLoad = false;
             try {
@@ -482,6 +412,20 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
             }
 
             _giHighestVacantJobsId = _giTempJobsId + 1;
+
+            if (buffRecord['QueueStat'] != "Waiting") {
+              _giVisibleCounter = 2; //0 - visible
+            }
+
+            if (buffRecord['JobsId'] == 1) {
+              if (buffRecord['QueueStat'] == "Waiting") {
+                if (b25isWaiting) {
+                  _giVisibleCounter = 0;
+                } else {
+                  _giVisibleCounter = 1;
+                }
+              }
+            }
 
             final rowData = TableRow(
                 decoration:
@@ -536,7 +480,8 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                         },
                         //Container display JobsOnGoing
                         child: _conDisplay(
-                          true,
+                          context,
+                          (_giVisibleCounter == 0 ? true : false),
                           Color.fromRGBO(168, 173, 168, 1),
                           buffRecord['Customer'],
                           buffRecord['QueueStat'],
@@ -551,42 +496,17 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                           buffRecord['NeedOn'],
                           buffRecord['JobsId'],
                         ),
-
-                        /*
-                        Container(
-                          height: 60,
-                          color: Colors.blueGrey,
-                          child: Center(
-                            child: Column(
-                              children: [
-                                Text(
-                                  "#${buffRecord['JobsId']} ${buffRecord['Customer']}",
-                                  style: const TextStyle(fontSize: 10),
-                                  textAlign: TextAlign.center,
-                                ),
-                                Text(
-                                  "NF",
-                                  style: const TextStyle(fontSize: 10),
-                                ),
-                                Text(
-                                  " Php",
-                                  style: const TextStyle(fontSize: 10),
-                                ),
-                                Text(
-                                  displayDate(
-                                      convertTimeStamp(buffRecord['DateQ'])),
-                                  style: const TextStyle(fontSize: 10),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        */
                       ),
                     ),
                   )
                 ]);
             rowDatas.add(rowData);
+
+            _giVisibleCounter--;
+
+            if (_giVisibleCounter < 0) {
+              _giVisibleCounter = 0;
+            }
           }
         }
 
@@ -630,7 +550,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance
           .collection('JobsDone')
-          .orderBy('DateD')
+          .orderBy('DateD', descending: true)
           .snapshots(),
       builder: (context, snapshot) {
         bHeader = true;
@@ -724,6 +644,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                         },
                         //Container display JobsDone
                         child: _conDisplay(
+                          context,
                           false,
                           Color.fromRGBO(32, 163, 180, 1),
                           buffRecord['Customer'],
@@ -754,26 +675,96 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
     );
   }
 
-  //read then move up
-  Widget _readDataOnGoingMoveUp(int currentJobId, BuildContext context) {
-    bool zebra = false;
-    //read
-    return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance
-          .collection('JobsOnGoing')
-          .orderBy('JobsId')
-          .snapshots(),
-      builder: (context, snapshot) {
-        if (snapshot.hasData) {
-          final buffRecords = snapshot.data?.docs.toList();
-
-          for (var buffRecord in buffRecords!) {}
-        }
-
-        return SizedBox(
-          height: 0,
-        );
-      },
+  //Display
+  Container _conDisplay(
+      BuildContext context,
+      bool showUpArrow,
+      Color buffColor,
+      String buffCustomer,
+      String buffQueueStat,
+      int buffInitialLoad,
+      int buffBasket,
+      int buffBag,
+      bool buffMaxFab,
+      bool buffMix,
+      bool buffFold,
+      String buffPaymentStat,
+      int buffInitialPrice,
+      Timestamp buffNeedOn,
+      [int buffJobsId = 0]) {
+    return Container(
+      height: 80,
+      color: _getCOlorStatus(buffQueueStat),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Column(
+            children: [
+              InkWell(
+                onDoubleTap: () {
+                  if (buffQueueStat == "Waiting") {
+                    alterNumberMobile(buffJobsId);
+                  }
+                },
+                child: Text(
+                  (buffJobsId == 0 ? "" : "#$buffJobsId"),
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.left,
+                ),
+              ),
+              Visibility(
+                visible: showUpArrow,
+                child: IconButton(
+                  onPressed: () {
+                    moveUp(buffJobsId);
+                  },
+                  icon: const Icon(Icons.arrow_upward),
+                  color: Colors.blueAccent,
+                ),
+              ),
+            ],
+          ),
+          Expanded(
+            child: Column(
+              mainAxisSize: MainAxisSize.max,
+              children: [
+                Text(
+                  "$buffCustomer (${_gbWithFinalLoad ? _giFinalLoad.toString() : buffInitialLoad.toString()}) ${buffBasket == 0 ? "" : "${buffBasket}BK"} ${buffBag == 0 ? "" : "${buffBag}BG"}",
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.end,
+                ),
+                Text(
+                  "${buffMaxFab ? "MaxFab" : ""} ${buffMix ? "" : "DM"} ${buffFold ? "" : "NF"}",
+                  style: const TextStyle(fontSize: 10),
+                ),
+                Text(
+                  "$buffPaymentStat: ${_gbWithFinalPrice ? _giFinalPrice.toString() : buffInitialPrice.toString()} Php",
+                  style: TextStyle(
+                      fontSize: 10,
+                      backgroundColor: (buffPaymentStat == "Unpaid"
+                          ? const Color.fromARGB(115, 255, 97, 97)
+                          : Colors.transparent)),
+                ),
+                Text(
+                  displayDate(convertTimeStamp(buffNeedOn)),
+                  style: const TextStyle(fontSize: 10),
+                  textAlign: TextAlign.right,
+                ),
+                Text(
+                  buffQueueStat,
+                  style: const TextStyle(fontSize: 10),
+                  textAlign: TextAlign.right,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -1333,7 +1324,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                         DropdownMenuEntry(value: "Waiting", label: "Waiting"),
                         DropdownMenuEntry(value: "Washing", label: "Washing"),
                         DropdownMenuEntry(value: "Drying", label: "Drying"),
-                        DropdownMenuEntry(value: "Folding", label: "Folding"),
+                        //DropdownMenuEntry(value: "Folding", label: "Folding"),
                       ],
                       onSelected: (val) {
                         _gsQueueStat = val!;
@@ -1432,68 +1423,6 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                         ],
                       ),
                     ),
-                    /*
-                    SizedBox(
-                      height: 5,
-                    ),
-                    //Basket
-                    Container(
-                      padding: EdgeInsets.all(1.0),
-                      decoration: BoxDecoration(
-                          border:
-                              Border.all(color: Color(0xffD4D4D4), width: 2.0)),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          IconButton(
-                            onPressed: () {
-                              setState(() => _giBasket--);
-                            },
-                            icon: const Icon(Icons.remove),
-                            color: Colors.blueAccent,
-                          ),
-                          Text("Basket: $_giBasket"),
-                          IconButton(
-                            onPressed: () {
-                              setState(() => _giBasket++);
-                            },
-                            icon: const Icon(Icons.add),
-                            color: Colors.blueAccent,
-                          ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(
-                      height: 5,
-                    ),
-                    //Bag
-                    Container(
-                      padding: EdgeInsets.all(1.0),
-                      decoration: BoxDecoration(
-                          border:
-                              Border.all(color: Color(0xffD4D4D4), width: 2.0)),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          IconButton(
-                            onPressed: () {
-                              setState(() => _giBag--);
-                            },
-                            icon: const Icon(Icons.remove),
-                            color: Colors.blueAccent,
-                          ),
-                          Text("Bag: $_giBag"),
-                          IconButton(
-                            onPressed: () {
-                              setState(() => _giBag++);
-                            },
-                            icon: const Icon(Icons.add),
-                            color: Colors.blueAccent,
-                          ),
-                        ],
-                      ),
-                    ),
-                    */
                     SizedBox(
                       height: 5,
                     ),
@@ -1546,178 +1475,6 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                       },
                       initialSelection: _gsPaymentReceivedBy,
                     ),
-                    /*
-                    SizedBox(
-                      height: 5,
-                    ),
-                    //Need On Date +
-                    Container(
-                      padding: EdgeInsets.all(1.0),
-                      decoration: BoxDecoration(
-                          border:
-                              Border.all(color: Color(0xffD4D4D4), width: 2.0)),
-                      child: Column(
-                        children: [
-                          Container(
-                            padding: EdgeInsets.all(1.0),
-                            decoration: BoxDecoration(
-                                border: Border.all(
-                                    color: Color.fromARGB(0, 212, 212, 212),
-                                    width: 0)),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text("-1 day"),
-                                IconButton(
-                                  onPressed: () {
-                                    setState(() => _gdNeedOn =
-                                        _gdNeedOn.add(Duration(days: -1)));
-                                  },
-                                  icon:
-                                      const Icon(Icons.remove_circle_outlined),
-                                  color: Colors.blueAccent,
-                                ),
-                                IconButton(
-                                  onPressed: () {
-                                    setState(() => _gdNeedOn =
-                                        _gdNeedOn.add(Duration(days: 1)));
-                                  },
-                                  icon: const Icon(Icons.add_circle),
-                                  color: Colors.blueAccent,
-                                ),
-                                Text("+1 day"),
-                              ],
-                            ),
-                          ),
-                          //Need On date?
-                          Container(
-                            padding: EdgeInsets.all(1.0),
-                            decoration: BoxDecoration(
-                                border: Border.all(
-                                    color: Color.fromARGB(0, 212, 212, 212),
-                                    width: 0)),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  "Need On: ${_gdNeedOn.toString().substring(5, 14)}00",
-                                ),
-                              ],
-                            ),
-                          ),
-                          //Need On Date +
-                          Container(
-                            padding: EdgeInsets.all(1.0),
-                            decoration: BoxDecoration(
-                                border: Border.all(
-                                    color: Color.fromARGB(0, 212, 212, 212),
-                                    width: 0)),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text("-1 hr"),
-                                IconButton(
-                                  onPressed: () {
-                                    setState(() => _gdNeedOn =
-                                        _gdNeedOn.add(Duration(hours: -1)));
-                                  },
-                                  icon: const Icon(Icons.remove_circle_outline),
-                                  color: Colors.blueAccent,
-                                ),
-                                IconButton(
-                                  onPressed: () {
-                                    setState(() => _gdNeedOn =
-                                        _gdNeedOn.add(Duration(hours: 1)));
-                                  },
-                                  icon: const Icon(Icons.add_circle_outline),
-                                  color: Colors.blueAccent,
-                                ),
-                                Text("+1 hr"),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(
-                      height: 5,
-                    ),
-                    //Max Fab?
-                    Container(
-                      alignment: Alignment.center,
-                      padding: EdgeInsets.all(1.0),
-                      decoration: BoxDecoration(
-                          border:
-                              Border.all(color: Color(0xffD4D4D4), width: 2.0)),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text("Reg Fab"),
-                          Switch.adaptive(
-                            value: _gbMaxFab,
-                            onChanged: (bool value) {
-                              setState(() {
-                                _gbMaxFab = value;
-                              });
-                            },
-                          ),
-                          Text("Max 100ml"),
-                        ],
-                      ),
-                    ),
-                    SizedBox(
-                      height: 5,
-                    ),
-                    //No Fold
-                    Container(
-                      alignment: Alignment.center,
-                      padding: EdgeInsets.all(1.0),
-                      decoration: BoxDecoration(
-                          border:
-                              Border.all(color: Color(0xffD4D4D4), width: 2.0)),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text("No Fold"),
-                          Switch.adaptive(
-                            value: _gbFold,
-                            onChanged: (bool value) {
-                              setState(() {
-                                _gbFold = value;
-                              });
-                            },
-                          ),
-                          Text("Fold"),
-                        ],
-                      ),
-                    ),
-                    SizedBox(
-                      height: 5,
-                    ),
-                    //Dont mix
-                    Container(
-                      alignment: Alignment.center,
-                      padding: EdgeInsets.all(1.0),
-                      decoration: BoxDecoration(
-                          border:
-                              Border.all(color: Color(0xffD4D4D4), width: 2.0)),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text("Dont Mix"),
-                          Switch.adaptive(
-                            value: _gbMix,
-                            onChanged: (bool value) {
-                              setState(() {
-                                _gbMix = value;
-                              });
-                            },
-                          ),
-                          Text("Mix"),
-                        ],
-                      ),
-                    ),
-                    */
                     SizedBox(
                       height: 5,
                     ),
@@ -1785,6 +1542,77 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
 
           //go back to Queue
           _deleteOnGoing(),
+        ],
+      ),
+    );
+  }
+
+  //open new expense box
+  void alterNumberMobile(int jobsId) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(
+          "Swapping no. #$jobsId",
+          style: TextStyle(backgroundColor: Colors.green[50]),
+        ),
+        content: SingleChildScrollView(
+          scrollDirection: Axis.vertical,
+          child: StatefulBuilder(
+              builder: (BuildContext context, StateSetter setState) {
+            return Container(
+              padding: EdgeInsets.all(8.0),
+              decoration: BoxDecoration(
+                  border: Border.all(color: Colors.blueAccent, width: 2.0)),
+              child: Form(
+                key: _formKeyQueueMobile,
+                //Alter Display
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(
+                      height: 5,
+                    ),
+                    SizedBox(
+                      height: 5,
+                    ),
+                    DropdownButton<String>(
+                      hint: Text("Select"),
+                      value: _selectedNumber,
+                      onChanged: (val) {
+                        setState(() {
+                          _selectedNumber = val!;
+                        });
+                      },
+                      items: listNumbering
+                          .map<DropdownMenuItem<String>>((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value),
+                        );
+                      }).toList(),
+                    ),
+                    TextButton(
+                        style: ButtonStyle(
+                            backgroundColor:
+                                WidgetStatePropertyAll(Colors.amberAccent)),
+                        onPressed: () {
+                          updateSwap("#$jobsId", _selectedNumber);
+                        },
+                        child: Text(
+                            "Click this to swap number #$jobsId to $_selectedNumber")),
+                  ],
+                ),
+              ),
+            );
+          }),
+        ),
+        actions: [
+          //cancel button
+          _closeButton(),
+
+          //swap jobs id
+          //_swapJobsId("#$jobsId", _selectedNumber)
         ],
       ),
     );
@@ -1863,6 +1691,81 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                     SizedBox(
                       height: 5,
                     ),
+
+                    //Final Estimate Load
+                    Container(
+                      padding: EdgeInsets.all(1.0),
+                      decoration: BoxDecoration(
+                          border:
+                              Border.all(color: Color(0xffD4D4D4), width: 2.0)),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            "Initial Load: $_giInitialLoad",
+                            style: TextStyle(fontSize: 10),
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              IconButton(
+                                onPressed: () {
+                                  setState(() => _giFinalLoad--);
+                                },
+                                icon: const Icon(Icons.remove),
+                                color: Colors.blueAccent,
+                              ),
+                              Text("Final Load: $_giFinalLoad"),
+                              IconButton(
+                                onPressed: () {
+                                  setState(() => _giFinalLoad++);
+                                },
+                                icon: const Icon(Icons.add),
+                                color: Colors.blueAccent,
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    //Final Price
+                    SizedBox(
+                      height: 5,
+                    ),
+                    Container(
+                      padding: EdgeInsets.all(1.0),
+                      decoration: BoxDecoration(
+                          border:
+                              Border.all(color: Color(0xffD4D4D4), width: 2.0)),
+                      child: Column(
+                        children: [
+                          Text(
+                            "Initial Price: $_giInitialPrice",
+                            style: TextStyle(fontSize: 10),
+                          ),
+                          TextFormField(
+                            keyboardType: TextInputType.number,
+                            inputFormatters: <TextInputFormatter>[
+                              FilteringTextInputFormatter.allow(
+                                  RegExp(r'[0-9]')),
+                              FilteringTextInputFormatter.digitsOnly
+                            ],
+                            textAlign: TextAlign.center,
+                            decoration: InputDecoration(
+                                labelText: 'Final Price',
+                                hintText: 'Initial Price'),
+                            validator: (val) {
+                              _giFinalPrice = int.parse(val!);
+                            },
+                            initialValue: _giFinalPrice.toString(),
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(
+                      height: 5,
+                    ),
+
                     //Payment
                     DropdownMenu(
                       label: Text("Payment",
@@ -1992,6 +1895,16 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
         child: const Text("Cancel"));
   }
 
+  Widget _closeButton() {
+    return MaterialButton(
+        onPressed: () {
+          //pop box
+          Navigator.pop(context);
+        },
+        color: _gcButtons,
+        child: const Text("Close"));
+  }
+
   Widget _updateQueueRecord() {
     return MaterialButton(
       onPressed: () {
@@ -2062,7 +1975,8 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
         Navigator.pop(context);
 
         if (_giFinalVacantJobsId <= 25) {
-          insertDataJobsOnGoing();
+          //insertDataJobsOnGoing();
+          showAutoOnGoingDialog(context, "Move to on-going?");
         } else {
           messageResultQueueMobile(context, "On Going is full");
         }
@@ -2078,12 +1992,27 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
         //pop box
         Navigator.pop(context);
 
-        insertDataJobsDone();
+        showAutoDoneDialog(context, "Move to JobsDone?");
+
+        //insertDataJobsDone();
       },
       color: _gcButtons,
       child: Text("JobsDone"),
     );
   }
+
+  // Widget _swapJobsId(String sourceJobsId, String destinationJobsId) {
+  //   return MaterialButton(
+  //     onPressed: () {
+  //       //pop box
+  //       Navigator.pop(context);
+
+  //       updateSwap(sourceJobsId, destinationJobsId);
+  //     },
+  //     color: _gcButtons,
+  //     child: Text("Swap Jobs Id to $_selectedNumber"),
+  //   );
+  // }
 
   void insertDataJobsOnGoing() {
     //insert
@@ -2258,6 +2187,78 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
     return result ?? false;
   }
 
+  Future<bool> showAutoOnGoingDialog(
+      BuildContext context, String message) async {
+    // set up the buttons
+    Widget cancelButton = ElevatedButton(
+      child: Text("No"),
+      onPressed: () {
+        // returnValue = false;
+        Navigator.of(context).pop(false);
+      },
+    );
+    Widget continueButton = ElevatedButton(
+      child: Text("Yes"),
+      onPressed: () {
+        //_autoOnGoing();
+        insertDataJobsOnGoing();
+
+        // returnValue = true;
+        Navigator.of(context).pop(true);
+      },
+    ); // set up the AlertDialog
+    AlertDialog alert = AlertDialog(
+      title: Text("Alert!"),
+      content: Text(message),
+      actions: [
+        cancelButton,
+        continueButton,
+      ],
+    ); // show the dialog
+    final result = await showDialog<bool?>(
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
+    );
+    return result ?? false;
+  }
+
+  Future<bool> showAutoDoneDialog(BuildContext context, String message) async {
+    // set up the buttons
+    Widget cancelButton = ElevatedButton(
+      child: Text("No"),
+      onPressed: () {
+        // returnValue = false;
+        Navigator.of(context).pop(false);
+      },
+    );
+    Widget continueButton = ElevatedButton(
+      child: Text("Yes"),
+      onPressed: () {
+        insertDataJobsDone();
+
+        // returnValue = true;
+        Navigator.of(context).pop(true);
+      },
+    ); // set up the AlertDialog
+    AlertDialog alert = AlertDialog(
+      title: Text("Alert!"),
+      content: Text(message),
+      actions: [
+        cancelButton,
+        continueButton,
+      ],
+    ); // show the dialog
+    final result = await showDialog<bool?>(
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
+    );
+    return result ?? false;
+  }
+
   void messageResultQueueMobile(BuildContext context, String sMsg) {
     showDialog(
         context: context,
@@ -2318,7 +2319,112 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
             (error) => messageResultQueueMobile(context, "Failed : $error"));
   }
 
+  Future<void> moveUp(int jobsId) async {
+    var collection = FirebaseFirestore.instance.collection('JobsOnGoing');
+    var querySnapshots = await collection.get();
+    for (var doc in querySnapshots.docs) {
+      if (jobsId == 1) {
+        //updatePrevOne25(jobsId);
+        //break;
+        if (doc['JobsId'] == 1) {
+          await doc.reference.update({
+            'JobsId': 25,
+          });
+        }
+        if (doc['JobsId'] == 25) {
+          await doc.reference.update({
+            'JobsId': 1,
+          });
+        }
+      } else {
+        if ((jobsId - 1) == doc['JobsId']) {
+          await doc.reference.update({
+            'JobsId': jobsId,
+          });
+        } else if ((jobsId) == doc['JobsId']) {
+          await doc.reference.update({
+            'JobsId': jobsId - 1,
+          });
+        }
+      }
+    }
+  }
+
+  void updateSwap(String sourceJobsId, String destinationJobsId) async {
+    var collection = FirebaseFirestore.instance.collection('JobsOnGoing');
+    var querySnapshots = await collection.get();
+    for (var doc in querySnapshots.docs) {
+      if (destinationJobsId == "#${doc['JobsId']}") {
+        await doc.reference.update({
+          'JobsId': int.parse(sourceJobsId.replaceAll("#", "")),
+        }).catchError(
+            (error) => messageResultQueueMobile(context, "Failed : $error"));
+        ;
+      } else if (sourceJobsId == "#${doc['JobsId']}") {
+        await doc.reference.update({
+          'JobsId': int.parse(destinationJobsId.replaceAll("#", "")),
+        }).catchError(
+            (error) => messageResultQueueMobile(context, "Failed : $error"));
+      }
+    }
+  }
+
+  Future<void> updatePrevOne25(int jobsId) async {
+    var collection = FirebaseFirestore.instance.collection('JobsOnGoing');
+    var querySnapshots = await collection.get();
+    bool b25isWaiting = false;
+    for (var doc in querySnapshots.docs.reversed) {
+      if (jobsId == 1) {
+        if (doc['JobsId'] == 25 && doc['QueueStat'] == "Waiting") {
+          b25isWaiting = true;
+          await doc.reference.update({
+            'JobsId': 25,
+          });
+        } else if (doc['JobsId'] == 1 && b25isWaiting) {
+          await doc.reference.update({
+            'JobsId': 1,
+          });
+        }
+      }
+    }
+  }
+
   void _updateDataOnGoingMobile() {
+    CollectionReference collRef =
+        FirebaseFirestore.instance.collection('JobsOnGoing');
+    collRef
+        .doc(_gsId)
+        .set({
+          'JobsId': _giJobsId,
+          'DateW': _gtDateW,
+          'DateQ': _gtDateQ,
+          'CreatedBy': _gsCreatedBy,
+          'Customer': _gsCustomer,
+          'InitialLoad': _giInitialLoad,
+          'InitialPrice': _giInitialPrice,
+          'FinalLoad': _giFinalLoad,
+          'FinalPrice': _giFinalPrice,
+          'QueueStat': _gsQueueStat,
+          'PaymentStat': _gsPaymentStat,
+          'PaymentReceivedBy': _gsPaymentReceivedBy,
+          'NeedOn': _gtNeedOn,
+          'MaxFab': _gbMaxFab,
+          'Fold': _gbFold,
+          'Mix': _gbMix,
+          'Basket': _giBasket,
+          'Bag': _giBag,
+          'Kulang': _giKulang,
+          'MaySukli': _giMaySukli,
+        })
+        .then((value) => {
+              messageResultQueueMobile(context, "Updates Done on $_gsCustomer"),
+            })
+        // ignore: invalid_return_type_for_catch_error
+        .catchError(
+            (error) => messageResultQueueMobile(context, "Failed : $error"));
+  }
+
+  void _updateDataDoneFoldingMobile() {
     CollectionReference collRef =
         FirebaseFirestore.instance.collection('JobsOnGoing');
     collRef
