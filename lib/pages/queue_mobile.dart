@@ -185,7 +185,23 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                   const SizedBox(
                     height: 1,
                   ),
-                  _readDataJobsDone('JobsDone', context),
+                  _readDataJobsDone('JobsDone - Andito pa ang damit',
+                      context), //WaitCustomerPickup, WaitRiderDelivery, RiderOnDelivery
+                ]),
+              ),
+            ),
+            SingleChildScrollView(
+              scrollDirection: Axis.vertical,
+              child: Container(
+                width: 200,
+                color: Colors.blue,
+                padding: const EdgeInsets.all(8.0),
+                child: Column(children: <Widget>[
+                  const SizedBox(
+                    height: 1,
+                  ),
+                  _readDataJobsDoneCustomerDone('JobsDone - NasaCustomerNa',
+                      context), //WaitCustomerPickup, WaitRiderDelivery, RiderOnDelivery
                 ]),
               ),
             ),
@@ -543,13 +559,14 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
     );
   }
 
-  //read JobsOnGoing
+  //read JobsDone Wala sa Customer
   Widget _readDataJobsDone(String streamName, BuildContext context) {
     bool zebra = false;
     //read
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance
           .collection('JobsDone')
+          .where('QueueStat', isNotEqualTo: 'NasaCustomerNa')
           .orderBy('DateD', descending: true)
           .snapshots(),
       builder: (context, snapshot) {
@@ -562,7 +579,141 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                 decoration: BoxDecoration(color: Colors.green),
                 children: [
                   Text(
-                    "Jobs Done",
+                    "Jobs Done - Dito Damit",
+                    style: TextStyle(fontSize: 10),
+                  ),
+                ]);
+            rowDatas.add(rowData);
+            bHeader = false;
+          }
+
+          //body
+          final buffRecords = snapshot.data?.docs.toList();
+
+          for (var buffRecord in buffRecords!) {
+            //required initialize start
+            _gbWithFinalLoad = false;
+            try {
+              _giFinalLoad = buffRecord['FinalLoad'];
+              _gbWithFinalLoad = true;
+            } on Exception catch (exception) {
+            } catch (error) {}
+
+            _gbWithFinalPrice = false;
+            try {
+              _giFinalPrice = buffRecord['FinalPrice'];
+              _gbWithFinalPrice = true;
+            } on Exception catch (exception) {
+            } catch (error) {}
+            //required initialize end
+
+            final rowData = TableRow(
+                decoration:
+                    BoxDecoration(color: zebra ? Colors.black : Colors.black),
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(2.0),
+                    child: Center(
+                      child: GestureDetector(
+                        onTap: () {
+                          _gsId = buffRecord.id.toString();
+                          _gtDateD = buffRecord['DateD'];
+                          _gtDateW = buffRecord['DateW'];
+                          _gtDateQ = buffRecord['DateQ'];
+                          _gsCreatedBy = buffRecord['CreatedBy'];
+                          _gsCustomer = buffRecord['Customer'];
+                          _giInitialLoad = buffRecord['InitialLoad'];
+                          _giInitialPrice = buffRecord['InitialPrice'];
+                          _gsQueueStat = buffRecord['QueueStat'];
+                          _gsPaymentStat = buffRecord['PaymentStat'];
+                          _gsPaymentReceivedBy =
+                              buffRecord['PaymentReceivedBy'];
+                          _gtNeedOn = buffRecord['NeedOn'];
+                          _gbMaxFab = buffRecord['MaxFab'];
+                          _gbFold = buffRecord['Fold'];
+                          _gbMix = buffRecord['Mix'];
+                          _giBasket = buffRecord['Basket'];
+                          _giBag = buffRecord['Bag'];
+                          _giKulang = buffRecord['Kulang'];
+                          _giMaySukli = buffRecord['MaySukli'];
+
+                          _giJobsId = buffRecord['JobsId'];
+
+                          try {
+                            _giFinalLoad = buffRecord['FinalLoad'];
+                          } on Exception catch (exception) {
+                            _giFinalLoad = buffRecord['InitialLoad'];
+                          } catch (error) {
+                            _giFinalLoad = buffRecord['InitialLoad'];
+                          }
+
+                          try {
+                            _giFinalPrice = buffRecord['FinalPrice'];
+                          } on Exception catch (exception) {
+                            _giFinalPrice = buffRecord['InitialPrice'];
+                          } catch (error) {
+                            _giFinalPrice = buffRecord['InitialPrice'];
+                          }
+
+                          _gdNeedOn = _gtNeedOn.toDate();
+
+                          alterDoneMobile();
+                        },
+                        //Container display JobsDone
+                        child: _conDisplay(
+                          context,
+                          false,
+                          Color.fromRGBO(32, 163, 180, 1),
+                          buffRecord['Customer'],
+                          buffRecord['QueueStat'],
+                          buffRecord['FinalLoad'],
+                          buffRecord['Basket'],
+                          buffRecord['Bag'],
+                          buffRecord['MaxFab'],
+                          buffRecord['Mix'],
+                          buffRecord['Fold'],
+                          buffRecord['PaymentStat'],
+                          buffRecord['FinalPrice'],
+                          buffRecord['NeedOn'],
+                          buffRecord['JobsId'],
+                        ),
+                      ),
+                    ),
+                  )
+                ]);
+            rowDatas.add(rowData);
+          }
+        }
+
+        return Table(
+          children: rowDatas,
+        );
+      },
+    );
+  }
+
+  //read JobsDone Wala sa Customer
+  Widget _readDataJobsDoneCustomerDone(
+      String streamName, BuildContext context) {
+    bool zebra = false;
+    //read
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('JobsDone')
+          .where("QueueStat", isEqualTo: "NasaCustomerNa")
+          .orderBy('DateD', descending: true)
+          .snapshots(),
+      builder: (context, snapshot) {
+        bHeader = true;
+        List<TableRow> rowDatas = [];
+        if (snapshot.hasData) {
+          //header
+          if (bHeader) {
+            const rowData = TableRow(
+                decoration: BoxDecoration(color: Colors.green),
+                children: [
+                  Text(
+                    "Jobs Done - NasaCustomerNa",
                     style: TextStyle(fontSize: 10),
                   ),
                 ]);
