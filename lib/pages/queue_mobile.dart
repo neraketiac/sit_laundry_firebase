@@ -43,11 +43,11 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
   //JobsOnGoing Colors
   final Color _gcWaiting = Color.fromRGBO(170, 170, 170, 1);
   final Color _gcWashing =
-      Color.fromRGBO(31, 255, 244, 1); //same washing, drying, folding
+      Color.fromRGBO(1, 255, 244, 1); //same washing, drying, folding
   final Color _gcDrying =
-      Color.fromRGBO(31, 255, 244, 1); //same washing, drying, folding
+      Color.fromRGBO(91, 255, 244, 1); //same washing, drying, folding
   final Color _gcFolding =
-      Color.fromRGBO(31, 255, 244, 1); //same washing, drying, folding
+      Color.fromRGBO(171, 255, 244, 1); //same washing, drying, folding
 
   //JobsDone Colors
   final Color _gcWaitCustomerPickup = Color.fromRGBO(170, 170, 170, 1);
@@ -56,6 +56,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
   final Color _gcRiderOnDelivery = Color.fromRGBO(62, 255, 45, 1); //rider
 
   final Color _gcButtons = Color.fromRGBO(134, 218, 252, 0.733);
+  late bool _gbRemovePaidD;
 
   //JobsOnQueue
 
@@ -67,6 +68,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
   late int _giInitialPrice;
   late String _gsQueueStat;
   late String _gsPaymentStat;
+  late Timestamp? _gtPaidD;
   late String _gsPaymentReceivedBy;
   late Timestamp _gtNeedOn;
   late bool _gbMaxFab;
@@ -79,6 +81,8 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
 
   late int _giFinalLoad;
   late int _giFinalPrice;
+  late int _giExtraDryPrice;
+  late bool _gb1ExtraDry, _gb2ExtraDry, _gb3ExtraDry;
   late DateTime _gdNeedOn;
   late bool _gbWithFinalLoad;
   late bool _gbWithFinalPrice;
@@ -200,7 +204,24 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                   const SizedBox(
                     height: 1,
                   ),
-                  _readDataJobsDoneCustomerDone('JobsDone - NasaCustomerNa',
+                  _readDataJobsDoneCustomerDone(
+                      'JobsDone - NasaCustomerNa(Unpaid)',
+                      context), //WaitCustomerPickup, WaitRiderDelivery, RiderOnDelivery
+                ]),
+              ),
+            ),
+            SingleChildScrollView(
+              scrollDirection: Axis.vertical,
+              child: Container(
+                width: 200,
+                color: Colors.blue,
+                padding: const EdgeInsets.all(8.0),
+                child: Column(children: <Widget>[
+                  const SizedBox(
+                    height: 1,
+                  ),
+                  _readDataJobsDoneCustomerDonePaid(
+                      'JobsDone - NasaCustomerNa(Paid)',
                       context), //WaitCustomerPickup, WaitRiderDelivery, RiderOnDelivery
                 ]),
               ),
@@ -308,26 +329,33 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                             _giFinalPrice = buffRecord['InitialPrice'];
                           }
 
+                          //if already has data, it means no need to update date on PaidDate
+                          try {
+                            _gtPaidD = buffRecord['PaidD'];
+                          } on Exception catch (exception) {
+                          } catch (error) {}
+
                           _gdNeedOn = _gtNeedOn.toDate();
 
                           alterQueueMobile();
                         },
                         //Container display JobsOnQueue
                         child: _conDisplay(
-                            context,
-                            false,
-                            Color.fromRGBO(250, 175, 175, 1),
-                            buffRecord['Customer'],
-                            buffRecord['QueueStat'],
-                            buffRecord['InitialLoad'],
-                            buffRecord['Basket'],
-                            buffRecord['Bag'],
-                            buffRecord['MaxFab'],
-                            buffRecord['Mix'],
-                            buffRecord['Fold'],
-                            buffRecord['PaymentStat'],
-                            buffRecord['InitialPrice'],
-                            buffRecord['NeedOn']),
+                          context,
+                          false,
+                          Color.fromRGBO(250, 175, 175, 1),
+                          buffRecord['Customer'],
+                          buffRecord['QueueStat'],
+                          buffRecord['InitialLoad'],
+                          buffRecord['Basket'],
+                          buffRecord['Bag'],
+                          buffRecord['MaxFab'],
+                          buffRecord['Mix'],
+                          buffRecord['Fold'],
+                          buffRecord['PaymentStat'],
+                          buffRecord['InitialPrice'],
+                          buffRecord['NeedOn'],
+                        ),
                       ),
                     ),
                   )
@@ -382,6 +410,8 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
           _gb25Occupied = false;
           _giVisibleCounter = 0;
           bool b25isWaiting = true;
+          _gb1ExtraDry = false;
+          _giExtraDryPrice = 0;
 
           for (var buffRecord in buffRecords!.reversed) {
             if (buffRecord['JobsId'] == 25 &&
@@ -491,6 +521,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                           }
 
                           _gdNeedOn = _gtNeedOn.toDate();
+                          _giExtraDryPrice = buffRecord['ExtraDryPrice'];
 
                           alterOnGoingMobile();
                         },
@@ -510,6 +541,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                           buffRecord['PaymentStat'],
                           buffRecord['FinalPrice'],
                           buffRecord['NeedOn'],
+                          buffRecord['ExtraDryPrice'],
                           buffRecord['JobsId'],
                         ),
                       ),
@@ -656,6 +688,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                           }
 
                           _gdNeedOn = _gtNeedOn.toDate();
+                          _giExtraDryPrice = buffRecord['ExtraDryPrice'];
 
                           alterDoneMobile();
                         },
@@ -675,6 +708,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                           buffRecord['PaymentStat'],
                           buffRecord['FinalPrice'],
                           buffRecord['NeedOn'],
+                          buffRecord['ExtraDryPrice'],
                           buffRecord['JobsId'],
                         ),
                       ),
@@ -692,7 +726,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
     );
   }
 
-  //read JobsDone Wala sa Customer
+  //read JobsDone nasa Customer Unpaid
   Widget _readDataJobsDoneCustomerDone(
       String streamName, BuildContext context) {
     bool zebra = false;
@@ -713,7 +747,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                 decoration: BoxDecoration(color: Colors.green),
                 children: [
                   Text(
-                    "Jobs Done - NasaCustomerNa",
+                    "NasaCustomerNa(Unpaid)",
                     style: TextStyle(fontSize: 10),
                   ),
                 ]);
@@ -725,97 +759,239 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
           final buffRecords = snapshot.data?.docs.toList();
 
           for (var buffRecord in buffRecords!) {
-            //required initialize start
-            _gbWithFinalLoad = false;
-            try {
-              _giFinalLoad = buffRecord['FinalLoad'];
-              _gbWithFinalLoad = true;
-            } on Exception catch (exception) {
-            } catch (error) {}
+            if (buffRecord['PaymentStat'] == "Unpaid") {
+              //required initialize start
+              _gbWithFinalLoad = false;
+              try {
+                _giFinalLoad = buffRecord['FinalLoad'];
+                _gbWithFinalLoad = true;
+              } on Exception catch (exception) {
+              } catch (error) {}
 
-            _gbWithFinalPrice = false;
-            try {
-              _giFinalPrice = buffRecord['FinalPrice'];
-              _gbWithFinalPrice = true;
-            } on Exception catch (exception) {
-            } catch (error) {}
-            //required initialize end
+              _gbWithFinalPrice = false;
+              try {
+                _giFinalPrice = buffRecord['FinalPrice'];
+                _gbWithFinalPrice = true;
+              } on Exception catch (exception) {
+              } catch (error) {}
+              //required initialize end
 
-            final rowData = TableRow(
-                decoration:
-                    BoxDecoration(color: zebra ? Colors.black : Colors.black),
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(2.0),
-                    child: Center(
-                      child: GestureDetector(
-                        onTap: () {
-                          _gsId = buffRecord.id.toString();
-                          _gtDateD = buffRecord['DateD'];
-                          _gtDateW = buffRecord['DateW'];
-                          _gtDateQ = buffRecord['DateQ'];
-                          _gsCreatedBy = buffRecord['CreatedBy'];
-                          _gsCustomer = buffRecord['Customer'];
-                          _giInitialLoad = buffRecord['InitialLoad'];
-                          _giInitialPrice = buffRecord['InitialPrice'];
-                          _gsQueueStat = buffRecord['QueueStat'];
-                          _gsPaymentStat = buffRecord['PaymentStat'];
-                          _gsPaymentReceivedBy =
-                              buffRecord['PaymentReceivedBy'];
-                          _gtNeedOn = buffRecord['NeedOn'];
-                          _gbMaxFab = buffRecord['MaxFab'];
-                          _gbFold = buffRecord['Fold'];
-                          _gbMix = buffRecord['Mix'];
-                          _giBasket = buffRecord['Basket'];
-                          _giBag = buffRecord['Bag'];
-                          _giKulang = buffRecord['Kulang'];
-                          _giMaySukli = buffRecord['MaySukli'];
+              final rowData = TableRow(
+                  decoration:
+                      BoxDecoration(color: zebra ? Colors.black : Colors.black),
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(2.0),
+                      child: Center(
+                        child: GestureDetector(
+                          onTap: () {
+                            _gsId = buffRecord.id.toString();
+                            _gtDateD = buffRecord['DateD'];
+                            _gtDateW = buffRecord['DateW'];
+                            _gtDateQ = buffRecord['DateQ'];
+                            _gsCreatedBy = buffRecord['CreatedBy'];
+                            _gsCustomer = buffRecord['Customer'];
+                            _giInitialLoad = buffRecord['InitialLoad'];
+                            _giInitialPrice = buffRecord['InitialPrice'];
+                            _gsQueueStat = buffRecord['QueueStat'];
+                            _gsPaymentStat = buffRecord['PaymentStat'];
+                            _gsPaymentReceivedBy =
+                                buffRecord['PaymentReceivedBy'];
+                            _gtNeedOn = buffRecord['NeedOn'];
+                            _gbMaxFab = buffRecord['MaxFab'];
+                            _gbFold = buffRecord['Fold'];
+                            _gbMix = buffRecord['Mix'];
+                            _giBasket = buffRecord['Basket'];
+                            _giBag = buffRecord['Bag'];
+                            _giKulang = buffRecord['Kulang'];
+                            _giMaySukli = buffRecord['MaySukli'];
 
-                          _giJobsId = buffRecord['JobsId'];
+                            _giJobsId = buffRecord['JobsId'];
 
-                          try {
-                            _giFinalLoad = buffRecord['FinalLoad'];
-                          } on Exception catch (exception) {
-                            _giFinalLoad = buffRecord['InitialLoad'];
-                          } catch (error) {
-                            _giFinalLoad = buffRecord['InitialLoad'];
-                          }
+                            try {
+                              _giFinalLoad = buffRecord['FinalLoad'];
+                            } on Exception catch (exception) {
+                              _giFinalLoad = buffRecord['InitialLoad'];
+                            } catch (error) {
+                              _giFinalLoad = buffRecord['InitialLoad'];
+                            }
 
-                          try {
-                            _giFinalPrice = buffRecord['FinalPrice'];
-                          } on Exception catch (exception) {
-                            _giFinalPrice = buffRecord['InitialPrice'];
-                          } catch (error) {
-                            _giFinalPrice = buffRecord['InitialPrice'];
-                          }
+                            try {
+                              _giFinalPrice = buffRecord['FinalPrice'];
+                            } on Exception catch (exception) {
+                              _giFinalPrice = buffRecord['InitialPrice'];
+                            } catch (error) {
+                              _giFinalPrice = buffRecord['InitialPrice'];
+                            }
 
-                          _gdNeedOn = _gtNeedOn.toDate();
+                            _gdNeedOn = _gtNeedOn.toDate();
+                            _giExtraDryPrice = buffRecord['ExtraDryPrice'];
 
-                          alterDoneMobile();
-                        },
-                        //Container display JobsDone
-                        child: _conDisplay(
-                          context,
-                          false,
-                          Color.fromRGBO(32, 163, 180, 1),
-                          buffRecord['Customer'],
-                          buffRecord['QueueStat'],
-                          buffRecord['FinalLoad'],
-                          buffRecord['Basket'],
-                          buffRecord['Bag'],
-                          buffRecord['MaxFab'],
-                          buffRecord['Mix'],
-                          buffRecord['Fold'],
-                          buffRecord['PaymentStat'],
-                          buffRecord['FinalPrice'],
-                          buffRecord['NeedOn'],
-                          buffRecord['JobsId'],
+                            alterDoneMobile();
+                          },
+                          //Container display JobsDone
+                          child: _conDisplay(
+                            context,
+                            false,
+                            Color.fromRGBO(32, 163, 180, 1),
+                            buffRecord['Customer'],
+                            buffRecord['QueueStat'],
+                            buffRecord['FinalLoad'],
+                            buffRecord['Basket'],
+                            buffRecord['Bag'],
+                            buffRecord['MaxFab'],
+                            buffRecord['Mix'],
+                            buffRecord['Fold'],
+                            buffRecord['PaymentStat'],
+                            buffRecord['FinalPrice'],
+                            buffRecord['NeedOn'],
+                            buffRecord['ExtraDryPrice'],
+                            buffRecord['JobsId'],
+                          ),
                         ),
                       ),
-                    ),
-                  )
+                    )
+                  ]);
+              rowDatas.add(rowData);
+            }
+          }
+        }
+
+        return Table(
+          children: rowDatas,
+        );
+      },
+    );
+  }
+
+  //read JobsDone nasa Customer Paid
+  Widget _readDataJobsDoneCustomerDonePaid(
+      String streamName, BuildContext context) {
+    bool zebra = false;
+    //read
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('JobsDone')
+          .where("QueueStat", isEqualTo: "NasaCustomerNa")
+          .orderBy('DateD', descending: true)
+          .snapshots(),
+      builder: (context, snapshot) {
+        bHeader = true;
+        List<TableRow> rowDatas = [];
+        if (snapshot.hasData) {
+          //header
+          if (bHeader) {
+            const rowData = TableRow(
+                decoration: BoxDecoration(color: Colors.green),
+                children: [
+                  Text(
+                    "NasaCustomerNa(Paid)",
+                    style: TextStyle(fontSize: 10),
+                  ),
                 ]);
             rowDatas.add(rowData);
+            bHeader = false;
+          }
+
+          //body
+          final buffRecords = snapshot.data?.docs.toList();
+
+          for (var buffRecord in buffRecords!) {
+            if (buffRecord['PaymentStat'] != "Unpaid") {
+              //required initialize start
+              _gbWithFinalLoad = false;
+              try {
+                _giFinalLoad = buffRecord['FinalLoad'];
+                _gbWithFinalLoad = true;
+              } on Exception catch (exception) {
+              } catch (error) {}
+
+              _gbWithFinalPrice = false;
+              try {
+                _giFinalPrice = buffRecord['FinalPrice'];
+                _gbWithFinalPrice = true;
+              } on Exception catch (exception) {
+              } catch (error) {}
+              //required initialize end
+
+              final rowData = TableRow(
+                  decoration:
+                      BoxDecoration(color: zebra ? Colors.black : Colors.black),
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(2.0),
+                      child: Center(
+                        child: GestureDetector(
+                          onTap: () {
+                            _gsId = buffRecord.id.toString();
+                            _gtDateD = buffRecord['DateD'];
+                            _gtDateW = buffRecord['DateW'];
+                            _gtDateQ = buffRecord['DateQ'];
+                            _gsCreatedBy = buffRecord['CreatedBy'];
+                            _gsCustomer = buffRecord['Customer'];
+                            _giInitialLoad = buffRecord['InitialLoad'];
+                            _giInitialPrice = buffRecord['InitialPrice'];
+                            _gsQueueStat = buffRecord['QueueStat'];
+                            _gsPaymentStat = buffRecord['PaymentStat'];
+                            _gsPaymentReceivedBy =
+                                buffRecord['PaymentReceivedBy'];
+                            _gtNeedOn = buffRecord['NeedOn'];
+                            _gbMaxFab = buffRecord['MaxFab'];
+                            _gbFold = buffRecord['Fold'];
+                            _gbMix = buffRecord['Mix'];
+                            _giBasket = buffRecord['Basket'];
+                            _giBag = buffRecord['Bag'];
+                            _giKulang = buffRecord['Kulang'];
+                            _giMaySukli = buffRecord['MaySukli'];
+
+                            _giJobsId = buffRecord['JobsId'];
+
+                            try {
+                              _giFinalLoad = buffRecord['FinalLoad'];
+                            } on Exception catch (exception) {
+                              _giFinalLoad = buffRecord['InitialLoad'];
+                            } catch (error) {
+                              _giFinalLoad = buffRecord['InitialLoad'];
+                            }
+
+                            try {
+                              _giFinalPrice = buffRecord['FinalPrice'];
+                            } on Exception catch (exception) {
+                              _giFinalPrice = buffRecord['InitialPrice'];
+                            } catch (error) {
+                              _giFinalPrice = buffRecord['InitialPrice'];
+                            }
+
+                            _gdNeedOn = _gtNeedOn.toDate();
+                            _giExtraDryPrice = buffRecord['ExtraDryPrice'];
+
+                            alterDoneMobile();
+                          },
+                          //Container display JobsDone
+                          child: _conDisplay(
+                            context,
+                            false,
+                            Color.fromRGBO(32, 163, 180, 1),
+                            buffRecord['Customer'],
+                            buffRecord['QueueStat'],
+                            buffRecord['FinalLoad'],
+                            buffRecord['Basket'],
+                            buffRecord['Bag'],
+                            buffRecord['MaxFab'],
+                            buffRecord['Mix'],
+                            buffRecord['Fold'],
+                            buffRecord['PaymentStat'],
+                            buffRecord['FinalPrice'],
+                            buffRecord['NeedOn'],
+                            buffRecord['ExtraDryPrice'],
+                            buffRecord['JobsId'],
+                          ),
+                        ),
+                      ),
+                    )
+                  ]);
+              rowDatas.add(rowData);
+            }
           }
         }
 
@@ -842,7 +1018,8 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
       String buffPaymentStat,
       int buffInitialPrice,
       Timestamp buffNeedOn,
-      [int buffJobsId = 0]) {
+      [int buffExtraDryPrice = 0,
+      int buffJobsId = 0]) {
     return Container(
       height: 80,
       color: _getCOlorStatus(buffQueueStat),
@@ -890,20 +1067,28 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                   textAlign: TextAlign.end,
                 ),
                 Text(
-                  "${buffMaxFab ? "MaxFab" : ""} ${buffMix ? "" : "DM"} ${buffFold ? "" : "NF"}",
-                  style: const TextStyle(fontSize: 10),
+                  "${buffMaxFab ? "MaxFab" : ""} ${buffMix ? "" : "DM"} ${buffFold ? "" : "NF"} ${buffExtraDryPrice == 0 ? "" : "XD"}",
+                  style: const TextStyle(fontSize: 9),
                 ),
                 Text(
-                  "$buffPaymentStat: ${_gbWithFinalPrice ? _giFinalPrice.toString() : buffInitialPrice.toString()} Php",
+                  "$buffPaymentStat:${(_gbWithFinalPrice ? _giFinalPrice : buffInitialPrice) + buffExtraDryPrice} Php",
                   style: TextStyle(
                       fontSize: 10,
                       backgroundColor: (buffPaymentStat == "Unpaid"
                           ? const Color.fromARGB(115, 255, 97, 97)
-                          : Colors.transparent)),
+                          : (buffPaymentStat == "WaitingGcash"
+                              ? const Color.fromARGB(115, 255, 97, 97)
+                              : (buffPaymentStat == "Kulang"
+                                  ? const Color.fromARGB(115, 255, 97, 97)
+                                  : (buffPaymentStat == "MaySukli"
+                                      ? const Color.fromARGB(115, 255, 97, 97)
+                                      : Colors.transparent))))),
                 ),
                 Text(
                   displayDate(convertTimeStamp(buffNeedOn)),
-                  style: const TextStyle(fontSize: 10),
+                  style: const TextStyle(
+                    fontSize: 10,
+                  ),
                   textAlign: TextAlign.right,
                 ),
                 Text(
@@ -1165,6 +1350,11 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                         DropdownMenuEntry(value: "MaySukli", label: "MaySukli"),
                       ],
                       onSelected: (val) {
+                        _gbRemovePaidD = true;
+                        if (val == "PaidCash" || val == "PaidGcash") {
+                          _gbRemovePaidD = false;
+                          _gtPaidD = Timestamp.now();
+                        }
                         _gsPaymentStat = val!;
                       },
                       initialSelection: _gsPaymentStat,
@@ -1475,7 +1665,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                         DropdownMenuEntry(value: "Waiting", label: "Waiting"),
                         DropdownMenuEntry(value: "Washing", label: "Washing"),
                         DropdownMenuEntry(value: "Drying", label: "Drying"),
-                        //DropdownMenuEntry(value: "Folding", label: "Folding"),
+                        DropdownMenuEntry(value: "Folding", label: "Folding"),
                       ],
                       onSelected: (val) {
                         _gsQueueStat = val!;
@@ -1570,6 +1760,54 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                               _giFinalPrice = int.parse(val!);
                             },
                             initialValue: _giFinalPrice.toString(),
+                          ),
+                        ],
+                      ),
+                    ),
+                    //extra dry
+                    SizedBox(
+                      height: 5,
+                    ),
+                    Container(
+                      padding: EdgeInsets.all(1.0),
+                      decoration: BoxDecoration(
+                          border:
+                              Border.all(color: Color(0xffD4D4D4), width: 2.0)),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            "Extra dry(15=10min, 30=20min, 45=30min)",
+                            style: TextStyle(fontSize: 9),
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              IconButton(
+                                onPressed: () {
+                                  setState(() =>
+                                      _giExtraDryPrice = _giExtraDryPrice - 15);
+                                  if (_giExtraDryPrice < 0) {
+                                    _giExtraDryPrice = 0;
+                                  }
+                                },
+                                icon: const Icon(Icons.remove),
+                                color: Colors.blueAccent,
+                              ),
+                              Text("Extra Dry: $_giExtraDryPrice Php"),
+                              IconButton(
+                                onPressed: () {
+                                  setState(() =>
+                                      _giExtraDryPrice = _giExtraDryPrice + 15);
+
+                                  if (_giExtraDryPrice > 45) {
+                                    _giExtraDryPrice = 45;
+                                  }
+                                },
+                                icon: const Icon(Icons.add),
+                                color: Colors.blueAccent,
+                              ),
+                            ],
                           ),
                         ],
                       ),
@@ -1913,10 +2151,56 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                         ],
                       ),
                     ),
+                    //extra dry
                     SizedBox(
                       height: 5,
                     ),
-
+                    Container(
+                      padding: EdgeInsets.all(1.0),
+                      decoration: BoxDecoration(
+                          border:
+                              Border.all(color: Color(0xffD4D4D4), width: 2.0)),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            "Extra dry(+15Php=10min, +30Php=20min, +45Php=30min)",
+                            style: TextStyle(fontSize: 10),
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              IconButton(
+                                onPressed: () {
+                                  setState(() =>
+                                      _giExtraDryPrice = _giExtraDryPrice - 15);
+                                  if (_giExtraDryPrice < 0) {
+                                    _giExtraDryPrice = 0;
+                                  }
+                                },
+                                icon: const Icon(Icons.remove),
+                                color: Colors.blueAccent,
+                              ),
+                              Text("Extra Dry: $_giExtraDryPrice Php"),
+                              IconButton(
+                                onPressed: () {
+                                  setState(() =>
+                                      _giExtraDryPrice = _giExtraDryPrice + 15);
+                                  if (_giExtraDryPrice > 45) {
+                                    _giExtraDryPrice = 45;
+                                  }
+                                },
+                                icon: const Icon(Icons.add),
+                                color: Colors.blueAccent,
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(
+                      height: 5,
+                    ),
                     //Payment
                     DropdownMenu(
                       label: Text("Payment",
@@ -2191,6 +2475,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
           'Bag': _giBag,
           'Kulang': _giKulang,
           'MaySukli': _giMaySukli,
+          'ExtraDryPrice': 0,
         })
         .then((value) => {
               _deleteDataQueueMobile(),
@@ -2229,10 +2514,11 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
           'Bag': _giBag,
           'Kulang': _giKulang,
           'MaySukli': _giMaySukli,
+          'ExtraDryPrice': _giExtraDryPrice,
         })
         .then((value) => {
               _deleteDataOnGoingMobile(),
-              messageResult(context, "Move to ongoing.$_gsCustomer"),
+              messageResult(context, "Move to Jobs Done.$_gsCustomer"),
             })
         // ignore: invalid_return_type_for_catch_error
         .catchError((error) => messageResult(context, "Failed : $error"));
@@ -2351,7 +2637,6 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
     Widget continueButton = ElevatedButton(
       child: Text("Yes"),
       onPressed: () {
-        //_autoOnGoing();
         insertDataJobsOnGoing();
 
         // returnValue = true;
@@ -2439,35 +2724,69 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
   void _updateDataQueueMobile() {
     CollectionReference collRef =
         FirebaseFirestore.instance.collection('JobsOnQueue');
-    collRef
-        .doc(_gsId)
-        .set({
-          'DateQ': _gtDateQ,
-          'CreatedBy': _gsCreatedBy,
-          'Customer': _gsCustomer,
-          'InitialLoad': _giInitialLoad,
-          'InitialPrice': _giInitialPrice,
-          'FinalLoad': _giFinalLoad,
-          'FinalPrice': _giFinalPrice,
-          'QueueStat': _gsQueueStat,
-          'PaymentStat': _gsPaymentStat,
-          'PaymentReceivedBy': _gsPaymentReceivedBy,
-          //'NeedOn': _gtNeedOn,
-          'NeedOn': Timestamp.fromDate(_gdNeedOn),
-          'MaxFab': _gbMaxFab,
-          'Fold': _gbFold,
-          'Mix': _gbMix,
-          'Basket': _giBasket,
-          'Bag': _giBag,
-          'Kulang': _giKulang,
-          'MaySukli': _giMaySukli,
-        })
-        .then((value) => {
-              messageResultQueueMobile(context, "Updates Done on $_gsCustomer"),
-            })
-        // ignore: invalid_return_type_for_catch_error
-        .catchError(
-            (error) => messageResultQueueMobile(context, "Failed : $error"));
+
+    if (_gbRemovePaidD) {
+      collRef
+          .doc(_gsId)
+          .set({
+            'DateQ': _gtDateQ,
+            'CreatedBy': _gsCreatedBy,
+            'Customer': _gsCustomer,
+            'InitialLoad': _giInitialLoad,
+            'InitialPrice': _giInitialPrice,
+            'FinalLoad': _giFinalLoad,
+            'FinalPrice': _giFinalPrice,
+            'QueueStat': _gsQueueStat,
+            'PaymentStat': _gsPaymentStat,
+            'PaymentReceivedBy': _gsPaymentReceivedBy,
+            'NeedOn': Timestamp.fromDate(_gdNeedOn),
+            'MaxFab': _gbMaxFab,
+            'Fold': _gbFold,
+            'Mix': _gbMix,
+            'Basket': _giBasket,
+            'Bag': _giBag,
+            'Kulang': _giKulang,
+            'MaySukli': _giMaySukli,
+          })
+          .then((value) => {
+                messageResultQueueMobile(
+                    context, "Updates Done on $_gsCustomer"),
+              })
+          // ignore: invalid_return_type_for_catch_error
+          .catchError(
+              (error) => messageResultQueueMobile(context, "Failed : $error"));
+    } else {
+      collRef
+          .doc(_gsId)
+          .set({
+            'DateQ': _gtDateQ,
+            'CreatedBy': _gsCreatedBy,
+            'Customer': _gsCustomer,
+            'InitialLoad': _giInitialLoad,
+            'InitialPrice': _giInitialPrice,
+            'FinalLoad': _giFinalLoad,
+            'FinalPrice': _giFinalPrice,
+            'QueueStat': _gsQueueStat,
+            'PaidD': _gtPaidD,
+            'PaymentStat': _gsPaymentStat,
+            'PaymentReceivedBy': _gsPaymentReceivedBy,
+            'NeedOn': Timestamp.fromDate(_gdNeedOn),
+            'MaxFab': _gbMaxFab,
+            'Fold': _gbFold,
+            'Mix': _gbMix,
+            'Basket': _giBasket,
+            'Bag': _giBag,
+            'Kulang': _giKulang,
+            'MaySukli': _giMaySukli,
+          })
+          .then((value) => {
+                messageResultQueueMobile(
+                    context, "Updates Done on $_gsCustomer"),
+              })
+          // ignore: invalid_return_type_for_catch_error
+          .catchError(
+              (error) => messageResultQueueMobile(context, "Failed : $error"));
+    }
   }
 
   Future<void> moveUp(int jobsId) async {
@@ -2566,6 +2885,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
           'Bag': _giBag,
           'Kulang': _giKulang,
           'MaySukli': _giMaySukli,
+          'ExtraDryPrice': _giExtraDryPrice,
         })
         .then((value) => {
               messageResultQueueMobile(context, "Updates Done on $_gsCustomer"),
@@ -2575,40 +2895,40 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
             (error) => messageResultQueueMobile(context, "Failed : $error"));
   }
 
-  void _updateDataDoneFoldingMobile() {
-    CollectionReference collRef =
-        FirebaseFirestore.instance.collection('JobsOnGoing');
-    collRef
-        .doc(_gsId)
-        .set({
-          'JobsId': _giJobsId,
-          'DateW': _gtDateW,
-          'DateQ': _gtDateQ,
-          'CreatedBy': _gsCreatedBy,
-          'Customer': _gsCustomer,
-          'InitialLoad': _giInitialLoad,
-          'InitialPrice': _giInitialPrice,
-          'FinalLoad': _giFinalLoad,
-          'FinalPrice': _giFinalPrice,
-          'QueueStat': _gsQueueStat,
-          'PaymentStat': _gsPaymentStat,
-          'PaymentReceivedBy': _gsPaymentReceivedBy,
-          'NeedOn': _gtNeedOn,
-          'MaxFab': _gbMaxFab,
-          'Fold': _gbFold,
-          'Mix': _gbMix,
-          'Basket': _giBasket,
-          'Bag': _giBag,
-          'Kulang': _giKulang,
-          'MaySukli': _giMaySukli,
-        })
-        .then((value) => {
-              messageResultQueueMobile(context, "Updates Done on $_gsCustomer"),
-            })
-        // ignore: invalid_return_type_for_catch_error
-        .catchError(
-            (error) => messageResultQueueMobile(context, "Failed : $error"));
-  }
+  // void _updateDataDoneFoldingMobile() {
+  //   CollectionReference collRef =
+  //       FirebaseFirestore.instance.collection('JobsOnGoing');
+  //   collRef
+  //       .doc(_gsId)
+  //       .set({
+  //         'JobsId': _giJobsId,
+  //         'DateW': _gtDateW,
+  //         'DateQ': _gtDateQ,
+  //         'CreatedBy': _gsCreatedBy,
+  //         'Customer': _gsCustomer,
+  //         'InitialLoad': _giInitialLoad,
+  //         'InitialPrice': _giInitialPrice,
+  //         'FinalLoad': _giFinalLoad,
+  //         'FinalPrice': _giFinalPrice,
+  //         'QueueStat': _gsQueueStat,
+  //         'PaymentStat': _gsPaymentStat,
+  //         'PaymentReceivedBy': _gsPaymentReceivedBy,
+  //         'NeedOn': _gtNeedOn,
+  //         'MaxFab': _gbMaxFab,
+  //         'Fold': _gbFold,
+  //         'Mix': _gbMix,
+  //         'Basket': _giBasket,
+  //         'Bag': _giBag,
+  //         'Kulang': _giKulang,
+  //         'MaySukli': _giMaySukli,
+  //       })
+  //       .then((value) => {
+  //             messageResultQueueMobile(context, "Updates Done on $_gsCustomer"),
+  //           })
+  //       // ignore: invalid_return_type_for_catch_error
+  //       .catchError(
+  //           (error) => messageResultQueueMobile(context, "Failed : $error"));
+  // }
 
   void _updateDataDoneMobile() {
     CollectionReference collRef =
@@ -2637,6 +2957,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
           'Bag': _giBag,
           'Kulang': _giKulang,
           'MaySukli': _giMaySukli,
+          'ExtraDryPrice': _giExtraDryPrice,
         })
         .then((value) => {
               messageResultQueueMobile(context, "Updates Done on $_gsCustomer"),
