@@ -8,6 +8,8 @@ import 'package:laundry_firebase/pages/loyalty_single.dart';
 import 'package:laundry_firebase/pages/menu/menu_constants.dart';
 import 'package:laundry_firebase/pages/menu/menu_main.dart';
 import 'package:laundry_firebase/pages/queue.dart';
+import 'package:laundry_firebase/pages/save_text.dart';
+import 'package:laundry_firebase/variables/variables.dart';
 
 class EnterLoyaltyCode extends StatefulWidget {
   const EnterLoyaltyCode({super.key});
@@ -195,9 +197,9 @@ class _EnterLoyaltyCodeState extends State<EnterLoyaltyCode> {
         .push(MaterialPageRoute(builder: (context) => const MyHome()));
   }
 
-  void _queuePage(BuildContext context) {
+  void _queuePage(BuildContext context, String empid) {
     Navigator.of(context)
-        .push(MaterialPageRoute(builder: (context) => const MyQueue()));
+        .push(MaterialPageRoute(builder: (context) => MyQueue(empid)));
   }
 
   void _singleCard(BuildContext context) {
@@ -215,13 +217,18 @@ class _EnterLoyaltyCodeState extends State<EnterLoyaltyCode> {
         .push(MaterialPageRoute(builder: (context) => const MyMenuMain()));
   }
 
+  void _saveText(BuildContext context) {
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (context) => const MySaveText()));
+  }
+
   Future<void> _singleReadData(String s) async {
     if (s == "16") {
       _allCards(context);
     } else if (s == "456") {
       _suppliesPage(context);
     } else if (s == "369") {
-      _queuePage(context);
+      _saveText(context);
     } else if (s == "678") {
       fsKey = s;
       _menuMain(context);
@@ -232,7 +239,12 @@ class _EnterLoyaltyCodeState extends State<EnterLoyaltyCode> {
         // ignore: use_build_context_synchronously
         _singleCard(context);
       } else {
-        memberController.clear();
+        if (mapEmpId[s]!.isNotEmpty) {
+          // ignore: use_build_context_synchronously
+          _queuePage(context, mapEmpId[s]!);
+        } else {
+          memberController.clear();
+        }
       }
     }
   }

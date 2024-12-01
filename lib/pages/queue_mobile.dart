@@ -36,39 +36,16 @@ class MyQueueMobile extends StatefulWidget {
 class _MyQueueMobileState extends State<MyQueueMobile> {
   bool bHeader = true;
 
-  //JobsOnQueue Colors
-  final Color _gcRiderPickup = Color.fromRGBO(62, 255, 45, 1); //rider
-  final Color _gcForSorting = Color.fromRGBO(170, 170, 170, 1);
-
-  //JobsOnGoing Colors
-  final Color _gcWaiting = Color.fromRGBO(170, 170, 170, 1);
-  final Color _gcWashing =
-      Color.fromRGBO(1, 255, 244, 1); //same washing, drying, folding
-  final Color _gcDrying =
-      Color.fromRGBO(91, 255, 244, 1); //same washing, drying, folding
-  final Color _gcFolding =
-      Color.fromRGBO(171, 255, 244, 1); //same washing, drying, folding
-
-  //JobsDone Colors
-  final Color _gcWaitCustomerPickup = Color.fromRGBO(170, 170, 170, 1);
-  final Color _gcWaitRiderDelivery = Color.fromRGBO(62, 255, 45, 1); //rider
-  final Color _gcNasaCustomerNa = Color.fromRGBO(92, 91, 91, 1);
-  final Color _gcRiderOnDelivery = Color.fromRGBO(62, 255, 45, 1); //rider
-
-  final Color _gcButtons = Color.fromRGBO(134, 218, 252, 0.733);
-  late bool _gbRemovePaidD;
-
   //JobsOnQueue
-
   late String _gsId;
   late Timestamp _gtDateQ;
   late String _gsCreatedBy;
   late String _gsCustomer;
+  late int _giInitialKilo;
   late int _giInitialLoad;
   late int _giInitialPrice;
   late String _gsQueueStat;
   late String _gsPaymentStat;
-  late Timestamp? _gtPaidD;
   late String _gsPaymentReceivedBy;
   late Timestamp _gtNeedOn;
   late bool _gbMaxFab;
@@ -79,10 +56,10 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
   late int _giKulang;
   late int _giMaySukli;
 
+  late int _giFinalKilo;
   late int _giFinalLoad;
   late int _giFinalPrice;
   late int _giExtraDryPrice;
-  late bool _gb1ExtraDry, _gb2ExtraDry, _gb3ExtraDry;
   late DateTime _gdNeedOn;
   late bool _gbWithFinalLoad;
   late bool _gbWithFinalPrice;
@@ -99,38 +76,9 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
 
   List<DropdownMenuItem<String>> dropdownItems = [];
 
-  final List<String> finListNumbering = [
-    "#1",
-    "#2",
-    "#3",
-    "#4",
-    "#5",
-    "#6",
-    "#7",
-    "#8",
-    "#9",
-    "#10",
-    "#11",
-    "#12",
-    "#13",
-    "#14",
-    "#15",
-    "#16",
-    "#17",
-    "#18",
-    "#19",
-    "#20",
-    "#21",
-    "#22",
-    "#23",
-    "#24",
-    "#25"
-  ];
-
   late List<String> listNumbering;
 
   String _selectedNumber = "#1";
-  String selectedNumberx = "Option 1";
 
   final _formKeyQueueMobile = GlobalKey<FormState>();
 
@@ -272,6 +220,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
             //required initialize start
             _gbWithFinalLoad = false;
             try {
+              _giFinalKilo = buffRecord['FinalKilo'];
               _giFinalLoad = buffRecord['FinalLoad'];
               _gbWithFinalLoad = true;
             } on Exception catch (exception) {
@@ -298,6 +247,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                           _gtDateQ = buffRecord['DateQ'];
                           _gsCreatedBy = buffRecord['CreatedBy'];
                           _gsCustomer = buffRecord['Customer'];
+                          _giInitialKilo = buffRecord['InitialKilo'];
                           _giInitialLoad = buffRecord['InitialLoad'];
                           _giInitialPrice = buffRecord['InitialPrice'];
                           _gsQueueStat = buffRecord['QueueStat'];
@@ -314,10 +264,13 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                           _giMaySukli = buffRecord['MaySukli'];
 
                           try {
+                            _giFinalKilo = buffRecord['FinalKilo'];
                             _giFinalLoad = buffRecord['FinalLoad'];
                           } on Exception catch (exception) {
+                            _giFinalKilo = buffRecord['InitialKilo'];
                             _giFinalLoad = buffRecord['InitialLoad'];
                           } catch (error) {
+                            _giFinalKilo = buffRecord['InitialKilo'];
                             _giFinalLoad = buffRecord['InitialLoad'];
                           }
 
@@ -328,12 +281,6 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                           } catch (error) {
                             _giFinalPrice = buffRecord['InitialPrice'];
                           }
-
-                          //if already has data, it means no need to update date on PaidDate
-                          try {
-                            _gtPaidD = buffRecord['PaidD'];
-                          } on Exception catch (exception) {
-                          } catch (error) {}
 
                           _gdNeedOn = _gtNeedOn.toDate();
 
@@ -410,7 +357,6 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
           _gb25Occupied = false;
           _giVisibleCounter = 0;
           bool b25isWaiting = true;
-          _gb1ExtraDry = false;
           _giExtraDryPrice = 0;
 
           for (var buffRecord in buffRecords!.reversed) {
@@ -431,6 +377,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
             //required initialize start
             _gbWithFinalLoad = false;
             try {
+              _giFinalKilo = buffRecord['FinalKilo'];
               _giFinalLoad = buffRecord['FinalLoad'];
               _gbWithFinalLoad = true;
             } on Exception catch (exception) {
@@ -486,6 +433,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                           _gtDateQ = buffRecord['DateQ'];
                           _gsCreatedBy = buffRecord['CreatedBy'];
                           _gsCustomer = buffRecord['Customer'];
+                          _giInitialKilo = buffRecord['InitialKilo'];
                           _giInitialLoad = buffRecord['InitialLoad'];
                           _giInitialPrice = buffRecord['InitialPrice'];
                           _gsQueueStat = buffRecord['QueueStat'];
@@ -505,10 +453,13 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                           _giJobsId = buffRecord['JobsId'];
 
                           try {
+                            _giFinalKilo = buffRecord['FinalKilo'];
                             _giFinalLoad = buffRecord['FinalLoad'];
                           } on Exception catch (exception) {
+                            _giFinalKilo = buffRecord['InitialKilo'];
                             _giFinalLoad = buffRecord['InitialLoad'];
                           } catch (error) {
+                            _giFinalKilo = buffRecord['InitialKilo'];
                             _giFinalLoad = buffRecord['InitialLoad'];
                           }
 
@@ -626,6 +577,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
             //required initialize start
             _gbWithFinalLoad = false;
             try {
+              _giFinalKilo = buffRecord['FinalKilo'];
               _giFinalLoad = buffRecord['FinalLoad'];
               _gbWithFinalLoad = true;
             } on Exception catch (exception) {
@@ -654,6 +606,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                           _gtDateQ = buffRecord['DateQ'];
                           _gsCreatedBy = buffRecord['CreatedBy'];
                           _gsCustomer = buffRecord['Customer'];
+                          _giInitialKilo = buffRecord['InitialKilo'];
                           _giInitialLoad = buffRecord['InitialLoad'];
                           _giInitialPrice = buffRecord['InitialPrice'];
                           _gsQueueStat = buffRecord['QueueStat'];
@@ -672,10 +625,13 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                           _giJobsId = buffRecord['JobsId'];
 
                           try {
+                            _giFinalKilo = buffRecord['FinalKilo'];
                             _giFinalLoad = buffRecord['FinalLoad'];
                           } on Exception catch (exception) {
+                            _giFinalKilo = buffRecord['InitialKilo'];
                             _giFinalLoad = buffRecord['InitialLoad'];
                           } catch (error) {
+                            _giFinalKilo = buffRecord['InitialKilo'];
                             _giFinalLoad = buffRecord['InitialLoad'];
                           }
 
@@ -763,6 +719,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
               //required initialize start
               _gbWithFinalLoad = false;
               try {
+                _giFinalKilo = buffRecord['FinalKilo'];
                 _giFinalLoad = buffRecord['FinalLoad'];
                 _gbWithFinalLoad = true;
               } on Exception catch (exception) {
@@ -791,6 +748,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                             _gtDateQ = buffRecord['DateQ'];
                             _gsCreatedBy = buffRecord['CreatedBy'];
                             _gsCustomer = buffRecord['Customer'];
+                            _giInitialKilo = buffRecord['InitialKilo'];
                             _giInitialLoad = buffRecord['InitialLoad'];
                             _giInitialPrice = buffRecord['InitialPrice'];
                             _gsQueueStat = buffRecord['QueueStat'];
@@ -809,10 +767,13 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                             _giJobsId = buffRecord['JobsId'];
 
                             try {
+                              _giFinalKilo = buffRecord['FinalKilo'];
                               _giFinalLoad = buffRecord['FinalLoad'];
                             } on Exception catch (exception) {
+                              _giFinalKilo = buffRecord['InitialKilo'];
                               _giFinalLoad = buffRecord['InitialLoad'];
                             } catch (error) {
+                              _giFinalKilo = buffRecord['InitialKilo'];
                               _giFinalLoad = buffRecord['InitialLoad'];
                             }
 
@@ -901,6 +862,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
               //required initialize start
               _gbWithFinalLoad = false;
               try {
+                _giFinalKilo = buffRecord['FinalKilo'];
                 _giFinalLoad = buffRecord['FinalLoad'];
                 _gbWithFinalLoad = true;
               } on Exception catch (exception) {
@@ -929,6 +891,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                             _gtDateQ = buffRecord['DateQ'];
                             _gsCreatedBy = buffRecord['CreatedBy'];
                             _gsCustomer = buffRecord['Customer'];
+                            _giInitialKilo = buffRecord['InitialKilo'];
                             _giInitialLoad = buffRecord['InitialLoad'];
                             _giInitialPrice = buffRecord['InitialPrice'];
                             _gsQueueStat = buffRecord['QueueStat'];
@@ -947,10 +910,13 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                             _giJobsId = buffRecord['JobsId'];
 
                             try {
+                              _giFinalKilo = buffRecord['FinalKilo'];
                               _giFinalLoad = buffRecord['FinalLoad'];
                             } on Exception catch (exception) {
+                              _giFinalKilo = buffRecord['InitialKilo'];
                               _giFinalLoad = buffRecord['InitialLoad'];
                             } catch (error) {
+                              _giFinalKilo = buffRecord['InitialKilo'];
                               _giFinalLoad = buffRecord['InitialLoad'];
                             }
 
@@ -1124,7 +1090,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
               actions: [
                 MaterialButton(
                   onPressed: () => Navigator.pop(context),
-                  color: _gcButtons,
+                  color: cButtons,
                   child: const Text("Ok"),
                 ),
               ],
@@ -1195,6 +1161,212 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                         enabled: false,
                       ),
                     ),
+
+//New Estimate load
+                    SizedBox(
+                      height: 5,
+                    ),
+                    Container(
+                      padding: EdgeInsets.all(1.0),
+                      decoration: BoxDecoration(
+                          border:
+                              Border.all(color: Color(0xffD4D4D4), width: 2.0)),
+                      child: Column(
+                        children: [
+                          //New estimate load +-8 kilo
+                          Container(
+                            padding: EdgeInsets.all(1.0),
+                            decoration: BoxDecoration(
+                                border: Border.all(
+                                    color: Color.fromARGB(0, 212, 212, 212),
+                                    width: 0)),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text("-8 kilo"),
+                                IconButton(
+                                  onPressed: () {
+                                    if (_giInitialKilo < 8) {
+                                      setState(() => _giInitialKilo = 0);
+                                      setState(() => _giInitialPrice = 0);
+                                      setState(() => _giInitialLoad = 0);
+                                    } else {
+                                      if (_giInitialKilo % 8 != 0) {
+                                        _giInitialKilo = _giInitialKilo -
+                                            (_giInitialKilo % 8);
+                                      } else {
+                                        _giInitialKilo = _giInitialKilo - 8;
+                                      }
+
+                                      setState(
+                                        () => _giInitialKilo,
+                                      );
+
+                                      // setState(() =>
+                                      //     _giInitialKilo = _giInitialKilo - 8);
+                                      setState(() => _giInitialPrice =
+                                          (_giInitialKilo ~/ 8) * 155);
+                                      setState(() => _giInitialLoad =
+                                          (_giInitialKilo ~/ 8));
+                                    }
+                                  },
+                                  icon:
+                                      const Icon(Icons.remove_circle_outlined),
+                                  color: Colors.blueAccent,
+                                ),
+                                IconButton(
+                                  onPressed: () {
+                                    if (_giInitialKilo % 8 != 0) {
+                                      _giInitialKilo = _giInitialKilo +
+                                          8 -
+                                          (_giInitialKilo % 8);
+                                    } else {
+                                      _giInitialKilo = _giInitialKilo + 8;
+                                    }
+
+                                    _giInitialPrice =
+                                        (_giInitialKilo ~/ 8) * 155;
+                                    _giInitialLoad = _giInitialKilo ~/ 8;
+
+                                    setState(() => _giInitialKilo);
+                                    setState(() => _giInitialPrice);
+                                    setState(() => _giInitialLoad);
+                                  },
+                                  icon: const Icon(Icons.add_circle),
+                                  color: Colors.blueAccent,
+                                ),
+                                Text("+8 kilo"),
+                              ],
+                            ),
+                          ),
+                          //New Estimate Load display
+                          Container(
+                            padding: EdgeInsets.all(1.0),
+                            decoration: BoxDecoration(
+                                border: Border.all(
+                                    color: Color.fromARGB(0, 212, 212, 212),
+                                    width: 0)),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text("Weight: $_giInitialKilo kilo"),
+                                Text("Load(s): $_giInitialLoad"),
+                                Text(
+                                    "Price: ${_PriceDisplay(_giInitialPrice)}.00"),
+                              ],
+                            ),
+                          ),
+                          //New Estimate Load (+- 1 kilo)
+                          Container(
+                            padding: EdgeInsets.all(1.0),
+                            decoration: BoxDecoration(
+                                border: Border.all(
+                                    color: Color.fromARGB(0, 212, 212, 212),
+                                    width: 0)),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text("-1 kilo"),
+                                IconButton(
+                                  onPressed: () {
+                                    if (_giInitialKilo > 8) {
+                                      if (_giInitialKilo % 8 == 1) {
+                                        setState(() => _giInitialPrice =
+                                            _giInitialPrice - 25);
+                                        setState(() => _giInitialLoad =
+                                            _giInitialLoad - 1);
+                                      } else if (_giInitialKilo % 8 == 2) {
+                                        setState(() => _giInitialPrice =
+                                            _giInitialPrice - 45);
+                                      } else if (_giInitialKilo % 8 == 3) {
+                                        setState(() => _giInitialPrice =
+                                            _giInitialPrice - 25);
+                                      } else if (_giInitialKilo % 8 == 4) {
+                                        setState(() => _giInitialPrice =
+                                            _giInitialPrice - 25);
+                                      } else if (_giInitialKilo % 8 == 5) {
+                                        setState(() => _giInitialPrice =
+                                            _giInitialPrice - 25);
+                                      } else if (_giInitialKilo % 8 == 6) {
+                                        setState(() => _giInitialPrice =
+                                            _giInitialPrice - 10);
+                                      }
+
+                                      setState(() =>
+                                          _giInitialKilo = _giInitialKilo - 1);
+                                    }
+
+                                    /*
+                                    _minusOneKilo(_giInitialKilo,
+                                        _giInitialPrice, _giInitialLoad);
+                                    setState(
+                                      () => _giInitialKilo,
+                                    );
+                                    setState(
+                                      () => _giInitialPrice,
+                                    );
+                                    setState(
+                                      () => _giInitialLoad,
+                                    );
+                                    */
+                                  },
+                                  icon:
+                                      const Icon(Icons.remove_circle_outlined),
+                                  color: Colors.blueAccent,
+                                ),
+                                IconButton(
+                                  onPressed: () {
+                                    if (_giInitialKilo >= 8) {
+                                      setState(() =>
+                                          _giInitialKilo = _giInitialKilo + 1);
+                                    }
+
+                                    // _giInitialPrice = _giInitialPrice +
+                                    //     _plusOneKiloAddPrice(
+                                    //         _giInitialKilo, _giInitialPrice);
+
+                                    // setState(() => _giInitialPrice);
+
+                                    // if (_giInitialKilo % 8 == 2) {
+                                    //   setState(() =>
+                                    //       _giInitialLoad = _giInitialLoad + 1);
+                                    // }
+
+                                    if (_giInitialKilo % 8 == 1) {
+                                      setState(() => _giInitialPrice =
+                                          _giInitialPrice + 25);
+                                    } else if (_giInitialKilo % 8 == 2) {
+                                      setState(() => _giInitialPrice =
+                                          _giInitialPrice + 45);
+                                      setState(() =>
+                                          _giInitialLoad = _giInitialLoad + 1);
+                                    } else if (_giInitialKilo % 8 == 3) {
+                                      setState(() => _giInitialPrice =
+                                          _giInitialPrice + 25);
+                                    } else if (_giInitialKilo % 8 == 4) {
+                                      setState(() => _giInitialPrice =
+                                          _giInitialPrice + 25);
+                                    } else if (_giInitialKilo % 8 == 5) {
+                                      setState(() => _giInitialPrice =
+                                          _giInitialPrice + 25);
+                                    } else {
+                                      if (_giInitialPrice % 155 != 0) {
+                                        setState(() => _giInitialPrice =
+                                            _giInitialPrice + 10);
+                                      }
+                                    }
+                                  },
+                                  icon: const Icon(Icons.add_circle),
+                                  color: Colors.blueAccent,
+                                ),
+                                Text("+1 kilo"),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
                     SizedBox(
                       height: 5,
                     ),
@@ -1350,11 +1522,6 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                         DropdownMenuEntry(value: "MaySukli", label: "MaySukli"),
                       ],
                       onSelected: (val) {
-                        _gbRemovePaidD = true;
-                        if (val == "PaidCash" || val == "PaidGcash") {
-                          _gbRemovePaidD = false;
-                          _gtPaidD = Timestamp.now();
-                        }
                         _gsPaymentStat = val!;
                       },
                       initialSelection: _gsPaymentStat,
@@ -2326,7 +2493,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
           //pop box
           Navigator.pop(context);
         },
-        color: _gcButtons,
+        color: cButtons,
         child: const Text("Cancel"));
   }
 
@@ -2336,7 +2503,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
           //pop box
           Navigator.pop(context);
         },
-        color: _gcButtons,
+        color: cButtons,
         child: const Text("Close"));
   }
 
@@ -2356,7 +2523,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
           _updateDataQueueMobile();
         }
       },
-      color: _gcButtons,
+      color: cButtons,
       child: const Text("Save"),
     );
   }
@@ -2377,7 +2544,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
           _updateDataOnGoingMobile();
         }
       },
-      color: _gcButtons,
+      color: cButtons,
       child: const Text("Save"),
     );
   }
@@ -2398,7 +2565,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
           _updateDataDoneMobile();
         }
       },
-      color: _gcButtons,
+      color: cButtons,
       child: const Text("Save"),
     );
   }
@@ -2416,7 +2583,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
           messageResultQueueMobile(context, "On Going is full");
         }
       },
-      color: _gcButtons,
+      color: cButtons,
       child: Text("OnGoing"),
     );
   }
@@ -2431,7 +2598,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
 
         //insertDataJobsDone();
       },
-      color: _gcButtons,
+      color: cButtons,
       child: Text("JobsDone"),
     );
   }
@@ -2444,7 +2611,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
 
   //       updateSwap(sourceJobsId, destinationJobsId);
   //     },
-  //     color: _gcButtons,
+  //     color: cButtons,
   //     child: Text("Swap Jobs Id to $_selectedNumber"),
   //   );
   // }
@@ -2460,8 +2627,10 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
           'DateQ': _gtDateQ,
           'CreatedBy': _gsCreatedBy,
           'Customer': _gsCustomer,
+          'InitialKilo': _giInitialKilo,
           'InitialLoad': _giInitialLoad,
           'InitialPrice': _giInitialPrice,
+          'FinalKilo': _giFinalKilo,
           'FinalLoad': _giFinalLoad,
           'FinalPrice': _giFinalPrice,
           'QueueStat': "Waiting",
@@ -2499,8 +2668,10 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
           'DateQ': _gtDateQ,
           'CreatedBy': _gsCreatedBy,
           'Customer': _gsCustomer,
+          'InitialKilo': _giInitialKilo,
           'InitialLoad': _giInitialLoad,
           'InitialPrice': _giInitialPrice,
+          'FinalKilo': _giFinalKilo,
           'FinalLoad': _giFinalLoad,
           'FinalPrice': _giFinalPrice,
           'QueueStat': "WaitCustomerPickup",
@@ -2534,7 +2705,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
 
         showDeleteQueueDialog(context, "Do you want to delete $_gsCustomer?");
       },
-      color: _gcButtons,
+      color: cButtons,
       child: const Text("Delete"),
     );
   }
@@ -2547,7 +2718,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
 
         showDeleteOnGoingDialog(context, "Delete ongoing for $_gsCustomer?");
       },
-      color: _gcButtons,
+      color: cButtons,
       child: const Text("Delete"),
     );
   }
@@ -2703,7 +2874,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
               actions: [
                 MaterialButton(
                   onPressed: () => Navigator.pop(context),
-                  color: _gcButtons,
+                  color: cButtons,
                   child: const Text("Ok"),
                 ),
               ],
@@ -2725,68 +2896,36 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
     CollectionReference collRef =
         FirebaseFirestore.instance.collection('JobsOnQueue');
 
-    if (_gbRemovePaidD) {
-      collRef
-          .doc(_gsId)
-          .set({
-            'DateQ': _gtDateQ,
-            'CreatedBy': _gsCreatedBy,
-            'Customer': _gsCustomer,
-            'InitialLoad': _giInitialLoad,
-            'InitialPrice': _giInitialPrice,
-            'FinalLoad': _giFinalLoad,
-            'FinalPrice': _giFinalPrice,
-            'QueueStat': _gsQueueStat,
-            'PaymentStat': _gsPaymentStat,
-            'PaymentReceivedBy': _gsPaymentReceivedBy,
-            'NeedOn': Timestamp.fromDate(_gdNeedOn),
-            'MaxFab': _gbMaxFab,
-            'Fold': _gbFold,
-            'Mix': _gbMix,
-            'Basket': _giBasket,
-            'Bag': _giBag,
-            'Kulang': _giKulang,
-            'MaySukli': _giMaySukli,
-          })
-          .then((value) => {
-                messageResultQueueMobile(
-                    context, "Updates Done on $_gsCustomer"),
-              })
-          // ignore: invalid_return_type_for_catch_error
-          .catchError(
-              (error) => messageResultQueueMobile(context, "Failed : $error"));
-    } else {
-      collRef
-          .doc(_gsId)
-          .set({
-            'DateQ': _gtDateQ,
-            'CreatedBy': _gsCreatedBy,
-            'Customer': _gsCustomer,
-            'InitialLoad': _giInitialLoad,
-            'InitialPrice': _giInitialPrice,
-            'FinalLoad': _giFinalLoad,
-            'FinalPrice': _giFinalPrice,
-            'QueueStat': _gsQueueStat,
-            'PaidD': _gtPaidD,
-            'PaymentStat': _gsPaymentStat,
-            'PaymentReceivedBy': _gsPaymentReceivedBy,
-            'NeedOn': Timestamp.fromDate(_gdNeedOn),
-            'MaxFab': _gbMaxFab,
-            'Fold': _gbFold,
-            'Mix': _gbMix,
-            'Basket': _giBasket,
-            'Bag': _giBag,
-            'Kulang': _giKulang,
-            'MaySukli': _giMaySukli,
-          })
-          .then((value) => {
-                messageResultQueueMobile(
-                    context, "Updates Done on $_gsCustomer"),
-              })
-          // ignore: invalid_return_type_for_catch_error
-          .catchError(
-              (error) => messageResultQueueMobile(context, "Failed : $error"));
-    }
+    collRef
+        .doc(_gsId)
+        .set({
+          'DateQ': _gtDateQ,
+          'CreatedBy': _gsCreatedBy,
+          'Customer': _gsCustomer,
+          'InitialKilo': _giInitialKilo,
+          'InitialLoad': _giInitialLoad,
+          'InitialPrice': _giInitialPrice,
+          'FinalKilo': _giFinalKilo,
+          'FinalLoad': _giFinalLoad,
+          'FinalPrice': _giFinalPrice,
+          'QueueStat': _gsQueueStat,
+          'PaymentStat': _gsPaymentStat,
+          'PaymentReceivedBy': _gsPaymentReceivedBy,
+          'NeedOn': Timestamp.fromDate(_gdNeedOn),
+          'MaxFab': _gbMaxFab,
+          'Fold': _gbFold,
+          'Mix': _gbMix,
+          'Basket': _giBasket,
+          'Bag': _giBag,
+          'Kulang': _giKulang,
+          'MaySukli': _giMaySukli,
+        })
+        .then((value) => {
+              messageResultQueueMobile(context, "Updates Done on $_gsCustomer"),
+            })
+        // ignore: invalid_return_type_for_catch_error
+        .catchError(
+            (error) => messageResultQueueMobile(context, "Failed : $error"));
   }
 
   Future<void> moveUp(int jobsId) async {
@@ -2870,8 +3009,10 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
           'DateQ': _gtDateQ,
           'CreatedBy': _gsCreatedBy,
           'Customer': _gsCustomer,
+          'InitialKilo': _giInitialKilo,
           'InitialLoad': _giInitialLoad,
           'InitialPrice': _giInitialPrice,
+          'FinalKilo': _giFinalKilo,
           'FinalLoad': _giFinalLoad,
           'FinalPrice': _giFinalPrice,
           'QueueStat': _gsQueueStat,
@@ -2942,8 +3083,10 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
           'DateQ': _gtDateQ,
           'CreatedBy': _gsCreatedBy,
           'Customer': _gsCustomer,
+          'InitialKilo': _giInitialKilo,
           'InitialLoad': _giInitialLoad,
           'InitialPrice': _giInitialPrice,
+          'FinalKilo': _giFinalKilo,
           'FinalLoad': _giFinalLoad,
           'FinalPrice': _giFinalPrice,
           'QueueStat': _gsQueueStat,
@@ -2994,28 +3137,47 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
   Color _getCOlorStatus(String stat) {
 //JobsOnQueue Colors
     if (stat == "RiderPicup") {
-      return _gcRiderPickup;
+      return cRiderPickup;
     } else if (stat == "ForSorting") {
-      return _gcForSorting;
+      return cForSorting;
     } else if (stat == "Waiting") {
-      return _gcWaiting;
+      return cWaiting;
     } else if (stat == "Washing") {
-      return _gcWashing;
+      return cWashing;
     } else if (stat == "Drying") {
-      return _gcDrying;
+      return cDrying;
     } else if (stat == "Folding") {
-      return _gcFolding;
+      return cFolding;
     } else if (stat == "WaitCustomerPickup") {
-      return _gcWaitCustomerPickup;
+      return cWaitCustomerPickup;
     } else if (stat == "WaitRiderDeivery") {
-      return _gcWaitRiderDelivery;
+      return cWaitRiderDelivery;
     } else if (stat == "NasaCustomerNa") {
-      return _gcNasaCustomerNa;
+      return cNasaCustomerNa;
     } else if (stat == "RiderOnDelivery") {
-      return _gcRiderOnDelivery;
+      return cRiderOnDelivery;
     } else {
-      return _gcRiderOnDelivery;
+      return cRiderOnDelivery;
     }
     ;
+  }
+
+  String _PriceDisplay(int price) {
+    int x = 0, y = 0, z = 0;
+    if (price % 155 == 0) {
+      return "Php $price";
+    } else {
+      if (price ~/ 155 == 1) {
+        return "Php $price";
+      } else {
+        x = price ~/ 155;
+        x--;
+        x = x * 155;
+        y = price % 155;
+        y = y + 155;
+        z = x + y;
+        return "$x($y)=Php $z";
+      }
+    }
   }
 }
