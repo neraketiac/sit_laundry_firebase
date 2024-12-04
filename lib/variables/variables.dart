@@ -7,6 +7,7 @@ const int menuDetDVal = 1, menuFabDVal = 2, menuBleDVal = 3, menuOthDVal = 4;
 
 //det
 Map<int, String> mapDetNames = {};
+Map<int, int> mapDetPrice = {};
 const int menuDetBreezeDVal = 103,
     menuDetArielDVal = 101,
     menuDetTideDVal = 104,
@@ -32,6 +33,22 @@ const int menuBleOriginalDVal = 302, menuBleColorSafeDVal = 301;
 //others
 Map<int, String> mapOthNames = {};
 const int menuOthPlasticDVal = 401, menuOthScatchTapeDVal = 402;
+
+//queuestats
+Map<int, String> mapQueueStat = {};
+const int forSorting = 501,
+    riderPickup = 502,
+    waitingStat = 601,
+    washingStat = 602,
+    dryingStat = 603,
+    foldingStat = 604,
+    waitCustomerPickup = 701,
+    waitRiderDelivery = 702,
+    nasaCustomerNa = 703;
+
+//paymentStats
+Map<int, String> mapPaymentStat = {};
+const int unpaid = 801, paidCash = 802, paidGCash = 803;
 
 class OthItems {
   int menuDVal;
@@ -89,6 +106,16 @@ void putEntries() {
   mapDetNames.addEntries({menuDetSurfDVal: "Surf(10php)"}.entries);
   mapDetNames.addEntries({menuDetKlinDVal: "Klin Twinpack(15php)"}.entries);
 
+  //det price
+  mapDetPrice.addEntries({menuDetBreezeDVal: 15}.entries);
+  mapDetPrice.addEntries({menuDetArielDVal: 15}.entries);
+  mapDetPrice.addEntries({menuDetTideDVal: 15}.entries);
+  mapDetPrice.addEntries({menuDetWingsBlueDVal: 8}.entries);
+  mapDetPrice.addEntries({menuDetWingsRedDVal: 8}.entries);
+  mapDetPrice.addEntries({menuDetPowerCleanDVal: 15}.entries);
+  mapDetPrice.addEntries({menuDetSurfDVal: 10}.entries);
+  mapDetPrice.addEntries({menuDetKlinDVal: 15}.entries);
+
   //fab names
   mapFabNames.addEntries({menuFabSurf24mlDVal: "Surf 24ml(8php)"}.entries);
   mapFabNames.addEntries({menuFabDowny24mlDVal: "Downy 24ml(8pp)"}.entries);
@@ -106,6 +133,22 @@ void putEntries() {
   //oth names
   mapOthNames.addEntries({menuOthPlasticDVal: "Plastic"}.entries);
   mapOthNames.addEntries({menuOthScatchTapeDVal: "Scatch Tape"}.entries);
+
+  //queueStat
+  mapQueueStat.addEntries({forSorting: "ForSorting"}.entries);
+  mapQueueStat.addEntries({riderPickup: "RiderPickup"}.entries);
+  mapQueueStat.addEntries({waitingStat: "Waiting"}.entries);
+  mapQueueStat.addEntries({washingStat: "Washing"}.entries);
+  mapQueueStat.addEntries({dryingStat: "Drying"}.entries);
+  mapQueueStat.addEntries({foldingStat: "Folding"}.entries);
+  mapQueueStat.addEntries({waitCustomerPickup: "WaitCustomerPickup"}.entries);
+  mapQueueStat.addEntries({waitRiderDelivery: "WaitRiderDelivery"}.entries);
+  mapQueueStat.addEntries({nasaCustomerNa: "NasaCustomerNa"}.entries);
+
+  //paymentStat
+  mapPaymentStat.addEntries({unpaid: "Unpaid"}.entries);
+  mapPaymentStat.addEntries({paidCash: "PaidCash"}.entries);
+  mapPaymentStat.addEntries({paidGCash: "PaidGCash"}.entries);
 }
 
 //var mapEmpId = {"0550", "Jeng", "0808", "Abi", "0413", "Ket", "0316", "DonP"};
@@ -117,19 +160,25 @@ Map<String, String> mapEmpId = {
   '1616': 'DonP'
 };
 
-String autoPriceDisplay(int price) {
+String autoPriceDisplay(int price, bool bRegularSabon) {
   int x = 0, y = 0, z = 0;
-  if (price % 155 == 0) {
+  int divider;
+  if (bRegularSabon) {
+    divider = 155;
+  } else {
+    divider = 125;
+  }
+  if (price % divider == 0) {
     return "Php $price";
   } else {
-    if (price ~/ 155 == 1) {
+    if (price ~/ divider == 1) {
       return "Php $price";
     } else {
-      x = price ~/ 155;
+      x = price ~/ divider;
       x--;
-      x = x * 155;
-      y = price % 155;
-      y = y + 155;
+      x = x * divider;
+      y = price % divider;
+      y = y + divider;
       z = x + y;
       return "$x($y)=Php $z";
     }
@@ -143,6 +192,9 @@ String kiloDisplay(int kilo) {
     return "${(kilo - 1)}.1 - $kilo.0";
   }
 }
+
+//fontsize
+final double fontQueue = 10;
 
 //Colors
 final Color cButtons = Color.fromRGBO(134, 218, 252, 0.733);
@@ -177,4 +229,22 @@ BoxDecoration containerQueBoxDecoration() {
   return BoxDecoration(
       color: containerQueColor(),
       border: Border.all(color: borderColor(), width: 2.0));
+}
+
+Color? containerSayoSabonColor() {
+  return Colors.lightBlue[100];
+}
+
+BoxDecoration containerSayoSabonBoxDecoration() {
+  return BoxDecoration(
+      color: containerSayoSabonColor(),
+      border: Border.all(color: borderColor(), width: 2.0));
+}
+
+int iPriceDivider(bool bRegularSabon) {
+  if (bRegularSabon) {
+    return 155;
+  } else {
+    return 125;
+  }
 }

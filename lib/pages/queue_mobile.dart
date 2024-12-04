@@ -27,7 +27,9 @@ open file firebase.json change public to build/web
 */
 
 class MyQueueMobile extends StatefulWidget {
-  const MyQueueMobile({super.key});
+  final String empid;
+
+  const MyQueueMobile(this.empid, {super.key});
 
   @override
   State<MyQueueMobile> createState() => _MyQueueMobileState();
@@ -35,6 +37,7 @@ class MyQueueMobile extends StatefulWidget {
 
 class _MyQueueMobileState extends State<MyQueueMobile> {
   bool bHeader = true;
+  late String empid;
 
   //JobsOnQueue
   late String _gsId;
@@ -82,6 +85,17 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
 
   final _formKeyQueueMobile = GlobalKey<FormState>();
 
+  late bool _bRiderPickup = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    empid = widget.empid;
+
+    putEntries();
+  }
+
   @override
   Widget build(BuildContext context) {
     _giTempJobsId = 0;
@@ -89,7 +103,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
     return Scaffold(
       backgroundColor: Colors.deepPurple[100],
       appBar: AppBar(
-        title: const Text("M O B I L E Q U E U E"),
+        title: Text("Welcome $empid"),
         toolbarHeight: 25,
       ),
       body: SingleChildScrollView(
@@ -196,7 +210,8 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
           //header
           if (bHeader) {
             const rowData = TableRow(
-                decoration: BoxDecoration(color: Colors.red),
+                decoration:
+                    BoxDecoration(color: Color.fromARGB(255, 9, 194, 49)),
                 children: [
                   Text(
                     "Jobs On Queue",
@@ -251,6 +266,14 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                           _giInitialLoad = buffRecord['InitialLoad'];
                           _giInitialPrice = buffRecord['InitialPrice'];
                           _gsQueueStat = buffRecord['QueueStat'];
+                          if (_gsQueueStat ==
+                              mapQueueStat[forSorting].toString()) {
+                            _bRiderPickup = false;
+                          }
+                          if (_gsQueueStat ==
+                              mapQueueStat[riderPickup].toString()) {
+                            _bRiderPickup = true;
+                          }
                           _gsPaymentStat = buffRecord['PaymentStat'];
                           _gsPaymentReceivedBy =
                               buffRecord['PaymentReceivedBy'];
@@ -293,6 +316,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                           Color.fromRGBO(250, 175, 175, 1),
                           buffRecord['Customer'],
                           buffRecord['QueueStat'],
+                          buffRecord['InitialKilo'],
                           buffRecord['InitialLoad'],
                           buffRecord['Basket'],
                           buffRecord['Bag'],
@@ -483,6 +507,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                           Color.fromRGBO(168, 173, 168, 1),
                           buffRecord['Customer'],
                           buffRecord['QueueStat'],
+                          buffRecord['FinalKilo'],
                           buffRecord['FinalLoad'],
                           buffRecord['Basket'],
                           buffRecord['Bag'],
@@ -655,6 +680,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                           Color.fromRGBO(32, 163, 180, 1),
                           buffRecord['Customer'],
                           buffRecord['QueueStat'],
+                          buffRecord['FinalKilo'],
                           buffRecord['FinalLoad'],
                           buffRecord['Basket'],
                           buffRecord['Bag'],
@@ -797,6 +823,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                             Color.fromRGBO(32, 163, 180, 1),
                             buffRecord['Customer'],
                             buffRecord['QueueStat'],
+                            buffRecord['FinalKilo'],
                             buffRecord['FinalLoad'],
                             buffRecord['Basket'],
                             buffRecord['Bag'],
@@ -940,6 +967,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                             Color.fromRGBO(32, 163, 180, 1),
                             buffRecord['Customer'],
                             buffRecord['QueueStat'],
+                            buffRecord['FinalKilo'],
                             buffRecord['FinalLoad'],
                             buffRecord['Basket'],
                             buffRecord['Bag'],
@@ -975,6 +1003,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
       Color buffColor,
       String buffCustomer,
       String buffQueueStat,
+      int buffInitialKilo,
       int buffInitialLoad,
       int buffBasket,
       int buffBag,
@@ -1033,7 +1062,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                   textAlign: TextAlign.end,
                 ),
                 Text(
-                  "${buffMaxFab ? "MaxFab" : ""} ${buffMix ? "" : "DM"} ${buffFold ? "" : "NF"} ${buffExtraDryPrice == 0 ? "" : "XD"}",
+                  "${_gbWithFinalLoad ? _giFinalKilo.toString() : buffInitialKilo.toString()} ${buffMaxFab ? "MaxFab" : ""} ${buffMix ? "" : "DM"} ${buffFold ? "" : "NF"} ${buffExtraDryPrice == 0 ? "" : "XD"}",
                   style: const TextStyle(fontSize: 9),
                 ),
                 Text(
@@ -1123,28 +1152,70 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                     SizedBox(
                       height: 5,
                     ),
-                    //QueueStat
-                    DropdownMenu(
-                      label: Text("Status",
-                          style: TextStyle(
-                            fontSize: 12.0,
-                          )),
-                      inputDecorationTheme: getThemeDropDownQueueMobile(),
-                      hintText: "Status",
-                      dropdownMenuEntries: const [
-                        DropdownMenuEntry(
-                            value: "ForSorting", label: "ForSorting"),
-                        DropdownMenuEntry(
-                            value: "RiderPickup", label: "RiderPickup"),
-                      ],
-                      onSelected: (val) {
-                        _gsQueueStat = val!;
-                      },
-                      initialSelection: _gsQueueStat,
-                    ),
-                    SizedBox(
-                      height: 5,
-                    ),
+                    // //QueueStat
+                    // DropdownMenu(
+                    //   label: Text("Status",
+                    //       style: TextStyle(
+                    //         fontSize: 12.0,
+                    //       )),
+                    //   inputDecorationTheme: getThemeDropDownQueueMobile(),
+                    //   hintText: "Status",
+                    //   dropdownMenuEntries: const [
+                    //     DropdownMenuEntry(
+                    //         value: "ForSorting", label: "ForSorting"),
+                    //     DropdownMenuEntry(
+                    //         value: "RiderPickup", label: "RiderPickup"),
+                    //   ],
+                    //   onSelected: (val) {
+                    //     _gsQueueStat = val!;
+                    //   },
+                    //   initialSelection: _gsQueueStat,
+                    // ),
+                    // QeueeStat CheckBox
+                    // Container(
+                    //   padding: EdgeInsets.all(1.0),
+                    //   decoration: containerQueBoxDecoration(),
+                    //   child: Row(
+                    //     mainAxisAlignment: MainAxisAlignment.center,
+                    //     children: [
+                    //       Flexible(
+                    //         child: CheckboxListTile(
+                    //             title: Flexible(
+                    //                 child: Text(
+                    //                     mapQueueStat[forSorting].toString())),
+                    //             value: _bForSorting,
+                    //             onChanged: (val) {
+                    //               setState(() {
+                    //                 _bForSorting = false;
+                    //                 _bRiderPickup = false;
+                    //                 if (val!) {
+                    //                   _bForSorting = val!;
+                    //                 }
+                    //               });
+                    //             }),
+                    //       ),
+                    //       Flexible(
+                    //         child: CheckboxListTile(
+                    //             title: Flexible(
+                    //                 child: Text(
+                    //                     mapQueueStat[riderPickup].toString())),
+                    //             value: _bRiderPickup,
+                    //             onChanged: (val) {
+                    //               setState(() {
+                    //                 _bForSorting = false;
+                    //                 _bRiderPickup = false;
+                    //                 if (val!) {
+                    //                   _bRiderPickup = val!;
+                    //                 }
+                    //               });
+                    //             }),
+                    //       ),
+                    //     ],
+                    //   ),
+                    // ),
+                    // SizedBox(
+                    //   height: 5,
+                    // ),
                     //Customer
                     Container(
                       padding: EdgeInsets.all(1.0),
@@ -1161,8 +1232,31 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                         enabled: false,
                       ),
                     ),
-
-//New Estimate load
+                    SizedBox(
+                      height: 5,
+                    ),
+                    //QueueStat
+                    Container(
+                      alignment: Alignment.center,
+                      padding: EdgeInsets.all(1.0),
+                      decoration: containerQueBoxDecoration(),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text("Sort"),
+                          Switch.adaptive(
+                            value: _bRiderPickup,
+                            onChanged: (bool value) {
+                              setState(() {
+                                _bRiderPickup = value;
+                              });
+                            },
+                          ),
+                          Text("RiderPickup"),
+                        ],
+                      ),
+                    ),
+                    //New Estimate load
                     SizedBox(
                       height: 5,
                     ),
@@ -1186,28 +1280,26 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                                 Text("-8 kilo"),
                                 IconButton(
                                   onPressed: () {
-                                    if (_giInitialKilo < 8) {
-                                      setState(() => _giInitialKilo = 0);
-                                      setState(() => _giInitialPrice = 0);
-                                      setState(() => _giInitialLoad = 0);
+                                    if (_giFinalKilo < 8) {
+                                      setState(() => _giFinalKilo = 0);
+                                      setState(() => _giFinalPrice = 0);
+                                      setState(() => _giFinalLoad = 0);
                                     } else {
-                                      if (_giInitialKilo % 8 != 0) {
-                                        _giInitialKilo = _giInitialKilo -
-                                            (_giInitialKilo % 8);
+                                      if (_giFinalKilo % 8 != 0) {
+                                        _giFinalKilo =
+                                            _giFinalKilo - (_giFinalKilo % 8);
                                       } else {
-                                        _giInitialKilo = _giInitialKilo - 8;
+                                        _giFinalKilo = _giFinalKilo - 8;
                                       }
 
                                       setState(
-                                        () => _giInitialKilo,
+                                        () => _giFinalKilo,
                                       );
 
-                                      // setState(() =>
-                                      //     _giInitialKilo = _giInitialKilo - 8);
-                                      setState(() => _giInitialPrice =
-                                          (_giInitialKilo ~/ 8) * 155);
-                                      setState(() => _giInitialLoad =
-                                          (_giInitialKilo ~/ 8));
+                                      setState(() => _giFinalPrice =
+                                          (_giFinalKilo ~/ 8) * 155);
+                                      setState(() =>
+                                          _giFinalLoad = (_giFinalKilo ~/ 8));
                                     }
                                   },
                                   icon:
@@ -1216,21 +1308,19 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                                 ),
                                 IconButton(
                                   onPressed: () {
-                                    if (_giInitialKilo % 8 != 0) {
-                                      _giInitialKilo = _giInitialKilo +
-                                          8 -
-                                          (_giInitialKilo % 8);
+                                    if (_giFinalKilo % 8 != 0) {
+                                      _giFinalKilo =
+                                          _giFinalKilo + 8 - (_giFinalKilo % 8);
                                     } else {
-                                      _giInitialKilo = _giInitialKilo + 8;
+                                      _giFinalKilo = _giFinalKilo + 8;
                                     }
 
-                                    _giInitialPrice =
-                                        (_giInitialKilo ~/ 8) * 155;
-                                    _giInitialLoad = _giInitialKilo ~/ 8;
+                                    _giFinalPrice = (_giFinalKilo ~/ 8) * 155;
+                                    _giFinalLoad = _giFinalKilo ~/ 8;
 
-                                    setState(() => _giInitialKilo);
-                                    setState(() => _giInitialPrice);
-                                    setState(() => _giInitialLoad);
+                                    setState(() => _giFinalKilo);
+                                    setState(() => _giFinalPrice);
+                                    setState(() => _giFinalLoad);
                                   },
                                   icon: const Icon(Icons.add_circle),
                                   color: Colors.blueAccent,
@@ -1249,10 +1339,10 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Text("Weight: $_giInitialKilo kilo"),
-                                Text("Load(s): $_giInitialLoad"),
+                                Text("Weight: $_giFinalKilo kilo"),
+                                Text("Load(s): $_giFinalLoad"),
                                 Text(
-                                    "Price: ${_PriceDisplay(_giInitialPrice)}.00"),
+                                    "Price: ${_PriceDisplay(_giFinalPrice)}.00"),
                               ],
                             ),
                           ),
@@ -1269,46 +1359,32 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                                 Text("-1 kilo"),
                                 IconButton(
                                   onPressed: () {
-                                    if (_giInitialKilo > 8) {
-                                      if (_giInitialKilo % 8 == 1) {
-                                        setState(() => _giInitialPrice =
-                                            _giInitialPrice - 25);
-                                        setState(() => _giInitialLoad =
-                                            _giInitialLoad - 1);
-                                      } else if (_giInitialKilo % 8 == 2) {
-                                        setState(() => _giInitialPrice =
-                                            _giInitialPrice - 45);
-                                      } else if (_giInitialKilo % 8 == 3) {
-                                        setState(() => _giInitialPrice =
-                                            _giInitialPrice - 25);
-                                      } else if (_giInitialKilo % 8 == 4) {
-                                        setState(() => _giInitialPrice =
-                                            _giInitialPrice - 25);
-                                      } else if (_giInitialKilo % 8 == 5) {
-                                        setState(() => _giInitialPrice =
-                                            _giInitialPrice - 25);
-                                      } else if (_giInitialKilo % 8 == 6) {
-                                        setState(() => _giInitialPrice =
-                                            _giInitialPrice - 10);
+                                    if (_giFinalKilo > 8) {
+                                      if (_giFinalKilo % 8 == 1) {
+                                        setState(() =>
+                                            _giFinalPrice = _giFinalPrice - 25);
+                                        setState(() =>
+                                            _giFinalLoad = _giFinalLoad - 1);
+                                      } else if (_giFinalKilo % 8 == 2) {
+                                        setState(() =>
+                                            _giFinalPrice = _giFinalPrice - 45);
+                                      } else if (_giFinalKilo % 8 == 3) {
+                                        setState(() =>
+                                            _giFinalPrice = _giFinalPrice - 25);
+                                      } else if (_giFinalKilo % 8 == 4) {
+                                        setState(() =>
+                                            _giFinalPrice = _giFinalPrice - 25);
+                                      } else if (_giFinalKilo % 8 == 5) {
+                                        setState(() =>
+                                            _giFinalPrice = _giFinalPrice - 25);
+                                      } else if (_giFinalKilo % 8 == 6) {
+                                        setState(() =>
+                                            _giFinalPrice = _giFinalPrice - 10);
                                       }
 
                                       setState(() =>
-                                          _giInitialKilo = _giInitialKilo - 1);
+                                          _giFinalKilo = _giFinalKilo - 1);
                                     }
-
-                                    /*
-                                    _minusOneKilo(_giInitialKilo,
-                                        _giInitialPrice, _giInitialLoad);
-                                    setState(
-                                      () => _giInitialKilo,
-                                    );
-                                    setState(
-                                      () => _giInitialPrice,
-                                    );
-                                    setState(
-                                      () => _giInitialLoad,
-                                    );
-                                    */
                                   },
                                   icon:
                                       const Icon(Icons.remove_circle_outlined),
@@ -1316,43 +1392,32 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                                 ),
                                 IconButton(
                                   onPressed: () {
-                                    if (_giInitialKilo >= 8) {
+                                    if (_giFinalKilo >= 8) {
                                       setState(() =>
-                                          _giInitialKilo = _giInitialKilo + 1);
+                                          _giFinalKilo = _giFinalKilo + 1);
                                     }
 
-                                    // _giInitialPrice = _giInitialPrice +
-                                    //     _plusOneKiloAddPrice(
-                                    //         _giInitialKilo, _giInitialPrice);
-
-                                    // setState(() => _giInitialPrice);
-
-                                    // if (_giInitialKilo % 8 == 2) {
-                                    //   setState(() =>
-                                    //       _giInitialLoad = _giInitialLoad + 1);
-                                    // }
-
-                                    if (_giInitialKilo % 8 == 1) {
-                                      setState(() => _giInitialPrice =
-                                          _giInitialPrice + 25);
-                                    } else if (_giInitialKilo % 8 == 2) {
-                                      setState(() => _giInitialPrice =
-                                          _giInitialPrice + 45);
+                                    if (_giFinalKilo % 8 == 1) {
                                       setState(() =>
-                                          _giInitialLoad = _giInitialLoad + 1);
-                                    } else if (_giInitialKilo % 8 == 3) {
-                                      setState(() => _giInitialPrice =
-                                          _giInitialPrice + 25);
-                                    } else if (_giInitialKilo % 8 == 4) {
-                                      setState(() => _giInitialPrice =
-                                          _giInitialPrice + 25);
-                                    } else if (_giInitialKilo % 8 == 5) {
-                                      setState(() => _giInitialPrice =
-                                          _giInitialPrice + 25);
+                                          _giFinalPrice = _giFinalPrice + 25);
+                                    } else if (_giFinalKilo % 8 == 2) {
+                                      setState(() =>
+                                          _giFinalPrice = _giFinalPrice + 45);
+                                      setState(() =>
+                                          _giFinalLoad = _giFinalLoad + 1);
+                                    } else if (_giFinalKilo % 8 == 3) {
+                                      setState(() =>
+                                          _giFinalPrice = _giFinalPrice + 25);
+                                    } else if (_giFinalKilo % 8 == 4) {
+                                      setState(() =>
+                                          _giFinalPrice = _giFinalPrice + 25);
+                                    } else if (_giFinalKilo % 8 == 5) {
+                                      setState(() =>
+                                          _giFinalPrice = _giFinalPrice + 25);
                                     } else {
-                                      if (_giInitialPrice % 155 != 0) {
-                                        setState(() => _giInitialPrice =
-                                            _giInitialPrice + 10);
+                                      if (_giFinalPrice % 155 != 0) {
+                                        setState(() =>
+                                            _giFinalPrice = _giFinalPrice + 10);
                                       }
                                     }
                                   },
@@ -1366,80 +1431,80 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                         ],
                       ),
                     ),
-
-                    SizedBox(
-                      height: 5,
-                    ),
-                    //Final Estimate Load
-                    Container(
-                      padding: EdgeInsets.all(1.0),
-                      decoration: BoxDecoration(
-                          border:
-                              Border.all(color: Color(0xffD4D4D4), width: 2.0)),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            "Initial Load: $_giInitialLoad",
-                            style: TextStyle(fontSize: 10),
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              IconButton(
-                                onPressed: () {
-                                  setState(() => _giFinalLoad--);
-                                },
-                                icon: const Icon(Icons.remove),
-                                color: Colors.blueAccent,
-                              ),
-                              Text("Final Load: $_giFinalLoad"),
-                              IconButton(
-                                onPressed: () {
-                                  setState(() => _giFinalLoad++);
-                                },
-                                icon: const Icon(Icons.add),
-                                color: Colors.blueAccent,
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    //Final Price
-                    SizedBox(
-                      height: 5,
-                    ),
-                    Container(
-                      padding: EdgeInsets.all(1.0),
-                      decoration: BoxDecoration(
-                          border:
-                              Border.all(color: Color(0xffD4D4D4), width: 2.0)),
-                      child: Column(
-                        children: [
-                          Text(
-                            "Initial Price: $_giInitialPrice",
-                            style: TextStyle(fontSize: 10),
-                          ),
-                          TextFormField(
-                            keyboardType: TextInputType.number,
-                            inputFormatters: <TextInputFormatter>[
-                              FilteringTextInputFormatter.allow(
-                                  RegExp(r'[0-9]')),
-                              FilteringTextInputFormatter.digitsOnly
-                            ],
-                            textAlign: TextAlign.center,
-                            decoration: InputDecoration(
-                                labelText: 'Final Price',
-                                hintText: 'Initial Price'),
-                            validator: (val) {
-                              _giFinalPrice = int.parse(val!);
-                            },
-                            initialValue: _giFinalPrice.toString(),
-                          ),
-                        ],
-                      ),
-                    ),
+                    //New Estimate Load End
+                    // SizedBox(
+                    //   height: 5,
+                    // ),
+                    // //Final Estimate Load
+                    // Container(
+                    //   padding: EdgeInsets.all(1.0),
+                    //   decoration: BoxDecoration(
+                    //       border:
+                    //           Border.all(color: Color(0xffD4D4D4), width: 2.0)),
+                    //   child: Column(
+                    //     mainAxisAlignment: MainAxisAlignment.center,
+                    //     children: [
+                    //       Text(
+                    //         "Initial Load: $_giInitialLoad",
+                    //         style: TextStyle(fontSize: 10),
+                    //       ),
+                    //       Row(
+                    //         mainAxisAlignment: MainAxisAlignment.center,
+                    //         children: [
+                    //           IconButton(
+                    //             onPressed: () {
+                    //               setState(() => _giFinalLoad--);
+                    //             },
+                    //             icon: const Icon(Icons.remove),
+                    //             color: Colors.blueAccent,
+                    //           ),
+                    //           Text("Final Load: $_giFinalLoad"),
+                    //           IconButton(
+                    //             onPressed: () {
+                    //               setState(() => _giFinalLoad++);
+                    //             },
+                    //             icon: const Icon(Icons.add),
+                    //             color: Colors.blueAccent,
+                    //           ),
+                    //         ],
+                    //       ),
+                    //     ],
+                    //   ),
+                    // ),
+                    // //Final Price
+                    // SizedBox(
+                    //   height: 5,
+                    // ),
+                    // Container(
+                    //   padding: EdgeInsets.all(1.0),
+                    //   decoration: BoxDecoration(
+                    //       border:
+                    //           Border.all(color: Color(0xffD4D4D4), width: 2.0)),
+                    //   child: Column(
+                    //     children: [
+                    //       Text(
+                    //         "Initial Price: $_giInitialPrice",
+                    //         style: TextStyle(fontSize: 10),
+                    //       ),
+                    //       TextFormField(
+                    //         keyboardType: TextInputType.number,
+                    //         inputFormatters: <TextInputFormatter>[
+                    //           FilteringTextInputFormatter.allow(
+                    //               RegExp(r'[0-9]')),
+                    //           FilteringTextInputFormatter.digitsOnly
+                    //         ],
+                    //         textAlign: TextAlign.center,
+                    //         decoration: InputDecoration(
+                    //             labelText: 'Final Price',
+                    //             hintText: 'Initial Price'),
+                    //         validator: (val) {
+                    //           _giFinalPrice = int.parse(val!);
+                    //         },
+                    //         initialValue: _giFinalPrice.toString(),
+                    //       ),
+                    //     ],
+                    //   ),
+                    // ),
                     SizedBox(
                       height: 5,
                     ),
@@ -1526,32 +1591,32 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                       },
                       initialSelection: _gsPaymentStat,
                     ),
-                    SizedBox(
-                      height: 5,
-                    ),
-                    //Payment Received By
-                    DropdownMenu(
-                      label: Text("Payment Received By",
-                          style: TextStyle(
-                            fontSize: 12.0,
-                          )),
-                      inputDecorationTheme: getThemeDropDownQueueMobile(),
-                      hintText: "Select Staff",
-                      dropdownMenuEntries: const [
-                        DropdownMenuEntry(value: "N/a", label: "N/a"),
-                        DropdownMenuEntry(value: "Jeng", label: "Jeng"),
-                        DropdownMenuEntry(value: "Abi", label: "Abi"),
-                        DropdownMenuEntry(value: "Ket", label: "Ket"),
-                        DropdownMenuEntry(value: "DonP", label: "DonP"),
-                        DropdownMenuEntry(value: "Rowel", label: "Rowel"),
-                        DropdownMenuEntry(value: "Seigi", label: "Seigi"),
-                        DropdownMenuEntry(value: "Let", label: "Let"),
-                      ],
-                      onSelected: (val) {
-                        _gsPaymentReceivedBy = val!;
-                      },
-                      initialSelection: _gsPaymentReceivedBy,
-                    ),
+                    // SizedBox(
+                    //   height: 5,
+                    // ),
+                    // //Payment Received By
+                    // DropdownMenu(
+                    //   label: Text("Payment Received By",
+                    //       style: TextStyle(
+                    //         fontSize: 12.0,
+                    //       )),
+                    //   inputDecorationTheme: getThemeDropDownQueueMobile(),
+                    //   hintText: "Select Staff",
+                    //   dropdownMenuEntries: const [
+                    //     DropdownMenuEntry(value: "N/a", label: "N/a"),
+                    //     DropdownMenuEntry(value: "Jeng", label: "Jeng"),
+                    //     DropdownMenuEntry(value: "Abi", label: "Abi"),
+                    //     DropdownMenuEntry(value: "Ket", label: "Ket"),
+                    //     DropdownMenuEntry(value: "DonP", label: "DonP"),
+                    //     DropdownMenuEntry(value: "Rowel", label: "Rowel"),
+                    //     DropdownMenuEntry(value: "Seigi", label: "Seigi"),
+                    //     DropdownMenuEntry(value: "Let", label: "Let"),
+                    //   ],
+                    //   onSelected: (val) {
+                    //     _gsPaymentReceivedBy = val!;
+                    //   },
+                    //   initialSelection: _gsPaymentReceivedBy,
+                    // ),
                     SizedBox(
                       height: 5,
                     ),
@@ -1858,46 +1923,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                         enabled: false,
                       ),
                     ),
-                    SizedBox(
-                      height: 5,
-                    ),
-                    //Final Estimate Load
-                    Container(
-                      padding: EdgeInsets.all(1.0),
-                      decoration: BoxDecoration(
-                          border:
-                              Border.all(color: Color(0xffD4D4D4), width: 2.0)),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            "Initial Load: $_giInitialLoad",
-                            style: TextStyle(fontSize: 10),
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              IconButton(
-                                onPressed: () {
-                                  setState(() => _giFinalLoad--);
-                                },
-                                icon: const Icon(Icons.remove),
-                                color: Colors.blueAccent,
-                              ),
-                              Text("Final Load: $_giFinalLoad"),
-                              IconButton(
-                                onPressed: () {
-                                  setState(() => _giFinalLoad++);
-                                },
-                                icon: const Icon(Icons.add),
-                                color: Colors.blueAccent,
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    //Final Price
+//New Estimate load
                     SizedBox(
                       height: 5,
                     ),
@@ -1908,29 +1934,245 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                               Border.all(color: Color(0xffD4D4D4), width: 2.0)),
                       child: Column(
                         children: [
-                          Text(
-                            "Initial Price: $_giInitialPrice",
-                            style: TextStyle(fontSize: 10),
+                          //New estimate load +-8 kilo
+                          Container(
+                            padding: EdgeInsets.all(1.0),
+                            decoration: BoxDecoration(
+                                border: Border.all(
+                                    color: Color.fromARGB(0, 212, 212, 212),
+                                    width: 0)),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text("-8 kilo"),
+                                IconButton(
+                                  onPressed: () {
+                                    if (_giFinalKilo < 8) {
+                                      setState(() => _giFinalKilo = 0);
+                                      setState(() => _giFinalPrice = 0);
+                                      setState(() => _giFinalLoad = 0);
+                                    } else {
+                                      if (_giFinalKilo % 8 != 0) {
+                                        _giFinalKilo =
+                                            _giFinalKilo - (_giFinalKilo % 8);
+                                      } else {
+                                        _giFinalKilo = _giFinalKilo - 8;
+                                      }
+
+                                      setState(
+                                        () => _giFinalKilo,
+                                      );
+
+                                      setState(() => _giFinalPrice =
+                                          (_giFinalKilo ~/ 8) * 155);
+                                      setState(() =>
+                                          _giFinalLoad = (_giFinalKilo ~/ 8));
+                                    }
+                                  },
+                                  icon:
+                                      const Icon(Icons.remove_circle_outlined),
+                                  color: Colors.blueAccent,
+                                ),
+                                IconButton(
+                                  onPressed: () {
+                                    if (_giFinalKilo % 8 != 0) {
+                                      _giFinalKilo =
+                                          _giFinalKilo + 8 - (_giFinalKilo % 8);
+                                    } else {
+                                      _giFinalKilo = _giFinalKilo + 8;
+                                    }
+
+                                    _giFinalPrice = (_giFinalKilo ~/ 8) * 155;
+                                    _giFinalLoad = _giFinalKilo ~/ 8;
+
+                                    setState(() => _giFinalKilo);
+                                    setState(() => _giFinalPrice);
+                                    setState(() => _giFinalLoad);
+                                  },
+                                  icon: const Icon(Icons.add_circle),
+                                  color: Colors.blueAccent,
+                                ),
+                                Text("+8 kilo"),
+                              ],
+                            ),
                           ),
-                          TextFormField(
-                            keyboardType: TextInputType.number,
-                            inputFormatters: <TextInputFormatter>[
-                              FilteringTextInputFormatter.allow(
-                                  RegExp(r'[0-9]')),
-                              FilteringTextInputFormatter.digitsOnly
-                            ],
-                            textAlign: TextAlign.center,
-                            decoration: InputDecoration(
-                                labelText: 'Final Price',
-                                hintText: 'Initial Price'),
-                            validator: (val) {
-                              _giFinalPrice = int.parse(val!);
-                            },
-                            initialValue: _giFinalPrice.toString(),
+                          //New Estimate Load display
+                          Container(
+                            padding: EdgeInsets.all(1.0),
+                            decoration: BoxDecoration(
+                                border: Border.all(
+                                    color: Color.fromARGB(0, 212, 212, 212),
+                                    width: 0)),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text("Weight: $_giFinalKilo kilo"),
+                                Text("Load(s): $_giFinalLoad"),
+                                Text(
+                                    "Price: ${_PriceDisplay(_giFinalPrice)}.00"),
+                              ],
+                            ),
+                          ),
+                          //New Estimate Load (+- 1 kilo)
+                          Container(
+                            padding: EdgeInsets.all(1.0),
+                            decoration: BoxDecoration(
+                                border: Border.all(
+                                    color: Color.fromARGB(0, 212, 212, 212),
+                                    width: 0)),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text("-1 kilo"),
+                                IconButton(
+                                  onPressed: () {
+                                    if (_giFinalKilo > 8) {
+                                      if (_giFinalKilo % 8 == 1) {
+                                        setState(() =>
+                                            _giFinalPrice = _giFinalPrice - 25);
+                                        setState(() =>
+                                            _giFinalLoad = _giFinalLoad - 1);
+                                      } else if (_giFinalKilo % 8 == 2) {
+                                        setState(() =>
+                                            _giFinalPrice = _giFinalPrice - 45);
+                                      } else if (_giFinalKilo % 8 == 3) {
+                                        setState(() =>
+                                            _giFinalPrice = _giFinalPrice - 25);
+                                      } else if (_giFinalKilo % 8 == 4) {
+                                        setState(() =>
+                                            _giFinalPrice = _giFinalPrice - 25);
+                                      } else if (_giFinalKilo % 8 == 5) {
+                                        setState(() =>
+                                            _giFinalPrice = _giFinalPrice - 25);
+                                      } else if (_giFinalKilo % 8 == 6) {
+                                        setState(() =>
+                                            _giFinalPrice = _giFinalPrice - 10);
+                                      }
+
+                                      setState(() =>
+                                          _giFinalKilo = _giFinalKilo - 1);
+                                    }
+                                  },
+                                  icon:
+                                      const Icon(Icons.remove_circle_outlined),
+                                  color: Colors.blueAccent,
+                                ),
+                                IconButton(
+                                  onPressed: () {
+                                    if (_giFinalKilo >= 8) {
+                                      setState(() =>
+                                          _giFinalKilo = _giFinalKilo + 1);
+                                    }
+
+                                    if (_giFinalKilo % 8 == 1) {
+                                      setState(() =>
+                                          _giFinalPrice = _giFinalPrice + 25);
+                                    } else if (_giFinalKilo % 8 == 2) {
+                                      setState(() =>
+                                          _giFinalPrice = _giFinalPrice + 45);
+                                      setState(() =>
+                                          _giFinalLoad = _giFinalLoad + 1);
+                                    } else if (_giFinalKilo % 8 == 3) {
+                                      setState(() =>
+                                          _giFinalPrice = _giFinalPrice + 25);
+                                    } else if (_giFinalKilo % 8 == 4) {
+                                      setState(() =>
+                                          _giFinalPrice = _giFinalPrice + 25);
+                                    } else if (_giFinalKilo % 8 == 5) {
+                                      setState(() =>
+                                          _giFinalPrice = _giFinalPrice + 25);
+                                    } else {
+                                      if (_giFinalPrice % 155 != 0) {
+                                        setState(() =>
+                                            _giFinalPrice = _giFinalPrice + 10);
+                                      }
+                                    }
+                                  },
+                                  icon: const Icon(Icons.add_circle),
+                                  color: Colors.blueAccent,
+                                ),
+                                Text("+1 kilo"),
+                              ],
+                            ),
                           ),
                         ],
                       ),
                     ),
+                    //New Estimate Load End
+
+                    // SizedBox(
+                    //   height: 5,
+                    // ),
+                    // //Final Estimate Load
+                    // Container(
+                    //   padding: EdgeInsets.all(1.0),
+                    //   decoration: BoxDecoration(
+                    //       border:
+                    //           Border.all(color: Color(0xffD4D4D4), width: 2.0)),
+                    //   child: Column(
+                    //     mainAxisAlignment: MainAxisAlignment.center,
+                    //     children: [
+                    //       Text(
+                    //         "Initial Load: $_giInitialLoad",
+                    //         style: TextStyle(fontSize: 10),
+                    //       ),
+                    //       Row(
+                    //         mainAxisAlignment: MainAxisAlignment.center,
+                    //         children: [
+                    //           IconButton(
+                    //             onPressed: () {
+                    //               setState(() => _giFinalLoad--);
+                    //             },
+                    //             icon: const Icon(Icons.remove),
+                    //             color: Colors.blueAccent,
+                    //           ),
+                    //           Text("Final Load: $_giFinalLoad"),
+                    //           IconButton(
+                    //             onPressed: () {
+                    //               setState(() => _giFinalLoad++);
+                    //             },
+                    //             icon: const Icon(Icons.add),
+                    //             color: Colors.blueAccent,
+                    //           ),
+                    //         ],
+                    //       ),
+                    //     ],
+                    //   ),
+                    // ),
+                    // //Final Price
+                    // SizedBox(
+                    //   height: 5,
+                    // ),
+                    // Container(
+                    //   padding: EdgeInsets.all(1.0),
+                    //   decoration: BoxDecoration(
+                    //       border:
+                    //           Border.all(color: Color(0xffD4D4D4), width: 2.0)),
+                    //   child: Column(
+                    //     children: [
+                    //       Text(
+                    //         "Initial Price: $_giInitialPrice",
+                    //         style: TextStyle(fontSize: 10),
+                    //       ),
+                    //       TextFormField(
+                    //         keyboardType: TextInputType.number,
+                    //         inputFormatters: <TextInputFormatter>[
+                    //           FilteringTextInputFormatter.allow(
+                    //               RegExp(r'[0-9]')),
+                    //           FilteringTextInputFormatter.digitsOnly
+                    //         ],
+                    //         textAlign: TextAlign.center,
+                    //         decoration: InputDecoration(
+                    //             labelText: 'Final Price',
+                    //             hintText: 'Initial Price'),
+                    //         validator: (val) {
+                    //           _giFinalPrice = int.parse(val!);
+                    //         },
+                    //         initialValue: _giFinalPrice.toString(),
+                    //       ),
+                    //     ],
+                    //   ),
+                    // ),
                     //extra dry
                     SizedBox(
                       height: 5,
@@ -2908,7 +3150,10 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
           'FinalKilo': _giFinalKilo,
           'FinalLoad': _giFinalLoad,
           'FinalPrice': _giFinalPrice,
-          'QueueStat': _gsQueueStat,
+          //'QueueStat': _gsQueueStat,
+          'QueueStat': (_bRiderPickup
+              ? mapQueueStat[riderPickup].toString()
+              : mapQueueStat[forSorting].toString()),
           'PaymentStat': _gsPaymentStat,
           'PaymentReceivedBy': _gsPaymentReceivedBy,
           'NeedOn': Timestamp.fromDate(_gdNeedOn),
@@ -3136,23 +3381,23 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
 
   Color _getCOlorStatus(String stat) {
 //JobsOnQueue Colors
-    if (stat == "RiderPicup") {
+    if (stat == mapQueueStat[riderPickup].toString()) {
       return cRiderPickup;
-    } else if (stat == "ForSorting") {
+    } else if (stat == mapQueueStat[forSorting].toString()) {
       return cForSorting;
-    } else if (stat == "Waiting") {
+    } else if (stat == mapQueueStat[waitingStat].toString()) {
       return cWaiting;
-    } else if (stat == "Washing") {
+    } else if (stat == mapQueueStat[washingStat].toString()) {
       return cWashing;
-    } else if (stat == "Drying") {
+    } else if (stat == mapQueueStat[dryingStat].toString()) {
       return cDrying;
-    } else if (stat == "Folding") {
+    } else if (stat == mapQueueStat[foldingStat].toString()) {
       return cFolding;
-    } else if (stat == "WaitCustomerPickup") {
+    } else if (stat == mapQueueStat[waitCustomerPickup].toString()) {
       return cWaitCustomerPickup;
-    } else if (stat == "WaitRiderDeivery") {
+    } else if (stat == mapQueueStat[waitRiderDelivery].toString()) {
       return cWaitRiderDelivery;
-    } else if (stat == "NasaCustomerNa") {
+    } else if (stat == mapQueueStat[nasaCustomerNa].toString()) {
       return cNasaCustomerNa;
     } else if (stat == "RiderOnDelivery") {
       return cRiderOnDelivery;
