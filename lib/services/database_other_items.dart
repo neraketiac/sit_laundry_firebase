@@ -1,8 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:laundry_firebase/models/otherItems.dart';
+import 'package:flutter/material.dart';
+import 'package:laundry_firebase/models/otheritemmodel.dart';
+import 'package:laundry_firebase/services/navigator_key.dart';
 
 const String COLLECTION_REF = "JobsOnQueue";
 const String SUB_COLLECTION_REF = "OtherItems";
+const Color _gcButtons = Color.fromRGBO(134, 218, 252, 0.733);
 
 class DatabaseOtherItems {
   final _firestore = FirebaseFirestore.instance;
@@ -14,18 +17,28 @@ class DatabaseOtherItems {
         .collection(COLLECTION_REF)
         .doc(id)
         .collection(SUB_COLLECTION_REF)
-        .withConverter<OtherItems>(
-            fromFirestore: (snapshots, _) => OtherItems.fromJson(
+        .withConverter<OtherItemModel>(
+            fromFirestore: (snapshots, _) => OtherItemModel.fromJson(
                   snapshots.data()!,
                 ),
-            toFirestore: (otherItems, _) => otherItems.toJson());
+            toFirestore: (otherItemsModel, _) => otherItemsModel.toJson());
   }
 
   Stream<QuerySnapshot> getOtherItems() {
     return _otherItemsRef.snapshots();
   }
 
-  void addOtherItems(OtherItems otherItems) async {
-    _otherItemsRef.add(otherItems);
+  void addOtherItems(OtherItemModel otherItemModel) async {
+    _otherItemsRef
+        .add(otherItemModel)
+        .then((value) => {
+              //messageResult("Insert Done.${otherItemModel.itemName}"),
+              print("Insert Done.${otherItemModel.itemName}"),
+            })
+        // ignore: invalid_return_type_for_catch_error
+        .catchError(
+          (error) => print("Failed : $error ${otherItemModel.itemName}"),
+        );
+    ;
   }
 }

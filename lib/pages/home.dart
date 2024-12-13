@@ -204,11 +204,11 @@ class _MyHomeState extends State<MyHome> {
                 hintText: "Select product.",
                 dropdownMenuEntries: [
                   DropdownMenuEntry(
-                      value: menuOthPlasticDVal,
-                      label: mapOthNames[menuOthPlasticDVal].toString()),
+                      value: menuOthWash,
+                      label: mapOthNames[menuOthWash].toString()),
                   DropdownMenuEntry(
-                      value: menuOthScatchTapeDVal,
-                      label: mapOthNames[menuOthScatchTapeDVal].toString()),
+                      value: menuOthDry,
+                      label: mapOthNames[menuOthDry].toString()),
                 ],
                 onSelected: (val) {
                   _initialOth = val!;

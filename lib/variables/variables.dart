@@ -1,9 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:laundry_firebase/models/otheritemmodel.dart';
 
 bool showDet = false, showFab = false, showBle = false, showOth = false;
 
 //general
 const int menuDetDVal = 1, menuFabDVal = 2, menuBleDVal = 3, menuOthDVal = 4;
+
+//new start
+//det
+List<OtherItemModel> listDetItems = [];
+List<OtherItemModel> listFabItems = [];
+List<OtherItemModel> listBleItems = [];
+List<OtherItemModel> listOthItems = [];
+List<OtherItemModel> listAddOnItems = [];
+
+const String groupDet = "Det",
+    groupFab = "Fab",
+    groupBle = "Ble",
+    groupOth = "Oth";
+//new end
 
 //det
 Map<int, String> mapDetNames = {};
@@ -32,7 +47,7 @@ const int menuBleOriginalDVal = 302, menuBleColorSafeDVal = 301;
 
 //others
 Map<int, String> mapOthNames = {};
-const int menuOthPlasticDVal = 401, menuOthScatchTapeDVal = 402;
+const int menuOthWash = 401, menuOthDry = 402;
 
 //queuestats
 Map<int, String> mapQueueStat = {};
@@ -48,22 +63,22 @@ const int forSorting = 501,
 
 //paymentStats
 Map<int, String> mapPaymentStat = {};
-const int unpaid = 801, paidCash = 802, paidGCash = 803;
+const int unpaid = 801, paidCash = 802, paidGCash = 803, waitGCash = 804;
 
-class OthItems {
-  int menuDVal;
-  String menuName;
-  OthItems({
-    required this.menuDVal,
-    required this.menuName,
-  });
-  static OthItems fromJson(json) => OthItems(
-        menuDVal: json['menuDVal'],
-        menuName: json['menuName'],
-      );
-}
+// class OthItems {
+//   int menuDVal;
+//   String menuName;
+//   OthItems({
+//     required this.menuDVal,
+//     required this.menuName,
+//   });
+//   static OthItems fromJson(json) => OthItems(
+//         menuDVal: json['menuDVal'],
+//         menuName: json['menuName'],
+//       );
+// }
 
-List<OthItems> othItems = [];
+// List<OthItems> othItems = [];
 
 final List<String> finListNumbering = [
   "#1",
@@ -96,6 +111,91 @@ final List<String> finListNumbering = [
 const mobileWidth = 600;
 
 void putEntries() {
+  //detItems
+  listDetItems.add(OtherItemModel(
+      itemId: menuDetBreezeDVal,
+      itemGroup: groupDet,
+      itemName: "Breeze",
+      itemPrice: 15));
+  listDetItems.add(OtherItemModel(
+      itemId: menuDetArielDVal,
+      itemGroup: groupDet,
+      itemName: "Ariel Twinpack",
+      itemPrice: 15));
+  listDetItems.add(OtherItemModel(
+      itemId: menuDetTideDVal,
+      itemGroup: groupDet,
+      itemName: "Tide",
+      itemPrice: 15));
+  listDetItems.add(OtherItemModel(
+      itemId: menuDetWingsBlueDVal,
+      itemGroup: groupDet,
+      itemName: "Wings Blue",
+      itemPrice: 15));
+  listDetItems.add(OtherItemModel(
+      itemId: menuDetWingsRedDVal,
+      itemGroup: groupDet,
+      itemName: "Wings Red",
+      itemPrice: 8));
+  listDetItems.add(OtherItemModel(
+      itemId: menuDetPowerCleanDVal,
+      itemGroup: groupDet,
+      itemName: "WKL",
+      itemPrice: 8));
+  listDetItems.add(OtherItemModel(
+      itemId: menuDetSurfDVal,
+      itemGroup: groupDet,
+      itemName: "Surf",
+      itemPrice: 10));
+  listDetItems.add(OtherItemModel(
+      itemId: menuDetKlinDVal,
+      itemGroup: groupDet,
+      itemName: "Klin Twinpack",
+      itemPrice: 15));
+  //fab items
+  listFabItems.add(OtherItemModel(
+      itemId: menuFabSurf24mlDVal,
+      itemGroup: groupFab,
+      itemName: "Surf 24ml",
+      itemPrice: 8));
+  listFabItems.add(OtherItemModel(
+      itemId: menuFabDowny24mlDVal,
+      itemGroup: groupFab,
+      itemName: "Downy 24ml",
+      itemPrice: 8));
+  listFabItems.add(OtherItemModel(
+      itemId: menuFabDownyTripidDVal,
+      itemGroup: groupFab,
+      itemName: "Downy Tripid",
+      itemPrice: 17));
+  listFabItems.add(OtherItemModel(
+      itemId: menuFabDowny36mlDVal,
+      itemGroup: groupFab,
+      itemName: "Downy 36ml",
+      itemPrice: 10));
+  listFabItems.add(OtherItemModel(
+      itemId: menuFabSurfTripidDVal,
+      itemGroup: groupFab,
+      itemName: "Surf Tripid",
+      itemPrice: 17));
+  listFabItems.add(OtherItemModel(
+      itemId: menuFabWKL24mlDVal,
+      itemGroup: groupFab,
+      itemName: "WKL Fabcon 24ml",
+      itemPrice: 8));
+  //bel items
+  listBleItems.add(OtherItemModel(
+      itemId: menuBleColorSafeDVal,
+      itemGroup: groupBle,
+      itemName: "Color Safe",
+      itemPrice: 5));
+  //oth items
+  listOthItems.add(OtherItemModel(
+      itemId: menuOthWash,
+      itemGroup: groupOth,
+      itemName: "Wash",
+      itemPrice: 49));
+
   //det names
   mapDetNames.addEntries({menuDetBreezeDVal: "Breeze(15php)"}.entries);
   mapDetNames.addEntries({menuDetArielDVal: "Ariel Twinpack(15php)"}.entries);
@@ -127,12 +227,13 @@ void putEntries() {
       .addEntries({menuFabWKL24mlDVal: "WKL Fabcon 24ml (8php)"}.entries);
 
   //det names
-  mapBleNames.addEntries({menuBleOriginalDVal: "Bleach Original"}.entries);
-  mapBleNames.addEntries({menuBleColorSafeDVal: "Color Safe"}.entries);
+  mapBleNames
+      .addEntries({menuBleOriginalDVal: "Bleach Original(5php)"}.entries);
+  mapBleNames.addEntries({menuBleColorSafeDVal: "Color Safe(5php)"}.entries);
 
   //oth names
-  mapOthNames.addEntries({menuOthPlasticDVal: "Plastic"}.entries);
-  mapOthNames.addEntries({menuOthScatchTapeDVal: "Scatch Tape"}.entries);
+  mapOthNames.addEntries({menuOthWash: "Wash"}.entries);
+  mapOthNames.addEntries({menuOthDry: "Dry"}.entries);
 
   //queueStat
   mapQueueStat.addEntries({forSorting: "ForSorting"}.entries);
@@ -149,6 +250,7 @@ void putEntries() {
   mapPaymentStat.addEntries({unpaid: "Unpaid"}.entries);
   mapPaymentStat.addEntries({paidCash: "PaidCash"}.entries);
   mapPaymentStat.addEntries({paidGCash: "PaidGCash"}.entries);
+  mapPaymentStat.addEntries({waitGCash: "WaitGCash"}.entries);
 }
 
 //var mapEmpId = {"0550", "Jeng", "0808", "Abi", "0413", "Ket", "0316", "DonP"};
