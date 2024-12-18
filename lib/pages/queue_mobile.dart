@@ -5,6 +5,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'package:laundry_firebase/models/jobsonqueuemodel.dart';
+import 'package:laundry_firebase/services/database_jobsonqueue.dart';
 //import 'package:laundry_firebase/variables/item_count_helper.dart';
 import 'package:laundry_firebase/variables/variables.dart';
 
@@ -42,6 +44,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
   //JobsOnQueue
   late String _gsId;
   late Timestamp _gtDateQ;
+  late DateTime _gdDateQ;
   late String _gsCreatedBy;
   late String _gsCustomer;
   late int _giInitialKilo;
@@ -51,6 +54,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
   late String _gsPaymentStat;
   late String _gsPaymentReceivedBy;
   late Timestamp _gtNeedOn;
+  late DateTime _gdNeedOn;
   late bool _gbMaxFab;
   late bool _gbFold;
   late bool _gbMix;
@@ -63,7 +67,6 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
   late int _giFinalLoad;
   late int _giFinalPrice;
   late int _giExtraDryPrice;
-  late DateTime _gdNeedOn;
   late bool _gbWithFinalLoad;
   late bool _gbWithFinalPrice;
 
@@ -93,7 +96,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
 
     empid = widget.empid;
 
-    putEntries();
+    //putEntries();
   }
 
   @override
@@ -123,7 +126,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                   const SizedBox(
                     height: 1,
                   ),
-                  _readDataJobsOnQueue('JobsOnQueue', context),
+                  _readDataJobsOnQueueJson(),
                 ]),
               ),
             ),
@@ -191,6 +194,103 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
           ],
         ),
       ),
+    );
+  }
+
+  //read JobsOnQueue
+  Widget _readDataJobsOnQueueJson() {
+    DatabaseJobsOnQueue databaseJobsOnQueue = DatabaseJobsOnQueue();
+    bool zebra = false;
+    //read
+    return StreamBuilder<QuerySnapshot>(
+      stream: databaseJobsOnQueue.getJobsOnQueue(),
+      builder: (context, snapshot) {
+        List jobsOnQueueModels = snapshot.data?.docs ?? [];
+        bHeader = true;
+        List<TableRow> rowDatas = [];
+        if (jobsOnQueueModels.isNotEmpty) {
+          //header
+          if (bHeader) {
+            const rowData = TableRow(
+                decoration:
+                    BoxDecoration(color: Color.fromARGB(255, 9, 194, 49)),
+                children: [
+                  Text(
+                    "Jobs On Queue",
+                    style: TextStyle(fontSize: 10),
+                  ),
+                ]);
+            rowDatas.add(rowData);
+            bHeader = false;
+          }
+
+          jobsOnQueueModels.forEach((jobsOnQueueModelData) {
+            JobsOnQueueModel jobsOnQueueModel = jobsOnQueueModelData.data();
+            /*
+            _giFinalKilo = jobsOnQueueModel.finalKilo!;
+            _giFinalLoad = jobsOnQueueModel.finalLoad!;
+            _giFinalPrice = jobsOnQueueModel.finalPrice!;
+            */
+
+            final rowData = TableRow(
+                decoration:
+                    BoxDecoration(color: zebra ? Colors.black : Colors.black),
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(2.0),
+                    child: Center(
+                      child: GestureDetector(
+                        onTap: () {
+                          /*
+                          _gsId = jobsOnQueueModelData.id;
+                          //_gdDateQ = jobsOnQueueModel.dateQ;
+                          _gsCreatedBy = jobsOnQueueModel.createdBy;
+                          _gsCustomer = jobsOnQueueModel.customer;
+                          _giInitialKilo = jobsOnQueueModel.initialKilo;
+                          _giInitialLoad = jobsOnQueueModel.initialLoad;
+                          _giInitialPrice = jobsOnQueueModel.initialPrice;
+                          _gsQueueStat = jobsOnQueueModel.queueStat;
+                          if (_gsQueueStat ==
+                              mapQueueStat[forSorting].toString()) {
+                            _bRiderPickup = false;
+                          }
+                          if (_gsQueueStat ==
+                              mapQueueStat[riderPickup].toString()) {
+                            _bRiderPickup = true;
+                          }
+                          _gsPaymentStat = jobsOnQueueModel.paymentStat;
+                          _gsPaymentReceivedBy =
+                              jobsOnQueueModel.paymentReceivedBy;
+                          //_gdNeedOn = jobsOnQueueModel.needOn;
+                          _gbFold = jobsOnQueueModel.fold;
+                          _gbMix = jobsOnQueueModel.mix;
+                          _giBasket = jobsOnQueueModel.basket;
+                          _giBag = jobsOnQueueModel.bag;
+                          //_gdNeedOn = _gtNeedOn.toDate();
+
+                          alterQueueMobile();
+                          */
+                          alterQueueMobileJson(jobsOnQueueModel);
+                        },
+                        //Container display JobsOnQueue
+                        child: _conDisplayJson(
+                          false,
+                          jobsOnQueueModel,
+                        ),
+                        //child: Text("watata"),
+                      ),
+                    ),
+                  )
+                ]);
+
+            rowDatas.add(rowData);
+          });
+        }
+
+        return Table(
+          children: rowDatas,
+        );
+      },
     );
   }
 
@@ -315,6 +415,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                           false,
                           Color.fromRGBO(250, 175, 175, 1),
                           buffRecord['Customer'],
+                          //buffRecord['Customer'],
                           buffRecord['QueueStat'],
                           buffRecord['InitialKilo'],
                           buffRecord['InitialLoad'],
@@ -997,6 +1098,88 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
   }
 
   //Display
+  Container _conDisplayJson(bool showUpArrow, JobsOnQueueModel jobsOnQueueModel,
+      [int buffExtraDryPrice = 0, int buffJobsId = 0]) {
+    return Container(
+      height: 80,
+      color: _getCOlorStatus(jobsOnQueueModel.queueStat),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Column(
+            children: [
+              InkWell(
+                onDoubleTap: () {
+                  if (jobsOnQueueModel.queueStat == "Waiting") {
+                    alterNumberMobile(buffJobsId);
+                  }
+                },
+                child: Text(
+                  (buffJobsId == 0 ? "" : "#$buffJobsId"),
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.left,
+                ),
+              ),
+              Visibility(
+                visible: showUpArrow,
+                child: IconButton(
+                  onPressed: () {
+                    moveUp(buffJobsId);
+                  },
+                  icon: const Icon(Icons.arrow_upward),
+                  color: Colors.blueAccent,
+                ),
+              ),
+            ],
+          ),
+          Expanded(
+            child: Column(
+              mainAxisSize: MainAxisSize.max,
+              children: [
+                Text(
+                  "${customerName(jobsOnQueueModel.customerId.toString())} (${jobsOnQueueModel.finalLoad == 0 ? jobsOnQueueModel.initialLoad : jobsOnQueueModel.finalLoad}) ${jobsOnQueueModel.basket == 0 ? "" : "${jobsOnQueueModel.basket}BK"} ${jobsOnQueueModel.bag == 0 ? "" : "${jobsOnQueueModel.bag}BG"}",
+                  // (${_gbWithFinalLoad ? _giFinalLoad.toString() : buffInitialLoad.toString()}) ${buffBasket == 0 ? "" : "${buffBasket}BK"} ${buffBag == 0 ? "" : "${buffBag}BG"}",
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.end,
+                ),
+                Text(
+                  "${jobsOnQueueModel.finalKilo == 0 ? jobsOnQueueModel.initialKilo : jobsOnQueueModel.finalKilo} kg ${jobsOnQueueModel.mix ? "" : "DM"} ${jobsOnQueueModel.fold ? "" : "NF"}",
+                  //"${_gbWithFinalLoad ? _giFinalKilo.toString() : buffInitialKilo.toString()} ${buffMaxFab ? "MaxFab" : ""} ${buffMix ? "" : "DM"} ${buffFold ? "" : "NF"} ${buffExtraDryPrice == 0 ? "" : "XD"}",
+                  style: const TextStyle(fontSize: 9),
+                ),
+                Text(
+                  "${jobsOnQueueModel.paymentStat} ${jobsOnQueueModel.finalPrice == 0 ? jobsOnQueueModel.initialPrice + jobsOnQueueModel.initialOthersPrice : jobsOnQueueModel.finalPrice + jobsOnQueueModel.finalOthersPrice} Php",
+                  style: TextStyle(
+                      fontSize: 10,
+                      backgroundColor:
+                          paymentStatColor(jobsOnQueueModel.paymentStat)),
+                ),
+                Text(
+                  displayDate(convertTimeStamp(jobsOnQueueModel.needOn)),
+                  style: const TextStyle(
+                    fontSize: 10,
+                  ),
+                  textAlign: TextAlign.right,
+                ),
+                Text(
+                  jobsOnQueueModel.queueStat,
+                  style: const TextStyle(fontSize: 10),
+                  textAlign: TextAlign.right,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  //Display
   Container _conDisplay(
       BuildContext context,
       bool showUpArrow,
@@ -1069,15 +1252,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                   "$buffPaymentStat:${(_gbWithFinalPrice ? _giFinalPrice : buffInitialPrice) + buffExtraDryPrice} Php",
                   style: TextStyle(
                       fontSize: 10,
-                      backgroundColor: (buffPaymentStat == "Unpaid"
-                          ? const Color.fromARGB(115, 255, 97, 97)
-                          : (buffPaymentStat == "WaitingGcash"
-                              ? const Color.fromARGB(115, 255, 97, 97)
-                              : (buffPaymentStat == "Kulang"
-                                  ? const Color.fromARGB(115, 255, 97, 97)
-                                  : (buffPaymentStat == "MaySukli"
-                                      ? const Color.fromARGB(115, 255, 97, 97)
-                                      : Colors.transparent))))),
+                      backgroundColor: paymentStatColor(buffPaymentStat)),
                 ),
                 Text(
                   displayDate(convertTimeStamp(buffNeedOn)),
@@ -1124,6 +1299,95 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                 ),
               ],
             ));
+  }
+
+  //open new expense box json
+  void alterQueueMobileJson(JobsOnQueueModel jobsOnQueueModel) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(
+          "Change Queue",
+          style: TextStyle(backgroundColor: Colors.red[400]),
+        ),
+        content: SingleChildScrollView(
+          scrollDirection: Axis.vertical,
+          child: StatefulBuilder(
+              builder: (BuildContext context, StateSetter setState) {
+            return Container(
+              padding: EdgeInsets.all(8.0),
+              decoration: BoxDecoration(
+                  border: Border.all(color: Colors.blueAccent, width: 2.0)),
+              child: Form(
+                key: _formKeyQueueMobile,
+                //Alter Display
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(
+                      height: 5,
+                    ),
+                    Container(
+                      padding: EdgeInsets.all(1.0),
+                      decoration: BoxDecoration(
+                          border:
+                              Border.all(color: Color(0xffD4D4D4), width: 2.0)),
+                      child: TextFormField(
+                        textAlign: TextAlign.center,
+                        decoration: InputDecoration(
+                            labelText: 'Customer Name',
+                            hintText: 'Enter Customer Name'),
+                        validator: (val) {},
+                        initialValue: customerName(
+                            jobsOnQueueModel.customerId.toString()),
+                        enabled: false,
+                      ),
+                    ),
+                    SizedBox(
+                      height: 5,
+                    ),
+                    //QueueStat
+                    Container(
+                      alignment: Alignment.center,
+                      padding: EdgeInsets.all(1.0),
+                      decoration: containerQueBoxDecoration(),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text("Sort"),
+                          Switch.adaptive(
+                            value: _bRiderPickup,
+                            onChanged: (bool value) {
+                              setState(() {
+                                _bRiderPickup = value;
+                              });
+                            },
+                          ),
+                          Text("RiderPickup"),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }),
+        ),
+        actions: [
+          //cancel button
+          _cancelButton(),
+
+          //save button
+          _updateQueueRecord(),
+
+          //move to JobsOnGoing automatically
+          _autoOnGoing(),
+
+          //move to JobsOnGoing manually
+          _deleteQueue(),
+        ],
+      ),
+    );
   }
 
   //open new expense box
@@ -3132,6 +3396,10 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
         borderRadius: BorderRadius.circular(8),
       ),
     );
+  }
+
+  void _updateDataQueueMobileJson() {
+    DatabaseJobsOnQueue databaseJobsOnQueue = DatabaseJobsOnQueue();
   }
 
   void _updateDataQueueMobile() {

@@ -223,6 +223,7 @@ class _EnterLoyaltyCodeState extends State<EnterLoyaltyCode> {
   }
 
   Future<void> _singleReadData(String s) async {
+    putEntries();
     if (s == "16") {
       _allCards(context);
     } else if (s == "456") {

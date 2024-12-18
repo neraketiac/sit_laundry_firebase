@@ -1,22 +1,22 @@
-//import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class JobsOnQueueModel {
-  final DateTime dateQ;
+  final Timestamp dateQ;
   final String createdBy;
-  final String customer;
+  final int customerId;
   final int initialKilo;
   final int initialLoad;
   final int initialPrice;
-  final int? initialOthersPrice;
-  final int? finalKilo;
-  final int? finalLoad;
-  final int? finalPrice;
-  final int? finalOthersPrice;
+  final int initialOthersPrice;
+  final int finalKilo;
+  final int finalLoad;
+  final int finalPrice;
+  final int finalOthersPrice;
   final String queueStat;
   final String paymentStat;
   final String paymentReceivedBy;
-  final DateTime? paidD;
-  final DateTime needOn;
+  final Timestamp paidD;
+  final Timestamp needOn;
   final bool fold;
   final bool mix;
   final int basket;
@@ -26,19 +26,19 @@ class JobsOnQueueModel {
   JobsOnQueueModel({
     required this.dateQ,
     required this.createdBy,
-    required this.customer,
+    required this.customerId,
     required this.initialKilo,
     required this.initialLoad,
     required this.initialPrice,
-    this.initialOthersPrice,
-    this.finalKilo,
-    this.finalLoad,
-    this.finalPrice,
-    this.finalOthersPrice,
+    required this.initialOthersPrice,
+    required this.finalKilo,
+    required this.finalLoad,
+    required this.finalPrice,
+    required this.finalOthersPrice,
     required this.queueStat,
     required this.paymentStat,
     required this.paymentReceivedBy,
-    this.paidD,
+    required this.paidD,
     required this.needOn,
     required this.fold,
     required this.mix,
@@ -49,9 +49,9 @@ class JobsOnQueueModel {
 
   JobsOnQueueModel.fromJson(Map<String, dynamic> json)
       : this(
-            dateQ: json['DateQ']! as DateTime,
+            dateQ: json['DateQ']! as Timestamp,
             createdBy: json['CreatedBy']! as String,
-            customer: json['Customer']! as String,
+            customerId: json['CustomerId']! as int,
             initialKilo: json['InitialKilo']! as int,
             initialLoad: json['InitialLoad']! as int,
             initialPrice: json['InitialPrice']! as int,
@@ -63,8 +63,8 @@ class JobsOnQueueModel {
             queueStat: json['QueueStat']! as String,
             paymentStat: json['PaymentStat']! as String,
             paymentReceivedBy: json['PaymentReceivedBy']! as String,
-            paidD: json['PaidD']! as DateTime,
-            needOn: json['NeedOn']! as DateTime,
+            paidD: json['PaidD']! as Timestamp,
+            needOn: json['NeedOn']! as Timestamp,
             fold: json['Fold']! as bool,
             mix: json['Mix']! as bool,
             basket: json['Basket']! as int,
@@ -72,9 +72,9 @@ class JobsOnQueueModel {
             remarks: json['Remarks']! as String);
 
   JobsOnQueueModel coyWith({
-    DateTime? dateQ,
+    Timestamp? dateQ,
     String? createdBy,
-    String? customer,
+    int? customerId,
     int? initialKilo,
     int? initialLoad,
     int? initialPrice,
@@ -86,8 +86,8 @@ class JobsOnQueueModel {
     String? queueStat,
     String? paymentStat,
     String? paymentReceivedBy,
-    DateTime? paidD,
-    DateTime? needOn,
+    Timestamp? paidD,
+    Timestamp? needOn,
     bool? fold,
     bool? mix,
     int? basket,
@@ -97,7 +97,7 @@ class JobsOnQueueModel {
     return JobsOnQueueModel(
       dateQ: dateQ ?? this.dateQ,
       createdBy: createdBy ?? this.createdBy,
-      customer: customer ?? this.customer,
+      customerId: customerId ?? this.customerId,
       initialKilo: initialKilo ?? this.initialKilo,
       initialLoad: initialLoad ?? this.initialLoad,
       initialPrice: initialPrice ?? this.initialPrice,
@@ -123,7 +123,7 @@ class JobsOnQueueModel {
         //return {
         'DateQ': dateQ,
         'CreatedBy': createdBy,
-        'Customer': customer,
+        'CustomerId': customerId,
         'InitialKilo': initialKilo,
         'InitialLoad': initialLoad,
         'InitialPrice': initialPrice,

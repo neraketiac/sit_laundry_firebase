@@ -17,7 +17,7 @@ class _MyHomeState extends State<MyHome> {
   void initState() {
     super.initState();
 
-    putEntries();
+    //putEntries();
   }
 
   //textcontrollers

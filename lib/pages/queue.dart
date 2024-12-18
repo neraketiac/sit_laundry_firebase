@@ -1,10 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:laundry_firebase/models/jobsonqueue.dart';
-import 'package:laundry_firebase/models/otherItems.dart';
+import 'package:laundry_firebase/models/customermodel.dart';
+import 'package:laundry_firebase/models/jobsonqueuemodel.dart';
+import 'package:laundry_firebase/models/otheritemmodel.dart';
+import 'package:laundry_firebase/pages/loyalty_admin.dart';
 import 'package:laundry_firebase/pages/queue_mobile.dart';
-import 'package:laundry_firebase/services/database_other_items.dart';
+import 'package:laundry_firebase/pages/autocompletecustomer.dart';
+import 'package:laundry_firebase/services/database_jobsonqueue.dart';
 import 'package:laundry_firebase/variables/variables.dart';
 
 class MyQueue extends StatefulWidget {
@@ -17,57 +19,9 @@ class MyQueue extends StatefulWidget {
 }
 
 class _MyQueueState extends State<MyQueue> {
-  TextEditingController customerController = TextEditingController();
-  TextEditingController initialLoadController = TextEditingController();
-  TextEditingController initialPriceController = TextEditingController();
-  //TextEditingController queueStatController = TextEditingController();
-  TextEditingController paymentStatController = TextEditingController();
-  TextEditingController paymentReceivedByController = TextEditingController();
-  TextEditingController needOnController = TextEditingController();
-  TextEditingController riderDeliverController = TextEditingController();
-  TextEditingController actRiderDeliverController = TextEditingController();
-  //TextEditingController kulangController = TextEditingController();
-  TextEditingController remarksController = TextEditingController();
-  //TextEditingController maySukliController = TextEditingController();
-
-  TextEditingController productController = TextEditingController();
-
   late String _sCreatedBy;
-  int _iInitialKilo = 8;
-  int _iInitialPrice = 155;
-  int _iInitialLoad = 1;
-  int _iInitialTotalPrice = 0;
 
-  late DateTime _dNeedOn = DateTime.now().add(Duration(minutes: 210));
-  bool _bMaxFab = false;
-  bool _bFold = true;
-  bool _bMix = true;
-  int _iBasket = 0;
-  int _iBag = 0;
   final _formKey = GlobalKey<FormState>();
-
-  late bool _bRiderPickup = false;
-  late bool _bRegularSabon = true,
-      _bSayoSabon = false,
-      _bOtherServices = false,
-      _bNotOtherServices = true;
-  late bool _bUnpaid = true, _bPaidCash = false, _bPaidGCash = false;
-
-  int _initialDet = menuDetBreezeDVal;
-  int _initialFab = menuFabSurf24mlDVal;
-  int _initialBle = menuBleColorSafeDVal;
-
-  int _iDetPcs = 0, _iDetPrice = 0;
-  int _iFabPcs = 0, _iFabPrice = 0;
-  int _iBlePcs = 0, _iBlePrice = 0;
-
-  static const Map<String, String> frequencyOptionsx = {
-    "30 seconds": "thirty",
-    "1 minute": "sixty",
-    "2 minutes": "onetwenty",
-  };
-
-  late String _frequencyValuex = "Breeze(15php)";
 
   @override
   void initState() {
@@ -75,15 +29,13 @@ class _MyQueueState extends State<MyQueue> {
 
     _sCreatedBy = widget.empid;
 
-    _iInitialKilo = 8;
-    _iInitialPrice = (_iInitialKilo ~/ 8) * iPriceDivider(_bRegularSabon);
-    _iInitialLoad = (_iInitialKilo ~/ 8);
-
-    putEntries();
+    iInitialKiloVar = 8;
+    iInitialPriceVar = (iInitialKiloVar ~/ 8) * iPriceDivider(bRegularSabonVar);
+    iInitialLoadVar = (iInitialKiloVar ~/ 8);
   }
 
-  //open new expense box
-  void enterJobsOnQueue() {
+  //jobsonqueue
+  void showJobsOnQueueEntry() {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -107,108 +59,37 @@ class _MyQueueState extends State<MyQueue> {
                     SizedBox(
                       height: 5,
                     ),
-
-                    /*
-                    //QueueStat
-                    DropdownMenu(
-                      label: Text("Status",
-                          style: TextStyle(
-                            fontSize: 12.0,
-                          )),
-                      inputDecorationTheme: getThemeDropDown(),
-                      controller: queueStatController,
-                      hintText: "Status",
-                      dropdownMenuEntries: const [
-                        DropdownMenuEntry(
-                            value: "ForSorting", label: "ForSorting"),
-                        DropdownMenuEntry(
-                            value: "RiderPickup", label: "RiderPickup"),
-                      ],
-                      onSelected: (val) {},
-                      initialSelection: "ForSorting",
-                    ),
-                    */
-                    // QeueeStat CheckBox
-                    // Container(
-                    //   padding: EdgeInsets.all(1.0),
-                    //   decoration: containerQueBoxDecoration(),
-                    //   child: Row(
-                    //     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    //     children: [
-                    //       Expanded(
-                    //         child: CheckboxListTile(
-                    //             contentPadding: EdgeInsets.all(0),
-                    //             subtitle: Text(
-                    //               mapQueueStat[forSorting].toString(),
-                    //             ),
-                    //             // title: Expanded(
-                    //             //     child: Text(
-                    //             //   mapQueueStat[forSorting].toString(),
-                    //             // )),
-                    //             value: _bForSorting,
-                    //             onChanged: (val) {
-                    //               setState(() {
-                    //                 _bForSorting = false;
-                    //                 _bForRiderPickup = false;
-                    //                 if (val!) {
-                    //                   _bForSorting = val!;
-                    //                 }
-                    //               });
-                    //             }),
-                    //       ),
-                    //       Expanded(
-                    //         child: CheckboxListTile(
-                    //             contentPadding: EdgeInsets.all(0),
-                    //             subtitle: Text(
-                    //               mapQueueStat[riderPickup].toString(),
-                    //             ),
-                    //             // title: Expanded(
-                    //             //     child: Text(
-                    //             //   mapQueueStat[riderPickup].toString(),
-                    //             // )),
-                    //             value: _bForRiderPickup,
-                    //             onChanged: (val) {
-                    //               setState(() {
-                    //                 _bForSorting = false;
-                    //                 _bForRiderPickup = false;
-                    //                 if (val!) {
-                    //                   _bForRiderPickup = val!;
-                    //                 }
-                    //               });
-                    //             }),
-                    //       ),
-                    //     ],
-                    //   ),
-                    // ),
-                    // SizedBox(
-                    //   height: 5,
-                    // ),
-                    //Customer Name
                     Container(
                       padding: EdgeInsets.all(1.0),
                       decoration: containerQueBoxDecoration(),
-                      child: TextFormField(
-                        textCapitalization: TextCapitalization.words,
-                        // inputFormatters: [
-                        //   FilteringTextInputFormatter.deny(RegExp(r'\s\b\w*'))
-                        // ],
-                        textAlign: TextAlign.center,
-                        controller: customerController,
-                        decoration: InputDecoration(
-                            labelText: 'Customer Name',
-                            hintText: 'Enter Customer Name'),
-                        validator: (val) {
-                          if (val!.isEmpty) {
-                            return "Required";
-                          }
-                        },
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          Text(
+                            'Enter Customer Name',
+                            style: TextStyle(fontSize: 10),
+                          ),
+                          AutoCompleteCustomer(),
+                          SizedBox(
+                            height: 5,
+                          ),
+                          MaterialButton(
+                            color: cButtons,
+                            onPressed: () {
+                              _allCards(context);
+                            },
+                            child: Text("New Account"),
+                          ),
+                          SizedBox(
+                            height: 5,
+                          ),
+                        ],
                       ),
                     ),
-                    //New Estimate load
+                    //QueueStat
                     SizedBox(
                       height: 5,
                     ),
-                    //QueueStat
                     Container(
                       alignment: Alignment.center,
                       padding: EdgeInsets.all(1.0),
@@ -218,10 +99,10 @@ class _MyQueueState extends State<MyQueue> {
                         children: [
                           Text("Sort"),
                           Switch.adaptive(
-                            value: _bRiderPickup,
+                            value: bRiderPickupVar,
                             onChanged: (bool value) {
                               setState(() {
-                                _bRiderPickup = value;
+                                bRiderPickupVar = value;
                               });
                             },
                           ),
@@ -247,25 +128,24 @@ class _MyQueueState extends State<MyQueue> {
                                     style: TextStyle(fontSize: 10),
                                   ),
                                   Checkbox(
-                                      value: _bRegularSabon,
+                                      value: bRegularSabonVar,
                                       onChanged: (val) {
-                                        _bRegularSabon = false;
-                                        _bSayoSabon = false;
-                                        _bOtherServices = false;
-                                        _bNotOtherServices = true;
+                                        resetRegular();
 
                                         if (val!) {
                                           setState(
                                             () {
-                                              _bRegularSabon = val;
+                                              bRegularSabonVar = val;
                                             },
                                           );
                                         }
 
-                                        _iInitialKilo = 8;
-                                        _iInitialPrice = (_iInitialKilo ~/ 8) *
-                                            iPriceDivider(_bRegularSabon);
-                                        _iInitialLoad = (_iInitialKilo ~/ 8);
+                                        iInitialKiloVar = 8;
+                                        iInitialPriceVar =
+                                            (iInitialKiloVar ~/ 8) *
+                                                iPriceDivider(bRegularSabonVar);
+                                        iInitialLoadVar =
+                                            (iInitialKiloVar ~/ 8);
                                       })
                                 ],
                               ),
@@ -276,25 +156,24 @@ class _MyQueueState extends State<MyQueue> {
                                     style: TextStyle(fontSize: 10),
                                   ),
                                   Checkbox(
-                                      value: _bSayoSabon,
+                                      value: bSayoSabonVar,
                                       onChanged: (val) {
-                                        _bSayoSabon = false;
-                                        _bRegularSabon = false;
-                                        _bOtherServices = false;
-                                        _bNotOtherServices = true;
+                                        resetRegular();
 
                                         if (val!) {
                                           setState(
                                             () {
-                                              _bSayoSabon = val;
+                                              bSayoSabonVar = val;
                                             },
                                           );
                                         }
 
-                                        _iInitialKilo = 8;
-                                        _iInitialPrice = (_iInitialKilo ~/ 8) *
-                                            iPriceDivider(_bRegularSabon);
-                                        _iInitialLoad = (_iInitialKilo ~/ 8);
+                                        iInitialKiloVar = 8;
+                                        iInitialPriceVar =
+                                            (iInitialKiloVar ~/ 8) *
+                                                iPriceDivider(bRegularSabonVar);
+                                        iInitialLoadVar =
+                                            (iInitialKiloVar ~/ 8);
                                       })
                                 ],
                               ),
@@ -305,33 +184,30 @@ class _MyQueueState extends State<MyQueue> {
                                     style: TextStyle(fontSize: 10),
                                   ),
                                   Checkbox(
-                                      value: _bOtherServices,
+                                      value: bOtherServicesVar,
                                       onChanged: (val) {
-                                        _bSayoSabon = false;
-                                        _bRegularSabon = false;
-                                        _bOtherServices = false;
-                                        _bNotOtherServices = false;
+                                        resetRegular();
+                                        bNotOtherServicesVar = false;
 
                                         if (val!) {
                                           setState(
                                             () {
-                                              _bOtherServices = val;
+                                              bOtherServicesVar = val;
                                             },
                                           );
                                         }
 
-                                        _iInitialKilo = 0;
-                                        _iInitialPrice = 0;
-                                        _iInitialLoad = 0;
+                                        iInitialKiloVar = 0;
+                                        iInitialPriceVar = 0;
+                                        iInitialLoadVar = 0;
                                       })
                                 ],
                               ),
                             ],
                           ),
-
                           //New estimate load +-8 kilo
                           Visibility(
-                            visible: _bNotOtherServices,
+                            visible: bNotOtherServicesVar,
                             child: Container(
                               padding: EdgeInsets.all(0),
                               child: Row(
@@ -350,47 +226,36 @@ class _MyQueueState extends State<MyQueue> {
                                       children: [
                                         IconButton(
                                           onPressed: () {
-                                            if (_iInitialKilo < 8) {
-                                              _iInitialKilo = 8;
-                                              _iInitialPrice = (_iInitialKilo ~/
-                                                      8) *
-                                                  iPriceDivider(_bRegularSabon);
-                                              _iInitialLoad =
-                                                  (_iInitialKilo ~/ 8);
-
-                                              // setState(() => _iInitialKilo = 0);
-                                              // setState(() => _iInitialPrice = 0);
-                                              // setState(() => _iInitialLoad = 0);
+                                            if (iInitialKiloVar < 8) {
+                                              iInitialKiloVar = 8;
+                                              iInitialPriceVar =
+                                                  (iInitialKiloVar ~/ 8) *
+                                                      iPriceDivider(
+                                                          bRegularSabonVar);
+                                              iInitialLoadVar =
+                                                  (iInitialKiloVar ~/ 8);
                                             } else {
-                                              if (_iInitialKilo % 8 != 0) {
-                                                _iInitialKilo = _iInitialKilo -
-                                                    (_iInitialKilo % 8);
+                                              if (iInitialKiloVar % 8 != 0) {
+                                                iInitialKiloVar =
+                                                    iInitialKiloVar -
+                                                        (iInitialKiloVar % 8);
                                               } else {
-                                                _iInitialKilo =
-                                                    _iInitialKilo - 8;
+                                                iInitialKiloVar =
+                                                    iInitialKiloVar - 8;
                                               }
 
-                                              _iInitialPrice = (_iInitialKilo ~/
-                                                      8) *
-                                                  iPriceDivider(_bRegularSabon);
+                                              iInitialPriceVar =
+                                                  (iInitialKiloVar ~/ 8) *
+                                                      iPriceDivider(
+                                                          bRegularSabonVar);
 
-                                              _iInitialLoad =
-                                                  (_iInitialKilo ~/ 8);
-
-                                              // setState(
-                                              //   () => _iInitialKilo,
-                                              // );
-
-                                              // setState(() => _iInitialPrice =
-                                              //     (_iInitialKilo ~/ 8) *
-                                              //         iPriceDivider(_bRegularSabon));
-                                              // setState(() =>
-                                              //     _iInitialLoad = (_iInitialKilo ~/ 8));
+                                              iInitialLoadVar =
+                                                  (iInitialKiloVar ~/ 8);
                                             }
                                             setState(() {
-                                              _iInitialKilo;
-                                              _iInitialLoad;
-                                              _iInitialPrice;
+                                              iInitialKiloVar;
+                                              iInitialLoadVar;
+                                              iInitialPriceVar;
                                             });
                                           },
                                           icon: const Icon(
@@ -418,27 +283,26 @@ class _MyQueueState extends State<MyQueue> {
                                         Text("+8 kg"),
                                         IconButton(
                                           onPressed: () {
-                                            if (_iInitialKilo % 8 != 0) {
-                                              _iInitialKilo = _iInitialKilo +
-                                                  8 -
-                                                  (_iInitialKilo % 8);
+                                            if (iInitialKiloVar % 8 != 0) {
+                                              iInitialKiloVar =
+                                                  iInitialKiloVar +
+                                                      8 -
+                                                      (iInitialKiloVar % 8);
                                             } else {
-                                              _iInitialKilo = _iInitialKilo + 8;
+                                              iInitialKiloVar =
+                                                  iInitialKiloVar + 8;
                                             }
 
-                                            _iInitialPrice = (_iInitialKilo ~/
-                                                    8) *
-                                                (iPriceDivider(_bRegularSabon));
-                                            _iInitialLoad = _iInitialKilo ~/ 8;
-
-                                            // setState(() => _iInitialKilo);
-                                            // setState(() => _iInitialPrice);
-                                            // setState(() => _iInitialLoad);
-
+                                            iInitialPriceVar =
+                                                (iInitialKiloVar ~/ 8) *
+                                                    (iPriceDivider(
+                                                        bRegularSabonVar));
+                                            iInitialLoadVar =
+                                                iInitialKiloVar ~/ 8;
                                             setState(() {
-                                              _iInitialKilo;
-                                              _iInitialLoad;
-                                              _iInitialPrice;
+                                              iInitialKiloVar;
+                                              iInitialLoadVar;
+                                              iInitialPriceVar;
                                             });
                                           },
                                           icon: const Icon(Icons.add_circle),
@@ -453,7 +317,7 @@ class _MyQueueState extends State<MyQueue> {
                           ),
                           //New Estimate Load display
                           Visibility(
-                            visible: _bNotOtherServices,
+                            visible: bNotOtherServicesVar,
                             child: Container(
                               padding: EdgeInsets.all(3),
                               child: Column(
@@ -468,7 +332,7 @@ class _MyQueueState extends State<MyQueue> {
                                       children: [
                                         Text("Weight:"),
                                         Text(
-                                            "${kiloDisplay(_iInitialKilo)} kilo"),
+                                            "${kiloDisplay(iInitialKiloVar)} kilo"),
                                       ],
                                     ),
                                   ),
@@ -480,7 +344,7 @@ class _MyQueueState extends State<MyQueue> {
                                           MainAxisAlignment.spaceBetween,
                                       children: [
                                         Text("Load:"),
-                                        Text("$_iInitialLoad"),
+                                        Text("$iInitialLoadVar"),
                                       ],
                                     ),
                                   ),
@@ -493,7 +357,7 @@ class _MyQueueState extends State<MyQueue> {
                                       children: [
                                         Text("Load Price:"),
                                         Text(
-                                            "${autoPriceDisplay(_iInitialPrice, _bRegularSabon)}.00"),
+                                            "${autoPriceDisplay(iInitialPriceVar, bRegularSabonVar)}.00"),
                                       ],
                                     ),
                                   ),
@@ -506,7 +370,7 @@ class _MyQueueState extends State<MyQueue> {
                                       children: [
                                         Text("Total Price:"),
                                         Text(
-                                            "Php ${_iInitialPrice + _iInitialTotalPrice}.00"),
+                                            "Php ${iInitialPriceVar + iInitialOthersPriceVar}.00"),
                                       ],
                                     ),
                                   ),
@@ -516,7 +380,7 @@ class _MyQueueState extends State<MyQueue> {
                           ),
                           //New Estimate Load (+- 1 kilo)
                           Visibility(
-                            visible: _bNotOtherServices,
+                            visible: bNotOtherServicesVar,
                             child: Container(
                               padding: EdgeInsets.all(0.0),
                               child: Row(
@@ -536,101 +400,60 @@ class _MyQueueState extends State<MyQueue> {
                                       children: [
                                         IconButton(
                                           onPressed: () {
-                                            if (_iInitialKilo > 8) {
-                                              if (_iInitialKilo % 8 == 1) {
-                                                _iInitialPrice =
-                                                    _iInitialPrice -
-                                                        (_bRegularSabon
+                                            if (iInitialKiloVar > 8) {
+                                              if (iInitialKiloVar % 8 == 1) {
+                                                iInitialPriceVar =
+                                                    iInitialPriceVar -
+                                                        (bRegularSabonVar
                                                             ? 25
                                                             : 25); //8-9kilo 25
 
-                                                _iInitialLoad =
-                                                    _iInitialLoad - 1;
-                                              } else if (_iInitialKilo % 8 ==
+                                                iInitialLoadVar =
+                                                    iInitialLoadVar - 1;
+                                              } else if (iInitialKiloVar % 8 ==
                                                   2) {
-                                                _iInitialPrice =
-                                                    _iInitialPrice -
-                                                        (_bRegularSabon
+                                                iInitialPriceVar =
+                                                    iInitialPriceVar -
+                                                        (bRegularSabonVar
                                                             ? 45
                                                             : 50); //9-10kilo 45
-                                              } else if (_iInitialKilo % 8 ==
+                                              } else if (iInitialKiloVar % 8 ==
                                                   3) {
-                                                _iInitialPrice = _iInitialPrice -
-                                                    (_bRegularSabon
-                                                        ? 25
-                                                        : 25); //10-11kilo 25
-                                              } else if (_iInitialKilo % 8 ==
+                                                iInitialPriceVar =
+                                                    iInitialPriceVar -
+                                                        (bRegularSabonVar
+                                                            ? 25
+                                                            : 25); //10-11kilo 25
+                                              } else if (iInitialKiloVar % 8 ==
                                                   4) {
-                                                _iInitialPrice =
-                                                    _iInitialPrice -
-                                                        (_bRegularSabon
+                                                iInitialPriceVar =
+                                                    iInitialPriceVar -
+                                                        (bRegularSabonVar
                                                             ? 25
                                                             : 25); //11-12kilo
-                                              } else if (_iInitialKilo % 8 ==
+                                              } else if (iInitialKiloVar % 8 ==
                                                   5) {
-                                                _iInitialPrice =
-                                                    _iInitialPrice -
-                                                        (_bRegularSabon
+                                                iInitialPriceVar =
+                                                    iInitialPriceVar -
+                                                        (bRegularSabonVar
                                                             ? 25
                                                             : 0); //12-13kilo
-                                              } else if (_iInitialKilo % 8 ==
+                                              } else if (iInitialKiloVar % 8 ==
                                                   6) {
-                                                _iInitialPrice =
-                                                    _iInitialPrice -
-                                                        (_bRegularSabon
+                                                iInitialPriceVar =
+                                                    iInitialPriceVar -
+                                                        (bRegularSabonVar
                                                             ? 10
                                                             : 0); //13-16kilo
                                               }
 
-                                              _iInitialKilo = _iInitialKilo - 1;
-
-                                              // if (_iInitialKilo % 8 == 1) {
-                                              //   setState(() => _iInitialPrice =
-                                              //       _iInitialPrice -
-                                              //           (_bRegularSabon
-                                              //               ? 25
-                                              //               : 25)); //8-9kilo 25
-                                              //   setState(() =>
-                                              //       _iInitialLoad = _iInitialLoad - 1);
-                                              // } else if (_iInitialKilo % 8 == 2) {
-                                              //   setState(() => _iInitialPrice =
-                                              //       _iInitialPrice -
-                                              //           (_bRegularSabon
-                                              //               ? 45
-                                              //               : 50)); //9-10kilo 45
-                                              // } else if (_iInitialKilo % 8 == 3) {
-                                              //   setState(() => _iInitialPrice =
-                                              //       _iInitialPrice -
-                                              //           (_bRegularSabon
-                                              //               ? 25
-                                              //               : 25)); //10-11kilo 25
-                                              // } else if (_iInitialKilo % 8 == 4) {
-                                              //   setState(() => _iInitialPrice =
-                                              //       _iInitialPrice -
-                                              //           (_bRegularSabon
-                                              //               ? 25
-                                              //               : 25)); //11-12kilo
-                                              // } else if (_iInitialKilo % 8 == 5) {
-                                              //   setState(() => _iInitialPrice =
-                                              //       _iInitialPrice -
-                                              //           (_bRegularSabon
-                                              //               ? 25
-                                              //               : 0)); //12-13kilo
-                                              // } else if (_iInitialKilo % 8 == 6) {
-                                              //   setState(() => _iInitialPrice =
-                                              //       _iInitialPrice -
-                                              //           (_bRegularSabon
-                                              //               ? 10
-                                              //               : 0)); //13-16kilo
-                                              // }
-
-                                              // setState(() =>
-                                              //     _iInitialKilo = _iInitialKilo - 1);
+                                              iInitialKiloVar =
+                                                  iInitialKiloVar - 1;
                                             }
                                             setState(() {
-                                              _iInitialKilo;
-                                              _iInitialLoad;
-                                              _iInitialPrice;
+                                              iInitialKiloVar;
+                                              iInitialLoadVar;
+                                              iInitialPriceVar;
                                             });
                                           },
                                           icon: const Icon(
@@ -657,103 +480,64 @@ class _MyQueueState extends State<MyQueue> {
                                         Text("+1 kg"),
                                         IconButton(
                                           onPressed: () {
-                                            if (_iInitialKilo >= 8) {
-                                              _iInitialKilo = _iInitialKilo + 1;
+                                            if (iInitialKiloVar >= 8) {
+                                              iInitialKiloVar =
+                                                  iInitialKiloVar + 1;
                                             }
 
-                                            if (_iInitialKilo % 8 == 1) {
-                                              _iInitialPrice = _iInitialPrice +
-                                                  (_bRegularSabon
-                                                      ? 25
-                                                      : 25); //8-9kilo
-                                            } else if (_iInitialKilo % 8 == 2) {
-                                              _iInitialPrice = _iInitialPrice +
-                                                  (_bRegularSabon
-                                                      ? 45
-                                                      : 50); //9-10kilo
-                                              setState(() => _iInitialLoad =
-                                                  _iInitialLoad + 1);
-                                            } else if (_iInitialKilo % 8 == 3) {
-                                              _iInitialPrice = _iInitialPrice +
-                                                  (_bRegularSabon
-                                                      ? 25
-                                                      : 25); //10-11kilo
-                                            } else if (_iInitialKilo % 8 == 4) {
-                                              _iInitialPrice = _iInitialPrice +
-                                                  (_bRegularSabon
-                                                      ? 25
-                                                      : 25); //11-12kilo
-                                            } else if (_iInitialKilo % 8 == 5) {
-                                              _iInitialPrice = _iInitialPrice +
-                                                  (_bRegularSabon
-                                                      ? 25
-                                                      : 0); //12-13kilo
+                                            if (iInitialKiloVar % 8 == 1) {
+                                              iInitialPriceVar =
+                                                  iInitialPriceVar +
+                                                      (bRegularSabonVar
+                                                          ? 25
+                                                          : 25); //8-9kilo
+                                            } else if (iInitialKiloVar % 8 ==
+                                                2) {
+                                              iInitialPriceVar =
+                                                  iInitialPriceVar +
+                                                      (bRegularSabonVar
+                                                          ? 45
+                                                          : 50); //9-10kilo
+                                              setState(() => iInitialLoadVar =
+                                                  iInitialLoadVar + 1);
+                                            } else if (iInitialKiloVar % 8 ==
+                                                3) {
+                                              iInitialPriceVar =
+                                                  iInitialPriceVar +
+                                                      (bRegularSabonVar
+                                                          ? 25
+                                                          : 25); //10-11kilo
+                                            } else if (iInitialKiloVar % 8 ==
+                                                4) {
+                                              iInitialPriceVar =
+                                                  iInitialPriceVar +
+                                                      (bRegularSabonVar
+                                                          ? 25
+                                                          : 25); //11-12kilo
+                                            } else if (iInitialKiloVar % 8 ==
+                                                5) {
+                                              iInitialPriceVar =
+                                                  iInitialPriceVar +
+                                                      (bRegularSabonVar
+                                                          ? 25
+                                                          : 0); //12-13kilo
                                             } else {
-                                              if (_iInitialPrice %
+                                              if (iInitialPriceVar %
                                                       (iPriceDivider(
-                                                          _bRegularSabon)) !=
+                                                          bRegularSabonVar)) !=
                                                   0) {
-                                                _iInitialPrice =
-                                                    _iInitialPrice +
-                                                        (_bRegularSabon
+                                                iInitialPriceVar =
+                                                    iInitialPriceVar +
+                                                        (bRegularSabonVar
                                                             ? 10
                                                             : 0); //13-16kilo
                                               }
                                             }
 
-                                            // if (_iInitialKilo >= 8) {
-                                            //   setState(() =>
-                                            //       _iInitialKilo = _iInitialKilo + 1);
-                                            // }
-
-                                            // if (_iInitialKilo % 8 == 1) {
-                                            //   setState(() => _iInitialPrice =
-                                            //       _iInitialPrice +
-                                            //           (_bRegularSabon
-                                            //               ? 25
-                                            //               : 25)); //8-9kilo
-                                            // } else if (_iInitialKilo % 8 == 2) {
-                                            //   setState(() => _iInitialPrice =
-                                            //       _iInitialPrice +
-                                            //           (_bRegularSabon
-                                            //               ? 45
-                                            //               : 50)); //9-10kilo
-                                            //   setState(() =>
-                                            //       _iInitialLoad = _iInitialLoad + 1);
-                                            // } else if (_iInitialKilo % 8 == 3) {
-                                            //   setState(() => _iInitialPrice =
-                                            //       _iInitialPrice +
-                                            //           (_bRegularSabon
-                                            //               ? 25
-                                            //               : 25)); //10-11kilo
-                                            // } else if (_iInitialKilo % 8 == 4) {
-                                            //   setState(() => _iInitialPrice =
-                                            //       _iInitialPrice +
-                                            //           (_bRegularSabon
-                                            //               ? 25
-                                            //               : 25)); //11-12kilo
-                                            // } else if (_iInitialKilo % 8 == 5) {
-                                            //   setState(() => _iInitialPrice =
-                                            //       _iInitialPrice +
-                                            //           (_bRegularSabon
-                                            //               ? 25
-                                            //               : 0)); //12-13kilo
-                                            // } else {
-                                            //   if (_iInitialPrice %
-                                            //           (iPriceDivider(_bRegularSabon)) !=
-                                            //       0) {
-                                            //     setState(() => _iInitialPrice =
-                                            //         _iInitialPrice +
-                                            //             (_bRegularSabon
-                                            //                 ? 10
-                                            //                 : 0)); //13-16kilo
-                                            //   }
-                                            // }
-
                                             setState(() {
-                                              _iInitialKilo;
-                                              _iInitialLoad;
-                                              _iInitialPrice;
+                                              iInitialKiloVar;
+                                              iInitialLoadVar;
+                                              iInitialPriceVar;
                                             });
                                           },
                                           icon: const Icon(Icons.add_circle),
@@ -769,246 +553,146 @@ class _MyQueueState extends State<MyQueue> {
                         ],
                       ),
                     ),
+                    //Add On
                     SizedBox(
                       height: 5,
                     ),
-                    // SizedBox(
-                    //   height: 5,
-                    // ),
-                    // //InitialLoad Estimate Load
-                    // Container(
-                    //   padding: EdgeInsets.all(1.0),
-                    //   decoration: BoxDecoration(
-                    //       border:
-                    //           Border.all(color: Color(0xffD4D4D4), width: 2.0)),
-                    //   child: Row(
-                    //     mainAxisAlignment: MainAxisAlignment.center,
-                    //     children: [
-                    //       IconButton(
-                    //         onPressed: () {
-                    //           setState(() => _iInitialLoad--);
-                    //         },
-                    //         icon: const Icon(Icons.remove),
-                    //         color: Colors.blueAccent,
-                    //       ),
-                    //       Text("Estimated Load: $_iInitialLoad"),
-                    //       IconButton(
-                    //         onPressed: () {
-                    //           setState(() => _iInitialLoad++);
-                    //         },
-                    //         icon: const Icon(Icons.add),
-                    //         color: Colors.blueAccent,
-                    //       ),
-                    //     ],
-                    //   ),
-                    // ),
-                    //Initial Price
-                    // SizedBox(
-                    //   height: 5,
-                    // ),
-                    // Container(
-                    //   padding: EdgeInsets.all(1.0),
-                    //   decoration: BoxDecoration(
-                    //       border:
-                    //           Border.all(color: Color(0xffD4D4D4), width: 2.0)),
-                    //   child: TextFormField(
-                    //     keyboardType: TextInputType.number,
-                    //     inputFormatters: <TextInputFormatter>[
-                    //       FilteringTextInputFormatter.allow(RegExp(r'[0-9]')),
-                    //       FilteringTextInputFormatter.digitsOnly
-                    //     ],
-                    //     textAlign: TextAlign.center,
-                    //     controller: initialPriceController,
-                    //     decoration: InputDecoration(
-                    //         labelText: 'Estimated Price',
-                    //         hintText: 'Initial Price'),
-                    //     validator: (val) {},
-                    //   ),
-                    // ),
-
-                    //Detergent
                     Container(
-                      padding: EdgeInsets.all(1.0),
                       decoration: containerSayoSabonBoxDecoration(),
                       child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
-                          IconButton(
-                            onPressed: () {
-                              setState(
-                                () {
-                                  _iDetPcs--;
-                                  if (_iDetPcs < 0) {
-                                    _iDetPcs = 0;
-                                  }
-                                  _iDetPrice =
-                                      (mapDetPrice[_initialDet]! * (_iDetPcs));
-                                  _iInitialTotalPrice =
-                                      _iDetPrice + _iFabPrice + _iBlePrice;
-                                },
-                              );
-                            },
-                            icon: const Icon(Icons.remove_circle_outlined),
-                            color: Colors.blueAccent,
-                          ),
                           Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Text(
-                                "Detergent",
-                                style: TextStyle(
-                                    fontSize: 12, fontWeight: FontWeight.bold),
+                                "Add On",
+                                style: TextStyle(fontSize: 10),
                               ),
-                              DropdownButton<int>(
-                                style: TextStyle(fontSize: 12),
-                                items: mapDetNames
-                                    .map((itemId, val) {
-                                      return MapEntry(
-                                          val,
-                                          DropdownMenuItem<int>(
-                                            value: itemId,
-                                            child: Text(val),
-                                          ));
-                                    })
-                                    .values
-                                    .toList(),
-                                value: _initialDet,
-                                onChanged: (newVal) {
-                                  if (newVal != null) {
-                                    setState(() {
-                                      _initialDet = newVal;
-                                      _iDetPrice = (mapDetPrice[_initialDet]! *
-                                          (_iDetPcs));
-                                      _iInitialTotalPrice =
-                                          _iDetPrice + _iFabPrice + _iBlePrice;
-                                    });
-                                  }
-                                },
+                              Checkbox(
+                                  value: bAddOnVar,
+                                  onChanged: (val) {
+                                    if (listAddOnItems.isNotEmpty) {
+                                      if (!val!) {
+                                        //pop box
+                                        Navigator.pop(context);
+                                        messageResultNew(
+                                            "Uncheck will delete add on?");
+                                      }
+                                    }
+
+                                    setState(
+                                      () {
+                                        bAddOnVar = val!;
+                                      },
+                                    );
+                                  }),
+                              //checkboxes add on
+                              Visibility(
+                                visible: bAddOnVar,
+                                child: Container(
+                                  padding: EdgeInsets.all(1.0),
+                                  child: Row(
+                                    children: [
+                                      Column(
+                                        children: [
+                                          Text(
+                                            "Det",
+                                            style: TextStyle(fontSize: 10),
+                                          ),
+                                          Checkbox(
+                                              value: bDetAddOnVar,
+                                              onChanged: (val) {
+                                                resetAddOn();
+                                                setState(
+                                                  () {
+                                                    bDetAddOnVar = val!;
+                                                  },
+                                                );
+                                              })
+                                        ],
+                                      ),
+                                      Column(
+                                        children: [
+                                          Text(
+                                            "Fab",
+                                            style: TextStyle(fontSize: 10),
+                                          ),
+                                          Checkbox(
+                                              value: bFabAddOnVar,
+                                              onChanged: (val) {
+                                                resetAddOn();
+                                                setState(
+                                                  () {
+                                                    bFabAddOnVar = val!;
+                                                  },
+                                                );
+                                              })
+                                        ],
+                                      ),
+                                      Column(
+                                        children: [
+                                          Text(
+                                            "Ble",
+                                            style: TextStyle(fontSize: 10),
+                                          ),
+                                          Checkbox(
+                                              value: bBleAddOnVar,
+                                              onChanged: (val) {
+                                                resetAddOn();
+                                                setState(
+                                                  () {
+                                                    bBleAddOnVar = val!;
+                                                  },
+                                                );
+                                              })
+                                        ],
+                                      ),
+                                      Column(
+                                        children: [
+                                          Text(
+                                            "Oth",
+                                            style: TextStyle(fontSize: 10),
+                                          ),
+                                          Checkbox(
+                                              value: bOthAddOnVar,
+                                              onChanged: (val) {
+                                                resetAddOn();
+                                                setState(
+                                                  () {
+                                                    bOthAddOnVar = val!;
+                                                  },
+                                                );
+                                              })
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
                               ),
-                              Text(
-                                "${_iDetPcs}pc Php $_iDetPrice.00",
-                                style: TextStyle(fontSize: 12),
-                              ),
-                              SizedBox(
-                                height: 5,
-                              ),
+                              //dropdown det
+                              addOnDropDown(
+                                  bDetAddOnVar, selectedDetVar, listDetItems),
+                              //dropdown fab
+                              addOnDropDown(
+                                  bFabAddOnVar, selectedFabVar, listFabItems),
+                              //dropdown ble
+                              addOnDropDown(
+                                  bBleAddOnVar, selectedBleVar, listBleItems),
+                              //dropdown oth
+                              addOnDropDown(
+                                  bOthAddOnVar, selectedOthVar, listOthItems),
+                              _readAddedData(listAddOnItems),
+                              //_dtAddedOthers(addOnItems),
+                              //_addedOn(addOnItems),
                             ],
                           ),
-                          IconButton(
-                            onPressed: () {
-                              setState(
-                                () {
-                                  _iDetPcs++;
-                                  _iDetPrice =
-                                      (mapDetPrice[_initialDet]! * (_iDetPcs));
-                                  _iInitialTotalPrice =
-                                      _iDetPrice + _iFabPrice + _iBlePrice;
-                                },
-                              );
-                            },
-                            icon: const Icon(Icons.add_circle),
-                            color: Colors.blueAccent,
-                          ),
                         ],
                       ),
                     ),
-                    SizedBox(
-                      height: 5,
-                    ),
-
-                    //Fabcon
-                    Container(
-                      padding: EdgeInsets.all(1.0),
-                      decoration: containerSayoSabonBoxDecoration(),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          IconButton(
-                            onPressed: () {},
-                            icon: const Icon(Icons.remove_circle_outlined),
-                            color: Colors.blueAccent,
-                          ),
-                          DropdownButton<int>(
-                            style: TextStyle(fontSize: 12),
-                            items: mapFabNames
-                                .map((itemId, val) {
-                                  return MapEntry(
-                                      val,
-                                      DropdownMenuItem<int>(
-                                        value: itemId,
-                                        child: Text(val),
-                                      ));
-                                })
-                                .values
-                                .toList(),
-                            value: _initialFab,
-                            onChanged: (newVal) {
-                              if (newVal != null) {
-                                setState(() {
-                                  _initialFab = newVal;
-                                });
-                              }
-                            },
-                          ),
-                          IconButton(
-                            onPressed: () {},
-                            icon: const Icon(Icons.add_circle),
-                            color: Colors.blueAccent,
-                          ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(
-                      height: 5,
-                    ),
-
-                    //Bleach
-                    Container(
-                      padding: EdgeInsets.all(1.0),
-                      decoration: containerSayoSabonBoxDecoration(),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          IconButton(
-                            onPressed: () {},
-                            icon: const Icon(Icons.remove_circle_outlined),
-                            color: Colors.blueAccent,
-                          ),
-                          DropdownButton<int>(
-                            style: TextStyle(fontSize: 12),
-                            items: mapBleNames
-                                .map((itemId, val) {
-                                  return MapEntry(
-                                      val,
-                                      DropdownMenuItem<int>(
-                                        value: itemId,
-                                        child: Text(val),
-                                      ));
-                                })
-                                .values
-                                .toList(),
-                            value: _initialBle,
-                            onChanged: (newVal) {
-                              if (newVal != null) {
-                                setState(() {
-                                  _initialBle = newVal;
-                                });
-                              }
-                            },
-                          ),
-                          IconButton(
-                            onPressed: () {},
-                            icon: const Icon(Icons.add_circle),
-                            color: Colors.blueAccent,
-                          ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(
-                      height: 5,
-                    ),
-
                     //Basket
+                    SizedBox(
+                      height: 5,
+                    ),
                     Container(
                       padding: EdgeInsets.all(1.0),
                       decoration: containerQueBoxDecoration(),
@@ -1017,26 +701,26 @@ class _MyQueueState extends State<MyQueue> {
                         children: [
                           IconButton(
                             onPressed: () {
-                              setState(() => _iBasket--);
+                              setState(() => iBasketVar--);
                             },
                             icon: const Icon(Icons.remove_circle_outlined),
                             color: Colors.blueAccent,
                           ),
-                          Text("Basket: $_iBasket"),
+                          Text("Basket: $iBasketVar"),
                           IconButton(
                             onPressed: () {
-                              setState(() => _iBasket++);
+                              setState(() => iBasketVar++);
                             },
                             icon: const Icon(Icons.add_circle),
                             color: Colors.blueAccent,
                           ),
                         ],
                       ),
-                    ),
-                    SizedBox(
-                      height: 5,
                     ),
                     //Bag
+                    SizedBox(
+                      height: 5,
+                    ),
                     Container(
                       padding: EdgeInsets.all(1.0),
                       decoration: containerQueBoxDecoration(),
@@ -1045,15 +729,15 @@ class _MyQueueState extends State<MyQueue> {
                         children: [
                           IconButton(
                             onPressed: () {
-                              setState(() => _iBag--);
+                              setState(() => iBagVar--);
                             },
                             icon: const Icon(Icons.remove_circle_outlined),
                             color: Colors.blueAccent,
                           ),
-                          Text("Bag: $_iBag"),
+                          Text("Bag: $iBagVar"),
                           IconButton(
                             onPressed: () {
-                              setState(() => _iBag++);
+                              setState(() => iBagVar++);
                             },
                             icon: const Icon(Icons.add_circle),
                             color: Colors.blueAccent,
@@ -1061,10 +745,10 @@ class _MyQueueState extends State<MyQueue> {
                         ],
                       ),
                     ),
+                    //Payment New
                     SizedBox(
                       height: 5,
                     ),
-                    //Payment New
                     Container(
                       decoration: containerQueBoxDecoration(),
                       child: Row(
@@ -1077,15 +761,13 @@ class _MyQueueState extends State<MyQueue> {
                                 style: TextStyle(fontSize: 10),
                               ),
                               Checkbox(
-                                  value: _bUnpaid,
+                                  value: bUnpaidVar,
                                   onChanged: (val) {
-                                    _bUnpaid = false;
-                                    _bPaidCash = false;
-                                    _bPaidGCash = false;
+                                    resetPaymentQueueBool();
                                     if (val!) {
                                       setState(
                                         () {
-                                          _bUnpaid = val;
+                                          bUnpaidVar = val;
                                         },
                                       );
                                     }
@@ -1099,15 +781,13 @@ class _MyQueueState extends State<MyQueue> {
                                 style: TextStyle(fontSize: 10),
                               ),
                               Checkbox(
-                                  value: _bPaidCash,
+                                  value: bPaidCashVar,
                                   onChanged: (val) {
-                                    _bUnpaid = false;
-                                    _bPaidCash = false;
-                                    _bPaidGCash = false;
+                                    resetPaymentQueueBool();
                                     if (val!) {
                                       setState(
                                         () {
-                                          _bPaidCash = val;
+                                          bPaidCashVar = val;
                                         },
                                       );
                                     }
@@ -1121,15 +801,13 @@ class _MyQueueState extends State<MyQueue> {
                                 style: TextStyle(fontSize: 10),
                               ),
                               Checkbox(
-                                  value: _bPaidGCash,
+                                  value: bPaidGCashVar,
                                   onChanged: (val) {
-                                    _bUnpaid = false;
-                                    _bPaidCash = false;
-                                    _bPaidGCash = false;
+                                    resetPaymentQueueBool();
                                     if (val!) {
                                       setState(
                                         () {
-                                          _bPaidGCash = val;
+                                          bPaidGCashVar = val;
                                         },
                                       );
                                     }
@@ -1139,90 +817,10 @@ class _MyQueueState extends State<MyQueue> {
                         ],
                       ),
                     ),
-                    //Payment
-                    // DropdownMenu(
-                    //   label: Text("Payment",
-                    //       style: TextStyle(
-                    //         fontSize: 12.0,
-                    //       )),
-                    //   inputDecorationTheme: getThemeDropDown(),
-                    //   controller: paymentStatController,
-                    //   hintText: "Payment",
-                    //   dropdownMenuEntries: const [
-                    //     DropdownMenuEntry(value: "Unpaid", label: "Unpaid"),
-                    //     DropdownMenuEntry(value: "PaidCash", label: "PaidCash"),
-                    //     DropdownMenuEntry(
-                    //         value: "PaidGcash", label: "PaidGcash"),
-                    //     DropdownMenuEntry(
-                    //         value: "WaitingGcash", label: "WaitingGcash"),
-                    //     DropdownMenuEntry(value: "Kulang", label: "Kulang"),
-                    //     DropdownMenuEntry(value: "MaySukli", label: "MaySukli"),
-                    //   ],
-                    //   onSelected: (val) {
-                    //     if (val != "Unpaid") {
-                    //       paymentReceivedByController.text = _sCreatedBy;
-                    //     } else {
-                    //       paymentReceivedByController.clear();
-                    //     }
-                    //   },
-                    //   initialSelection: "Unpaid",
-                    // ),
-                    // SizedBox(
-                    //   height: 5,
-                    // ),
-                    // //Payment Received By
-                    // DropdownMenu(
-                    //   label: Text("Payment Received By",
-                    //       style: TextStyle(
-                    //         fontSize: 12.0,
-                    //       )),
-                    //   inputDecorationTheme: getThemeDropDown(),
-                    //   controller: paymentReceivedByController,
-                    //   hintText: "Select Staff",
-                    //   dropdownMenuEntries: const [
-                    //     DropdownMenuEntry(value: "N/a", label: "N/a"),
-                    //     DropdownMenuEntry(value: "Jeng", label: "Jeng"),
-                    //     DropdownMenuEntry(value: "Abi", label: "Abi"),
-                    //     DropdownMenuEntry(value: "Ket", label: "Ket"),
-                    //     DropdownMenuEntry(value: "DonP", label: "DonP"),
-                    //     DropdownMenuEntry(value: "Rowel", label: "Rowel"),
-                    //     DropdownMenuEntry(value: "Seigi", label: "Seigi"),
-                    //     DropdownMenuEntry(value: "Let", label: "Let"),
-                    //   ],
-                    //   onSelected: (val) {
-                    //     setState(() {});
-                    //   },
-                    //   initialSelection: "N/a",
-                    // ),
-                    SizedBox(
-                      height: 5,
-                    ),
-
-                    //Max Fab?
-                    Container(
-                      alignment: Alignment.center,
-                      padding: EdgeInsets.all(1.0),
-                      decoration: containerQueBoxDecoration(),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text("Reg Fab"),
-                          Switch.adaptive(
-                            value: _bMaxFab,
-                            onChanged: (bool value) {
-                              setState(() {
-                                _bMaxFab = value;
-                              });
-                            },
-                          ),
-                          Text("Max 100ml"),
-                        ],
-                      ),
-                    ),
-                    SizedBox(
-                      height: 5,
-                    ),
                     //No Fold
+                    SizedBox(
+                      height: 5,
+                    ),
                     Container(
                       alignment: Alignment.center,
                       padding: EdgeInsets.all(1.0),
@@ -1232,10 +830,10 @@ class _MyQueueState extends State<MyQueue> {
                         children: [
                           Text("No Fold"),
                           Switch.adaptive(
-                            value: _bFold,
+                            value: bFoldVar,
                             onChanged: (bool value) {
                               setState(() {
-                                _bFold = value;
+                                bFoldVar = value;
                               });
                             },
                           ),
@@ -1243,10 +841,10 @@ class _MyQueueState extends State<MyQueue> {
                         ],
                       ),
                     ),
+                    //Dont mix
                     SizedBox(
                       height: 5,
                     ),
-                    //Dont mix
                     Container(
                       alignment: Alignment.center,
                       padding: EdgeInsets.all(1.0),
@@ -1256,10 +854,10 @@ class _MyQueueState extends State<MyQueue> {
                         children: [
                           Text("Dont Mix"),
                           Switch.adaptive(
-                            value: _bMix,
+                            value: bMixVar,
                             onChanged: (bool value) {
                               setState(() {
-                                _bMix = value;
+                                bMixVar = value;
                               });
                             },
                           ),
@@ -1277,7 +875,7 @@ class _MyQueueState extends State<MyQueue> {
                       child: TextFormField(
                         textCapitalization: TextCapitalization.words,
                         textAlign: TextAlign.start,
-                        controller: remarksController,
+                        controller: remarksControllerVar,
                         decoration: InputDecoration(
                             labelText: 'Remarks', hintText: 'Anu kakaiba'),
                         validator: (val) {},
@@ -1286,44 +884,6 @@ class _MyQueueState extends State<MyQueue> {
                     SizedBox(
                       height: 5,
                     ),
-                    // //Kulang
-                    // Container(
-                    //   padding: EdgeInsets.all(1.0),
-                    //   decoration: containerQueBoxDecoration(),
-                    //   child: TextFormField(
-                    //     keyboardType: TextInputType.number,
-                    //     inputFormatters: <TextInputFormatter>[
-                    //       FilteringTextInputFormatter.allow(RegExp(r'[0-9]')),
-                    //       FilteringTextInputFormatter.digitsOnly
-                    //     ],
-                    //     textAlign: TextAlign.center,
-                    //     controller: kulangController,
-                    //     decoration: InputDecoration(
-                    //         labelText: 'Kulang bayad',
-                    //         hintText: 'Magkano kulang?'),
-                    //     validator: (val) {},
-                    //   ),
-                    // ),
-                    // SizedBox(
-                    //   height: 5,
-                    // ),
-                    // //May Sukli
-                    // Container(
-                    //   padding: EdgeInsets.all(1.0),
-                    //   decoration: containerQueBoxDecoration(),
-                    //   child: TextFormField(
-                    //     keyboardType: TextInputType.number,
-                    //     inputFormatters: <TextInputFormatter>[
-                    //       FilteringTextInputFormatter.allow(RegExp(r'[0-9]')),
-                    //       FilteringTextInputFormatter.digitsOnly
-                    //     ],
-                    //     textAlign: TextAlign.center,
-                    //     controller: maySukliController,
-                    //     decoration: InputDecoration(
-                    //         labelText: 'May Sukli', hintText: 'Magkano sukli?'),
-                    //     validator: (val) {},
-                    //   ),
-                    // ),
                     //Need On Date +
                     Container(
                       padding: EdgeInsets.all(1.0),
@@ -1342,8 +902,8 @@ class _MyQueueState extends State<MyQueue> {
                                 Text("-1 day"),
                                 IconButton(
                                   onPressed: () {
-                                    setState(() => _dNeedOn =
-                                        _dNeedOn.add(Duration(days: -1)));
+                                    setState(() => dNeedOnVar =
+                                        dNeedOnVar.add(Duration(days: -1)));
                                   },
                                   icon:
                                       const Icon(Icons.remove_circle_outlined),
@@ -1351,8 +911,8 @@ class _MyQueueState extends State<MyQueue> {
                                 ),
                                 IconButton(
                                   onPressed: () {
-                                    setState(() => _dNeedOn =
-                                        _dNeedOn.add(Duration(days: 1)));
+                                    setState(() => dNeedOnVar =
+                                        dNeedOnVar.add(Duration(days: 1)));
                                   },
                                   icon: const Icon(Icons.add_circle),
                                   color: Colors.blueAccent,
@@ -1372,7 +932,7 @@ class _MyQueueState extends State<MyQueue> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Text(
-                                  "Need On: ${_dNeedOn.toString().substring(5, 14)}00",
+                                  "Need On: ${dNeedOnVar.toString().substring(5, 14)}00",
                                 ),
                               ],
                             ),
@@ -1390,16 +950,16 @@ class _MyQueueState extends State<MyQueue> {
                                 Text("-1 hr"),
                                 IconButton(
                                   onPressed: () {
-                                    setState(() => _dNeedOn =
-                                        _dNeedOn.add(Duration(hours: -1)));
+                                    setState(() => dNeedOnVar =
+                                        dNeedOnVar.add(Duration(hours: -1)));
                                   },
                                   icon: const Icon(Icons.remove_circle_outline),
                                   color: Colors.blueAccent,
                                 ),
                                 IconButton(
                                   onPressed: () {
-                                    setState(() => _dNeedOn =
-                                        _dNeedOn.add(Duration(hours: 1)));
+                                    setState(() => dNeedOnVar =
+                                        dNeedOnVar.add(Duration(hours: 1)));
                                   },
                                   icon: const Icon(Icons.add_circle_outline),
                                   color: Colors.blueAccent,
@@ -1425,7 +985,10 @@ class _MyQueueState extends State<MyQueue> {
           _cancelButton(),
 
           //save button
-          _createNewRecord(),
+          //_createNewRecord(),
+
+          //save button new
+          _createNewRecordJson(),
         ],
       ),
     );
@@ -1440,8 +1003,9 @@ class _MyQueueState extends State<MyQueue> {
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
           FloatingActionButton(
+            heroTag: "JobsOnQueue",
             onPressed: () {
-              enterJobsOnQueue();
+              showJobsOnQueueEntry();
             },
             child: const Icon(Icons.local_laundry_service_sharp),
           ),
@@ -1449,6 +1013,7 @@ class _MyQueueState extends State<MyQueue> {
             height: 5,
           ),
           FloatingActionButton(
+            heroTag: "Gcash",
             onPressed: () {},
             child: const Icon(Icons.g_mobiledata),
           ),
@@ -1467,10 +1032,17 @@ class _MyQueueState extends State<MyQueue> {
         child: const Text("Cancel"));
   }
 
-  Widget _createNewRecord() {
+  //new createNewRecord
+  Widget _createNewRecordJson() {
     return MaterialButton(
       onPressed: () {
-        if (_formKey.currentState!.validate()) {
+        if (autocompleteSelected.customerId == 1) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+                content: Text(
+                    'Cannot save, please add name in loyalty records first.')),
+          );
+        } else if (_formKey.currentState!.validate()) {
           // If the form is valid, display a snackbar. In the real world,
           // you'd often call a server or save the information in a database.
           ScaffoldMessenger.of(context).showSnackBar(
@@ -1479,35 +1051,38 @@ class _MyQueueState extends State<MyQueue> {
 
           //pop box
           Navigator.pop(context);
-
-          insertDataJobsOnQueue(
-            _sCreatedBy,
-            customerController.text,
-            _iInitialKilo,
-            _iInitialLoad,
-            _iInitialPrice,
-            // int.parse(initialPriceController.text.isEmpty
-            //     ? "0"
-            //     : initialPriceController.text),
-            //queueStatController.text,
-            (_bRiderPickup
-                ? mapQueueStat[riderPickup].toString()
-                : mapQueueStat[forSorting].toString()),
-            //paymentStatController.text,
-            (_bUnpaid
-                ? mapPaymentStat[unpaid].toString()
-                : (_bPaidCash
-                    ? mapPaymentStat[paidCash].toString()
-                    : mapPaymentStat[paidGCash].toString())),
-            paymentReceivedByController.text,
-            _dNeedOn,
-            _bMaxFab,
-            _bFold,
-            _bMix,
-            _iBasket,
-            _iBag,
-            remarksController.text,
-          );
+          insertDataJobsOnQueueJson(JobsOnQueueModel(
+              dateQ: Timestamp.now(),
+              createdBy: _sCreatedBy,
+              customerId: autocompleteSelected.customerId,
+              initialKilo: iInitialKiloVar,
+              initialLoad: iInitialLoadVar,
+              initialPrice: iInitialPriceVar,
+              initialOthersPrice: iInitialOthersPriceVar,
+              finalKilo: 0,
+              finalLoad: 0,
+              finalPrice: 0,
+              finalOthersPrice: 0,
+              queueStat: (bRiderPickupVar
+                  ? mapQueueStat[riderPickup].toString()
+                  : mapQueueStat[forSorting].toString()),
+              paymentStat: (bUnpaidVar
+                  ? mapPaymentStat[unpaid].toString()
+                  : (bPaidCashVar
+                      ? mapPaymentStat[paidCash].toString()
+                      : (bPaidGCashVar
+                          ? mapPaymentStat[paidGCash].toString()
+                          : mapPaymentStat[waitGCash].toString()))),
+              paymentReceivedBy: (bUnpaidVar ? "" : _sCreatedBy),
+              paidD: (bUnpaidVar
+                  ? Timestamp.fromDate(DateTime(2000))
+                  : Timestamp.now()),
+              needOn: tNeedOnVar,
+              fold: bFoldVar,
+              mix: bMixVar,
+              basket: iBasketVar,
+              bag: iBagVar,
+              remarks: remarksControllerVar.text));
         }
       },
       color: cButtons,
@@ -1530,86 +1105,58 @@ class _MyQueueState extends State<MyQueue> {
             ));
   }
 
-  //insert
-  void insertDataJobsOnQueue(
-      String sCreatedBy,
-      String sCustomer,
-      int iInitialKilo,
-      int iInitialLoad,
-      int iInitialPrice,
-      String sQueueStatus,
-      String sPaymentStatus,
-      String sPaymentReceivedBy,
-      DateTime dNeedOn,
-      bool bMaxFab,
-      bool bFold,
-      bool bMix,
-      int iBasket,
-      int iBag,
-      String sRemarks) {
-    //insert
-    CollectionReference collRef =
-        FirebaseFirestore.instance.collection('JobsOnQueue');
+  void messageResultNew(String sMsg) {
+    showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+              content: Text(sMsg),
+              actions: [
+                MaterialButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    listAddOnItems.clear();
+                    iInitialOthersPriceVar = 0;
+                    resetAddOn();
+                    showJobsOnQueueEntry();
+                  },
+                  color: cButtons,
+                  child: const Text("Ok"),
+                ),
+                MaterialButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    bAddOnVar = true;
+                    showJobsOnQueueEntry();
+                  },
+                  color: cButtons,
+                  child: const Text("Cancel"),
+                ),
+              ],
+            ));
+  }
 
-    CollectionReference subRef =
-        FirebaseFirestore.instance.collection('JobsOnQueue');
-    DatabaseOtherItems databaseOtherItems;
+  //insert new
+  void insertDataJobsOnQueueJson(JobsOnQueueModel jobsOnQueueModel) {
+    DatabaseJobsOnQueue databaseJobsOnQueue = DatabaseJobsOnQueue();
 
-    OtherItems otherItems =
-        OtherItems(itemId: 123, itemName: "Breeze", itemPrice: 124);
-    collRef
-        .add({
-          'DateQ': DateTime.now(),
-          'CreatedBy': sCreatedBy,
-          'Customer': sCustomer,
-          'InitialKilo': iInitialKilo,
-          'InitialLoad': iInitialLoad,
-          'InitialPrice': iInitialPrice,
-          'QueueStat': sQueueStatus,
-          'PaymentStat': sPaymentStatus,
-          'PaymentReceivedBy': sPaymentReceivedBy,
-          'NeedOn': dNeedOn,
-          'MaxFab': bMaxFab,
-          'Fold': bFold,
-          'Mix': bMix,
-          'Basket': iBasket,
-          'Bag': iBag,
-          'Remarks': sRemarks,
-        })
-        .then((value) => {
-              _sCreatedBy = "",
-              customerController.clear(),
-              _iInitialKilo = 8,
-              _iInitialPrice =
-                  (_iInitialKilo ~/ 8) * iPriceDivider(_bRegularSabon),
-              _iInitialLoad = (_iInitialKilo ~/ 8),
-              //initialPriceController.clear(),
-              //queueStatController.clear(),
-              _bRiderPickup = false,
-              //paymentStatController.clear(),
-              _bUnpaid = true,
-              _bPaidCash = false,
-              _bPaidGCash = false,
-              paymentReceivedByController.clear(),
-              dNeedOn = DateTime.now(),
-              _bMaxFab = false,
-              _bFold = true,
-              _bMix = true,
-              _iBasket = 0,
-              _iBag = 0,
-              remarksController.clear(),
-              // subRef.doc(value.id).collection("OtherItems").add({
-              //   'DateQ': DateTime.now(),
-              // }),
-              databaseOtherItems = DatabaseOtherItems(value.id),
-              databaseOtherItems.addOtherItems(otherItems),
-              messageResult(context, "Insert Done.$sCustomer"),
-            })
-        // ignore: invalid_return_type_for_catch_error
-        .catchError((error) => messageResult(context, "Failed : $error"));
-    // }
+    databaseJobsOnQueue.addJobsOnQueue(jobsOnQueueModel, listAddOnItems);
 
-    //re-read
+    _sCreatedBy = "";
+    iInitialKiloVar = 8;
+    iInitialLoadVar = 0;
+    iInitialPriceVar = 155;
+    iInitialOthersPriceVar = 0;
+    bRiderPickupVar = false;
+    bUnpaidVar = false;
+    bPaidCashVar = false;
+    bPaidGCashVar = false;
+    dNeedOnVar = DateTime.now();
+    bFoldVar = true;
+    bMixVar = true;
+    iBasketVar = 0;
+    iBagVar = 0;
+
+    //databaseJobsOnQueue.addJobsOnQueueSolo(jobsOnQueueModel);
   }
 
   getThemeDropDown() {
@@ -1621,5 +1168,125 @@ class _MyQueueState extends State<MyQueue> {
         borderRadius: BorderRadius.circular(8),
       ),
     );
+  }
+
+  Visibility addOnDropDown(bool bDisplay, OtherItemModel selectedItemModel,
+      List<OtherItemModel> thisListOtherItemModel) {
+    print('size=' + thisListOtherItemModel.length.toString());
+    return Visibility(
+      visible: bDisplay,
+      child: Container(
+        padding: EdgeInsets.all(1.0),
+        child: Row(
+          children: [
+            DropdownButton<OtherItemModel>(
+              value: selectedItemModel,
+              icon: Icon(Icons.arrow_downward),
+              iconSize: 24,
+              elevation: 16,
+              style: TextStyle(color: Colors.purple[700]),
+              underline: Container(
+                height: 2,
+                color: Colors.purple[700],
+              ),
+              onChanged: (newItemModel) {
+                selectedItemModel = newItemModel!;
+              },
+              items: thisListOtherItemModel.map((OtherItemModel map) {
+                return DropdownMenuItem<OtherItemModel>(
+                    value: map,
+                    child: Text(
+                        "${map.itemGroup}-${map.itemName}(${map.itemPrice}Php)"));
+              }).toList(),
+            ),
+            IconButton(
+              onPressed: () {
+                Navigator.pop(context);
+                listAddOnItems.add(selectedItemModel);
+                //reset dropdowns
+                if (listDetItems.contains(selectedItemModel)) {
+                  selectedDetVar = selectedItemModel;
+                } else if (listFabItems.contains(selectedItemModel)) {
+                  selectedFabVar = selectedItemModel;
+                } else if (listBleItems.contains(selectedItemModel)) {
+                  selectedBleVar = selectedItemModel;
+                } else if (listOthItems.contains(selectedItemModel)) {
+                  selectedOthVar = selectedItemModel;
+                }
+                iInitialOthersPriceVar =
+                    iInitialOthersPriceVar + selectedItemModel.itemPrice;
+                showJobsOnQueueEntry();
+              },
+              icon: const Icon(Icons.add_circle),
+              color: Colors.blueAccent,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _readAddedData(List<OtherItemModel> listAddedOthers) {
+    bool zebra = false;
+    //read
+
+    List<TableRow> rowDatas = [];
+
+    if (listAddedOthers.isNotEmpty) {
+      const rowData = TableRow(
+          decoration: BoxDecoration(color: Colors.blueGrey),
+          children: [
+            Text(
+              "Group ",
+              style: TextStyle(fontSize: 10),
+            ),
+            Text(
+              "Product ",
+              style: TextStyle(fontSize: 10),
+            ),
+            Text(
+              "Price",
+              style: TextStyle(fontSize: 10),
+            ),
+          ]);
+      rowDatas.add(rowData);
+    }
+
+    listAddedOthers.forEach((listAddedOther) {
+      if (zebra) {
+        zebra = false;
+      } else {
+        zebra = true;
+      }
+      final rowData = TableRow(
+          decoration: BoxDecoration(color: zebra ? Colors.grey : Colors.white),
+          children: [
+            Text(
+              listAddedOther.itemGroup,
+              style: TextStyle(fontSize: 10),
+            ),
+            Text(
+              listAddedOther.itemName,
+              style: TextStyle(fontSize: 10),
+            ),
+            Text(
+              "${listAddedOther.itemPrice}.00",
+              style: TextStyle(fontSize: 10),
+              textAlign: TextAlign.end,
+            ),
+          ]);
+      rowDatas.add(rowData);
+    });
+
+    return Table(
+      defaultColumnWidth: IntrinsicColumnWidth(),
+      children: rowDatas,
+    );
+  }
+
+  void _allCards(BuildContext context) {
+    Navigator.pop(context);
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (context) => const LoyaltyAdmin()));
   }
 }

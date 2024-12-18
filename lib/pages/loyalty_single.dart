@@ -17,7 +17,10 @@ class _MyLoyaltyCardState extends State<MyLoyaltyCard> {
         backgroundColor: Colors.blueAccent,
         appBar: AppBar(
           title: Column(
-            children: [const Text("Wash Ko Lang"), Text("Your Loyalty Card ${widget.something}")],
+            children: [
+              const Text("Wash Ko Lang"),
+              Text("Your Loyalty Card ${widget.something}")
+            ],
           ),
           toolbarHeight: 60,
         ),
@@ -38,11 +41,13 @@ class _MyLoyaltyCardState extends State<MyLoyaltyCard> {
   }
 
   Widget _singleReadData(String s) {
-    CollectionReference users = FirebaseFirestore.instance.collection('loyalty');
+    CollectionReference users =
+        FirebaseFirestore.instance.collection('loyalty');
 
     return FutureBuilder<DocumentSnapshot>(
       future: users.doc(s).get(),
-      builder: (BuildContext context, AsyncSnapshot<DocumentSnapshot> snapshot) {
+      builder:
+          (BuildContext context, AsyncSnapshot<DocumentSnapshot> snapshot) {
         if (snapshot.hasError) {
           return const Text("Something went wrong");
         }
@@ -52,7 +57,8 @@ class _MyLoyaltyCardState extends State<MyLoyaltyCard> {
         }
 
         if (snapshot.connectionState == ConnectionState.done) {
-          Map<String, dynamic> buffRecord = snapshot.data!.data() as Map<String, dynamic>;
+          Map<String, dynamic> buffRecord =
+              snapshot.data!.data() as Map<String, dynamic>;
 
           final int loyaltyCount = buffRecord['Count']; //mod 10
 
@@ -64,45 +70,57 @@ class _MyLoyaltyCardState extends State<MyLoyaltyCard> {
                   Row(
                     children: [
                       const Text("Name:"),
-                      Text(buffRecord["Name"], style: const TextStyle(fontWeight: FontWeight.bold)),
+                      Text(buffRecord["Name"],
+                          style: const TextStyle(fontWeight: FontWeight.bold)),
                       const SizedBox(
                         width: 20,
                       ),
                       const Text("Card Id:"),
-                      Text(s, style: const TextStyle(fontWeight: FontWeight.bold)),
+                      Text(s,
+                          style: const TextStyle(fontWeight: FontWeight.bold)),
                     ],
                   ),
                   Row(
                     children: [
-                      const Text("Barangay:"),
-                      Text(buffRecord["Barangay"], style: const TextStyle(fontWeight: FontWeight.bold)),
+                      const Text("Contact:"),
+                      Text(buffRecord["Contact"],
+                          style: const TextStyle(fontWeight: FontWeight.bold)),
                       const SizedBox(
                         width: 20,
                       ),
                       const Text("Address:"),
-                      Text(buffRecord["Address"], style: const TextStyle(fontWeight: FontWeight.bold)),
+                      Text(buffRecord["Address"],
+                          style: const TextStyle(fontWeight: FontWeight.bold)),
                     ],
                   ),
                   Row(
                     children: [
                       ElevatedButton.icon(
                         onPressed: () {},
-                        icon: Icon((loyaltyCount) >= 1 ? Icons.star_border_purple500_outlined : Icons.circle_outlined),
+                        icon: Icon((loyaltyCount) >= 1
+                            ? Icons.star_border_purple500_outlined
+                            : Icons.circle_outlined),
                         label: const Text("1"),
                       ),
                       ElevatedButton.icon(
                         onPressed: () {},
-                        icon: Icon((loyaltyCount) >= 2 ? Icons.star_border_purple500_outlined : Icons.circle_outlined),
+                        icon: Icon((loyaltyCount) >= 2
+                            ? Icons.star_border_purple500_outlined
+                            : Icons.circle_outlined),
                         label: const Text("2"),
                       ),
                       ElevatedButton.icon(
                         onPressed: () {},
-                        icon: Icon((loyaltyCount) >= 3 ? Icons.star_border_purple500_outlined : Icons.circle_outlined),
+                        icon: Icon((loyaltyCount) >= 3
+                            ? Icons.star_border_purple500_outlined
+                            : Icons.circle_outlined),
                         label: const Text("3"),
                       ),
                       ElevatedButton.icon(
                         onPressed: () {},
-                        icon: Icon((loyaltyCount) >= 4 ? Icons.star_border_purple500_outlined : Icons.circle_outlined),
+                        icon: Icon((loyaltyCount) >= 4
+                            ? Icons.star_border_purple500_outlined
+                            : Icons.circle_outlined),
                         label: const Text("4"),
                       ),
                     ],
@@ -111,22 +129,30 @@ class _MyLoyaltyCardState extends State<MyLoyaltyCard> {
                     children: [
                       ElevatedButton.icon(
                         onPressed: () {},
-                        icon: Icon((loyaltyCount) >= 5 ? Icons.star_border_purple500_outlined : Icons.circle_outlined),
+                        icon: Icon((loyaltyCount) >= 5
+                            ? Icons.star_border_purple500_outlined
+                            : Icons.circle_outlined),
                         label: const Text("5"),
                       ),
                       ElevatedButton.icon(
                         onPressed: () {},
-                        icon: Icon((loyaltyCount) >= 6 ? Icons.star_border_purple500_outlined : Icons.circle_outlined),
+                        icon: Icon((loyaltyCount) >= 6
+                            ? Icons.star_border_purple500_outlined
+                            : Icons.circle_outlined),
                         label: const Text("6"),
                       ),
                       ElevatedButton.icon(
                         onPressed: () {},
-                        icon: Icon((loyaltyCount) >= 7 ? Icons.star_border_purple500_outlined : Icons.circle_outlined),
+                        icon: Icon((loyaltyCount) >= 7
+                            ? Icons.star_border_purple500_outlined
+                            : Icons.circle_outlined),
                         label: const Text("7"),
                       ),
                       ElevatedButton.icon(
                         onPressed: () {},
-                        icon: Icon((loyaltyCount) >= 8 ? Icons.star_border_purple500_outlined : Icons.circle_outlined),
+                        icon: Icon((loyaltyCount) >= 8
+                            ? Icons.star_border_purple500_outlined
+                            : Icons.circle_outlined),
                         label: const Text("8"),
                       ),
                     ],
@@ -135,12 +161,16 @@ class _MyLoyaltyCardState extends State<MyLoyaltyCard> {
                     children: [
                       ElevatedButton.icon(
                         onPressed: () {},
-                        icon: Icon((loyaltyCount) >= 9 ? Icons.star_border_purple500_outlined : Icons.circle_outlined),
+                        icon: Icon((loyaltyCount) >= 9
+                            ? Icons.star_border_purple500_outlined
+                            : Icons.circle_outlined),
                         label: const Text("9"),
                       ),
                       ElevatedButton.icon(
                         onPressed: () {},
-                        icon: Icon((loyaltyCount) >= 10 ? Icons.star_border_purple500_outlined : Icons.circle_outlined),
+                        icon: Icon((loyaltyCount) >= 10
+                            ? Icons.star_border_purple500_outlined
+                            : Icons.circle_outlined),
                         label: const Text("10"),
                       ),
                       ElevatedButton(

@@ -27,16 +27,16 @@ class DatabaseJobsOnQueue {
     return _jobsOnQueueRef.snapshots();
   }
 
-  void addJobsOnQueue(JobsOnQueueModel jobsOnQueueModel3,
+  void addJobsOnQueue(JobsOnQueueModel jobsOnQueueModel,
       List<OtherItemModel> thisListAddOnItems) async {
     //String addJobsOnQueue(JobsOnQueueModel jobsOnQueue) {
 
     DatabaseOtherItems databaseOtherItems;
 
     _jobsOnQueueRef
-        .add(jobsOnQueueModel3)
+        .add(jobsOnQueueModel)
         .then((value) => {
-              print("Insert Done.${jobsOnQueueModel3.customer}"),
+              print("Insert Done.${jobsOnQueueModel.customerId}"),
               databaseOtherItems = DatabaseOtherItems(value.id),
               thisListAddOnItems.forEach((listOtherItemModel) {
                 databaseOtherItems.addOtherItems(listOtherItemModel);
@@ -44,12 +44,12 @@ class DatabaseJobsOnQueue {
             })
         // ignore: invalid_return_type_for_catch_error
         .catchError(
-          (error) => print("Failed : $error ${jobsOnQueueModel3.customer}"),
+          (error) => print("Failed : $error ${jobsOnQueueModel.customerId}"),
         );
   }
 
   void updateJobsOnQueue(
-      String jobsOnQueueId, JobsOnQueueModel jobsOnQueueModel4) {
-    _jobsOnQueueRef.doc(jobsOnQueueId).update(jobsOnQueueModel4.toJson());
+      String jobsOnQueueId, JobsOnQueueModel jobsOnQueueModel) {
+    _jobsOnQueueRef.doc(jobsOnQueueId).update(jobsOnQueueModel.toJson());
   }
 }

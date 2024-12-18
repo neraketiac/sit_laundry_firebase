@@ -1,4 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:laundry_firebase/models/customermodel.dart';
 import 'package:laundry_firebase/models/otheritemmodel.dart';
 
 bool showDet = false, showFab = false, showBle = false, showOth = false;
@@ -13,6 +15,16 @@ List<OtherItemModel> listFabItems = [];
 List<OtherItemModel> listBleItems = [];
 List<OtherItemModel> listOthItems = [];
 List<OtherItemModel> listAddOnItems = [];
+
+List<CustomerModel> customerOptionsFromVariable = [];
+
+CustomerModel autocompleteSelected = CustomerModel(
+    customerId: 1,
+    name: '1',
+    address: '1',
+    contact: '1',
+    remarks: '1',
+    loyaltyCount: 1);
 
 const String groupDet = "Det",
     groupFab = "Fab",
@@ -110,7 +122,35 @@ final List<String> finListNumbering = [
 
 const mobileWidth = 600;
 
+//variable in alterDetailJobsJson for all jobs
+bool bRiderPickupVar = false;
+bool bRegularSabonVar = true,
+    bSayoSabonVar = false,
+    bOtherServicesVar = false,
+    bNotOtherServicesVar = true;
+bool bAddOnVar = false,
+    bDetAddOnVar = false,
+    bFabAddOnVar = false,
+    bBleAddOnVar = false,
+    bOthAddOnVar = false;
+int iInitialKiloVar = 8,
+    iInitialLoadVar = 1,
+    iInitialPriceVar = 155,
+    iInitialOthersPriceVar = 155;
+late OtherItemModel selectedDetVar,
+    selectedFabVar,
+    selectedBleVar,
+    selectedOthVar;
+int iBasketVar = 0, iBagVar = 0;
+bool bUnpaidVar = true, bPaidCashVar = false, bPaidGCashVar = false;
+bool bMixVar = true, bFoldVar = true;
+TextEditingController remarksControllerVar = TextEditingController();
+DateTime dNeedOnVar = DateTime.now().add(Duration(minutes: 210));
+Timestamp tNeedOnVar = Timestamp.now();
+
 void putEntries() {
+  fetchUsers();
+
   //detItems
   listDetItems.add(OtherItemModel(
       itemId: menuDetBreezeDVal,
@@ -251,6 +291,12 @@ void putEntries() {
   mapPaymentStat.addEntries({paidCash: "PaidCash"}.entries);
   mapPaymentStat.addEntries({paidGCash: "PaidGCash"}.entries);
   mapPaymentStat.addEntries({waitGCash: "WaitGCash"}.entries);
+
+  //dropdown first value
+  selectedDetVar = listDetItems[0];
+  selectedFabVar = listFabItems[0];
+  selectedBleVar = listBleItems[0];
+  selectedOthVar = listOthItems[0];
 }
 
 //var mapEmpId = {"0550", "Jeng", "0808", "Abi", "0413", "Ket", "0316", "DonP"};
@@ -319,6 +365,16 @@ final Color cWaitRiderDelivery = Color.fromRGBO(62, 255, 45, 1); //rider
 final Color cNasaCustomerNa = Color.fromRGBO(92, 91, 91, 1);
 final Color cRiderOnDelivery = Color.fromRGBO(62, 255, 45, 1); //rider
 
+Color paymentStatColor(String paymentStat) {
+  if (paymentStat == "Paid" ||
+      paymentStat == "PaidGCash" ||
+      paymentStat == "PaidCash") {
+    return Colors.transparent;
+  } else {
+    return Color.fromARGB(115, 255, 97, 97);
+  }
+}
+
 Color borderColor() {
   return Colors.black54;
 }
@@ -349,4 +405,52 @@ int iPriceDivider(bool bRegularSabon) {
   } else {
     return 125;
   }
+}
+
+Future<void> fetchUsers() {
+  customerOptionsFromVariable = [];
+  CollectionReference users = FirebaseFirestore.instance.collection('loyalty');
+  return users.get().then((QuerySnapshot snapshot) {
+    for (var doc in snapshot.docs) {
+      //print(doc.id + " " + doc['Name'] + " " + doc['Address']);
+      customerOptionsFromVariable.add(CustomerModel(
+          customerId: int.parse(doc.id),
+          name: doc['Name'],
+          address: doc['Address'],
+          contact: doc['Name'],
+          remarks: doc['Name'],
+          loyaltyCount: doc['Count']));
+    }
+  }).catchError((error) => print("Failed to fetch users: $error"));
+}
+
+String customerName(String customerId) {
+  String thisCustomerName = "no data";
+  customerOptionsFromVariable.forEach((thisData) {
+    if (thisData.customerId == int.parse(customerId)) {
+      thisCustomerName = thisData.name;
+    }
+  });
+
+  return thisCustomerName;
+}
+
+void resetPaymentQueueBool() {
+  bUnpaidVar = false;
+  bPaidCashVar = false;
+  bPaidGCashVar = false;
+}
+
+void resetRegular() {
+  bRegularSabonVar = false;
+  bSayoSabonVar = false;
+  bOtherServicesVar = false;
+  bNotOtherServicesVar = true;
+}
+
+void resetAddOn() {
+  bDetAddOnVar = false;
+  bFabAddOnVar = false;
+  bBleAddOnVar = false;
+  bOthAddOnVar = false;
 }
