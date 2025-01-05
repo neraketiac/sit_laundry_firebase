@@ -18,7 +18,7 @@ class LoyaltyModel {
           name: json['Name']! as String,
           contact: json['Contact']! as String,
           address: json['Address']! as String,
-          remarks: json['Remarks']! as String,
+          remarks: json['C5_Remarks']! as String,
           count: json['Count']! as int,
         );
 
@@ -42,7 +42,7 @@ class LoyaltyModel {
         'Name': name,
         'Contact': contact,
         'Address': address,
-        'Remarks': remarks,
+        'C5_Remarks': remarks,
         'Count': count,
       };
 

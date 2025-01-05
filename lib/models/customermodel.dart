@@ -17,11 +17,11 @@ class CustomerModel {
 
   CustomerModel.fromJson(Map<String, dynamic> json)
       : this(
-          customerId: json['customerId']! as int,
+          customerId: json['A5_CustomerId']! as int,
           name: json['name']! as String,
           address: json['address']! as String,
           contact: json['contact']! as String,
-          remarks: json['remarks']! as String,
+          remarks: json['C5_Remarks']! as String,
           loyaltyCount: json['loyaltyCount']! as int,
         );
 
@@ -44,11 +44,11 @@ class CustomerModel {
   }
 
   Map<String, dynamic> toJson() => {
-        'customerId': customerId,
+        'A5_CustomerId': customerId,
         'name': name,
         'address': address,
         'contact': contact,
-        'remarks': remarks,
+        'C5_Remarks': remarks,
         'loyaltyCount': loyaltyCount,
       };
 

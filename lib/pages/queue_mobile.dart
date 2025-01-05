@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:laundry_firebase/models/jobsonqueuemodel.dart';
+import 'package:laundry_firebase/models/otheritemmodel.dart';
 import 'package:laundry_firebase/services/database_jobsonqueue.dart';
 //import 'package:laundry_firebase/variables/item_count_helper.dart';
 import 'package:laundry_firebase/variables/variables.dart';
@@ -270,7 +271,34 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
 
                           alterQueueMobile();
                           */
-                          alterQueueMobileJson(jobsOnQueueModel);
+                          //alterQueueMobileJson(jobsOnQueueModel);
+/*
+                          editAll(
+                            jobsOnQueueModel,
+                            /*
+                            (jobsOnQueueModel.queueStat == "ForSorting"
+                                ? false
+                                : true), // rider pickup
+                                */
+                            bRegularSabonVar,
+                            bSayoSabonVar,
+                            bOtherServicesVar,
+                            bShowKiloLoadDisplayVar,
+                            bAddOnVar,
+                            bDetAddOnVar,
+                            bFabAddOnVar,
+                            bBleAddOnVar,
+                            bOthAddOnVar,
+                            bUnpaidVar,
+                            bPaidCashVar,
+                            bPaidGCashVar
+                            /*
+                            remarksControllerVar,
+                            dNeedOnVar,
+                            jobsOnQueueModelData.id.toString(),
+                            */
+                          );
+                          */
                         },
                         //Container display JobsOnQueue
                         child: _conDisplayJson(
@@ -301,7 +329,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance
           .collection('JobsOnQueue')
-          .orderBy('DateQ', descending: true)
+          .orderBy('A1_DateQ', descending: true)
           .snapshots(),
       builder: (context, snapshot) {
         bHeader = true;
@@ -335,15 +363,15 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
             //required initialize start
             _gbWithFinalLoad = false;
             try {
-              _giFinalKilo = buffRecord['FinalKilo'];
-              _giFinalLoad = buffRecord['FinalLoad'];
+              _giFinalKilo = buffRecord['B1_FinalKilo'];
+              _giFinalLoad = buffRecord['B2_FinalLoad'];
               _gbWithFinalLoad = true;
             } on Exception catch (exception) {
             } catch (error) {}
 
             _gbWithFinalPrice = false;
             try {
-              _giFinalPrice = buffRecord['FinalPrice'];
+              _giFinalPrice = buffRecord['B3_FinalPrice'];
               _gbWithFinalPrice = true;
             } on Exception catch (exception) {
             } catch (error) {}
@@ -359,12 +387,12 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                       child: GestureDetector(
                         onTap: () {
                           _gsId = buffRecord.id.toString();
-                          _gtDateQ = buffRecord['DateQ'];
-                          _gsCreatedBy = buffRecord['CreatedBy'];
+                          _gtDateQ = buffRecord['A1_DateQ'];
+                          _gsCreatedBy = buffRecord['A4_CreatedBy'];
                           _gsCustomer = buffRecord['Customer'];
-                          _giInitialKilo = buffRecord['InitialKilo'];
-                          _giInitialLoad = buffRecord['InitialLoad'];
-                          _giInitialPrice = buffRecord['InitialPrice'];
+                          _giInitialKilo = buffRecord['A6_InitialKilo'];
+                          _giInitialLoad = buffRecord['A7_InitialLoad'];
+                          _giInitialPrice = buffRecord['A8_InitialPrice'];
                           _gsQueueStat = buffRecord['QueueStat'];
                           if (_gsQueueStat ==
                               mapQueueStat[forSorting].toString()) {
@@ -376,33 +404,33 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                           }
                           _gsPaymentStat = buffRecord['PaymentStat'];
                           _gsPaymentReceivedBy =
-                              buffRecord['PaymentReceivedBy'];
-                          _gtNeedOn = buffRecord['NeedOn'];
+                              buffRecord['C9_PaymentReceivedBy'];
+                          _gtNeedOn = buffRecord['B9_NeedOn'];
                           _gbMaxFab = buffRecord['MaxFab'];
-                          _gbFold = buffRecord['Fold'];
-                          _gbMix = buffRecord['Mix'];
-                          _giBasket = buffRecord['Basket'];
-                          _giBag = buffRecord['Bag'];
+                          _gbFold = buffRecord['C1_Fold'];
+                          _gbMix = buffRecord['C2_Mix'];
+                          _giBasket = buffRecord['C3_Basket'];
+                          _giBag = buffRecord['C4_Bag'];
                           _giKulang = buffRecord['Kulang'];
                           _giMaySukli = buffRecord['MaySukli'];
 
                           try {
-                            _giFinalKilo = buffRecord['FinalKilo'];
-                            _giFinalLoad = buffRecord['FinalLoad'];
+                            _giFinalKilo = buffRecord['B1_FinalKilo'];
+                            _giFinalLoad = buffRecord['B2_FinalLoad'];
                           } on Exception catch (exception) {
-                            _giFinalKilo = buffRecord['InitialKilo'];
-                            _giFinalLoad = buffRecord['InitialLoad'];
+                            _giFinalKilo = buffRecord['A6_InitialKilo'];
+                            _giFinalLoad = buffRecord['A7_InitialLoad'];
                           } catch (error) {
-                            _giFinalKilo = buffRecord['InitialKilo'];
-                            _giFinalLoad = buffRecord['InitialLoad'];
+                            _giFinalKilo = buffRecord['A6_InitialKilo'];
+                            _giFinalLoad = buffRecord['A7_InitialLoad'];
                           }
 
                           try {
-                            _giFinalPrice = buffRecord['FinalPrice'];
+                            _giFinalPrice = buffRecord['B3_FinalPrice'];
                           } on Exception catch (exception) {
-                            _giFinalPrice = buffRecord['InitialPrice'];
+                            _giFinalPrice = buffRecord['A8_InitialPrice'];
                           } catch (error) {
-                            _giFinalPrice = buffRecord['InitialPrice'];
+                            _giFinalPrice = buffRecord['A8_InitialPrice'];
                           }
 
                           _gdNeedOn = _gtNeedOn.toDate();
@@ -417,16 +445,16 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                           buffRecord['Customer'],
                           //buffRecord['Customer'],
                           buffRecord['QueueStat'],
-                          buffRecord['InitialKilo'],
-                          buffRecord['InitialLoad'],
-                          buffRecord['Basket'],
-                          buffRecord['Bag'],
+                          buffRecord['A6_InitialKilo'],
+                          buffRecord['A7_InitialLoad'],
+                          buffRecord['C3_Basket'],
+                          buffRecord['C4_Bag'],
                           buffRecord['MaxFab'],
-                          buffRecord['Mix'],
-                          buffRecord['Fold'],
+                          buffRecord['C2_Mix'],
+                          buffRecord['C1_Fold'],
                           buffRecord['PaymentStat'],
-                          buffRecord['InitialPrice'],
-                          buffRecord['NeedOn'],
+                          buffRecord['A8_InitialPrice'],
+                          buffRecord['B9_NeedOn'],
                         ),
                       ),
                     ),
@@ -502,15 +530,15 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
             //required initialize start
             _gbWithFinalLoad = false;
             try {
-              _giFinalKilo = buffRecord['FinalKilo'];
-              _giFinalLoad = buffRecord['FinalLoad'];
+              _giFinalKilo = buffRecord['B1_FinalKilo'];
+              _giFinalLoad = buffRecord['B2_FinalLoad'];
               _gbWithFinalLoad = true;
             } on Exception catch (exception) {
             } catch (error) {}
 
             _gbWithFinalPrice = false;
             try {
-              _giFinalPrice = buffRecord['FinalPrice'];
+              _giFinalPrice = buffRecord['B3_FinalPrice'];
               _gbWithFinalPrice = true;
             } on Exception catch (exception) {
             } catch (error) {}
@@ -555,22 +583,22 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                       child: GestureDetector(
                         onTap: () {
                           _gsId = buffRecord.id.toString();
-                          _gtDateQ = buffRecord['DateQ'];
-                          _gsCreatedBy = buffRecord['CreatedBy'];
+                          _gtDateQ = buffRecord['A1_DateQ'];
+                          _gsCreatedBy = buffRecord['A4_CreatedBy'];
                           _gsCustomer = buffRecord['Customer'];
-                          _giInitialKilo = buffRecord['InitialKilo'];
-                          _giInitialLoad = buffRecord['InitialLoad'];
-                          _giInitialPrice = buffRecord['InitialPrice'];
+                          _giInitialKilo = buffRecord['A6_InitialKilo'];
+                          _giInitialLoad = buffRecord['A7_InitialLoad'];
+                          _giInitialPrice = buffRecord['A8_InitialPrice'];
                           _gsQueueStat = buffRecord['QueueStat'];
                           _gsPaymentStat = buffRecord['PaymentStat'];
                           _gsPaymentReceivedBy =
-                              buffRecord['PaymentReceivedBy'];
-                          _gtNeedOn = buffRecord['NeedOn'];
+                              buffRecord['C9_PaymentReceivedBy'];
+                          _gtNeedOn = buffRecord['B9_NeedOn'];
                           _gbMaxFab = buffRecord['MaxFab'];
-                          _gbFold = buffRecord['Fold'];
-                          _gbMix = buffRecord['Mix'];
-                          _giBasket = buffRecord['Basket'];
-                          _giBag = buffRecord['Bag'];
+                          _gbFold = buffRecord['C1_Fold'];
+                          _gbMix = buffRecord['C2_Mix'];
+                          _giBasket = buffRecord['C3_Basket'];
+                          _giBag = buffRecord['C4_Bag'];
                           _giKulang = buffRecord['Kulang'];
                           _giMaySukli = buffRecord['MaySukli'];
 
@@ -578,22 +606,22 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                           _giJobsId = buffRecord['JobsId'];
 
                           try {
-                            _giFinalKilo = buffRecord['FinalKilo'];
-                            _giFinalLoad = buffRecord['FinalLoad'];
+                            _giFinalKilo = buffRecord['B1_FinalKilo'];
+                            _giFinalLoad = buffRecord['B2_FinalLoad'];
                           } on Exception catch (exception) {
-                            _giFinalKilo = buffRecord['InitialKilo'];
-                            _giFinalLoad = buffRecord['InitialLoad'];
+                            _giFinalKilo = buffRecord['A6_InitialKilo'];
+                            _giFinalLoad = buffRecord['A7_InitialLoad'];
                           } catch (error) {
-                            _giFinalKilo = buffRecord['InitialKilo'];
-                            _giFinalLoad = buffRecord['InitialLoad'];
+                            _giFinalKilo = buffRecord['A6_InitialKilo'];
+                            _giFinalLoad = buffRecord['A7_InitialLoad'];
                           }
 
                           try {
-                            _giFinalPrice = buffRecord['FinalPrice'];
+                            _giFinalPrice = buffRecord['B3_FinalPrice'];
                           } on Exception catch (exception) {
-                            _giFinalPrice = buffRecord['InitialPrice'];
+                            _giFinalPrice = buffRecord['A8_InitialPrice'];
                           } catch (error) {
-                            _giFinalPrice = buffRecord['InitialPrice'];
+                            _giFinalPrice = buffRecord['A8_InitialPrice'];
                           }
 
                           _gdNeedOn = _gtNeedOn.toDate();
@@ -608,16 +636,16 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                           Color.fromRGBO(168, 173, 168, 1),
                           buffRecord['Customer'],
                           buffRecord['QueueStat'],
-                          buffRecord['FinalKilo'],
-                          buffRecord['FinalLoad'],
-                          buffRecord['Basket'],
-                          buffRecord['Bag'],
+                          buffRecord['B1_FinalKilo'],
+                          buffRecord['B2_FinalLoad'],
+                          buffRecord['C3_Basket'],
+                          buffRecord['C4_Bag'],
                           buffRecord['MaxFab'],
-                          buffRecord['Mix'],
-                          buffRecord['Fold'],
+                          buffRecord['C2_Mix'],
+                          buffRecord['C1_Fold'],
                           buffRecord['PaymentStat'],
-                          buffRecord['FinalPrice'],
-                          buffRecord['NeedOn'],
+                          buffRecord['B3_FinalPrice'],
+                          buffRecord['B9_NeedOn'],
                           buffRecord['ExtraDryPrice'],
                           buffRecord['JobsId'],
                         ),
@@ -676,7 +704,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
       stream: FirebaseFirestore.instance
           .collection('JobsDone')
           .where('QueueStat', isNotEqualTo: 'NasaCustomerNa')
-          .orderBy('DateD', descending: true)
+          .orderBy('D7_DateD', descending: true)
           .snapshots(),
       builder: (context, snapshot) {
         bHeader = true;
@@ -703,15 +731,15 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
             //required initialize start
             _gbWithFinalLoad = false;
             try {
-              _giFinalKilo = buffRecord['FinalKilo'];
-              _giFinalLoad = buffRecord['FinalLoad'];
+              _giFinalKilo = buffRecord['B1_FinalKilo'];
+              _giFinalLoad = buffRecord['B2_FinalLoad'];
               _gbWithFinalLoad = true;
             } on Exception catch (exception) {
             } catch (error) {}
 
             _gbWithFinalPrice = false;
             try {
-              _giFinalPrice = buffRecord['FinalPrice'];
+              _giFinalPrice = buffRecord['B3_FinalPrice'];
               _gbWithFinalPrice = true;
             } on Exception catch (exception) {
             } catch (error) {}
@@ -727,46 +755,46 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                       child: GestureDetector(
                         onTap: () {
                           _gsId = buffRecord.id.toString();
-                          _gtDateD = buffRecord['DateD'];
+                          _gtDateD = buffRecord['D7_DateD'];
                           _gtDateW = buffRecord['DateW'];
-                          _gtDateQ = buffRecord['DateQ'];
-                          _gsCreatedBy = buffRecord['CreatedBy'];
+                          _gtDateQ = buffRecord['A1_DateQ'];
+                          _gsCreatedBy = buffRecord['A4_CreatedBy'];
                           _gsCustomer = buffRecord['Customer'];
-                          _giInitialKilo = buffRecord['InitialKilo'];
-                          _giInitialLoad = buffRecord['InitialLoad'];
-                          _giInitialPrice = buffRecord['InitialPrice'];
+                          _giInitialKilo = buffRecord['A6_InitialKilo'];
+                          _giInitialLoad = buffRecord['A7_InitialLoad'];
+                          _giInitialPrice = buffRecord['A8_InitialPrice'];
                           _gsQueueStat = buffRecord['QueueStat'];
                           _gsPaymentStat = buffRecord['PaymentStat'];
                           _gsPaymentReceivedBy =
-                              buffRecord['PaymentReceivedBy'];
-                          _gtNeedOn = buffRecord['NeedOn'];
+                              buffRecord['C9_PaymentReceivedBy'];
+                          _gtNeedOn = buffRecord['B9_NeedOn'];
                           _gbMaxFab = buffRecord['MaxFab'];
-                          _gbFold = buffRecord['Fold'];
-                          _gbMix = buffRecord['Mix'];
-                          _giBasket = buffRecord['Basket'];
-                          _giBag = buffRecord['Bag'];
+                          _gbFold = buffRecord['C1_Fold'];
+                          _gbMix = buffRecord['C2_Mix'];
+                          _giBasket = buffRecord['C3_Basket'];
+                          _giBag = buffRecord['C4_Bag'];
                           _giKulang = buffRecord['Kulang'];
                           _giMaySukli = buffRecord['MaySukli'];
 
                           _giJobsId = buffRecord['JobsId'];
 
                           try {
-                            _giFinalKilo = buffRecord['FinalKilo'];
-                            _giFinalLoad = buffRecord['FinalLoad'];
+                            _giFinalKilo = buffRecord['B1_FinalKilo'];
+                            _giFinalLoad = buffRecord['B2_FinalLoad'];
                           } on Exception catch (exception) {
-                            _giFinalKilo = buffRecord['InitialKilo'];
-                            _giFinalLoad = buffRecord['InitialLoad'];
+                            _giFinalKilo = buffRecord['A6_InitialKilo'];
+                            _giFinalLoad = buffRecord['A7_InitialLoad'];
                           } catch (error) {
-                            _giFinalKilo = buffRecord['InitialKilo'];
-                            _giFinalLoad = buffRecord['InitialLoad'];
+                            _giFinalKilo = buffRecord['A6_InitialKilo'];
+                            _giFinalLoad = buffRecord['A7_InitialLoad'];
                           }
 
                           try {
-                            _giFinalPrice = buffRecord['FinalPrice'];
+                            _giFinalPrice = buffRecord['B3_FinalPrice'];
                           } on Exception catch (exception) {
-                            _giFinalPrice = buffRecord['InitialPrice'];
+                            _giFinalPrice = buffRecord['A8_InitialPrice'];
                           } catch (error) {
-                            _giFinalPrice = buffRecord['InitialPrice'];
+                            _giFinalPrice = buffRecord['A8_InitialPrice'];
                           }
 
                           _gdNeedOn = _gtNeedOn.toDate();
@@ -781,16 +809,16 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                           Color.fromRGBO(32, 163, 180, 1),
                           buffRecord['Customer'],
                           buffRecord['QueueStat'],
-                          buffRecord['FinalKilo'],
-                          buffRecord['FinalLoad'],
-                          buffRecord['Basket'],
-                          buffRecord['Bag'],
+                          buffRecord['B1_FinalKilo'],
+                          buffRecord['B2_FinalLoad'],
+                          buffRecord['C3_Basket'],
+                          buffRecord['C4_Bag'],
                           buffRecord['MaxFab'],
-                          buffRecord['Mix'],
-                          buffRecord['Fold'],
+                          buffRecord['C2_Mix'],
+                          buffRecord['C1_Fold'],
                           buffRecord['PaymentStat'],
-                          buffRecord['FinalPrice'],
-                          buffRecord['NeedOn'],
+                          buffRecord['B3_FinalPrice'],
+                          buffRecord['B9_NeedOn'],
                           buffRecord['ExtraDryPrice'],
                           buffRecord['JobsId'],
                         ),
@@ -818,7 +846,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
       stream: FirebaseFirestore.instance
           .collection('JobsDone')
           .where("QueueStat", isEqualTo: "NasaCustomerNa")
-          .orderBy('DateD', descending: true)
+          .orderBy('D7_DateD', descending: true)
           .snapshots(),
       builder: (context, snapshot) {
         bHeader = true;
@@ -846,15 +874,15 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
               //required initialize start
               _gbWithFinalLoad = false;
               try {
-                _giFinalKilo = buffRecord['FinalKilo'];
-                _giFinalLoad = buffRecord['FinalLoad'];
+                _giFinalKilo = buffRecord['B1_FinalKilo'];
+                _giFinalLoad = buffRecord['B2_FinalLoad'];
                 _gbWithFinalLoad = true;
               } on Exception catch (exception) {
               } catch (error) {}
 
               _gbWithFinalPrice = false;
               try {
-                _giFinalPrice = buffRecord['FinalPrice'];
+                _giFinalPrice = buffRecord['B3_FinalPrice'];
                 _gbWithFinalPrice = true;
               } on Exception catch (exception) {
               } catch (error) {}
@@ -870,46 +898,46 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                         child: GestureDetector(
                           onTap: () {
                             _gsId = buffRecord.id.toString();
-                            _gtDateD = buffRecord['DateD'];
+                            _gtDateD = buffRecord['D7_DateD'];
                             _gtDateW = buffRecord['DateW'];
-                            _gtDateQ = buffRecord['DateQ'];
-                            _gsCreatedBy = buffRecord['CreatedBy'];
+                            _gtDateQ = buffRecord['A1_DateQ'];
+                            _gsCreatedBy = buffRecord['A4_CreatedBy'];
                             _gsCustomer = buffRecord['Customer'];
-                            _giInitialKilo = buffRecord['InitialKilo'];
-                            _giInitialLoad = buffRecord['InitialLoad'];
-                            _giInitialPrice = buffRecord['InitialPrice'];
+                            _giInitialKilo = buffRecord['A6_InitialKilo'];
+                            _giInitialLoad = buffRecord['A7_InitialLoad'];
+                            _giInitialPrice = buffRecord['A8_InitialPrice'];
                             _gsQueueStat = buffRecord['QueueStat'];
                             _gsPaymentStat = buffRecord['PaymentStat'];
                             _gsPaymentReceivedBy =
-                                buffRecord['PaymentReceivedBy'];
-                            _gtNeedOn = buffRecord['NeedOn'];
+                                buffRecord['C9_PaymentReceivedBy'];
+                            _gtNeedOn = buffRecord['B9_NeedOn'];
                             _gbMaxFab = buffRecord['MaxFab'];
-                            _gbFold = buffRecord['Fold'];
-                            _gbMix = buffRecord['Mix'];
-                            _giBasket = buffRecord['Basket'];
-                            _giBag = buffRecord['Bag'];
+                            _gbFold = buffRecord['C1_Fold'];
+                            _gbMix = buffRecord['C2_Mix'];
+                            _giBasket = buffRecord['C3_Basket'];
+                            _giBag = buffRecord['C4_Bag'];
                             _giKulang = buffRecord['Kulang'];
                             _giMaySukli = buffRecord['MaySukli'];
 
                             _giJobsId = buffRecord['JobsId'];
 
                             try {
-                              _giFinalKilo = buffRecord['FinalKilo'];
-                              _giFinalLoad = buffRecord['FinalLoad'];
+                              _giFinalKilo = buffRecord['B1_FinalKilo'];
+                              _giFinalLoad = buffRecord['B2_FinalLoad'];
                             } on Exception catch (exception) {
-                              _giFinalKilo = buffRecord['InitialKilo'];
-                              _giFinalLoad = buffRecord['InitialLoad'];
+                              _giFinalKilo = buffRecord['A6_InitialKilo'];
+                              _giFinalLoad = buffRecord['A7_InitialLoad'];
                             } catch (error) {
-                              _giFinalKilo = buffRecord['InitialKilo'];
-                              _giFinalLoad = buffRecord['InitialLoad'];
+                              _giFinalKilo = buffRecord['A6_InitialKilo'];
+                              _giFinalLoad = buffRecord['A7_InitialLoad'];
                             }
 
                             try {
-                              _giFinalPrice = buffRecord['FinalPrice'];
+                              _giFinalPrice = buffRecord['B3_FinalPrice'];
                             } on Exception catch (exception) {
-                              _giFinalPrice = buffRecord['InitialPrice'];
+                              _giFinalPrice = buffRecord['A8_InitialPrice'];
                             } catch (error) {
-                              _giFinalPrice = buffRecord['InitialPrice'];
+                              _giFinalPrice = buffRecord['A8_InitialPrice'];
                             }
 
                             _gdNeedOn = _gtNeedOn.toDate();
@@ -924,16 +952,16 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                             Color.fromRGBO(32, 163, 180, 1),
                             buffRecord['Customer'],
                             buffRecord['QueueStat'],
-                            buffRecord['FinalKilo'],
-                            buffRecord['FinalLoad'],
-                            buffRecord['Basket'],
-                            buffRecord['Bag'],
+                            buffRecord['B1_FinalKilo'],
+                            buffRecord['B2_FinalLoad'],
+                            buffRecord['C3_Basket'],
+                            buffRecord['C4_Bag'],
                             buffRecord['MaxFab'],
-                            buffRecord['Mix'],
-                            buffRecord['Fold'],
+                            buffRecord['C2_Mix'],
+                            buffRecord['C1_Fold'],
                             buffRecord['PaymentStat'],
-                            buffRecord['FinalPrice'],
-                            buffRecord['NeedOn'],
+                            buffRecord['B3_FinalPrice'],
+                            buffRecord['B9_NeedOn'],
                             buffRecord['ExtraDryPrice'],
                             buffRecord['JobsId'],
                           ),
@@ -962,7 +990,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
       stream: FirebaseFirestore.instance
           .collection('JobsDone')
           .where("QueueStat", isEqualTo: "NasaCustomerNa")
-          .orderBy('DateD', descending: true)
+          .orderBy('D7_DateD', descending: true)
           .snapshots(),
       builder: (context, snapshot) {
         bHeader = true;
@@ -990,15 +1018,15 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
               //required initialize start
               _gbWithFinalLoad = false;
               try {
-                _giFinalKilo = buffRecord['FinalKilo'];
-                _giFinalLoad = buffRecord['FinalLoad'];
+                _giFinalKilo = buffRecord['B1_FinalKilo'];
+                _giFinalLoad = buffRecord['B2_FinalLoad'];
                 _gbWithFinalLoad = true;
               } on Exception catch (exception) {
               } catch (error) {}
 
               _gbWithFinalPrice = false;
               try {
-                _giFinalPrice = buffRecord['FinalPrice'];
+                _giFinalPrice = buffRecord['B3_FinalPrice'];
                 _gbWithFinalPrice = true;
               } on Exception catch (exception) {
               } catch (error) {}
@@ -1014,46 +1042,46 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                         child: GestureDetector(
                           onTap: () {
                             _gsId = buffRecord.id.toString();
-                            _gtDateD = buffRecord['DateD'];
+                            _gtDateD = buffRecord['D7_DateD'];
                             _gtDateW = buffRecord['DateW'];
-                            _gtDateQ = buffRecord['DateQ'];
-                            _gsCreatedBy = buffRecord['CreatedBy'];
+                            _gtDateQ = buffRecord['A1_DateQ'];
+                            _gsCreatedBy = buffRecord['A4_CreatedBy'];
                             _gsCustomer = buffRecord['Customer'];
-                            _giInitialKilo = buffRecord['InitialKilo'];
-                            _giInitialLoad = buffRecord['InitialLoad'];
-                            _giInitialPrice = buffRecord['InitialPrice'];
+                            _giInitialKilo = buffRecord['A6_InitialKilo'];
+                            _giInitialLoad = buffRecord['A7_InitialLoad'];
+                            _giInitialPrice = buffRecord['A8_InitialPrice'];
                             _gsQueueStat = buffRecord['QueueStat'];
                             _gsPaymentStat = buffRecord['PaymentStat'];
                             _gsPaymentReceivedBy =
-                                buffRecord['PaymentReceivedBy'];
-                            _gtNeedOn = buffRecord['NeedOn'];
+                                buffRecord['C9_PaymentReceivedBy'];
+                            _gtNeedOn = buffRecord['B9_NeedOn'];
                             _gbMaxFab = buffRecord['MaxFab'];
-                            _gbFold = buffRecord['Fold'];
-                            _gbMix = buffRecord['Mix'];
-                            _giBasket = buffRecord['Basket'];
-                            _giBag = buffRecord['Bag'];
+                            _gbFold = buffRecord['C1_Fold'];
+                            _gbMix = buffRecord['C2_Mix'];
+                            _giBasket = buffRecord['C3_Basket'];
+                            _giBag = buffRecord['C4_Bag'];
                             _giKulang = buffRecord['Kulang'];
                             _giMaySukli = buffRecord['MaySukli'];
 
                             _giJobsId = buffRecord['JobsId'];
 
                             try {
-                              _giFinalKilo = buffRecord['FinalKilo'];
-                              _giFinalLoad = buffRecord['FinalLoad'];
+                              _giFinalKilo = buffRecord['B1_FinalKilo'];
+                              _giFinalLoad = buffRecord['B2_FinalLoad'];
                             } on Exception catch (exception) {
-                              _giFinalKilo = buffRecord['InitialKilo'];
-                              _giFinalLoad = buffRecord['InitialLoad'];
+                              _giFinalKilo = buffRecord['A6_InitialKilo'];
+                              _giFinalLoad = buffRecord['A7_InitialLoad'];
                             } catch (error) {
-                              _giFinalKilo = buffRecord['InitialKilo'];
-                              _giFinalLoad = buffRecord['InitialLoad'];
+                              _giFinalKilo = buffRecord['A6_InitialKilo'];
+                              _giFinalLoad = buffRecord['A7_InitialLoad'];
                             }
 
                             try {
-                              _giFinalPrice = buffRecord['FinalPrice'];
+                              _giFinalPrice = buffRecord['B3_FinalPrice'];
                             } on Exception catch (exception) {
-                              _giFinalPrice = buffRecord['InitialPrice'];
+                              _giFinalPrice = buffRecord['A8_InitialPrice'];
                             } catch (error) {
-                              _giFinalPrice = buffRecord['InitialPrice'];
+                              _giFinalPrice = buffRecord['A8_InitialPrice'];
                             }
 
                             _gdNeedOn = _gtNeedOn.toDate();
@@ -1068,16 +1096,16 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                             Color.fromRGBO(32, 163, 180, 1),
                             buffRecord['Customer'],
                             buffRecord['QueueStat'],
-                            buffRecord['FinalKilo'],
-                            buffRecord['FinalLoad'],
-                            buffRecord['Basket'],
-                            buffRecord['Bag'],
+                            buffRecord['B1_FinalKilo'],
+                            buffRecord['B2_FinalLoad'],
+                            buffRecord['C3_Basket'],
+                            buffRecord['C4_Bag'],
                             buffRecord['MaxFab'],
-                            buffRecord['Mix'],
-                            buffRecord['Fold'],
+                            buffRecord['C2_Mix'],
+                            buffRecord['C1_Fold'],
                             buffRecord['PaymentStat'],
-                            buffRecord['FinalPrice'],
-                            buffRecord['NeedOn'],
+                            buffRecord['B3_FinalPrice'],
+                            buffRecord['B9_NeedOn'],
                             buffRecord['ExtraDryPrice'],
                             buffRecord['JobsId'],
                           ),
@@ -1102,7 +1130,8 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
       [int buffExtraDryPrice = 0, int buffJobsId = 0]) {
     return Container(
       height: 80,
-      color: _getCOlorStatus(jobsOnQueueModel.queueStat),
+      /*color: _getCOlorStatus(jobsOnQueueModel.queueStat),*/
+      color: _getCOlorStatusJson(jobsOnQueueModel),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -1110,9 +1139,11 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
             children: [
               InkWell(
                 onDoubleTap: () {
+                  /*
                   if (jobsOnQueueModel.queueStat == "Waiting") {
                     alterNumberMobile(buffJobsId);
                   }
+                  */
                 },
                 child: Text(
                   (buffJobsId == 0 ? "" : "#$buffJobsId"),
@@ -1152,6 +1183,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                   //"${_gbWithFinalLoad ? _giFinalKilo.toString() : buffInitialKilo.toString()} ${buffMaxFab ? "MaxFab" : ""} ${buffMix ? "" : "DM"} ${buffFold ? "" : "NF"} ${buffExtraDryPrice == 0 ? "" : "XD"}",
                   style: const TextStyle(fontSize: 9),
                 ),
+                /*
                 Text(
                   "${jobsOnQueueModel.paymentStat} ${jobsOnQueueModel.finalPrice == 0 ? jobsOnQueueModel.initialPrice + jobsOnQueueModel.initialOthersPrice : jobsOnQueueModel.finalPrice + jobsOnQueueModel.finalOthersPrice} Php",
                   style: TextStyle(
@@ -1159,6 +1191,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                       backgroundColor:
                           paymentStatColor(jobsOnQueueModel.paymentStat)),
                 ),
+                */
                 Text(
                   displayDate(convertTimeStamp(jobsOnQueueModel.needOn)),
                   style: const TextStyle(
@@ -1166,11 +1199,13 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                   ),
                   textAlign: TextAlign.right,
                 ),
+                /*
                 Text(
                   jobsOnQueueModel.queueStat,
                   style: const TextStyle(fontSize: 10),
                   textAlign: TextAlign.right,
                 ),
+                */
               ],
             ),
           ),
@@ -3130,24 +3165,24 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
         .add({
           'JobsId': _giFinalVacantJobsId,
           'DateW': DateTime.now(),
-          'DateQ': _gtDateQ,
-          'CreatedBy': _gsCreatedBy,
+          'A1_DateQ': _gtDateQ,
+          'A4_CreatedBy': _gsCreatedBy,
           'Customer': _gsCustomer,
-          'InitialKilo': _giInitialKilo,
-          'InitialLoad': _giInitialLoad,
-          'InitialPrice': _giInitialPrice,
-          'FinalKilo': _giFinalKilo,
-          'FinalLoad': _giFinalLoad,
-          'FinalPrice': _giFinalPrice,
+          'A6_InitialKilo': _giInitialKilo,
+          'A7_InitialLoad': _giInitialLoad,
+          'A8_InitialPrice': _giInitialPrice,
+          'B1_FinalKilo': _giFinalKilo,
+          'B2_FinalLoad': _giFinalLoad,
+          'B3_FinalPrice': _giFinalPrice,
           'QueueStat': "Waiting",
           'PaymentStat': _gsPaymentStat,
-          'PaymentReceivedBy': _gsPaymentReceivedBy,
-          'NeedOn': _gtNeedOn,
+          'C9_PaymentReceivedBy': _gsPaymentReceivedBy,
+          'B9_NeedOn': _gtNeedOn,
           'MaxFab': _gbMaxFab,
-          'Fold': _gbFold,
-          'Mix': _gbMix,
-          'Basket': _giBasket,
-          'Bag': _giBag,
+          'C1_Fold': _gbFold,
+          'C2_Mix': _gbMix,
+          'C3_Basket': _giBasket,
+          'C4_Bag': _giBag,
           'Kulang': _giKulang,
           'MaySukli': _giMaySukli,
           'ExtraDryPrice': 0,
@@ -3169,26 +3204,26 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
     collRef
         .add({
           'JobsId': _giJobsId,
-          'DateD': DateTime.now(),
+          'D7_DateD': DateTime.now(),
           'DateW': _gtDateW,
-          'DateQ': _gtDateQ,
-          'CreatedBy': _gsCreatedBy,
+          'A1_DateQ': _gtDateQ,
+          'A4_CreatedBy': _gsCreatedBy,
           'Customer': _gsCustomer,
-          'InitialKilo': _giInitialKilo,
-          'InitialLoad': _giInitialLoad,
-          'InitialPrice': _giInitialPrice,
-          'FinalKilo': _giFinalKilo,
-          'FinalLoad': _giFinalLoad,
-          'FinalPrice': _giFinalPrice,
+          'A6_InitialKilo': _giInitialKilo,
+          'A7_InitialLoad': _giInitialLoad,
+          'A8_InitialPrice': _giInitialPrice,
+          'B1_FinalKilo': _giFinalKilo,
+          'B2_FinalLoad': _giFinalLoad,
+          'B3_FinalPrice': _giFinalPrice,
           'QueueStat': "WaitCustomerPickup",
           'PaymentStat': _gsPaymentStat,
-          'PaymentReceivedBy': _gsPaymentReceivedBy,
-          'NeedOn': _gtNeedOn,
+          'C9_PaymentReceivedBy': _gsPaymentReceivedBy,
+          'B9_NeedOn': _gtNeedOn,
           'MaxFab': _gbMaxFab,
-          'Fold': _gbFold,
-          'Mix': _gbMix,
-          'Basket': _giBasket,
-          'Bag': _giBag,
+          'C1_Fold': _gbFold,
+          'C2_Mix': _gbMix,
+          'C3_Basket': _giBasket,
+          'C4_Bag': _giBag,
           'Kulang': _giKulang,
           'MaySukli': _giMaySukli,
           'ExtraDryPrice': _giExtraDryPrice,
@@ -3398,10 +3433,6 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
     );
   }
 
-  void _updateDataQueueMobileJson() {
-    DatabaseJobsOnQueue databaseJobsOnQueue = DatabaseJobsOnQueue();
-  }
-
   void _updateDataQueueMobile() {
     CollectionReference collRef =
         FirebaseFirestore.instance.collection('JobsOnQueue');
@@ -3409,27 +3440,27 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
     collRef
         .doc(_gsId)
         .set({
-          'DateQ': _gtDateQ,
-          'CreatedBy': _gsCreatedBy,
+          'A1_DateQ': _gtDateQ,
+          'A4_CreatedBy': _gsCreatedBy,
           'Customer': _gsCustomer,
-          'InitialKilo': _giInitialKilo,
-          'InitialLoad': _giInitialLoad,
-          'InitialPrice': _giInitialPrice,
-          'FinalKilo': _giFinalKilo,
-          'FinalLoad': _giFinalLoad,
-          'FinalPrice': _giFinalPrice,
+          'A6_InitialKilo': _giInitialKilo,
+          'A7_InitialLoad': _giInitialLoad,
+          'A8_InitialPrice': _giInitialPrice,
+          'B1_FinalKilo': _giFinalKilo,
+          'B2_FinalLoad': _giFinalLoad,
+          'B3_FinalPrice': _giFinalPrice,
           //'QueueStat': _gsQueueStat,
           'QueueStat': (_bRiderPickup
               ? mapQueueStat[riderPickup].toString()
               : mapQueueStat[forSorting].toString()),
           'PaymentStat': _gsPaymentStat,
-          'PaymentReceivedBy': _gsPaymentReceivedBy,
-          'NeedOn': Timestamp.fromDate(_gdNeedOn),
+          'C9_PaymentReceivedBy': _gsPaymentReceivedBy,
+          'B9_NeedOn': Timestamp.fromDate(_gdNeedOn),
           'MaxFab': _gbMaxFab,
-          'Fold': _gbFold,
-          'Mix': _gbMix,
-          'Basket': _giBasket,
-          'Bag': _giBag,
+          'C1_Fold': _gbFold,
+          'C2_Mix': _gbMix,
+          'C3_Basket': _giBasket,
+          'C4_Bag': _giBag,
           'Kulang': _giKulang,
           'MaySukli': _giMaySukli,
         })
@@ -3519,24 +3550,24 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
         .set({
           'JobsId': _giJobsId,
           'DateW': _gtDateW,
-          'DateQ': _gtDateQ,
-          'CreatedBy': _gsCreatedBy,
+          'A1_DateQ': _gtDateQ,
+          'A4_CreatedBy': _gsCreatedBy,
           'Customer': _gsCustomer,
-          'InitialKilo': _giInitialKilo,
-          'InitialLoad': _giInitialLoad,
-          'InitialPrice': _giInitialPrice,
-          'FinalKilo': _giFinalKilo,
-          'FinalLoad': _giFinalLoad,
-          'FinalPrice': _giFinalPrice,
+          'A6_InitialKilo': _giInitialKilo,
+          'A7_InitialLoad': _giInitialLoad,
+          'A8_InitialPrice': _giInitialPrice,
+          'B1_FinalKilo': _giFinalKilo,
+          'B2_FinalLoad': _giFinalLoad,
+          'B3_FinalPrice': _giFinalPrice,
           'QueueStat': _gsQueueStat,
           'PaymentStat': _gsPaymentStat,
-          'PaymentReceivedBy': _gsPaymentReceivedBy,
-          'NeedOn': _gtNeedOn,
+          'C9_PaymentReceivedBy': _gsPaymentReceivedBy,
+          'B9_NeedOn': _gtNeedOn,
           'MaxFab': _gbMaxFab,
-          'Fold': _gbFold,
-          'Mix': _gbMix,
-          'Basket': _giBasket,
-          'Bag': _giBag,
+          'C1_Fold': _gbFold,
+          'C2_Mix': _gbMix,
+          'C3_Basket': _giBasket,
+          'C4_Bag': _giBag,
           'Kulang': _giKulang,
           'MaySukli': _giMaySukli,
           'ExtraDryPrice': _giExtraDryPrice,
@@ -3557,22 +3588,22 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
   //       .set({
   //         'JobsId': _giJobsId,
   //         'DateW': _gtDateW,
-  //         'DateQ': _gtDateQ,
-  //         'CreatedBy': _gsCreatedBy,
+  //         'A1_DateQ': _gtDateQ,
+  //         'A4_CreatedBy': _gsCreatedBy,
   //         'Customer': _gsCustomer,
-  //         'InitialLoad': _giInitialLoad,
-  //         'InitialPrice': _giInitialPrice,
-  //         'FinalLoad': _giFinalLoad,
-  //         'FinalPrice': _giFinalPrice,
+  //         'A7_InitialLoad': _giInitialLoad,
+  //         'A8_InitialPrice': _giInitialPrice,
+  //         'B2_FinalLoad': _giFinalLoad,
+  //         'B3_FinalPrice': _giFinalPrice,
   //         'QueueStat': _gsQueueStat,
   //         'PaymentStat': _gsPaymentStat,
-  //         'PaymentReceivedBy': _gsPaymentReceivedBy,
-  //         'NeedOn': _gtNeedOn,
+  //         'C9_PaymentReceivedBy': _gsPaymentReceivedBy,
+  //         'B9_NeedOn': _gtNeedOn,
   //         'MaxFab': _gbMaxFab,
-  //         'Fold': _gbFold,
-  //         'Mix': _gbMix,
-  //         'Basket': _giBasket,
-  //         'Bag': _giBag,
+  //         'C1_Fold': _gbFold,
+  //         'C2_Mix': _gbMix,
+  //         'C3_Basket': _giBasket,
+  //         'C4_Bag': _giBag,
   //         'Kulang': _giKulang,
   //         'MaySukli': _giMaySukli,
   //       })
@@ -3591,26 +3622,26 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
         .doc(_gsId)
         .set({
           'JobsId': _giJobsId,
-          'DateD': _gtDateD,
+          'D7_DateD': _gtDateD,
           'DateW': _gtDateW,
-          'DateQ': _gtDateQ,
-          'CreatedBy': _gsCreatedBy,
+          'A1_DateQ': _gtDateQ,
+          'A4_CreatedBy': _gsCreatedBy,
           'Customer': _gsCustomer,
-          'InitialKilo': _giInitialKilo,
-          'InitialLoad': _giInitialLoad,
-          'InitialPrice': _giInitialPrice,
-          'FinalKilo': _giFinalKilo,
-          'FinalLoad': _giFinalLoad,
-          'FinalPrice': _giFinalPrice,
+          'A6_InitialKilo': _giInitialKilo,
+          'A7_InitialLoad': _giInitialLoad,
+          'A8_InitialPrice': _giInitialPrice,
+          'B1_FinalKilo': _giFinalKilo,
+          'B2_FinalLoad': _giFinalLoad,
+          'B3_FinalPrice': _giFinalPrice,
           'QueueStat': _gsQueueStat,
           'PaymentStat': _gsPaymentStat,
-          'PaymentReceivedBy': _gsPaymentReceivedBy,
-          'NeedOn': _gtNeedOn,
+          'C9_PaymentReceivedBy': _gsPaymentReceivedBy,
+          'B9_NeedOn': _gtNeedOn,
           'MaxFab': _gbMaxFab,
-          'Fold': _gbFold,
-          'Mix': _gbMix,
-          'Basket': _giBasket,
-          'Bag': _giBag,
+          'C1_Fold': _gbFold,
+          'C2_Mix': _gbMix,
+          'C3_Basket': _giBasket,
+          'C4_Bag': _giBag,
           'Kulang': _giKulang,
           'MaySukli': _giMaySukli,
           'ExtraDryPrice': _giExtraDryPrice,
@@ -3675,6 +3706,32 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
     ;
   }
 
+  Color _getCOlorStatusJson(JobsOnQueueModel jobsOnQueueModel) {
+//JobsOnQueue Colors
+    if (jobsOnQueueModel.riderPickup) {
+      return cRiderPickup;
+    } else if (jobsOnQueueModel.forSorting) {
+      return cForSorting;
+    } else if (jobsOnQueueModel.waiting) {
+      return cWaiting;
+    } else if (jobsOnQueueModel.washing) {
+      return cWashing;
+    } else if (jobsOnQueueModel.drying) {
+      return cDrying;
+    } else if (jobsOnQueueModel.folding) {
+      return cFolding;
+    } else if (jobsOnQueueModel.waitCustomerPickup) {
+      return cWaitCustomerPickup;
+    } else if (jobsOnQueueModel.waitRiderDelivery) {
+      return cWaitRiderDelivery;
+    } else if (jobsOnQueueModel.nasaCustomerNa) {
+      return cNasaCustomerNa;
+    } else {
+      return cRiderOnDelivery;
+    }
+    ;
+  }
+
   String _PriceDisplay(int price) {
     int x = 0, y = 0, z = 0;
     if (price % 155 == 0) {
@@ -3692,5 +3749,1582 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
         return "$x($y)=Php $z";
       }
     }
+  }
+
+  //jobsonqueuejson
+  void editAll(
+    JobsOnQueueModel jobsOnQueueModelEditAll,
+    bool bRiderPickupEditAll,
+    bool bRegularSabonEditAll,
+    bool bSayoSabonEditAll,
+    bool bOtherServicesEditAll,
+    bool bNotOtherServicesEditAll,
+    bool bAddOnEditAll,
+    bool bDetAddOnEditAll,
+    bool bFabAddOnEditAll,
+    bool bBleAddOnEditAll,
+    bool bOthAddOnEditAll,
+    bool bUnpaidEditAll,
+    bool bPaidCashEditAll,
+    bool bPaidGCashEditAll,
+    TextEditingController remarksControllerEditAll,
+    DateTime dNeedOnEditAll,
+    String docId,
+  ) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(
+          "Edit All ${DateTime.now().toString().substring(5, 13)}",
+          style: TextStyle(backgroundColor: Colors.amber[300]),
+        ),
+        content: SingleChildScrollView(
+          scrollDirection: Axis.vertical,
+          child: StatefulBuilder(
+              builder: (BuildContext context, StateSetter setState) {
+            return Container(
+              padding: EdgeInsets.all(8.0),
+              decoration: BoxDecoration(
+                  border: Border.all(color: Colors.blueAccent, width: 2.0)),
+              child: Form(
+                key: _formKeyQueueMobile,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(
+                      height: 5,
+                    ),
+                    Container(
+                      padding: EdgeInsets.all(1.0),
+                      decoration: BoxDecoration(
+                          border:
+                              Border.all(color: Color(0xffD4D4D4), width: 2.0)),
+                      child: TextFormField(
+                        textAlign: TextAlign.center,
+                        decoration: InputDecoration(
+                            labelText: 'Customer Name',
+                            hintText: 'Enter Customer Name'),
+                        validator: (val) {},
+                        initialValue: customerName(
+                            jobsOnQueueModelEditAll.customerId.toString()),
+                        enabled: false,
+                      ),
+                    ),
+                    //QueueStat
+                    SizedBox(
+                      height: 5,
+                    ),
+                    Container(
+                      alignment: Alignment.center,
+                      padding: EdgeInsets.all(1.0),
+                      decoration: containerQueBoxDecoration(),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text("Sort"),
+                          Switch.adaptive(
+                            value: bRiderPickupEditAll,
+                            onChanged: (bool value) {
+                              setState(() {
+                                /*
+                                jobsOnQueueModelEditAll.queueStat = (value
+                                    ? mapQueueStat[riderPickup].toString()
+                                    : mapQueueStat[forSorting].toString());
+                                    */
+
+                                bRiderPickupEditAll = value;
+                              });
+                            },
+                          ),
+                          Text("RiderPickup"),
+                        ],
+                      ),
+                    ),
+                    SizedBox(
+                      height: 5,
+                    ),
+                    Container(
+                      padding: EdgeInsets.all(1.0),
+                      decoration: containerQueBoxDecoration(),
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              Column(
+                                children: [
+                                  Text(
+                                    "Regular",
+                                    style: TextStyle(fontSize: 10),
+                                  ),
+                                  Checkbox(
+                                      value: bRegularSabonEditAll,
+                                      onChanged: (val) {
+                                        jobsOnQueueModelEditAll = resetRegular(
+                                            jobsOnQueueModelEditAll);
+
+                                        if (val!) {
+                                          setState(
+                                            () {
+                                              bRegularSabonEditAll = val;
+                                            },
+                                          );
+                                        }
+
+                                        jobsOnQueueModelEditAll.initialKilo = 8;
+                                        jobsOnQueueModelEditAll.initialPrice =
+                                            (jobsOnQueueModelEditAll
+                                                        .initialKilo ~/
+                                                    8) *
+                                                iPriceDivider(
+                                                    bRegularSabonEditAll);
+                                        jobsOnQueueModelEditAll.initialLoad =
+                                            (jobsOnQueueModelEditAll
+                                                    .initialKilo ~/
+                                                8);
+                                      })
+                                ],
+                              ),
+                              Column(
+                                children: [
+                                  Text(
+                                    "Sayo Sabon",
+                                    style: TextStyle(fontSize: 10),
+                                  ),
+                                  Checkbox(
+                                      value: bSayoSabonEditAll,
+                                      onChanged: (val) {
+                                        jobsOnQueueModelEditAll = resetRegular(
+                                            jobsOnQueueModelEditAll);
+
+                                        if (val!) {
+                                          setState(
+                                            () {
+                                              bSayoSabonEditAll = val;
+                                            },
+                                          );
+                                        }
+
+                                        jobsOnQueueModelEditAll.initialKilo = 8;
+                                        jobsOnQueueModelEditAll.initialPrice =
+                                            (jobsOnQueueModelEditAll
+                                                        .initialKilo ~/
+                                                    8) *
+                                                iPriceDivider(
+                                                    bRegularSabonEditAll);
+                                        jobsOnQueueModelEditAll.initialLoad =
+                                            (jobsOnQueueModelEditAll
+                                                    .initialKilo ~/
+                                                8);
+                                      })
+                                ],
+                              ),
+                              Column(
+                                children: [
+                                  Text(
+                                    "Others",
+                                    style: TextStyle(fontSize: 10),
+                                  ),
+                                  Checkbox(
+                                      value: bOtherServicesEditAll,
+                                      onChanged: (val) {
+                                        jobsOnQueueModelEditAll = resetRegular(
+                                            jobsOnQueueModelEditAll);
+                                        bNotOtherServicesEditAll = false;
+
+                                        if (val!) {
+                                          setState(
+                                            () {
+                                              bOtherServicesEditAll = val;
+                                            },
+                                          );
+                                        }
+
+                                        jobsOnQueueModelEditAll.initialKilo = 0;
+                                        jobsOnQueueModelEditAll.initialPrice =
+                                            0;
+                                        jobsOnQueueModelEditAll.initialLoad = 0;
+                                      })
+                                ],
+                              ),
+                            ],
+                          ),
+                          //New estimate load +-8 kilo
+                          Visibility(
+                            visible: bNotOtherServicesEditAll,
+                            child: Container(
+                              padding: EdgeInsets.all(0),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Container(
+                                    padding: EdgeInsets.only(
+                                        left: 3, bottom: 0, top: 0, right: 3),
+                                    decoration: BoxDecoration(
+                                        color: Colors.amber[200],
+                                        borderRadius: const BorderRadius.only(
+                                            topLeft: Radius.circular(20),
+                                            bottomLeft: Radius.circular(20))),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      children: [
+                                        IconButton(
+                                          onPressed: () {
+                                            if (jobsOnQueueModelEditAll
+                                                    .initialKilo <
+                                                8) {
+                                              jobsOnQueueModelEditAll
+                                                  .initialKilo = 8;
+                                              jobsOnQueueModelEditAll
+                                                      .initialPrice =
+                                                  (jobsOnQueueModelEditAll
+                                                              .initialKilo ~/
+                                                          8) *
+                                                      iPriceDivider(
+                                                          bRegularSabonEditAll);
+                                              jobsOnQueueModelEditAll
+                                                      .initialLoad =
+                                                  (jobsOnQueueModelEditAll
+                                                          .initialKilo ~/
+                                                      8);
+                                            } else {
+                                              if (jobsOnQueueModelEditAll
+                                                          .initialKilo %
+                                                      8 !=
+                                                  0) {
+                                                jobsOnQueueModelEditAll
+                                                        .initialKilo =
+                                                    jobsOnQueueModelEditAll
+                                                            .initialKilo -
+                                                        (jobsOnQueueModelEditAll
+                                                                .initialKilo %
+                                                            8);
+                                              } else {
+                                                jobsOnQueueModelEditAll
+                                                        .initialKilo =
+                                                    jobsOnQueueModelEditAll
+                                                            .initialKilo -
+                                                        8;
+                                              }
+
+                                              jobsOnQueueModelEditAll
+                                                      .initialPrice =
+                                                  (jobsOnQueueModelEditAll
+                                                              .initialKilo ~/
+                                                          8) *
+                                                      iPriceDivider(
+                                                          bRegularSabonEditAll);
+
+                                              jobsOnQueueModelEditAll
+                                                      .initialLoad =
+                                                  (jobsOnQueueModelEditAll
+                                                          .initialKilo ~/
+                                                      8);
+                                            }
+                                            setState(() {
+                                              jobsOnQueueModelEditAll
+                                                  .initialKilo;
+                                              jobsOnQueueModelEditAll
+                                                  .initialLoad;
+                                              jobsOnQueueModelEditAll
+                                                  .initialPrice;
+                                            });
+                                          },
+                                          icon: const Icon(
+                                              Icons.remove_circle_outlined),
+                                          color: Colors.blueAccent,
+                                        ),
+                                        Text("-8 kg"),
+                                      ],
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    width: 3,
+                                  ),
+                                  Container(
+                                    padding: EdgeInsets.only(
+                                        left: 3, bottom: 0, top: 0, right: 3),
+                                    decoration: BoxDecoration(
+                                        color: Colors.amber[200],
+                                        borderRadius: BorderRadius.only(
+                                            topRight: Radius.circular(20),
+                                            bottomRight: Radius.circular(20))),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      children: [
+                                        Text("+8 kg"),
+                                        IconButton(
+                                          onPressed: () {
+                                            if (jobsOnQueueModelEditAll
+                                                        .initialKilo %
+                                                    8 !=
+                                                0) {
+                                              jobsOnQueueModelEditAll
+                                                      .initialKilo =
+                                                  jobsOnQueueModelEditAll
+                                                          .initialKilo +
+                                                      8 -
+                                                      (jobsOnQueueModelEditAll
+                                                              .initialKilo %
+                                                          8);
+                                            } else {
+                                              jobsOnQueueModelEditAll
+                                                      .initialKilo =
+                                                  jobsOnQueueModelEditAll
+                                                          .initialKilo +
+                                                      8;
+                                            }
+
+                                            jobsOnQueueModelEditAll
+                                                    .initialPrice =
+                                                (jobsOnQueueModelEditAll
+                                                            .initialKilo ~/
+                                                        8) *
+                                                    (iPriceDivider(
+                                                        bRegularSabonEditAll));
+                                            jobsOnQueueModelEditAll
+                                                    .initialLoad =
+                                                jobsOnQueueModelEditAll
+                                                        .initialKilo ~/
+                                                    8;
+                                            setState(() {
+                                              jobsOnQueueModelEditAll
+                                                  .initialKilo;
+                                              jobsOnQueueModelEditAll
+                                                  .initialLoad;
+                                              jobsOnQueueModelEditAll
+                                                  .initialPrice;
+                                            });
+                                          },
+                                          icon: const Icon(Icons.add_circle),
+                                          color: Colors.blueAccent,
+                                        ),
+                                      ],
+                                    ),
+                                  )
+                                ],
+                              ),
+                            ),
+                          ),
+                          //New Estimate Load display
+                          Visibility(
+                            visible: bNotOtherServicesEditAll,
+                            child: Container(
+                              padding: EdgeInsets.all(3),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Container(
+                                    padding:
+                                        EdgeInsets.only(left: 10, right: 10),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text("Weight:"),
+                                        Text(
+                                            "${kiloDisplay(jobsOnQueueModelEditAll.initialKilo)} kilo"),
+                                      ],
+                                    ),
+                                  ),
+                                  Container(
+                                    padding:
+                                        EdgeInsets.only(left: 10, right: 10),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text("Load:"),
+                                        Text(
+                                            "${jobsOnQueueModelEditAll.initialKilo}"),
+                                      ],
+                                    ),
+                                  ),
+                                  Container(
+                                    padding:
+                                        EdgeInsets.only(left: 10, right: 10),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text("Load Price:"),
+                                        Text(
+                                            "${autoPriceDisplay(jobsOnQueueModelEditAll.initialPrice, bRegularSabonEditAll)}.00"),
+                                      ],
+                                    ),
+                                  ),
+                                  Container(
+                                    padding:
+                                        EdgeInsets.only(left: 10, right: 10),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text("Total Price:"),
+                                        Text(
+                                            "Php ${jobsOnQueueModelEditAll.initialPrice + jobsOnQueueModelEditAll.initialOthersPrice}.00"),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          //New Estimate Load (+- 1 kilo)
+                          Visibility(
+                            visible: bNotOtherServicesEditAll,
+                            child: Container(
+                              padding: EdgeInsets.all(0.0),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Container(
+                                    padding: EdgeInsets.only(
+                                        left: 3, bottom: 0, top: 0, right: 3),
+                                    decoration: BoxDecoration(
+                                        color: Colors.amber[200],
+                                        borderRadius: const BorderRadius.only(
+                                            topLeft: Radius.circular(20),
+                                            bottomLeft: Radius.circular(20))),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        IconButton(
+                                          onPressed: () {
+                                            if (jobsOnQueueModelEditAll
+                                                    .initialKilo >
+                                                8) {
+                                              if (jobsOnQueueModelEditAll
+                                                          .initialKilo %
+                                                      8 ==
+                                                  1) {
+                                                jobsOnQueueModelEditAll
+                                                        .initialPrice =
+                                                    jobsOnQueueModelEditAll
+                                                            .initialPrice -
+                                                        (bRegularSabonEditAll
+                                                            ? 25
+                                                            : 25); //8-9kilo 25
+
+                                                jobsOnQueueModelEditAll
+                                                        .initialLoad =
+                                                    jobsOnQueueModelEditAll
+                                                            .initialLoad -
+                                                        1;
+                                              } else if (jobsOnQueueModelEditAll
+                                                          .initialKilo %
+                                                      8 ==
+                                                  2) {
+                                                jobsOnQueueModelEditAll
+                                                        .initialPrice =
+                                                    jobsOnQueueModelEditAll
+                                                            .initialPrice -
+                                                        (bRegularSabonEditAll
+                                                            ? 45
+                                                            : 50); //9-10kilo 45
+                                              } else if (jobsOnQueueModelEditAll
+                                                          .initialKilo %
+                                                      8 ==
+                                                  3) {
+                                                jobsOnQueueModelEditAll
+                                                        .initialPrice =
+                                                    jobsOnQueueModelEditAll
+                                                            .initialPrice -
+                                                        (bRegularSabonEditAll
+                                                            ? 25
+                                                            : 25); //10-11kilo 25
+                                              } else if (jobsOnQueueModelEditAll
+                                                          .initialKilo %
+                                                      8 ==
+                                                  4) {
+                                                jobsOnQueueModelEditAll
+                                                        .initialPrice =
+                                                    jobsOnQueueModelEditAll
+                                                            .initialPrice -
+                                                        (bRegularSabonEditAll
+                                                            ? 25
+                                                            : 25); //11-12kilo
+                                              } else if (jobsOnQueueModelEditAll
+                                                          .initialKilo %
+                                                      8 ==
+                                                  5) {
+                                                jobsOnQueueModelEditAll
+                                                        .initialPrice =
+                                                    jobsOnQueueModelEditAll
+                                                            .initialPrice -
+                                                        (bRegularSabonEditAll
+                                                            ? 25
+                                                            : 0); //12-13kilo
+                                              } else if (jobsOnQueueModelEditAll
+                                                          .initialKilo %
+                                                      8 ==
+                                                  6) {
+                                                jobsOnQueueModelEditAll
+                                                        .initialPrice =
+                                                    jobsOnQueueModelEditAll
+                                                            .initialPrice -
+                                                        (bRegularSabonEditAll
+                                                            ? 10
+                                                            : 0); //13-16kilo
+                                              }
+
+                                              jobsOnQueueModelEditAll
+                                                      .initialKilo =
+                                                  jobsOnQueueModelEditAll
+                                                          .initialKilo -
+                                                      1;
+                                            }
+                                            setState(() {
+                                              jobsOnQueueModelEditAll
+                                                  .initialKilo;
+                                              jobsOnQueueModelEditAll
+                                                  .initialLoad;
+                                              jobsOnQueueModelEditAll
+                                                  .initialPrice;
+                                            });
+                                          },
+                                          icon: const Icon(
+                                              Icons.remove_circle_outlined),
+                                          color: Colors.blueAccent,
+                                        ),
+                                        Text("-1 kg"),
+                                      ],
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    width: 3,
+                                  ),
+                                  Container(
+                                    padding: EdgeInsets.only(
+                                        left: 3, bottom: 0, top: 0, right: 3),
+                                    decoration: BoxDecoration(
+                                        color: Colors.amber[200],
+                                        borderRadius: BorderRadius.only(
+                                            topRight: Radius.circular(20),
+                                            bottomRight: Radius.circular(20))),
+                                    child: Row(
+                                      children: [
+                                        Text("+1 kg"),
+                                        IconButton(
+                                          onPressed: () {
+                                            if (jobsOnQueueModelEditAll
+                                                    .initialKilo >=
+                                                8) {
+                                              jobsOnQueueModelEditAll
+                                                      .initialKilo =
+                                                  jobsOnQueueModelEditAll
+                                                          .initialKilo +
+                                                      1;
+                                            }
+
+                                            if (jobsOnQueueModelEditAll
+                                                        .initialKilo %
+                                                    8 ==
+                                                1) {
+                                              jobsOnQueueModelEditAll
+                                                      .initialPrice =
+                                                  jobsOnQueueModelEditAll
+                                                          .initialPrice +
+                                                      (bRegularSabonEditAll
+                                                          ? 25
+                                                          : 25); //8-9kilo
+                                            } else if (jobsOnQueueModelEditAll
+                                                        .initialKilo %
+                                                    8 ==
+                                                2) {
+                                              jobsOnQueueModelEditAll
+                                                      .initialPrice =
+                                                  jobsOnQueueModelEditAll
+                                                          .initialPrice +
+                                                      (bRegularSabonEditAll
+                                                          ? 45
+                                                          : 50); //9-10kilo
+                                              setState(() =>
+                                                  jobsOnQueueModelEditAll
+                                                          .initialLoad =
+                                                      jobsOnQueueModelEditAll
+                                                              .initialLoad +
+                                                          1);
+                                            } else if (jobsOnQueueModelEditAll
+                                                        .initialKilo %
+                                                    8 ==
+                                                3) {
+                                              jobsOnQueueModelEditAll
+                                                      .initialPrice =
+                                                  jobsOnQueueModelEditAll
+                                                          .initialPrice +
+                                                      (bRegularSabonEditAll
+                                                          ? 25
+                                                          : 25); //10-11kilo
+                                            } else if (jobsOnQueueModelEditAll
+                                                        .initialKilo %
+                                                    8 ==
+                                                4) {
+                                              jobsOnQueueModelEditAll
+                                                      .initialPrice =
+                                                  jobsOnQueueModelEditAll
+                                                          .initialPrice +
+                                                      (bRegularSabonEditAll
+                                                          ? 25
+                                                          : 25); //11-12kilo
+                                            } else if (jobsOnQueueModelEditAll
+                                                        .initialKilo %
+                                                    8 ==
+                                                5) {
+                                              jobsOnQueueModelEditAll
+                                                      .initialPrice =
+                                                  jobsOnQueueModelEditAll
+                                                          .initialPrice +
+                                                      (bRegularSabonEditAll
+                                                          ? 25
+                                                          : 0); //12-13kilo
+                                            } else {
+                                              if (jobsOnQueueModelEditAll
+                                                          .initialPrice %
+                                                      (iPriceDivider(
+                                                          bRegularSabonEditAll)) !=
+                                                  0) {
+                                                jobsOnQueueModelEditAll
+                                                        .initialPrice =
+                                                    jobsOnQueueModelEditAll
+                                                            .initialPrice +
+                                                        (bRegularSabonEditAll
+                                                            ? 10
+                                                            : 0); //13-16kilo
+                                              }
+                                            }
+
+                                            setState(() {
+                                              jobsOnQueueModelEditAll
+                                                  .initialKilo;
+                                              jobsOnQueueModelEditAll
+                                                  .initialLoad;
+                                              jobsOnQueueModelEditAll
+                                                  .initialPrice;
+                                            });
+                                          },
+                                          icon: const Icon(Icons.add_circle),
+                                          color: Colors.blueAccent,
+                                        ),
+                                      ],
+                                    ),
+                                  )
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    //Add On
+                    SizedBox(
+                      height: 5,
+                    ),
+                    Container(
+                      decoration: containerSayoSabonBoxDecoration(),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          Column(
+                            children: [
+                              Text(
+                                "Add On",
+                                style: TextStyle(fontSize: 10),
+                              ),
+                              Checkbox(
+                                  value: bAddOnEditAll,
+                                  onChanged: (val) {
+                                    if (listAddOnItems.isNotEmpty) {
+                                      if (!val!) {
+                                        //pop box
+                                        Navigator.pop(context);
+                                        messageResultEditAll(
+                                            jobsOnQueueModelEditAll,
+                                            bRiderPickupEditAll,
+                                            bRegularSabonEditAll,
+                                            bSayoSabonEditAll,
+                                            bOtherServicesEditAll,
+                                            bNotOtherServicesEditAll,
+                                            bAddOnEditAll,
+                                            bDetAddOnEditAll,
+                                            bFabAddOnEditAll,
+                                            bBleAddOnEditAll,
+                                            bOthAddOnEditAll,
+                                            bUnpaidEditAll,
+                                            bPaidCashEditAll,
+                                            bPaidGCashEditAll,
+                                            remarksControllerEditAll,
+                                            dNeedOnEditAll,
+                                            docId,
+                                            "Uncheck will delete add on?");
+                                      }
+                                    }
+
+                                    setState(
+                                      () {
+                                        bAddOnEditAll = val!;
+                                      },
+                                    );
+                                  }),
+                              //checkboxes add on
+                              Visibility(
+                                visible: bAddOnEditAll,
+                                child: Container(
+                                  padding: EdgeInsets.all(1.0),
+                                  child: Row(
+                                    children: [
+                                      Column(
+                                        children: [
+                                          Text(
+                                            "Det",
+                                            style: TextStyle(fontSize: 10),
+                                          ),
+                                          Checkbox(
+                                              value: bDetAddOnEditAll,
+                                              onChanged: (val) {
+                                                resetAddOn();
+                                                setState(
+                                                  () {
+                                                    bDetAddOnEditAll = val!;
+                                                  },
+                                                );
+                                              })
+                                        ],
+                                      ),
+                                      Column(
+                                        children: [
+                                          Text(
+                                            "Fab",
+                                            style: TextStyle(fontSize: 10),
+                                          ),
+                                          Checkbox(
+                                              value: bFabAddOnEditAll,
+                                              onChanged: (val) {
+                                                resetAddOn();
+                                                setState(
+                                                  () {
+                                                    bFabAddOnEditAll = val!;
+                                                  },
+                                                );
+                                              })
+                                        ],
+                                      ),
+                                      Column(
+                                        children: [
+                                          Text(
+                                            "Ble",
+                                            style: TextStyle(fontSize: 10),
+                                          ),
+                                          Checkbox(
+                                              value: bBleAddOnEditAll,
+                                              onChanged: (val) {
+                                                resetAddOn();
+                                                setState(
+                                                  () {
+                                                    bBleAddOnEditAll = val!;
+                                                  },
+                                                );
+                                              })
+                                        ],
+                                      ),
+                                      Column(
+                                        children: [
+                                          Text(
+                                            "Oth",
+                                            style: TextStyle(fontSize: 10),
+                                          ),
+                                          Checkbox(
+                                              value: bOthAddOnEditAll,
+                                              onChanged: (val) {
+                                                resetAddOn();
+                                                setState(
+                                                  () {
+                                                    bOthAddOnEditAll = val!;
+                                                  },
+                                                );
+                                              })
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              //dropdown det
+                              addOnDropDownEditAll(
+                                bDetAddOnEditAll,
+                                selectedDetVar,
+                                listDetItems,
+                                jobsOnQueueModelEditAll,
+                                bRiderPickupEditAll,
+                                bRegularSabonEditAll,
+                                bSayoSabonEditAll,
+                                bOtherServicesEditAll,
+                                bNotOtherServicesEditAll,
+                                bAddOnEditAll,
+                                bDetAddOnEditAll,
+                                bFabAddOnEditAll,
+                                bBleAddOnEditAll,
+                                bOthAddOnEditAll,
+                                bUnpaidEditAll,
+                                bPaidCashEditAll,
+                                bPaidGCashEditAll,
+                                remarksControllerEditAll,
+                                dNeedOnEditAll,
+                                docId,
+                              ),
+                              //dropdown fab
+                              addOnDropDownEditAll(
+                                bFabAddOnEditAll,
+                                selectedFabVar,
+                                listFabItems,
+                                jobsOnQueueModelEditAll,
+                                bRiderPickupEditAll,
+                                bRegularSabonEditAll,
+                                bSayoSabonEditAll,
+                                bOtherServicesEditAll,
+                                bNotOtherServicesEditAll,
+                                bAddOnEditAll,
+                                bDetAddOnEditAll,
+                                bFabAddOnEditAll,
+                                bBleAddOnEditAll,
+                                bOthAddOnEditAll,
+                                bUnpaidEditAll,
+                                bPaidCashEditAll,
+                                bPaidGCashEditAll,
+                                remarksControllerEditAll,
+                                dNeedOnEditAll,
+                                docId,
+                              ),
+                              //dropdown ble
+                              addOnDropDownEditAll(
+                                bBleAddOnEditAll,
+                                selectedBleVar,
+                                listBleItems,
+                                jobsOnQueueModelEditAll,
+                                bRiderPickupEditAll,
+                                bRegularSabonEditAll,
+                                bSayoSabonEditAll,
+                                bOtherServicesEditAll,
+                                bNotOtherServicesEditAll,
+                                bAddOnEditAll,
+                                bDetAddOnEditAll,
+                                bFabAddOnEditAll,
+                                bBleAddOnEditAll,
+                                bOthAddOnEditAll,
+                                bUnpaidEditAll,
+                                bPaidCashEditAll,
+                                bPaidGCashEditAll,
+                                remarksControllerEditAll,
+                                dNeedOnEditAll,
+                                docId,
+                              ),
+                              //dropdown oth
+                              addOnDropDownEditAll(
+                                bOthAddOnEditAll,
+                                selectedOthVar,
+                                listOthItems,
+                                jobsOnQueueModelEditAll,
+                                bRiderPickupEditAll,
+                                bRegularSabonEditAll,
+                                bSayoSabonEditAll,
+                                bOtherServicesEditAll,
+                                bNotOtherServicesEditAll,
+                                bAddOnEditAll,
+                                bDetAddOnEditAll,
+                                bFabAddOnEditAll,
+                                bBleAddOnEditAll,
+                                bOthAddOnEditAll,
+                                bUnpaidEditAll,
+                                bPaidCashEditAll,
+                                bPaidGCashEditAll,
+                                remarksControllerEditAll,
+                                dNeedOnEditAll,
+                                docId,
+                              ),
+                              readAddedDataEditAll(listAddOnItems),
+                              //_dtAddedOthers(addOnItems),
+                              //_addedOn(addOnItems),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    //Basket
+                    SizedBox(
+                      height: 5,
+                    ),
+                    Container(
+                      padding: EdgeInsets.all(1.0),
+                      decoration: containerQueBoxDecoration(),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          IconButton(
+                            onPressed: () {
+                              setState(() => jobsOnQueueModelEditAll.basket--);
+                            },
+                            icon: const Icon(Icons.remove_circle_outlined),
+                            color: Colors.blueAccent,
+                          ),
+                          Text("Basket: ${jobsOnQueueModelEditAll.basket}"),
+                          IconButton(
+                            onPressed: () {
+                              setState(() => jobsOnQueueModelEditAll.basket++);
+                            },
+                            icon: const Icon(Icons.add_circle),
+                            color: Colors.blueAccent,
+                          ),
+                        ],
+                      ),
+                    ),
+                    //Bag
+                    SizedBox(
+                      height: 5,
+                    ),
+                    Container(
+                      padding: EdgeInsets.all(1.0),
+                      decoration: containerQueBoxDecoration(),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          IconButton(
+                            onPressed: () {
+                              setState(() => jobsOnQueueModelEditAll.bag--);
+                            },
+                            icon: const Icon(Icons.remove_circle_outlined),
+                            color: Colors.blueAccent,
+                          ),
+                          Text("Bag: ${jobsOnQueueModelEditAll.bag}"),
+                          IconButton(
+                            onPressed: () {
+                              setState(() => jobsOnQueueModelEditAll.bag++);
+                            },
+                            icon: const Icon(Icons.add_circle),
+                            color: Colors.blueAccent,
+                          ),
+                        ],
+                      ),
+                    ),
+                    //Payment New
+                    SizedBox(
+                      height: 5,
+                    ),
+                    Container(
+                      decoration: containerQueBoxDecoration(),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          Column(
+                            children: [
+                              Text(
+                                "Unpaid",
+                                style: TextStyle(fontSize: 10),
+                              ),
+                              Checkbox(
+                                  value: bUnpaidEditAll,
+                                  onChanged: (val) {
+                                    jobsOnQueueModelEditAll =
+                                        resetPaymentQueueBool(
+                                            jobsOnQueueModelEditAll);
+                                    if (val!) {
+                                      setState(
+                                        () {
+                                          bUnpaidEditAll = val;
+                                        },
+                                      );
+                                    }
+                                  })
+                            ],
+                          ),
+                          Column(
+                            children: [
+                              Text(
+                                "PaidCash",
+                                style: TextStyle(fontSize: 10),
+                              ),
+                              Checkbox(
+                                  value: bPaidCashEditAll,
+                                  onChanged: (val) {
+                                    jobsOnQueueModelEditAll =
+                                        resetPaymentQueueBool(
+                                            jobsOnQueueModelEditAll);
+                                    if (val!) {
+                                      setState(
+                                        () {
+                                          bPaidCashEditAll = val;
+                                        },
+                                      );
+                                    }
+                                  })
+                            ],
+                          ),
+                          Column(
+                            children: [
+                              Text(
+                                "PaidGcash",
+                                style: TextStyle(fontSize: 10),
+                              ),
+                              Checkbox(
+                                  value: bPaidGCashEditAll,
+                                  onChanged: (val) {
+                                    jobsOnQueueModelEditAll =
+                                        resetPaymentQueueBool(
+                                            jobsOnQueueModelEditAll);
+                                    if (val!) {
+                                      setState(
+                                        () {
+                                          bPaidGCashEditAll = val;
+                                        },
+                                      );
+                                    }
+                                  })
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    //No Fold
+                    SizedBox(
+                      height: 5,
+                    ),
+                    Container(
+                      alignment: Alignment.center,
+                      padding: EdgeInsets.all(1.0),
+                      decoration: containerQueBoxDecoration(),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text("No Fold"),
+                          Switch.adaptive(
+                            value: jobsOnQueueModelEditAll.fold,
+                            onChanged: (bool value) {
+                              setState(() {
+                                jobsOnQueueModelEditAll.fold = value;
+                              });
+                            },
+                          ),
+                          Text("Fold"),
+                        ],
+                      ),
+                    ),
+                    //Dont mix
+                    SizedBox(
+                      height: 5,
+                    ),
+                    Container(
+                      alignment: Alignment.center,
+                      padding: EdgeInsets.all(1.0),
+                      decoration: containerQueBoxDecoration(),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text("Dont Mix"),
+                          Switch.adaptive(
+                            value: jobsOnQueueModelEditAll.mix,
+                            onChanged: (bool value) {
+                              setState(() {
+                                jobsOnQueueModelEditAll.mix = value;
+                              });
+                            },
+                          ),
+                          Text("Mix"),
+                        ],
+                      ),
+                    ),
+                    SizedBox(
+                      height: 5,
+                    ),
+                    //Remarks
+                    Container(
+                      padding: EdgeInsets.all(1.0),
+                      decoration: containerQueBoxDecoration(),
+                      child: TextFormField(
+                        textCapitalization: TextCapitalization.words,
+                        textAlign: TextAlign.start,
+                        controller: remarksControllerEditAll,
+                        decoration: InputDecoration(
+                            labelText: 'C5_Remarks', hintText: 'Anu kakaiba'),
+                        validator: (val) {},
+                      ),
+                    ),
+                    SizedBox(
+                      height: 5,
+                    ),
+                    //Need On Date +
+                    Container(
+                      padding: EdgeInsets.all(1.0),
+                      decoration: containerQueBoxDecoration(),
+                      child: Column(
+                        children: [
+                          Container(
+                            padding: EdgeInsets.all(1.0),
+                            decoration: BoxDecoration(
+                                border: Border.all(
+                                    color: Color.fromARGB(0, 212, 212, 212),
+                                    width: 0)),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text("-1 day"),
+                                IconButton(
+                                  onPressed: () {
+                                    setState(() => dNeedOnEditAll =
+                                        dNeedOnEditAll.add(Duration(days: -1)));
+                                  },
+                                  icon:
+                                      const Icon(Icons.remove_circle_outlined),
+                                  color: Colors.blueAccent,
+                                ),
+                                IconButton(
+                                  onPressed: () {
+                                    setState(() => dNeedOnEditAll =
+                                        dNeedOnEditAll.add(Duration(days: 1)));
+                                  },
+                                  icon: const Icon(Icons.add_circle),
+                                  color: Colors.blueAccent,
+                                ),
+                                Text("+1 day"),
+                              ],
+                            ),
+                          ),
+                          //Need On date?
+                          Container(
+                            padding: EdgeInsets.all(1.0),
+                            decoration: BoxDecoration(
+                                border: Border.all(
+                                    color: Color.fromARGB(0, 212, 212, 212),
+                                    width: 0)),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  "Need On: ${dNeedOnEditAll.toString().substring(5, 14)}00",
+                                ),
+                              ],
+                            ),
+                          ),
+                          //Need On Date +
+                          Container(
+                            padding: EdgeInsets.all(1.0),
+                            decoration: BoxDecoration(
+                                border: Border.all(
+                                    color: Color.fromARGB(0, 212, 212, 212),
+                                    width: 0)),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text("-1 hr"),
+                                IconButton(
+                                  onPressed: () {
+                                    setState(() => dNeedOnEditAll =
+                                        dNeedOnEditAll
+                                            .add(Duration(hours: -1)));
+                                  },
+                                  icon: const Icon(Icons.remove_circle_outline),
+                                  color: Colors.blueAccent,
+                                ),
+                                IconButton(
+                                  onPressed: () {
+                                    setState(() => dNeedOnEditAll =
+                                        dNeedOnEditAll.add(Duration(hours: 1)));
+                                  },
+                                  icon: const Icon(Icons.add_circle_outline),
+                                  color: Colors.blueAccent,
+                                ),
+                                Text("+1 hr"),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(
+                      height: 5,
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }),
+        ),
+        actions: [
+          //cancel button
+          _cancelButton(),
+
+          //save button
+          //_createNewRecord(),
+
+          //update
+          _updateQueueRecordEditAll(
+              docId, jobsOnQueueModelEditAll, bRiderPickupEditAll),
+
+          //save button new
+          // createNewRecordJsonEditAll(
+          //   jobsOnQueueModelEditAll,
+          //   bRiderPickupEditAll,
+          //   bRegularSabonEditAll,
+          //   bSayoSabonEditAll,
+          //   bOtherServicesEditAll,
+          //   bNotOtherServicesEditAll,
+          //   bAddOnEditAll,
+          //   bDetAddOnEditAll,
+          //   bFabAddOnEditAll,
+          //   bBleAddOnEditAll,
+          //   bOthAddOnEditAll,
+          //   bUnpaidEditAll,
+          //   bPaidCashEditAll,
+          //   bPaidGCashEditAll,
+          //   remarksControllerEditAll,
+          //   dNeedOnEditAll,
+          // ),
+        ],
+      ),
+    );
+  }
+
+  void messageResultEditAll(
+      JobsOnQueueModel jobsOnQueueModelEditAll,
+      bool bRiderPickupEditAll,
+      bool bRegularSabonEditAll,
+      bool bSayoSabonEditAll,
+      bool bOtherServicesEditAll,
+      bool bNotOtherServicesEditAll,
+      bool bAddOnEditAll,
+      bool bDetAddOnEditAll,
+      bool bFabAddOnEditAll,
+      bool bBleAddOnEditAll,
+      bool bOthAddOnEditAll,
+      bool bUnpaidEditAll,
+      bool bPaidCashEditAll,
+      bool bPaidGCashEditAll,
+      TextEditingController remarksControllerEditAll,
+      DateTime dNeedOnEditAll,
+      String docId,
+      String sMsg) {
+    showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+              content: Text(sMsg),
+              actions: [
+                MaterialButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    listAddOnItems.clear();
+                    jobsOnQueueModelEditAll.initialOthersPrice = 0;
+                    resetAddOn();
+                    editAll(
+                      jobsOnQueueModelEditAll,
+                      bRiderPickupEditAll,
+                      bRegularSabonEditAll,
+                      bSayoSabonEditAll,
+                      bOtherServicesEditAll,
+                      bNotOtherServicesEditAll,
+                      bAddOnEditAll,
+                      bDetAddOnEditAll,
+                      bFabAddOnEditAll,
+                      bBleAddOnEditAll,
+                      bOthAddOnEditAll,
+                      bUnpaidEditAll,
+                      bPaidCashEditAll,
+                      bPaidGCashEditAll,
+                      remarksControllerEditAll,
+                      dNeedOnEditAll,
+                      docId,
+                    );
+                  },
+                  color: cButtons,
+                  child: const Text("Ok"),
+                ),
+                MaterialButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    bAddOnEditAll = true;
+                    editAll(
+                      jobsOnQueueModelEditAll,
+                      bRiderPickupEditAll,
+                      bRegularSabonEditAll,
+                      bSayoSabonEditAll,
+                      bOtherServicesEditAll,
+                      bNotOtherServicesEditAll,
+                      bAddOnEditAll,
+                      bDetAddOnEditAll,
+                      bFabAddOnEditAll,
+                      bBleAddOnEditAll,
+                      bOthAddOnEditAll,
+                      bUnpaidEditAll,
+                      bPaidCashEditAll,
+                      bPaidGCashEditAll,
+                      remarksControllerEditAll,
+                      dNeedOnEditAll,
+                      docId,
+                    );
+                  },
+                  color: cButtons,
+                  child: const Text("Cancel"),
+                ),
+              ],
+            ));
+  }
+
+  Visibility addOnDropDownEditAll(
+    bool bDisplay,
+    OtherItemModel selectedItemModel,
+    List<OtherItemModel> thisListOtherItemModel,
+    JobsOnQueueModel jobsOnQueueModelEditAll,
+    bool bRiderPickupEditAll,
+    bool bRegularSabonEditAll,
+    bool bSayoSabonEditAll,
+    bool bOtherServicesEditAll,
+    bool bNotOtherServicesEditAll,
+    bool bAddOnEditAll,
+    bool bDetAddOnEditAll,
+    bool bFabAddOnEditAll,
+    bool bBleAddOnEditAll,
+    bool bOthAddOnEditAll,
+    bool bUnpaidEditAll,
+    bool bPaidCashEditAll,
+    bool bPaidGCashEditAll,
+    TextEditingController remarksControllerEditAll,
+    DateTime dNeedOnEditAll,
+    String docId,
+  ) {
+    print('size=' + thisListOtherItemModel.length.toString());
+    return Visibility(
+      visible: bDisplay,
+      child: Container(
+        padding: EdgeInsets.all(1.0),
+        child: Row(
+          children: [
+            DropdownButton<OtherItemModel>(
+              value: selectedItemModel,
+              icon: Icon(Icons.arrow_downward),
+              iconSize: 24,
+              elevation: 16,
+              style: TextStyle(color: Colors.purple[700]),
+              underline: Container(
+                height: 2,
+                color: Colors.purple[700],
+              ),
+              onChanged: (newItemModel) {
+                selectedItemModel = newItemModel!;
+              },
+              items: thisListOtherItemModel.map((OtherItemModel map) {
+                return DropdownMenuItem<OtherItemModel>(
+                    value: map,
+                    child: Text(
+                        "${map.itemGroup}-${map.itemName}(${map.itemPrice}Php)"));
+              }).toList(),
+            ),
+            IconButton(
+              onPressed: () {
+                Navigator.pop(context);
+                listAddOnItems.add(selectedItemModel);
+                //reset dropdowns
+                if (listDetItems.contains(selectedItemModel)) {
+                  selectedDetVar = selectedItemModel;
+                } else if (listFabItems.contains(selectedItemModel)) {
+                  selectedFabVar = selectedItemModel;
+                } else if (listBleItems.contains(selectedItemModel)) {
+                  selectedBleVar = selectedItemModel;
+                } else if (listOthItems.contains(selectedItemModel)) {
+                  selectedOthVar = selectedItemModel;
+                }
+                jobsOnQueueModelEditAll.initialOthersPrice =
+                    jobsOnQueueModelEditAll.initialOthersPrice +
+                        selectedItemModel.itemPrice;
+                editAll(
+                  jobsOnQueueModelEditAll,
+                  bRiderPickupEditAll,
+                  bRegularSabonEditAll,
+                  bSayoSabonEditAll,
+                  bOtherServicesEditAll,
+                  bNotOtherServicesEditAll,
+                  bAddOnEditAll,
+                  bDetAddOnEditAll,
+                  bFabAddOnEditAll,
+                  bBleAddOnEditAll,
+                  bOthAddOnEditAll,
+                  bUnpaidEditAll,
+                  bPaidCashEditAll,
+                  bPaidGCashEditAll,
+                  remarksControllerEditAll,
+                  dNeedOnEditAll,
+                  docId,
+                );
+              },
+              icon: const Icon(Icons.add_circle),
+              color: Colors.blueAccent,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget readAddedDataEditAll(List<OtherItemModel> listAddedOthers) {
+    bool zebra = false;
+    //read
+
+    List<TableRow> rowDatas = [];
+
+    if (listAddedOthers.isNotEmpty) {
+      const rowData = TableRow(
+          decoration: BoxDecoration(color: Colors.blueGrey),
+          children: [
+            Text(
+              "Group ",
+              style: TextStyle(fontSize: 10),
+            ),
+            Text(
+              "Product ",
+              style: TextStyle(fontSize: 10),
+            ),
+            Text(
+              "Price",
+              style: TextStyle(fontSize: 10),
+            ),
+          ]);
+      rowDatas.add(rowData);
+    }
+
+    listAddedOthers.forEach((listAddedOther) {
+      if (zebra) {
+        zebra = false;
+      } else {
+        zebra = true;
+      }
+      final rowData = TableRow(
+          decoration: BoxDecoration(color: zebra ? Colors.grey : Colors.white),
+          children: [
+            Text(
+              listAddedOther.itemGroup,
+              style: TextStyle(fontSize: 10),
+            ),
+            Text(
+              listAddedOther.itemName,
+              style: TextStyle(fontSize: 10),
+            ),
+            Text(
+              "${listAddedOther.itemPrice}.00",
+              style: TextStyle(fontSize: 10),
+              textAlign: TextAlign.end,
+            ),
+          ]);
+      rowDatas.add(rowData);
+    });
+
+    return Table(
+      defaultColumnWidth: IntrinsicColumnWidth(),
+      children: rowDatas,
+    );
+  }
+
+  //new createNewRecord
+  Widget createNewRecordJsonEditAll(
+    JobsOnQueueModel jobsOnQueueModelEditAll,
+    bool bRiderPickupEditAll,
+    bool bRegularSabonEditAll,
+    bool bSayoSabonEditAll,
+    bool bOtherServicesEditAll,
+    bool bNotOtherServicesEditAll,
+    bool bAddOnEditAll,
+    bool bDetAddOnEditAll,
+    bool bFabAddOnEditAll,
+    bool bBleAddOnEditAll,
+    bool bOthAddOnEditAll,
+    bool bUnpaidEditAll,
+    bool bPaidCashEditAll,
+    bool bPaidGCashEditAll,
+    TextEditingController remarksControllerEditAll,
+    DateTime dNeedOnEditAll,
+  ) {
+    return MaterialButton(
+      onPressed: () {
+        if (jobsOnQueueModelEditAll.customerId == 1) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+                content: Text(
+                    'Cannot save, please add name in loyalty records first.')),
+          );
+        } else if (_formKeyQueueMobile.currentState!.validate()) {
+          // If the form is valid, display a snackbar. In the real world,
+          // you'd often call a server or save the information in a database.
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Processing Data')),
+          );
+
+          //pop box
+          Navigator.pop(context);
+          jobsOnQueueModelEditAll.dateQ = Timestamp.now();
+          //jobsOnQueueModelEditAll.customerId = autocompleteSelected.customerId;
+          //jobsOnQueueModelEditAll.initialOthersPrice = jobsOnQueueModelEditAll.initialOthersPrice;
+          jobsOnQueueModelEditAll.finalKilo = 0;
+          jobsOnQueueModelEditAll.finalLoad = 0;
+          jobsOnQueueModelEditAll.finalPrice = 0;
+          jobsOnQueueModelEditAll.finalOthersPrice = 0;
+          // jobsOnQueueModelEditAll.queueStat = (bRiderPickupEditAll
+          //     ? mapQueueStat[riderPickup].toString()
+          //     : mapQueueStat[forSorting].toString());
+          // jobsOnQueueModelEditAll.paymentStat = (bUnpaidEditAll
+          //     ? mapPaymentStat[unpaid].toString()
+          //     : (bPaidCashEditAll
+          //         ? mapPaymentStat[paidCash].toString()
+          //         : (bPaidGCashEditAll
+          //             ? mapPaymentStat[paidGCash].toString()
+          //             : mapPaymentStat[waitGCash].toString())));
+          jobsOnQueueModelEditAll.paymentReceivedBy =
+              (bUnpaidEditAll ? "" : empid);
+          jobsOnQueueModelEditAll.paidD = (bUnpaidEditAll
+              ? Timestamp.fromDate(DateTime(2000))
+              : Timestamp.now());
+          jobsOnQueueModelEditAll.remarks = remarksControllerEditAll.text;
+
+          insertDataJobsOnQueueJson(jobsOnQueueModelEditAll);
+        }
+      },
+      color: cButtons,
+      child: const Text("Save"),
+    );
+  }
+
+  //insert new
+  void insertDataJobsOnQueueJson(JobsOnQueueModel jobsOnQueueModel) {
+    DatabaseJobsOnQueue databaseJobsOnQueue = DatabaseJobsOnQueue();
+
+    databaseJobsOnQueue.addJobsOnQueue(jobsOnQueueModel, listAddOnItems);
+
+    //databaseJobsOnQueue.addJobsOnQueueSolo(jobsOnQueueModel);
+  }
+
+  Widget _updateQueueRecordEditAll(String docId,
+      JobsOnQueueModel jobsOnQueueModelEditAll, bool bRiderPickupEditAll) {
+    return MaterialButton(
+      onPressed: () {
+        if (_formKeyQueueMobile.currentState!.validate()) {
+          // If the form is valid, display a snackbar. In the real world,
+          // you'd often call a server or save the information in a database.
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Processing Data')),
+          );
+
+          //pop box
+          Navigator.pop(context);
+
+          _updateDataQueueMobileEditAll(docId, jobsOnQueueModelEditAll);
+
+          // print(
+          //     "Anu status $docId ${jobsOnQueueModelEditAll.queueStat}${bRiderPickupEditAll ? "Riderpickup" : "ForSorting"}");
+        }
+      },
+      color: cButtons,
+      child: const Text("Save"),
+    );
+  }
+
+  void _updateDataQueueMobileEditAll(
+      String docId, JobsOnQueueModel jobsOnQueueModelEditAll) {
+    DatabaseJobsOnQueue databaseJobsOnQueue = DatabaseJobsOnQueue();
+    databaseJobsOnQueue.updateJobsOnQueue(docId, jobsOnQueueModelEditAll);
   }
 }

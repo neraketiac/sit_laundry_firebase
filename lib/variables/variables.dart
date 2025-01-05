@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:laundry_firebase/models/customermodel.dart';
+import 'package:laundry_firebase/models/jobsonqueuemodel.dart';
 import 'package:laundry_firebase/models/otheritemmodel.dart';
 
 bool showDet = false, showFab = false, showBle = false, showOth = false;
@@ -15,6 +16,8 @@ List<OtherItemModel> listFabItems = [];
 List<OtherItemModel> listBleItems = [];
 List<OtherItemModel> listOthItems = [];
 List<OtherItemModel> listAddOnItems = [];
+
+late OtherItemModel gselectedItemModel;
 
 List<CustomerModel> customerOptionsFromVariable = [];
 
@@ -122,31 +125,33 @@ final List<String> finListNumbering = [
 
 const mobileWidth = 600;
 
+bool bViewMoreOptions = false;
+
 //variable in alterDetailJobsJson for all jobs
 bool bRiderPickupVar = false;
 bool bRegularSabonVar = true,
     bSayoSabonVar = false,
     bOtherServicesVar = false,
-    bNotOtherServicesVar = true;
+    bShowKiloLoadDisplayVar = true;
 bool bAddOnVar = false,
     bDetAddOnVar = false,
     bFabAddOnVar = false,
     bBleAddOnVar = false,
     bOthAddOnVar = false;
-int iInitialKiloVar = 8,
-    iInitialLoadVar = 1,
-    iInitialPriceVar = 155,
-    iInitialOthersPriceVar = 155;
+// int iInitialKiloVar = 8,
+//     iInitialLoadVar = 1,
+//     iInitialPriceVar = 155,
+//     iInitialOthersPriceVar = 155;
 late OtherItemModel selectedDetVar,
     selectedFabVar,
     selectedBleVar,
     selectedOthVar;
-int iBasketVar = 0, iBagVar = 0;
+// int iBasketVar = 0, iBagVar = 0;
 bool bUnpaidVar = true, bPaidCashVar = false, bPaidGCashVar = false;
-bool bMixVar = true, bFoldVar = true;
+// bool bMixVar = true, bFoldVar = true;
 TextEditingController remarksControllerVar = TextEditingController();
 DateTime dNeedOnVar = DateTime.now().add(Duration(minutes: 210));
-Timestamp tNeedOnVar = Timestamp.now();
+// Timestamp tNeedOnVar = Timestamp.now();
 
 void putEntries() {
   fetchUsers();
@@ -235,6 +240,16 @@ void putEntries() {
       itemGroup: groupOth,
       itemName: "Wash",
       itemPrice: 49));
+  listOthItems.add(OtherItemModel(
+      itemId: menuOthWash,
+      itemGroup: groupOth,
+      itemName: "2Wash 1Dry(Regular)",
+      itemPrice: 195));
+  listOthItems.add(OtherItemModel(
+      itemId: menuOthWash,
+      itemGroup: groupOth,
+      itemName: "2Wash 1Dry(SayoSabon)",
+      itemPrice: 165));
 
   //det names
   mapDetNames.addEntries({menuDetBreezeDVal: "Breeze(15php)"}.entries);
@@ -297,6 +312,7 @@ void putEntries() {
   selectedFabVar = listFabItems[0];
   selectedBleVar = listBleItems[0];
   selectedOthVar = listOthItems[0];
+  gselectedItemModel = listOthItems[1];
 }
 
 //var mapEmpId = {"0550", "Jeng", "0808", "Abi", "0413", "Ket", "0316", "DonP"};
@@ -328,17 +344,18 @@ String autoPriceDisplay(int price, bool bRegularSabon) {
       y = price % divider;
       y = y + divider;
       z = x + y;
-      return "$x($y)=Php $z";
+      return "$x + $y=Php $z";
     }
   }
 }
 
 String kiloDisplay(int kilo) {
-  if (kilo % 8 == 0) {
-    return "$kilo.0";
-  } else {
-    return "${(kilo - 1)}.1 - $kilo.0";
-  }
+  return "max $kilo.0";
+  // if (kilo % 8 == 0) {
+  //   return "$kilo.0";
+  // } else {
+  //   return "${(kilo - 1)}.1 - $kilo.0";
+  // }
 }
 
 //fontsize
@@ -399,6 +416,16 @@ BoxDecoration containerSayoSabonBoxDecoration() {
       border: Border.all(color: borderColor(), width: 2.0));
 }
 
+Color? containerTotalPriceColor() {
+  return Colors.red[50];
+}
+
+BoxDecoration containerTotalPriceBoxDecoration() {
+  return BoxDecoration(
+      color: containerTotalPriceColor(),
+      border: Border.all(color: borderColor(), width: 2.0));
+}
+
 int iPriceDivider(bool bRegularSabon) {
   if (bRegularSabon) {
     return 155;
@@ -435,17 +462,28 @@ String customerName(String customerId) {
   return thisCustomerName;
 }
 
-void resetPaymentQueueBool() {
-  bUnpaidVar = false;
-  bPaidCashVar = false;
-  bPaidGCashVar = false;
+JobsOnQueueModel resetPaymentQueueBool(JobsOnQueueModel jobsOnQueueModel) {
+  jobsOnQueueModel.unpaid = false;
+  jobsOnQueueModel.paidcash = false;
+  jobsOnQueueModel.paidgcash = false;
+
+  return jobsOnQueueModel;
+  // bUnpaidVar = false;
+  // bPaidCashVar = false;
+  // bPaidGCashVar = false;
 }
 
-void resetRegular() {
-  bRegularSabonVar = false;
-  bSayoSabonVar = false;
-  bOtherServicesVar = false;
-  bNotOtherServicesVar = true;
+JobsOnQueueModel resetRegular(JobsOnQueueModel jobsOnQueueModel) {
+  jobsOnQueueModel.regular = false;
+  jobsOnQueueModel.sayosabon = false;
+  jobsOnQueueModel.others = false;
+  bShowKiloLoadDisplayVar = true;
+  return jobsOnQueueModel;
+
+  // bRegularSabonVar = false;
+  // bSayoSabonVar = false;
+  // bOtherServicesVar = false;
+  // bShowKiloLoadDisplayVar = true;
 }
 
 void resetAddOn() {

@@ -106,7 +106,7 @@ class _LoyaltyAdminState extends State<LoyaltyAdmin> {
             ),
             TextField(
               controller: remarksController,
-              decoration: const InputDecoration(hintText: 'Remarks'),
+              decoration: const InputDecoration(hintText: 'C5_Remarks'),
             ),
           ],
         ),
@@ -227,7 +227,7 @@ class _LoyaltyAdminState extends State<LoyaltyAdmin> {
                                 buffRecord['Name'],
                                 buffRecord['Contact'],
                                 buffRecord['Address'],
-                                buffRecord['Remarks'],
+                                buffRecord['C5_Remarks'],
                                 1);
                           },
                           icon: Icon((loyaltyCount) >= 1
@@ -243,7 +243,7 @@ class _LoyaltyAdminState extends State<LoyaltyAdmin> {
                                 buffRecord['Name'],
                                 buffRecord['Contact'],
                                 buffRecord['Address'],
-                                buffRecord['Remarks'],
+                                buffRecord['C5_Remarks'],
                                 2);
                           },
                           icon: Icon((loyaltyCount) >= 2
@@ -259,7 +259,7 @@ class _LoyaltyAdminState extends State<LoyaltyAdmin> {
                                 buffRecord['Name'],
                                 buffRecord['Contact'],
                                 buffRecord['Address'],
-                                buffRecord['Remarks'],
+                                buffRecord['C5_Remarks'],
                                 3);
                           },
                           icon: Icon((loyaltyCount) >= 3
@@ -275,7 +275,7 @@ class _LoyaltyAdminState extends State<LoyaltyAdmin> {
                                 buffRecord['Name'],
                                 buffRecord['Contact'],
                                 buffRecord['Address'],
-                                buffRecord['Remarks'],
+                                buffRecord['C5_Remarks'],
                                 4);
                           },
                           icon: Icon((loyaltyCount) >= 4
@@ -295,7 +295,7 @@ class _LoyaltyAdminState extends State<LoyaltyAdmin> {
                                 buffRecord['Name'],
                                 buffRecord['Contact'],
                                 buffRecord['Address'],
-                                buffRecord['Remarks'],
+                                buffRecord['C5_Remarks'],
                                 5);
                           },
                           icon: Icon((loyaltyCount) >= 5
@@ -311,7 +311,7 @@ class _LoyaltyAdminState extends State<LoyaltyAdmin> {
                                 buffRecord['Name'],
                                 buffRecord['Contact'],
                                 buffRecord['Address'],
-                                buffRecord['Remarks'],
+                                buffRecord['C5_Remarks'],
                                 6);
                           },
                           icon: Icon((loyaltyCount) >= 6
@@ -327,7 +327,7 @@ class _LoyaltyAdminState extends State<LoyaltyAdmin> {
                                 buffRecord['Name'],
                                 buffRecord['Contact'],
                                 buffRecord['Address'],
-                                buffRecord['Remarks'],
+                                buffRecord['C5_Remarks'],
                                 7);
                           },
                           icon: Icon((loyaltyCount) >= 7
@@ -343,7 +343,7 @@ class _LoyaltyAdminState extends State<LoyaltyAdmin> {
                                 buffRecord['Name'],
                                 buffRecord['Contact'],
                                 buffRecord['Address'],
-                                buffRecord['Remarks'],
+                                buffRecord['C5_Remarks'],
                                 8);
                           },
                           icon: Icon((loyaltyCount) >= 8
@@ -363,7 +363,7 @@ class _LoyaltyAdminState extends State<LoyaltyAdmin> {
                                 buffRecord['Name'],
                                 buffRecord['Contact'],
                                 buffRecord['Address'],
-                                buffRecord['Remarks'],
+                                buffRecord['C5_Remarks'],
                                 9);
                           },
                           icon: Icon((loyaltyCount) >= 9
@@ -379,7 +379,7 @@ class _LoyaltyAdminState extends State<LoyaltyAdmin> {
                                 buffRecord['Name'],
                                 buffRecord['Contact'],
                                 buffRecord['Address'],
-                                buffRecord['Remarks'],
+                                buffRecord['C5_Remarks'],
                                 10);
                           },
                           icon: Icon((loyaltyCount) >= 10
@@ -432,7 +432,7 @@ class _LoyaltyAdminState extends State<LoyaltyAdmin> {
           'Name': nameController.text,
           'Contact': contactController.text,
           'Address': addressController.text,
-          'Remarks': remarksController.text,
+          'C5_Remarks': remarksController.text,
           //'cotime': DateTime.now(),
         })
         .then((value) => {
@@ -475,7 +475,7 @@ class _LoyaltyAdminState extends State<LoyaltyAdmin> {
           'Name': name,
           'Contact': contact,
           'Address': address,
-          'Remarks': remarks,
+          'C5_Remarks': remarks,
           'Count': count
           //'cotime': DateTime.now(),
         })

@@ -19,993 +19,79 @@ class MyQueue extends StatefulWidget {
 }
 
 class _MyQueueState extends State<MyQueue> {
-  late String _sCreatedBy;
+  late String _sEmpId;
 
-  final _formKey = GlobalKey<FormState>();
+  //final _formKey = GlobalKey<FormState>();
+  late JobsOnQueueModel gjobsOnQueueModel = JobsOnQueueModel(
+      dateQ: Timestamp.now(),
+      forSorting: true,
+      riderPickup: false,
+      createdBy: "",
+      customerId: 0,
+      perKilo: true,
+      initialKilo: 8,
+      initialLoad: 1,
+      initialPrice: 155,
+      initialOthersPrice: 0,
+      finalKilo: 0,
+      finalLoad: 0,
+      finalPrice: 0,
+      finalOthersPrice: 0,
+      regular: true,
+      sayosabon: false,
+      others: false,
+      addOns: false,
+      needOn: Timestamp.now(),
+      fold: true,
+      mix: true,
+      basket: 0,
+      bag: 0,
+      remarks: "",
+      unpaid: true,
+      paidcash: false,
+      paidgcash: false,
+      paymentReceivedBy: "",
+      dateO: Timestamp.fromDate(DateTime(2000)),
+      paidD: Timestamp.fromDate(DateTime(2000)),
+      waiting: false,
+      washing: false,
+      drying: false,
+      folding: false,
+      dateD: Timestamp.fromDate(DateTime(2000)),
+      waitCustomerPickup: false,
+      waitRiderDelivery: false,
+      nasaCustomerNa: false,
+      waitingOneWeek: false,
+      waitingTwoWeeks: false,
+      forDisposal: false,
+      disposed: false);
 
   @override
   void initState() {
     super.initState();
 
-    _sCreatedBy = widget.empid;
-
-    iInitialKiloVar = 8;
-    iInitialPriceVar = (iInitialKiloVar ~/ 8) * iPriceDivider(bRegularSabonVar);
-    iInitialLoadVar = (iInitialKiloVar ~/ 8);
-  }
-
-  //jobsonqueue
-  void showJobsOnQueueEntry() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(
-          "New Laundry ${DateTime.now().toString().substring(5, 13)}",
-          style: TextStyle(backgroundColor: Colors.amber[300]),
-        ),
-        content: SingleChildScrollView(
-          scrollDirection: Axis.vertical,
-          child: StatefulBuilder(
-              builder: (BuildContext context, StateSetter setState) {
-            return Container(
-              padding: EdgeInsets.all(8.0),
-              decoration: BoxDecoration(
-                  border: Border.all(color: Colors.blueAccent, width: 2.0)),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    SizedBox(
-                      height: 5,
-                    ),
-                    Container(
-                      padding: EdgeInsets.all(1.0),
-                      decoration: containerQueBoxDecoration(),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: <Widget>[
-                          Text(
-                            'Enter Customer Name',
-                            style: TextStyle(fontSize: 10),
-                          ),
-                          AutoCompleteCustomer(),
-                          SizedBox(
-                            height: 5,
-                          ),
-                          MaterialButton(
-                            color: cButtons,
-                            onPressed: () {
-                              _allCards(context);
-                            },
-                            child: Text("New Account"),
-                          ),
-                          SizedBox(
-                            height: 5,
-                          ),
-                        ],
-                      ),
-                    ),
-                    //QueueStat
-                    SizedBox(
-                      height: 5,
-                    ),
-                    Container(
-                      alignment: Alignment.center,
-                      padding: EdgeInsets.all(1.0),
-                      decoration: containerQueBoxDecoration(),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text("Sort"),
-                          Switch.adaptive(
-                            value: bRiderPickupVar,
-                            onChanged: (bool value) {
-                              setState(() {
-                                bRiderPickupVar = value;
-                              });
-                            },
-                          ),
-                          Text("RiderPickup"),
-                        ],
-                      ),
-                    ),
-                    SizedBox(
-                      height: 5,
-                    ),
-                    Container(
-                      padding: EdgeInsets.all(1.0),
-                      decoration: containerQueBoxDecoration(),
-                      child: Column(
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              Column(
-                                children: [
-                                  Text(
-                                    "Regular",
-                                    style: TextStyle(fontSize: 10),
-                                  ),
-                                  Checkbox(
-                                      value: bRegularSabonVar,
-                                      onChanged: (val) {
-                                        resetRegular();
-
-                                        if (val!) {
-                                          setState(
-                                            () {
-                                              bRegularSabonVar = val;
-                                            },
-                                          );
-                                        }
-
-                                        iInitialKiloVar = 8;
-                                        iInitialPriceVar =
-                                            (iInitialKiloVar ~/ 8) *
-                                                iPriceDivider(bRegularSabonVar);
-                                        iInitialLoadVar =
-                                            (iInitialKiloVar ~/ 8);
-                                      })
-                                ],
-                              ),
-                              Column(
-                                children: [
-                                  Text(
-                                    "Sayo Sabon",
-                                    style: TextStyle(fontSize: 10),
-                                  ),
-                                  Checkbox(
-                                      value: bSayoSabonVar,
-                                      onChanged: (val) {
-                                        resetRegular();
-
-                                        if (val!) {
-                                          setState(
-                                            () {
-                                              bSayoSabonVar = val;
-                                            },
-                                          );
-                                        }
-
-                                        iInitialKiloVar = 8;
-                                        iInitialPriceVar =
-                                            (iInitialKiloVar ~/ 8) *
-                                                iPriceDivider(bRegularSabonVar);
-                                        iInitialLoadVar =
-                                            (iInitialKiloVar ~/ 8);
-                                      })
-                                ],
-                              ),
-                              Column(
-                                children: [
-                                  Text(
-                                    "Others",
-                                    style: TextStyle(fontSize: 10),
-                                  ),
-                                  Checkbox(
-                                      value: bOtherServicesVar,
-                                      onChanged: (val) {
-                                        resetRegular();
-                                        bNotOtherServicesVar = false;
-
-                                        if (val!) {
-                                          setState(
-                                            () {
-                                              bOtherServicesVar = val;
-                                            },
-                                          );
-                                        }
-
-                                        iInitialKiloVar = 0;
-                                        iInitialPriceVar = 0;
-                                        iInitialLoadVar = 0;
-                                      })
-                                ],
-                              ),
-                            ],
-                          ),
-                          //New estimate load +-8 kilo
-                          Visibility(
-                            visible: bNotOtherServicesVar,
-                            child: Container(
-                              padding: EdgeInsets.all(0),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Container(
-                                    padding: EdgeInsets.only(
-                                        left: 3, bottom: 0, top: 0, right: 3),
-                                    decoration: BoxDecoration(
-                                        color: Colors.amber[200],
-                                        borderRadius: const BorderRadius.only(
-                                            topLeft: Radius.circular(20),
-                                            bottomLeft: Radius.circular(20))),
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.end,
-                                      children: [
-                                        IconButton(
-                                          onPressed: () {
-                                            if (iInitialKiloVar < 8) {
-                                              iInitialKiloVar = 8;
-                                              iInitialPriceVar =
-                                                  (iInitialKiloVar ~/ 8) *
-                                                      iPriceDivider(
-                                                          bRegularSabonVar);
-                                              iInitialLoadVar =
-                                                  (iInitialKiloVar ~/ 8);
-                                            } else {
-                                              if (iInitialKiloVar % 8 != 0) {
-                                                iInitialKiloVar =
-                                                    iInitialKiloVar -
-                                                        (iInitialKiloVar % 8);
-                                              } else {
-                                                iInitialKiloVar =
-                                                    iInitialKiloVar - 8;
-                                              }
-
-                                              iInitialPriceVar =
-                                                  (iInitialKiloVar ~/ 8) *
-                                                      iPriceDivider(
-                                                          bRegularSabonVar);
-
-                                              iInitialLoadVar =
-                                                  (iInitialKiloVar ~/ 8);
-                                            }
-                                            setState(() {
-                                              iInitialKiloVar;
-                                              iInitialLoadVar;
-                                              iInitialPriceVar;
-                                            });
-                                          },
-                                          icon: const Icon(
-                                              Icons.remove_circle_outlined),
-                                          color: Colors.blueAccent,
-                                        ),
-                                        Text("-8 kg"),
-                                      ],
-                                    ),
-                                  ),
-                                  SizedBox(
-                                    width: 3,
-                                  ),
-                                  Container(
-                                    padding: EdgeInsets.only(
-                                        left: 3, bottom: 0, top: 0, right: 3),
-                                    decoration: BoxDecoration(
-                                        color: Colors.amber[200],
-                                        borderRadius: BorderRadius.only(
-                                            topRight: Radius.circular(20),
-                                            bottomRight: Radius.circular(20))),
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.end,
-                                      children: [
-                                        Text("+8 kg"),
-                                        IconButton(
-                                          onPressed: () {
-                                            if (iInitialKiloVar % 8 != 0) {
-                                              iInitialKiloVar =
-                                                  iInitialKiloVar +
-                                                      8 -
-                                                      (iInitialKiloVar % 8);
-                                            } else {
-                                              iInitialKiloVar =
-                                                  iInitialKiloVar + 8;
-                                            }
-
-                                            iInitialPriceVar =
-                                                (iInitialKiloVar ~/ 8) *
-                                                    (iPriceDivider(
-                                                        bRegularSabonVar));
-                                            iInitialLoadVar =
-                                                iInitialKiloVar ~/ 8;
-                                            setState(() {
-                                              iInitialKiloVar;
-                                              iInitialLoadVar;
-                                              iInitialPriceVar;
-                                            });
-                                          },
-                                          icon: const Icon(Icons.add_circle),
-                                          color: Colors.blueAccent,
-                                        ),
-                                      ],
-                                    ),
-                                  )
-                                ],
-                              ),
-                            ),
-                          ),
-                          //New Estimate Load display
-                          Visibility(
-                            visible: bNotOtherServicesVar,
-                            child: Container(
-                              padding: EdgeInsets.all(3),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Container(
-                                    padding:
-                                        EdgeInsets.only(left: 10, right: 10),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Text("Weight:"),
-                                        Text(
-                                            "${kiloDisplay(iInitialKiloVar)} kilo"),
-                                      ],
-                                    ),
-                                  ),
-                                  Container(
-                                    padding:
-                                        EdgeInsets.only(left: 10, right: 10),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Text("Load:"),
-                                        Text("$iInitialLoadVar"),
-                                      ],
-                                    ),
-                                  ),
-                                  Container(
-                                    padding:
-                                        EdgeInsets.only(left: 10, right: 10),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Text("Load Price:"),
-                                        Text(
-                                            "${autoPriceDisplay(iInitialPriceVar, bRegularSabonVar)}.00"),
-                                      ],
-                                    ),
-                                  ),
-                                  Container(
-                                    padding:
-                                        EdgeInsets.only(left: 10, right: 10),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Text("Total Price:"),
-                                        Text(
-                                            "Php ${iInitialPriceVar + iInitialOthersPriceVar}.00"),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                          //New Estimate Load (+- 1 kilo)
-                          Visibility(
-                            visible: bNotOtherServicesVar,
-                            child: Container(
-                              padding: EdgeInsets.all(0.0),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Container(
-                                    padding: EdgeInsets.only(
-                                        left: 3, bottom: 0, top: 0, right: 3),
-                                    decoration: BoxDecoration(
-                                        color: Colors.amber[200],
-                                        borderRadius: const BorderRadius.only(
-                                            topLeft: Radius.circular(20),
-                                            bottomLeft: Radius.circular(20))),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        IconButton(
-                                          onPressed: () {
-                                            if (iInitialKiloVar > 8) {
-                                              if (iInitialKiloVar % 8 == 1) {
-                                                iInitialPriceVar =
-                                                    iInitialPriceVar -
-                                                        (bRegularSabonVar
-                                                            ? 25
-                                                            : 25); //8-9kilo 25
-
-                                                iInitialLoadVar =
-                                                    iInitialLoadVar - 1;
-                                              } else if (iInitialKiloVar % 8 ==
-                                                  2) {
-                                                iInitialPriceVar =
-                                                    iInitialPriceVar -
-                                                        (bRegularSabonVar
-                                                            ? 45
-                                                            : 50); //9-10kilo 45
-                                              } else if (iInitialKiloVar % 8 ==
-                                                  3) {
-                                                iInitialPriceVar =
-                                                    iInitialPriceVar -
-                                                        (bRegularSabonVar
-                                                            ? 25
-                                                            : 25); //10-11kilo 25
-                                              } else if (iInitialKiloVar % 8 ==
-                                                  4) {
-                                                iInitialPriceVar =
-                                                    iInitialPriceVar -
-                                                        (bRegularSabonVar
-                                                            ? 25
-                                                            : 25); //11-12kilo
-                                              } else if (iInitialKiloVar % 8 ==
-                                                  5) {
-                                                iInitialPriceVar =
-                                                    iInitialPriceVar -
-                                                        (bRegularSabonVar
-                                                            ? 25
-                                                            : 0); //12-13kilo
-                                              } else if (iInitialKiloVar % 8 ==
-                                                  6) {
-                                                iInitialPriceVar =
-                                                    iInitialPriceVar -
-                                                        (bRegularSabonVar
-                                                            ? 10
-                                                            : 0); //13-16kilo
-                                              }
-
-                                              iInitialKiloVar =
-                                                  iInitialKiloVar - 1;
-                                            }
-                                            setState(() {
-                                              iInitialKiloVar;
-                                              iInitialLoadVar;
-                                              iInitialPriceVar;
-                                            });
-                                          },
-                                          icon: const Icon(
-                                              Icons.remove_circle_outlined),
-                                          color: Colors.blueAccent,
-                                        ),
-                                        Text("-1 kg"),
-                                      ],
-                                    ),
-                                  ),
-                                  SizedBox(
-                                    width: 3,
-                                  ),
-                                  Container(
-                                    padding: EdgeInsets.only(
-                                        left: 3, bottom: 0, top: 0, right: 3),
-                                    decoration: BoxDecoration(
-                                        color: Colors.amber[200],
-                                        borderRadius: BorderRadius.only(
-                                            topRight: Radius.circular(20),
-                                            bottomRight: Radius.circular(20))),
-                                    child: Row(
-                                      children: [
-                                        Text("+1 kg"),
-                                        IconButton(
-                                          onPressed: () {
-                                            if (iInitialKiloVar >= 8) {
-                                              iInitialKiloVar =
-                                                  iInitialKiloVar + 1;
-                                            }
-
-                                            if (iInitialKiloVar % 8 == 1) {
-                                              iInitialPriceVar =
-                                                  iInitialPriceVar +
-                                                      (bRegularSabonVar
-                                                          ? 25
-                                                          : 25); //8-9kilo
-                                            } else if (iInitialKiloVar % 8 ==
-                                                2) {
-                                              iInitialPriceVar =
-                                                  iInitialPriceVar +
-                                                      (bRegularSabonVar
-                                                          ? 45
-                                                          : 50); //9-10kilo
-                                              setState(() => iInitialLoadVar =
-                                                  iInitialLoadVar + 1);
-                                            } else if (iInitialKiloVar % 8 ==
-                                                3) {
-                                              iInitialPriceVar =
-                                                  iInitialPriceVar +
-                                                      (bRegularSabonVar
-                                                          ? 25
-                                                          : 25); //10-11kilo
-                                            } else if (iInitialKiloVar % 8 ==
-                                                4) {
-                                              iInitialPriceVar =
-                                                  iInitialPriceVar +
-                                                      (bRegularSabonVar
-                                                          ? 25
-                                                          : 25); //11-12kilo
-                                            } else if (iInitialKiloVar % 8 ==
-                                                5) {
-                                              iInitialPriceVar =
-                                                  iInitialPriceVar +
-                                                      (bRegularSabonVar
-                                                          ? 25
-                                                          : 0); //12-13kilo
-                                            } else {
-                                              if (iInitialPriceVar %
-                                                      (iPriceDivider(
-                                                          bRegularSabonVar)) !=
-                                                  0) {
-                                                iInitialPriceVar =
-                                                    iInitialPriceVar +
-                                                        (bRegularSabonVar
-                                                            ? 10
-                                                            : 0); //13-16kilo
-                                              }
-                                            }
-
-                                            setState(() {
-                                              iInitialKiloVar;
-                                              iInitialLoadVar;
-                                              iInitialPriceVar;
-                                            });
-                                          },
-                                          icon: const Icon(Icons.add_circle),
-                                          color: Colors.blueAccent,
-                                        ),
-                                      ],
-                                    ),
-                                  )
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    //Add On
-                    SizedBox(
-                      height: 5,
-                    ),
-                    Container(
-                      decoration: containerSayoSabonBoxDecoration(),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          Column(
-                            children: [
-                              Text(
-                                "Add On",
-                                style: TextStyle(fontSize: 10),
-                              ),
-                              Checkbox(
-                                  value: bAddOnVar,
-                                  onChanged: (val) {
-                                    if (listAddOnItems.isNotEmpty) {
-                                      if (!val!) {
-                                        //pop box
-                                        Navigator.pop(context);
-                                        messageResultNew(
-                                            "Uncheck will delete add on?");
-                                      }
-                                    }
-
-                                    setState(
-                                      () {
-                                        bAddOnVar = val!;
-                                      },
-                                    );
-                                  }),
-                              //checkboxes add on
-                              Visibility(
-                                visible: bAddOnVar,
-                                child: Container(
-                                  padding: EdgeInsets.all(1.0),
-                                  child: Row(
-                                    children: [
-                                      Column(
-                                        children: [
-                                          Text(
-                                            "Det",
-                                            style: TextStyle(fontSize: 10),
-                                          ),
-                                          Checkbox(
-                                              value: bDetAddOnVar,
-                                              onChanged: (val) {
-                                                resetAddOn();
-                                                setState(
-                                                  () {
-                                                    bDetAddOnVar = val!;
-                                                  },
-                                                );
-                                              })
-                                        ],
-                                      ),
-                                      Column(
-                                        children: [
-                                          Text(
-                                            "Fab",
-                                            style: TextStyle(fontSize: 10),
-                                          ),
-                                          Checkbox(
-                                              value: bFabAddOnVar,
-                                              onChanged: (val) {
-                                                resetAddOn();
-                                                setState(
-                                                  () {
-                                                    bFabAddOnVar = val!;
-                                                  },
-                                                );
-                                              })
-                                        ],
-                                      ),
-                                      Column(
-                                        children: [
-                                          Text(
-                                            "Ble",
-                                            style: TextStyle(fontSize: 10),
-                                          ),
-                                          Checkbox(
-                                              value: bBleAddOnVar,
-                                              onChanged: (val) {
-                                                resetAddOn();
-                                                setState(
-                                                  () {
-                                                    bBleAddOnVar = val!;
-                                                  },
-                                                );
-                                              })
-                                        ],
-                                      ),
-                                      Column(
-                                        children: [
-                                          Text(
-                                            "Oth",
-                                            style: TextStyle(fontSize: 10),
-                                          ),
-                                          Checkbox(
-                                              value: bOthAddOnVar,
-                                              onChanged: (val) {
-                                                resetAddOn();
-                                                setState(
-                                                  () {
-                                                    bOthAddOnVar = val!;
-                                                  },
-                                                );
-                                              })
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              //dropdown det
-                              addOnDropDown(
-                                  bDetAddOnVar, selectedDetVar, listDetItems),
-                              //dropdown fab
-                              addOnDropDown(
-                                  bFabAddOnVar, selectedFabVar, listFabItems),
-                              //dropdown ble
-                              addOnDropDown(
-                                  bBleAddOnVar, selectedBleVar, listBleItems),
-                              //dropdown oth
-                              addOnDropDown(
-                                  bOthAddOnVar, selectedOthVar, listOthItems),
-                              _readAddedData(listAddOnItems),
-                              //_dtAddedOthers(addOnItems),
-                              //_addedOn(addOnItems),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    //Basket
-                    SizedBox(
-                      height: 5,
-                    ),
-                    Container(
-                      padding: EdgeInsets.all(1.0),
-                      decoration: containerQueBoxDecoration(),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          IconButton(
-                            onPressed: () {
-                              setState(() => iBasketVar--);
-                            },
-                            icon: const Icon(Icons.remove_circle_outlined),
-                            color: Colors.blueAccent,
-                          ),
-                          Text("Basket: $iBasketVar"),
-                          IconButton(
-                            onPressed: () {
-                              setState(() => iBasketVar++);
-                            },
-                            icon: const Icon(Icons.add_circle),
-                            color: Colors.blueAccent,
-                          ),
-                        ],
-                      ),
-                    ),
-                    //Bag
-                    SizedBox(
-                      height: 5,
-                    ),
-                    Container(
-                      padding: EdgeInsets.all(1.0),
-                      decoration: containerQueBoxDecoration(),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          IconButton(
-                            onPressed: () {
-                              setState(() => iBagVar--);
-                            },
-                            icon: const Icon(Icons.remove_circle_outlined),
-                            color: Colors.blueAccent,
-                          ),
-                          Text("Bag: $iBagVar"),
-                          IconButton(
-                            onPressed: () {
-                              setState(() => iBagVar++);
-                            },
-                            icon: const Icon(Icons.add_circle),
-                            color: Colors.blueAccent,
-                          ),
-                        ],
-                      ),
-                    ),
-                    //Payment New
-                    SizedBox(
-                      height: 5,
-                    ),
-                    Container(
-                      decoration: containerQueBoxDecoration(),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          Column(
-                            children: [
-                              Text(
-                                "Unpaid",
-                                style: TextStyle(fontSize: 10),
-                              ),
-                              Checkbox(
-                                  value: bUnpaidVar,
-                                  onChanged: (val) {
-                                    resetPaymentQueueBool();
-                                    if (val!) {
-                                      setState(
-                                        () {
-                                          bUnpaidVar = val;
-                                        },
-                                      );
-                                    }
-                                  })
-                            ],
-                          ),
-                          Column(
-                            children: [
-                              Text(
-                                "PaidCash",
-                                style: TextStyle(fontSize: 10),
-                              ),
-                              Checkbox(
-                                  value: bPaidCashVar,
-                                  onChanged: (val) {
-                                    resetPaymentQueueBool();
-                                    if (val!) {
-                                      setState(
-                                        () {
-                                          bPaidCashVar = val;
-                                        },
-                                      );
-                                    }
-                                  })
-                            ],
-                          ),
-                          Column(
-                            children: [
-                              Text(
-                                "PaidGcash",
-                                style: TextStyle(fontSize: 10),
-                              ),
-                              Checkbox(
-                                  value: bPaidGCashVar,
-                                  onChanged: (val) {
-                                    resetPaymentQueueBool();
-                                    if (val!) {
-                                      setState(
-                                        () {
-                                          bPaidGCashVar = val;
-                                        },
-                                      );
-                                    }
-                                  })
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    //No Fold
-                    SizedBox(
-                      height: 5,
-                    ),
-                    Container(
-                      alignment: Alignment.center,
-                      padding: EdgeInsets.all(1.0),
-                      decoration: containerQueBoxDecoration(),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text("No Fold"),
-                          Switch.adaptive(
-                            value: bFoldVar,
-                            onChanged: (bool value) {
-                              setState(() {
-                                bFoldVar = value;
-                              });
-                            },
-                          ),
-                          Text("Fold"),
-                        ],
-                      ),
-                    ),
-                    //Dont mix
-                    SizedBox(
-                      height: 5,
-                    ),
-                    Container(
-                      alignment: Alignment.center,
-                      padding: EdgeInsets.all(1.0),
-                      decoration: containerQueBoxDecoration(),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text("Dont Mix"),
-                          Switch.adaptive(
-                            value: bMixVar,
-                            onChanged: (bool value) {
-                              setState(() {
-                                bMixVar = value;
-                              });
-                            },
-                          ),
-                          Text("Mix"),
-                        ],
-                      ),
-                    ),
-                    SizedBox(
-                      height: 5,
-                    ),
-                    //Remarks
-                    Container(
-                      padding: EdgeInsets.all(1.0),
-                      decoration: containerQueBoxDecoration(),
-                      child: TextFormField(
-                        textCapitalization: TextCapitalization.words,
-                        textAlign: TextAlign.start,
-                        controller: remarksControllerVar,
-                        decoration: InputDecoration(
-                            labelText: 'Remarks', hintText: 'Anu kakaiba'),
-                        validator: (val) {},
-                      ),
-                    ),
-                    SizedBox(
-                      height: 5,
-                    ),
-                    //Need On Date +
-                    Container(
-                      padding: EdgeInsets.all(1.0),
-                      decoration: containerQueBoxDecoration(),
-                      child: Column(
-                        children: [
-                          Container(
-                            padding: EdgeInsets.all(1.0),
-                            decoration: BoxDecoration(
-                                border: Border.all(
-                                    color: Color.fromARGB(0, 212, 212, 212),
-                                    width: 0)),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text("-1 day"),
-                                IconButton(
-                                  onPressed: () {
-                                    setState(() => dNeedOnVar =
-                                        dNeedOnVar.add(Duration(days: -1)));
-                                  },
-                                  icon:
-                                      const Icon(Icons.remove_circle_outlined),
-                                  color: Colors.blueAccent,
-                                ),
-                                IconButton(
-                                  onPressed: () {
-                                    setState(() => dNeedOnVar =
-                                        dNeedOnVar.add(Duration(days: 1)));
-                                  },
-                                  icon: const Icon(Icons.add_circle),
-                                  color: Colors.blueAccent,
-                                ),
-                                Text("+1 day"),
-                              ],
-                            ),
-                          ),
-                          //Need On date?
-                          Container(
-                            padding: EdgeInsets.all(1.0),
-                            decoration: BoxDecoration(
-                                border: Border.all(
-                                    color: Color.fromARGB(0, 212, 212, 212),
-                                    width: 0)),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  "Need On: ${dNeedOnVar.toString().substring(5, 14)}00",
-                                ),
-                              ],
-                            ),
-                          ),
-                          //Need On Date +
-                          Container(
-                            padding: EdgeInsets.all(1.0),
-                            decoration: BoxDecoration(
-                                border: Border.all(
-                                    color: Color.fromARGB(0, 212, 212, 212),
-                                    width: 0)),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text("-1 hr"),
-                                IconButton(
-                                  onPressed: () {
-                                    setState(() => dNeedOnVar =
-                                        dNeedOnVar.add(Duration(hours: -1)));
-                                  },
-                                  icon: const Icon(Icons.remove_circle_outline),
-                                  color: Colors.blueAccent,
-                                ),
-                                IconButton(
-                                  onPressed: () {
-                                    setState(() => dNeedOnVar =
-                                        dNeedOnVar.add(Duration(hours: 1)));
-                                  },
-                                  icon: const Icon(Icons.add_circle_outline),
-                                  color: Colors.blueAccent,
-                                ),
-                                Text("+1 hr"),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(
-                      height: 5,
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }),
-        ),
-        actions: [
-          //cancel button
-          _cancelButton(),
-
-          //save button
-          //_createNewRecord(),
-
-          //save button new
-          _createNewRecordJson(),
-        ],
-      ),
-    );
+    _sEmpId = widget.empid;
+    gjobsOnQueueModel.createdBy = _sEmpId;
+    /*
+    gjobsOnQueueModel.initialKilo = 8;
+    gjobsOnQueueModel.initialPrice =
+        (gjobsOnQueueModel.initialKilo ~/ 8) * iPriceDivider(bRegularSabonVar);
+    gjobsOnQueueModel.initialLoad = (gjobsOnQueueModel.initialKilo ~/ 8);
+    */
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       //body: Text("watata"),
-      body: MyQueueMobile(_sCreatedBy),
+      body: MyQueueMobile(_sEmpId),
       floatingActionButton: Column(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
           FloatingActionButton(
             heroTag: "JobsOnQueue",
             onPressed: () {
-              showJobsOnQueueEntry();
+              showJobsOnQueueEntryJson();
             },
             child: const Icon(Icons.local_laundry_service_sharp),
           ),
@@ -1019,6 +105,1333 @@ class _MyQueueState extends State<MyQueue> {
           ),
         ],
       ),
+    );
+  }
+
+  //jobsonqueuejson
+  void showJobsOnQueueEntryJson() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(builder: (context, setState) {
+          return AlertDialog(
+            title: Text(
+              "New Laundry ${DateTime.now().toString().substring(5, 13)}",
+              style: TextStyle(backgroundColor: Colors.amber[300]),
+            ),
+            content: SingleChildScrollView(
+              scrollDirection: Axis.vertical,
+              child: Container(
+                padding: EdgeInsets.all(8.0),
+                decoration: BoxDecoration(
+                    border: Border.all(color: Colors.blueAccent, width: 2.0)),
+                child: Form(
+                  //key: _formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SizedBox(
+                        height: 5,
+                      ),
+                      Container(
+                        padding: EdgeInsets.all(1.0),
+                        decoration: containerQueBoxDecoration(),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
+                            Text(
+                              'Enter Customer Name',
+                              style: TextStyle(fontSize: 10),
+                            ),
+                            AutoCompleteCustomer(),
+                            SizedBox(
+                              height: 5,
+                            ),
+                            MaterialButton(
+                              color: cButtons,
+                              onPressed: () {
+                                _allCards(context);
+                              },
+                              child: Text("New Account"),
+                            ),
+                            SizedBox(
+                              height: 5,
+                            ),
+                          ],
+                        ),
+                      ),
+                      //QueueStat
+                      SizedBox(
+                        height: 5,
+                      ),
+                      Container(
+                        alignment: Alignment.center,
+                        padding: EdgeInsets.all(1.0),
+                        decoration: containerQueBoxDecoration(),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text("Sort"),
+                            Switch.adaptive(
+                              value: gjobsOnQueueModel.riderPickup,
+                              onChanged: (bool value) {
+                                setState(() {
+                                  gjobsOnQueueModel.riderPickup = value;
+                                  if (gjobsOnQueueModel.riderPickup) {
+                                    gjobsOnQueueModel.forSorting = false;
+                                  } else {
+                                    gjobsOnQueueModel.forSorting = true;
+                                  }
+                                });
+                              },
+                            ),
+                            Text("RiderPickup"),
+                          ],
+                        ),
+                      ),
+                      SizedBox(
+                        height: 5,
+                      ),
+                      Container(
+                        padding: EdgeInsets.all(1.0),
+                        decoration: containerQueBoxDecoration(),
+                        child: Column(
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                Column(
+                                  children: [
+                                    Text(
+                                      "Regular",
+                                      style: TextStyle(fontSize: 10),
+                                    ),
+                                    Checkbox(
+                                        value: gjobsOnQueueModel.regular,
+                                        onChanged: (val) {
+                                          gjobsOnQueueModel =
+                                              resetRegular(gjobsOnQueueModel);
+
+                                          if (val!) {
+                                            setState(
+                                              () {
+                                                gjobsOnQueueModel.regular = val;
+                                              },
+                                            );
+                                          }
+
+                                          gjobsOnQueueModel.initialKilo = 8;
+                                          gjobsOnQueueModel
+                                              .initialPrice = (gjobsOnQueueModel
+                                                      .initialKilo ~/
+                                                  8) *
+                                              iPriceDivider(
+                                                  gjobsOnQueueModel.regular);
+                                          gjobsOnQueueModel.initialLoad =
+                                              (gjobsOnQueueModel.initialKilo ~/
+                                                  8);
+                                        })
+                                  ],
+                                ),
+                                Column(
+                                  children: [
+                                    Text(
+                                      "Sayo Sabon",
+                                      style: TextStyle(fontSize: 10),
+                                    ),
+                                    Checkbox(
+                                        value: gjobsOnQueueModel.sayosabon,
+                                        onChanged: (val) {
+                                          gjobsOnQueueModel =
+                                              resetRegular(gjobsOnQueueModel);
+
+                                          if (val!) {
+                                            setState(
+                                              () {
+                                                gjobsOnQueueModel.sayosabon =
+                                                    val;
+                                              },
+                                            );
+                                          }
+
+                                          gjobsOnQueueModel.initialKilo = 8;
+                                          gjobsOnQueueModel
+                                              .initialPrice = (gjobsOnQueueModel
+                                                      .initialKilo ~/
+                                                  8) *
+                                              iPriceDivider(
+                                                  gjobsOnQueueModel.regular);
+                                          gjobsOnQueueModel.initialLoad =
+                                              (gjobsOnQueueModel.initialKilo ~/
+                                                  8);
+                                        })
+                                  ],
+                                ),
+                                Column(
+                                  children: [
+                                    Text(
+                                      "Others",
+                                      style: TextStyle(fontSize: 10),
+                                    ),
+                                    Checkbox(
+                                        value: gjobsOnQueueModel.others,
+                                        onChanged: (val) {
+                                          gjobsOnQueueModel =
+                                              resetRegular(gjobsOnQueueModel);
+                                          bShowKiloLoadDisplayVar = false;
+
+                                          if (val!) {
+                                            setState(
+                                              () {
+                                                gjobsOnQueueModel.others = val;
+                                              },
+                                            );
+                                          }
+
+                                          gjobsOnQueueModel.initialKilo = 0;
+                                          gjobsOnQueueModel.initialPrice = 0;
+                                          gjobsOnQueueModel.initialLoad = 0;
+                                        })
+                                  ],
+                                ),
+                              ],
+                            ),
+                            //New estimate load +-8 kilo
+                            Visibility(
+                              visible: bShowKiloLoadDisplayVar,
+                              child: Container(
+                                padding: EdgeInsets.all(0),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Container(
+                                      padding: EdgeInsets.only(
+                                          left: 3, bottom: 0, top: 0, right: 3),
+                                      decoration: BoxDecoration(
+                                          color: Colors.amber[200],
+                                          borderRadius: const BorderRadius.only(
+                                              topLeft: Radius.circular(20),
+                                              bottomLeft: Radius.circular(20))),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.end,
+                                        children: [
+                                          IconButton(
+                                            onPressed: () {
+                                              if (gjobsOnQueueModel
+                                                      .initialKilo <
+                                                  8) {
+                                                gjobsOnQueueModel.initialKilo =
+                                                    8;
+                                                gjobsOnQueueModel.initialPrice =
+                                                    (gjobsOnQueueModel
+                                                                .initialKilo ~/
+                                                            8) *
+                                                        iPriceDivider(
+                                                            gjobsOnQueueModel
+                                                                .regular);
+                                                gjobsOnQueueModel.initialLoad =
+                                                    (gjobsOnQueueModel
+                                                            .initialKilo ~/
+                                                        8);
+                                              } else {
+                                                if (gjobsOnQueueModel
+                                                            .initialKilo %
+                                                        8 !=
+                                                    0) {
+                                                  gjobsOnQueueModel
+                                                          .initialKilo =
+                                                      gjobsOnQueueModel
+                                                              .initialKilo -
+                                                          (gjobsOnQueueModel
+                                                                  .initialKilo %
+                                                              8);
+                                                } else {
+                                                  gjobsOnQueueModel
+                                                          .initialKilo =
+                                                      gjobsOnQueueModel
+                                                              .initialKilo -
+                                                          8;
+                                                }
+
+                                                gjobsOnQueueModel.initialPrice =
+                                                    (gjobsOnQueueModel
+                                                                .initialKilo ~/
+                                                            8) *
+                                                        iPriceDivider(
+                                                            gjobsOnQueueModel
+                                                                .regular);
+
+                                                gjobsOnQueueModel.initialLoad =
+                                                    (gjobsOnQueueModel
+                                                            .initialKilo ~/
+                                                        8);
+                                              }
+                                              setState(() {
+                                                gjobsOnQueueModel.initialKilo;
+                                                gjobsOnQueueModel.initialLoad;
+                                                gjobsOnQueueModel.initialPrice;
+                                              });
+                                            },
+                                            icon: const Icon(
+                                                Icons.remove_circle_outlined),
+                                            color: Colors.blueAccent,
+                                          ),
+                                          Text("-8 kg"),
+                                        ],
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      width: 3,
+                                    ),
+                                    Container(
+                                      padding: EdgeInsets.only(
+                                          left: 3, bottom: 0, top: 0, right: 3),
+                                      decoration: BoxDecoration(
+                                          color: Colors.amber[200],
+                                          borderRadius: BorderRadius.only(
+                                              topRight: Radius.circular(20),
+                                              bottomRight:
+                                                  Radius.circular(20))),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.end,
+                                        children: [
+                                          Text("+8 kg"),
+                                          IconButton(
+                                            onPressed: () {
+                                              if (gjobsOnQueueModel
+                                                          .initialKilo %
+                                                      8 !=
+                                                  0) {
+                                                gjobsOnQueueModel.initialKilo =
+                                                    gjobsOnQueueModel
+                                                            .initialKilo +
+                                                        8 -
+                                                        (gjobsOnQueueModel
+                                                                .initialKilo %
+                                                            8);
+                                              } else {
+                                                gjobsOnQueueModel.initialKilo =
+                                                    gjobsOnQueueModel
+                                                            .initialKilo +
+                                                        8;
+                                              }
+
+                                              gjobsOnQueueModel.initialPrice =
+                                                  (gjobsOnQueueModel
+                                                              .initialKilo ~/
+                                                          8) *
+                                                      (iPriceDivider(
+                                                          gjobsOnQueueModel
+                                                              .regular));
+                                              gjobsOnQueueModel.initialLoad =
+                                                  gjobsOnQueueModel
+                                                          .initialKilo ~/
+                                                      8;
+                                              setState(() {
+                                                gjobsOnQueueModel.initialKilo;
+                                                gjobsOnQueueModel.initialLoad;
+                                                gjobsOnQueueModel.initialPrice;
+                                              });
+                                            },
+                                            icon: const Icon(Icons.add_circle),
+                                            color: Colors.blueAccent,
+                                          ),
+                                        ],
+                                      ),
+                                    )
+                                  ],
+                                ),
+                              ),
+                            ),
+                            //New Estimate Load display
+                            Visibility(
+                              visible: bShowKiloLoadDisplayVar,
+                              child: Container(
+                                padding: EdgeInsets.all(3),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Container(
+                                      padding:
+                                          EdgeInsets.only(left: 10, right: 10),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text("Weight:"),
+                                          Text(
+                                              "${kiloDisplay(gjobsOnQueueModel.initialKilo)} kilo"),
+                                        ],
+                                      ),
+                                    ),
+                                    Container(
+                                      padding:
+                                          EdgeInsets.only(left: 10, right: 10),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text("Load:"),
+                                          Text(
+                                              "${gjobsOnQueueModel.initialKilo}"),
+                                        ],
+                                      ),
+                                    ),
+                                    Container(
+                                      padding:
+                                          EdgeInsets.only(left: 10, right: 10),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text("Load Price:"),
+                                          Text(
+                                              "${autoPriceDisplay(gjobsOnQueueModel.initialPrice, gjobsOnQueueModel.regular)}.00"),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            //New Estimate Load (+- 1 kilo)
+                            Visibility(
+                              visible: bShowKiloLoadDisplayVar,
+                              child: Container(
+                                padding: EdgeInsets.all(0.0),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Container(
+                                      padding: EdgeInsets.only(
+                                          left: 3, bottom: 0, top: 0, right: 3),
+                                      decoration: BoxDecoration(
+                                          color: Colors.amber[200],
+                                          borderRadius: const BorderRadius.only(
+                                              topLeft: Radius.circular(20),
+                                              bottomLeft: Radius.circular(20))),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          IconButton(
+                                            onPressed: () {
+                                              if (gjobsOnQueueModel
+                                                      .initialKilo >
+                                                  8) {
+                                                if (gjobsOnQueueModel
+                                                            .initialKilo %
+                                                        8 ==
+                                                    1) {
+                                                  gjobsOnQueueModel
+                                                          .initialPrice =
+                                                      gjobsOnQueueModel
+                                                              .initialPrice -
+                                                          (gjobsOnQueueModel
+                                                                  .regular
+                                                              ? 25
+                                                              : 25); //8-9kilo 25
+
+                                                  gjobsOnQueueModel
+                                                          .initialLoad =
+                                                      gjobsOnQueueModel
+                                                              .initialLoad -
+                                                          1;
+                                                } else if (gjobsOnQueueModel
+                                                            .initialKilo %
+                                                        8 ==
+                                                    2) {
+                                                  gjobsOnQueueModel
+                                                          .initialPrice =
+                                                      gjobsOnQueueModel
+                                                              .initialPrice -
+                                                          (gjobsOnQueueModel
+                                                                  .regular
+                                                              ? 45
+                                                              : 50); //9-10kilo 45
+                                                } else if (gjobsOnQueueModel
+                                                            .initialKilo %
+                                                        8 ==
+                                                    3) {
+                                                  gjobsOnQueueModel
+                                                          .initialPrice =
+                                                      gjobsOnQueueModel
+                                                              .initialPrice -
+                                                          (gjobsOnQueueModel
+                                                                  .regular
+                                                              ? 25
+                                                              : 25); //10-11kilo 25
+                                                } else if (gjobsOnQueueModel
+                                                            .initialKilo %
+                                                        8 ==
+                                                    4) {
+                                                  gjobsOnQueueModel
+                                                          .initialPrice =
+                                                      gjobsOnQueueModel
+                                                              .initialPrice -
+                                                          (gjobsOnQueueModel
+                                                                  .regular
+                                                              ? 25
+                                                              : 25); //11-12kilo
+                                                } else if (gjobsOnQueueModel
+                                                            .initialKilo %
+                                                        8 ==
+                                                    5) {
+                                                  gjobsOnQueueModel
+                                                          .initialPrice =
+                                                      gjobsOnQueueModel
+                                                              .initialPrice -
+                                                          (gjobsOnQueueModel
+                                                                  .regular
+                                                              ? 25
+                                                              : 0); //12-13kilo
+                                                } else if (gjobsOnQueueModel
+                                                            .initialKilo %
+                                                        8 ==
+                                                    6) {
+                                                  gjobsOnQueueModel
+                                                          .initialPrice =
+                                                      gjobsOnQueueModel
+                                                              .initialPrice -
+                                                          (gjobsOnQueueModel
+                                                                  .regular
+                                                              ? 10
+                                                              : 0); //13-16kilo
+                                                }
+
+                                                gjobsOnQueueModel.initialKilo =
+                                                    gjobsOnQueueModel
+                                                            .initialKilo -
+                                                        1;
+                                              }
+                                              setState(() {
+                                                gjobsOnQueueModel.initialKilo;
+                                                gjobsOnQueueModel.initialLoad;
+                                                gjobsOnQueueModel.initialPrice;
+                                              });
+                                            },
+                                            icon: const Icon(
+                                                Icons.remove_circle_outlined),
+                                            color: Colors.blueAccent,
+                                          ),
+                                          Text("-1 kg"),
+                                        ],
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      width: 3,
+                                    ),
+                                    Container(
+                                      padding: EdgeInsets.only(
+                                          left: 3, bottom: 0, top: 0, right: 3),
+                                      decoration: BoxDecoration(
+                                          color: Colors.amber[200],
+                                          borderRadius: BorderRadius.only(
+                                              topRight: Radius.circular(20),
+                                              bottomRight:
+                                                  Radius.circular(20))),
+                                      child: Row(
+                                        children: [
+                                          Text("+1 kg"),
+                                          IconButton(
+                                            onPressed: () {
+                                              if (gjobsOnQueueModel
+                                                      .initialKilo >=
+                                                  8) {
+                                                gjobsOnQueueModel.initialKilo =
+                                                    gjobsOnQueueModel
+                                                            .initialKilo +
+                                                        1;
+                                              }
+
+                                              if (gjobsOnQueueModel
+                                                          .initialKilo %
+                                                      8 ==
+                                                  1) {
+                                                gjobsOnQueueModel.initialPrice =
+                                                    gjobsOnQueueModel
+                                                            .initialPrice +
+                                                        (gjobsOnQueueModel
+                                                                .regular
+                                                            ? 25
+                                                            : 25); //8-9kilo
+                                              } else if (gjobsOnQueueModel
+                                                          .initialKilo %
+                                                      8 ==
+                                                  2) {
+                                                gjobsOnQueueModel.initialPrice =
+                                                    gjobsOnQueueModel
+                                                            .initialPrice +
+                                                        (gjobsOnQueueModel
+                                                                .regular
+                                                            ? 45
+                                                            : 50); //9-10kilo
+                                                setState(() => gjobsOnQueueModel
+                                                        .initialLoad =
+                                                    gjobsOnQueueModel
+                                                            .initialLoad +
+                                                        1);
+                                              } else if (gjobsOnQueueModel
+                                                          .initialKilo %
+                                                      8 ==
+                                                  3) {
+                                                gjobsOnQueueModel.initialPrice =
+                                                    gjobsOnQueueModel
+                                                            .initialPrice +
+                                                        (gjobsOnQueueModel
+                                                                .regular
+                                                            ? 25
+                                                            : 25); //10-11kilo
+                                              } else if (gjobsOnQueueModel
+                                                          .initialKilo %
+                                                      8 ==
+                                                  4) {
+                                                gjobsOnQueueModel.initialPrice =
+                                                    gjobsOnQueueModel
+                                                            .initialPrice +
+                                                        (gjobsOnQueueModel
+                                                                .regular
+                                                            ? 25
+                                                            : 25); //11-12kilo
+                                              } else if (gjobsOnQueueModel
+                                                          .initialKilo %
+                                                      8 ==
+                                                  5) {
+                                                gjobsOnQueueModel.initialPrice =
+                                                    gjobsOnQueueModel
+                                                            .initialPrice +
+                                                        (gjobsOnQueueModel
+                                                                .regular
+                                                            ? 25
+                                                            : 0); //12-13kilo
+                                              } else {
+                                                if (gjobsOnQueueModel
+                                                            .initialPrice %
+                                                        (iPriceDivider(
+                                                            gjobsOnQueueModel
+                                                                .regular)) !=
+                                                    0) {
+                                                  gjobsOnQueueModel
+                                                          .initialPrice =
+                                                      gjobsOnQueueModel
+                                                              .initialPrice +
+                                                          (gjobsOnQueueModel
+                                                                  .regular
+                                                              ? 10
+                                                              : 0); //13-16kilo
+                                                }
+                                              }
+
+                                              setState(() {
+                                                gjobsOnQueueModel.initialKilo;
+                                                gjobsOnQueueModel.initialLoad;
+                                                gjobsOnQueueModel.initialPrice;
+                                              });
+                                            },
+                                            icon: const Icon(Icons.add_circle),
+                                            color: Colors.blueAccent,
+                                          ),
+                                        ],
+                                      ),
+                                    )
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      //Total Price
+                      SizedBox(
+                        height: 5,
+                      ),
+                      Container(
+                        decoration: containerTotalPriceBoxDecoration(),
+                        padding: EdgeInsets.only(left: 10, right: 10),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              "Total Price:",
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            Text(
+                              "Php ${gjobsOnQueueModel.initialPrice + gjobsOnQueueModel.initialOthersPrice}.00",
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
+                      ),
+                      //Add On
+                      SizedBox(
+                        height: 5,
+                      ),
+                      Container(
+                        decoration: containerSayoSabonBoxDecoration(),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            Column(
+                              children: [
+                                Text(
+                                  "Add On",
+                                  style: TextStyle(fontSize: 10),
+                                ),
+                                Checkbox(
+                                    value: gjobsOnQueueModel.addOns,
+                                    onChanged: (val) {
+                                      if (listAddOnItems.isNotEmpty) {
+                                        if (!val!) {
+                                          listAddOnItems.clear();
+                                          gjobsOnQueueModel.initialOthersPrice =
+                                              0;
+                                          resetAddOn();
+                                          //pop box
+                                          //Navigator.pop(context);
+                                          // messageResultNew(
+                                          //     "Uncheck will delete add on?");
+                                        }
+                                      }
+
+                                      setState(
+                                        () {
+                                          gjobsOnQueueModel.addOns = val!;
+                                        },
+                                      );
+                                    }),
+                                //checkboxes add on
+                                Visibility(
+                                  visible: gjobsOnQueueModel.addOns,
+                                  child: Container(
+                                    padding: EdgeInsets.all(1.0),
+                                    child: Row(
+                                      children: [
+                                        Column(
+                                          children: [
+                                            Text(
+                                              "Det",
+                                              style: TextStyle(fontSize: 10),
+                                            ),
+                                            Checkbox(
+                                                value: bDetAddOnVar,
+                                                onChanged: (val) {
+                                                  resetAddOn();
+                                                  setState(
+                                                    () {
+                                                      bDetAddOnVar = val!;
+                                                    },
+                                                  );
+                                                })
+                                          ],
+                                        ),
+                                        Column(
+                                          children: [
+                                            Text(
+                                              "Fab",
+                                              style: TextStyle(fontSize: 10),
+                                            ),
+                                            Checkbox(
+                                                value: bFabAddOnVar,
+                                                onChanged: (val) {
+                                                  resetAddOn();
+                                                  setState(
+                                                    () {
+                                                      bFabAddOnVar = val!;
+                                                    },
+                                                  );
+                                                })
+                                          ],
+                                        ),
+                                        Column(
+                                          children: [
+                                            Text(
+                                              "Ble",
+                                              style: TextStyle(fontSize: 10),
+                                            ),
+                                            Checkbox(
+                                                value: bBleAddOnVar,
+                                                onChanged: (val) {
+                                                  resetAddOn();
+                                                  setState(
+                                                    () {
+                                                      bBleAddOnVar = val!;
+                                                    },
+                                                  );
+                                                })
+                                          ],
+                                        ),
+                                        Column(
+                                          children: [
+                                            Text(
+                                              "Oth",
+                                              style: TextStyle(fontSize: 10),
+                                            ),
+                                            Checkbox(
+                                                value: bOthAddOnVar,
+                                                onChanged: (val) {
+                                                  resetAddOn();
+                                                  setState(
+                                                    () {
+                                                      bOthAddOnVar = val!;
+                                                    },
+                                                  );
+                                                })
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                //dropdown det
+                                // addOnDropDown(
+                                //     bDetAddOnVar, selectedDetVar, listDetItems),
+                                Visibility(
+                                  visible: bDetAddOnVar,
+                                  child: Container(
+                                    padding: EdgeInsets.all(1.0),
+                                    child: Row(
+                                      children: [
+                                        DropdownButton<OtherItemModel>(
+                                          value: selectedDetVar,
+                                          icon: Icon(Icons.arrow_downward),
+                                          iconSize: 24,
+                                          elevation: 16,
+                                          style: TextStyle(
+                                              color: Colors.purple[700]),
+                                          underline: Container(
+                                            height: 2,
+                                            color: Colors.purple[700],
+                                          ),
+                                          items: listDetItems
+                                              .map((OtherItemModel map) {
+                                            return DropdownMenuItem<
+                                                    OtherItemModel>(
+                                                value: map,
+                                                child: Text(
+                                                    "${map.itemGroup}-${map.itemName}(${map.itemPrice}Php)"));
+                                          }).toList(),
+                                          onChanged: (newItemModel) {
+                                            setState(
+                                              () {
+                                                updateSelectedVar(
+                                                    newItemModel!);
+                                              },
+                                            );
+                                          },
+                                        ),
+                                        IconButton(
+                                          onPressed: () {
+                                            setState(
+                                              () {
+                                                listAddOnItems
+                                                    .add(selectedDetVar);
+                                                gjobsOnQueueModel
+                                                        .initialOthersPrice =
+                                                    gjobsOnQueueModel
+                                                            .initialOthersPrice +
+                                                        selectedDetVar
+                                                            .itemPrice;
+                                              },
+                                            );
+                                          },
+                                          icon: const Icon(Icons.add_circle),
+                                          color: Colors.blueAccent,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                //dropdown fab
+                                // addOnDropDown(
+                                //     bFabAddOnVar, selectedFabVar, listFabItems),
+                                Visibility(
+                                  visible: bFabAddOnVar,
+                                  child: Container(
+                                    padding: EdgeInsets.all(1.0),
+                                    child: Row(
+                                      children: [
+                                        DropdownButton<OtherItemModel>(
+                                          value: selectedFabVar,
+                                          icon: Icon(Icons.arrow_downward),
+                                          iconSize: 24,
+                                          elevation: 16,
+                                          style: TextStyle(
+                                              color: Colors.purple[700]),
+                                          underline: Container(
+                                            height: 2,
+                                            color: Colors.purple[700],
+                                          ),
+                                          items: listFabItems
+                                              .map((OtherItemModel map) {
+                                            return DropdownMenuItem<
+                                                    OtherItemModel>(
+                                                value: map,
+                                                child: Text(
+                                                    "${map.itemGroup}-${map.itemName}(${map.itemPrice}Php)"));
+                                          }).toList(),
+                                          onChanged: (newItemModel) {
+                                            setState(
+                                              () {
+                                                updateSelectedVar(
+                                                    newItemModel!);
+                                              },
+                                            );
+                                          },
+                                        ),
+                                        IconButton(
+                                          onPressed: () {
+                                            setState(
+                                              () {
+                                                listAddOnItems
+                                                    .add(selectedFabVar);
+                                                gjobsOnQueueModel
+                                                        .initialOthersPrice =
+                                                    gjobsOnQueueModel
+                                                            .initialOthersPrice +
+                                                        selectedFabVar
+                                                            .itemPrice;
+                                              },
+                                            );
+                                          },
+                                          icon: const Icon(Icons.add_circle),
+                                          color: Colors.blueAccent,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                //dropdown ble
+                                // addOnDropDown(
+                                //     bBleAddOnVar, selectedBleVar, listBleItems),
+                                Visibility(
+                                  visible: bBleAddOnVar,
+                                  child: Container(
+                                    padding: EdgeInsets.all(1.0),
+                                    child: Row(
+                                      children: [
+                                        DropdownButton<OtherItemModel>(
+                                          value: selectedBleVar,
+                                          icon: Icon(Icons.arrow_downward),
+                                          iconSize: 24,
+                                          elevation: 16,
+                                          style: TextStyle(
+                                              color: Colors.purple[700]),
+                                          underline: Container(
+                                            height: 2,
+                                            color: Colors.purple[700],
+                                          ),
+                                          items: listBleItems
+                                              .map((OtherItemModel map) {
+                                            return DropdownMenuItem<
+                                                    OtherItemModel>(
+                                                value: map,
+                                                child: Text(
+                                                    "${map.itemGroup}-${map.itemName}(${map.itemPrice}Php)"));
+                                          }).toList(),
+                                          onChanged: (newItemModel) {
+                                            setState(
+                                              () {
+                                                updateSelectedVar(
+                                                    newItemModel!);
+                                              },
+                                            );
+                                          },
+                                        ),
+                                        IconButton(
+                                          onPressed: () {
+                                            setState(
+                                              () {
+                                                listAddOnItems
+                                                    .add(selectedBleVar);
+                                                gjobsOnQueueModel
+                                                        .initialOthersPrice =
+                                                    gjobsOnQueueModel
+                                                            .initialOthersPrice +
+                                                        selectedBleVar
+                                                            .itemPrice;
+                                              },
+                                            );
+                                          },
+                                          icon: const Icon(Icons.add_circle),
+                                          color: Colors.blueAccent,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                // dropdown oth
+                                // addOnDropDown(
+                                //     bOthAddOnVar, selectedOthVar, listOthItems),
+                                Visibility(
+                                  visible: bOthAddOnVar,
+                                  child: Container(
+                                    padding: EdgeInsets.all(1.0),
+                                    child: Row(
+                                      children: [
+                                        DropdownButton<OtherItemModel>(
+                                          value: selectedOthVar,
+                                          icon: Icon(Icons.arrow_downward),
+                                          iconSize: 24,
+                                          elevation: 16,
+                                          style: TextStyle(
+                                              color: Colors.purple[700]),
+                                          underline: Container(
+                                            height: 2,
+                                            color: Colors.purple[700],
+                                          ),
+                                          items: listOthItems
+                                              .map((OtherItemModel map) {
+                                            return DropdownMenuItem<
+                                                    OtherItemModel>(
+                                                value: map,
+                                                child: Text(
+                                                    "${map.itemGroup}-${map.itemName}(${map.itemPrice}Php)"));
+                                          }).toList(),
+                                          onChanged: (newItemModel) {
+                                            setState(
+                                              () {
+                                                updateSelectedVar(
+                                                    newItemModel!);
+                                              },
+                                            );
+                                          },
+                                        ),
+                                        IconButton(
+                                          onPressed: () {
+                                            setState(
+                                              () {
+                                                listAddOnItems
+                                                    .add(selectedOthVar);
+                                                gjobsOnQueueModel
+                                                        .initialOthersPrice =
+                                                    gjobsOnQueueModel
+                                                            .initialOthersPrice +
+                                                        selectedOthVar
+                                                            .itemPrice;
+                                              },
+                                            );
+                                          },
+                                          icon: const Icon(Icons.add_circle),
+                                          color: Colors.blueAccent,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                _readAddedData(listAddOnItems),
+                                //_dtAddedOthers(addOnItems),
+                                //_addedOn(addOnItems),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      //Basket
+                      SizedBox(
+                        height: 5,
+                      ),
+                      Container(
+                        padding: EdgeInsets.all(1.0),
+                        decoration: containerQueBoxDecoration(),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            IconButton(
+                              onPressed: () {
+                                setState(() => gjobsOnQueueModel.basket--);
+                              },
+                              icon: const Icon(Icons.remove_circle_outlined),
+                              color: Colors.blueAccent,
+                            ),
+                            Text("Basket: ${gjobsOnQueueModel.basket}"),
+                            IconButton(
+                              onPressed: () {
+                                setState(() => gjobsOnQueueModel.basket++);
+                              },
+                              icon: const Icon(Icons.add_circle),
+                              color: Colors.blueAccent,
+                            ),
+                          ],
+                        ),
+                      ),
+                      //Bag
+                      SizedBox(
+                        height: 5,
+                      ),
+                      Container(
+                        padding: EdgeInsets.all(1.0),
+                        decoration: containerQueBoxDecoration(),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            IconButton(
+                              onPressed: () {
+                                setState(() => gjobsOnQueueModel.bag--);
+                              },
+                              icon: const Icon(Icons.remove_circle_outlined),
+                              color: Colors.blueAccent,
+                            ),
+                            Text("Bag: ${gjobsOnQueueModel.bag}"),
+                            IconButton(
+                              onPressed: () {
+                                setState(() => gjobsOnQueueModel.bag++);
+                              },
+                              icon: const Icon(Icons.add_circle),
+                              color: Colors.blueAccent,
+                            ),
+                          ],
+                        ),
+                      ),
+                      //Payment New
+                      SizedBox(
+                        height: 5,
+                      ),
+                      Container(
+                        decoration: containerQueBoxDecoration(),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            Column(
+                              children: [
+                                Text(
+                                  "Unpaid",
+                                  style: TextStyle(fontSize: 10),
+                                ),
+                                Checkbox(
+                                    value: gjobsOnQueueModel.unpaid,
+                                    onChanged: (val) {
+                                      resetPaymentQueueBool(gjobsOnQueueModel);
+                                      if (val!) {
+                                        setState(
+                                          () {
+                                            gjobsOnQueueModel.unpaid = val;
+                                          },
+                                        );
+                                      }
+                                    })
+                              ],
+                            ),
+                            Column(
+                              children: [
+                                Text(
+                                  "PaidCash",
+                                  style: TextStyle(fontSize: 10),
+                                ),
+                                Checkbox(
+                                    value: gjobsOnQueueModel.paidcash,
+                                    onChanged: (val) {
+                                      resetPaymentQueueBool(gjobsOnQueueModel);
+                                      if (val!) {
+                                        setState(
+                                          () {
+                                            gjobsOnQueueModel.paidcash = val;
+                                          },
+                                        );
+                                      }
+                                    })
+                              ],
+                            ),
+                            Column(
+                              children: [
+                                Text(
+                                  "PaidGcash",
+                                  style: TextStyle(fontSize: 10),
+                                ),
+                                Checkbox(
+                                    value: gjobsOnQueueModel.paidgcash,
+                                    onChanged: (val) {
+                                      resetPaymentQueueBool(gjobsOnQueueModel);
+                                      if (val!) {
+                                        setState(
+                                          () {
+                                            gjobsOnQueueModel.paidgcash = val;
+                                          },
+                                        );
+                                      }
+                                    })
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      //No Fold
+                      SizedBox(
+                        height: 5,
+                      ),
+                      Container(
+                        alignment: Alignment.center,
+                        padding: EdgeInsets.all(1.0),
+                        decoration: containerQueBoxDecoration(),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text("No Fold"),
+                            Switch.adaptive(
+                              value: gjobsOnQueueModel.fold,
+                              onChanged: (bool value) {
+                                setState(() {
+                                  gjobsOnQueueModel.fold = value;
+                                });
+                              },
+                            ),
+                            Text("Fold"),
+                          ],
+                        ),
+                      ),
+                      //Dont mix
+                      SizedBox(
+                        height: 5,
+                      ),
+                      Container(
+                        alignment: Alignment.center,
+                        padding: EdgeInsets.all(1.0),
+                        decoration: containerQueBoxDecoration(),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text("Dont Mix"),
+                            Switch.adaptive(
+                              value: gjobsOnQueueModel.mix,
+                              onChanged: (bool value) {
+                                setState(() {
+                                  gjobsOnQueueModel.mix = value;
+                                });
+                              },
+                            ),
+                            Text("Mix"),
+                          ],
+                        ),
+                      ),
+                      SizedBox(
+                        height: 5,
+                      ),
+                      //Remarks
+                      Container(
+                        padding: EdgeInsets.all(1.0),
+                        decoration: containerQueBoxDecoration(),
+                        child: TextFormField(
+                          textCapitalization: TextCapitalization.words,
+                          textAlign: TextAlign.start,
+                          controller: remarksControllerVar,
+                          decoration: InputDecoration(
+                              labelText: 'Remarks', hintText: 'Anu kakaiba'),
+                          validator: (val) {},
+                        ),
+                      ),
+                      SizedBox(
+                        height: 5,
+                      ),
+                      //Need On Date +
+                      Container(
+                        padding: EdgeInsets.all(1.0),
+                        decoration: containerQueBoxDecoration(),
+                        child: Column(
+                          children: [
+                            Container(
+                              padding: EdgeInsets.all(1.0),
+                              decoration: BoxDecoration(
+                                  border: Border.all(
+                                      color: Color.fromARGB(0, 212, 212, 212),
+                                      width: 0)),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text("-1 day"),
+                                  IconButton(
+                                    onPressed: () {
+                                      setState(() => dNeedOnVar =
+                                          dNeedOnVar.add(Duration(days: -1)));
+                                    },
+                                    icon: const Icon(
+                                        Icons.remove_circle_outlined),
+                                    color: Colors.blueAccent,
+                                  ),
+                                  IconButton(
+                                    onPressed: () {
+                                      setState(() => dNeedOnVar =
+                                          dNeedOnVar.add(Duration(days: 1)));
+                                    },
+                                    icon: const Icon(Icons.add_circle),
+                                    color: Colors.blueAccent,
+                                  ),
+                                  Text("+1 day"),
+                                ],
+                              ),
+                            ),
+                            //Need On date?
+                            Container(
+                              padding: EdgeInsets.all(1.0),
+                              decoration: BoxDecoration(
+                                  border: Border.all(
+                                      color: Color.fromARGB(0, 212, 212, 212),
+                                      width: 0)),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    "Need On: ${dNeedOnVar.toString().substring(5, 14)}00",
+                                  ),
+                                ],
+                              ),
+                            ),
+                            //Need On Date +
+                            Container(
+                              padding: EdgeInsets.all(1.0),
+                              decoration: BoxDecoration(
+                                  border: Border.all(
+                                      color: Color.fromARGB(0, 212, 212, 212),
+                                      width: 0)),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text("-1 hr"),
+                                  IconButton(
+                                    onPressed: () {
+                                      setState(() => dNeedOnVar =
+                                          dNeedOnVar.add(Duration(hours: -1)));
+                                    },
+                                    icon:
+                                        const Icon(Icons.remove_circle_outline),
+                                    color: Colors.blueAccent,
+                                  ),
+                                  IconButton(
+                                    onPressed: () {
+                                      setState(() => dNeedOnVar =
+                                          dNeedOnVar.add(Duration(hours: 1)));
+                                    },
+                                    icon: const Icon(Icons.add_circle_outline),
+                                    color: Colors.blueAccent,
+                                  ),
+                                  Text("+1 hr"),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(
+                        height: 5,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            actions: [
+              //cancel button
+              _cancelButton(),
+
+              //save button
+              //_createNewRecord(),
+
+              //save button new
+              _createNewRecordJson(),
+            ],
+          );
+        });
+      },
     );
   }
 
@@ -1042,7 +1455,8 @@ class _MyQueueState extends State<MyQueue> {
                 content: Text(
                     'Cannot save, please add name in loyalty records first.')),
           );
-        } else if (_formKey.currentState!.validate()) {
+          // } else if (_formKey.currentState!.validate()) {
+        } else if (true) {
           // If the form is valid, display a snackbar. In the real world,
           // you'd often call a server or save the information in a database.
           ScaffoldMessenger.of(context).showSnackBar(
@@ -1051,38 +1465,67 @@ class _MyQueueState extends State<MyQueue> {
 
           //pop box
           Navigator.pop(context);
-          insertDataJobsOnQueueJson(JobsOnQueueModel(
-              dateQ: Timestamp.now(),
-              createdBy: _sCreatedBy,
-              customerId: autocompleteSelected.customerId,
-              initialKilo: iInitialKiloVar,
-              initialLoad: iInitialLoadVar,
-              initialPrice: iInitialPriceVar,
-              initialOthersPrice: iInitialOthersPriceVar,
-              finalKilo: 0,
-              finalLoad: 0,
-              finalPrice: 0,
-              finalOthersPrice: 0,
-              queueStat: (bRiderPickupVar
-                  ? mapQueueStat[riderPickup].toString()
-                  : mapQueueStat[forSorting].toString()),
-              paymentStat: (bUnpaidVar
-                  ? mapPaymentStat[unpaid].toString()
-                  : (bPaidCashVar
-                      ? mapPaymentStat[paidCash].toString()
-                      : (bPaidGCashVar
-                          ? mapPaymentStat[paidGCash].toString()
-                          : mapPaymentStat[waitGCash].toString()))),
-              paymentReceivedBy: (bUnpaidVar ? "" : _sCreatedBy),
-              paidD: (bUnpaidVar
-                  ? Timestamp.fromDate(DateTime(2000))
-                  : Timestamp.now()),
-              needOn: tNeedOnVar,
-              fold: bFoldVar,
-              mix: bMixVar,
-              basket: iBasketVar,
-              bag: iBagVar,
-              remarks: remarksControllerVar.text));
+          gjobsOnQueueModel.dateQ = Timestamp.now();
+          gjobsOnQueueModel.customerId = autocompleteSelected.customerId;
+          //gjobsOnQueueModel.initialOthersPrice = gjobsOnQueueModel.initialOthersPrice;
+          gjobsOnQueueModel.finalKilo = 0;
+          gjobsOnQueueModel.finalLoad = 0;
+          gjobsOnQueueModel.finalPrice = 0;
+          gjobsOnQueueModel.finalOthersPrice = 0;
+          /*()
+          gjobsOnQueueModel.queueStat = (bRiderPickupVar
+              ? mapQueueStat[riderPickup].toString()
+              : mapQueueStat[forSorting].toString());
+              
+          gjobsOnQueueModel.paymentStat = (bUnpaidVar
+              ? mapPaymentStat[unpaid].toString()
+              : (bPaidCashVar
+                  ? mapPaymentStat[paidCash].toString()
+                  : (bPaidGCashVar
+                      ? mapPaymentStat[paidGCash].toString()
+                      : mapPaymentStat[waitGCash].toString())));
+                      */
+          gjobsOnQueueModel.paymentReceivedBy =
+              (gjobsOnQueueModel.unpaid ? "" : _sEmpId);
+          gjobsOnQueueModel.paidD = (gjobsOnQueueModel.unpaid
+              ? Timestamp.fromDate(DateTime(2000))
+              : Timestamp.now());
+          gjobsOnQueueModel.remarks = remarksControllerVar.text;
+
+          insertDataJobsOnQueueJson(gjobsOnQueueModel);
+
+          // insertDataJobsOnQueueJson(JobsOnQueueModel(
+          //     dateQ: Timestamp.now(),
+          //     createdBy: _sEmpId,
+          //     customerId: autocompleteSelected.customerId,
+          //     initialKilo: iInitialKiloVar,
+          //     initialLoad: iInitialLoadVar,
+          //     initialPrice: iInitialPriceVar,
+          //     initialOthersPrice: iInitialOthersPriceVar,
+          //     finalKilo: 0,
+          //     finalLoad: 0,
+          //     finalPrice: 0,
+          //     finalOthersPrice: 0,
+          //     queueStat: (bRiderPickupVar
+          //         ? mapQueueStat[riderPickup].toString()
+          //         : mapQueueStat[forSorting].toString()),
+          //     paymentStat: (bUnpaidVar
+          //         ? mapPaymentStat[unpaid].toString()
+          //         : (bPaidCashVar
+          //             ? mapPaymentStat[paidCash].toString()
+          //             : (bPaidGCashVar
+          //                 ? mapPaymentStat[paidGCash].toString()
+          //                 : mapPaymentStat[waitGCash].toString()))),
+          //     paymentReceivedBy: (bUnpaidVar ? "" : _sEmpId),
+          //     paidD: (bUnpaidVar
+          //         ? Timestamp.fromDate(DateTime(2000))
+          //         : Timestamp.now()),
+          //     needOn: tNeedOnVar,
+          //     fold: bFoldVar,
+          //     mix: bMixVar,
+          //     basket: iBasketVar,
+          //     bag: iBagVar,
+          //     remarks: remarksControllerVar.text));
         }
       },
       color: cButtons,
@@ -1115,9 +1558,9 @@ class _MyQueueState extends State<MyQueue> {
                   onPressed: () {
                     Navigator.pop(context);
                     listAddOnItems.clear();
-                    iInitialOthersPriceVar = 0;
+                    gjobsOnQueueModel.initialOthersPrice = 0;
                     resetAddOn();
-                    showJobsOnQueueEntry();
+                    //showJobsOnQueueEntryJson();
                   },
                   color: cButtons,
                   child: const Text("Ok"),
@@ -1125,8 +1568,8 @@ class _MyQueueState extends State<MyQueue> {
                 MaterialButton(
                   onPressed: () {
                     Navigator.pop(context);
-                    bAddOnVar = true;
-                    showJobsOnQueueEntry();
+                    gjobsOnQueueModel.addOns = true;
+                    //showJobsOnQueueEntryJson();
                   },
                   color: cButtons,
                   child: const Text("Cancel"),
@@ -1141,20 +1584,20 @@ class _MyQueueState extends State<MyQueue> {
 
     databaseJobsOnQueue.addJobsOnQueue(jobsOnQueueModel, listAddOnItems);
 
-    _sCreatedBy = "";
-    iInitialKiloVar = 8;
-    iInitialLoadVar = 0;
-    iInitialPriceVar = 155;
-    iInitialOthersPriceVar = 0;
-    bRiderPickupVar = false;
-    bUnpaidVar = false;
-    bPaidCashVar = false;
-    bPaidGCashVar = false;
+    gjobsOnQueueModel.initialKilo = 8;
+    gjobsOnQueueModel.initialLoad = 1;
+    gjobsOnQueueModel.initialPrice = 155;
+    gjobsOnQueueModel.initialOthersPrice = 0;
+    gjobsOnQueueModel.riderPickup = false;
+    gjobsOnQueueModel.unpaid = true;
+    gjobsOnQueueModel.paidcash = false;
+    gjobsOnQueueModel.paidgcash = false;
     dNeedOnVar = DateTime.now();
-    bFoldVar = true;
-    bMixVar = true;
-    iBasketVar = 0;
-    iBagVar = 0;
+    gjobsOnQueueModel.fold = true;
+    gjobsOnQueueModel.mix = true;
+    gjobsOnQueueModel.basket = 0;
+    gjobsOnQueueModel.bag = 0;
+    remarksControllerVar.clear();
 
     //databaseJobsOnQueue.addJobsOnQueueSolo(jobsOnQueueModel);
   }
@@ -1171,8 +1614,10 @@ class _MyQueueState extends State<MyQueue> {
   }
 
   Visibility addOnDropDown(bool bDisplay, OtherItemModel selectedItemModel,
-      List<OtherItemModel> thisListOtherItemModel) {
-    print('size=' + thisListOtherItemModel.length.toString());
+      List<OtherItemModel> thisListItemModel) {
+    // print('size=' +
+    //     thisListItemModel.length.toString() +
+    //     thisListItemModel[0].itemName);
     return Visibility(
       visible: bDisplay,
       child: Container(
@@ -1181,6 +1626,7 @@ class _MyQueueState extends State<MyQueue> {
           children: [
             DropdownButton<OtherItemModel>(
               value: selectedItemModel,
+              //value: selectedDetVar,
               icon: Icon(Icons.arrow_downward),
               iconSize: 24,
               elevation: 16,
@@ -1189,33 +1635,36 @@ class _MyQueueState extends State<MyQueue> {
                 height: 2,
                 color: Colors.purple[700],
               ),
-              onChanged: (newItemModel) {
-                selectedItemModel = newItemModel!;
-              },
-              items: thisListOtherItemModel.map((OtherItemModel map) {
+              items: thisListItemModel.map((OtherItemModel map) {
                 return DropdownMenuItem<OtherItemModel>(
                     value: map,
                     child: Text(
                         "${map.itemGroup}-${map.itemName}(${map.itemPrice}Php)"));
               }).toList(),
+              onChanged: (newItemModel) {
+                setState(
+                  () {
+                    selectedItemModel = newItemModel!;
+                    updateSelectedVar(selectedItemModel);
+                  },
+                );
+                // Navigator.pop(context);
+                // showJobsOnQueueEntryJson();
+                // print("watata" +
+                //     selectedItemModel.itemName +
+                //     selectedDetVar.itemName);
+              },
             ),
             IconButton(
               onPressed: () {
                 Navigator.pop(context);
+                //listAddOnItems.add(selectedDetVar);
                 listAddOnItems.add(selectedItemModel);
-                //reset dropdowns
-                if (listDetItems.contains(selectedItemModel)) {
-                  selectedDetVar = selectedItemModel;
-                } else if (listFabItems.contains(selectedItemModel)) {
-                  selectedFabVar = selectedItemModel;
-                } else if (listBleItems.contains(selectedItemModel)) {
-                  selectedBleVar = selectedItemModel;
-                } else if (listOthItems.contains(selectedItemModel)) {
-                  selectedOthVar = selectedItemModel;
-                }
-                iInitialOthersPriceVar =
-                    iInitialOthersPriceVar + selectedItemModel.itemPrice;
-                showJobsOnQueueEntry();
+                gjobsOnQueueModel.initialOthersPrice =
+                    gjobsOnQueueModel.initialOthersPrice +
+                        // selectedDetVar.itemPrice;
+                        selectedItemModel.itemPrice;
+                showJobsOnQueueEntryJson();
               },
               icon: const Icon(Icons.add_circle),
               color: Colors.blueAccent,
@@ -1224,6 +1673,18 @@ class _MyQueueState extends State<MyQueue> {
         ),
       ),
     );
+  }
+
+  void updateSelectedVar(OtherItemModel selectedItemModel) {
+    if (listDetItems.contains(selectedItemModel)) {
+      selectedDetVar = selectedItemModel;
+    } else if (listFabItems.contains(selectedItemModel)) {
+      selectedFabVar = selectedItemModel;
+    } else if (listBleItems.contains(selectedItemModel)) {
+      selectedBleVar = selectedItemModel;
+    } else if (listOthItems.contains(selectedItemModel)) {
+      selectedOthVar = selectedItemModel;
+    }
   }
 
   Widget _readAddedData(List<OtherItemModel> listAddedOthers) {

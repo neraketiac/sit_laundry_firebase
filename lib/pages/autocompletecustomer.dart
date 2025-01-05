@@ -10,7 +10,6 @@ class AutoCompleteCustomer extends StatelessWidget {
   //late List<CustomerModel> _customerOptions;
   late TextEditingValue inputName;
   late TextFormField inputNameTFF;
-  TextEditingController customerController = TextEditingController();
   //  = <CustomerModel>[
   //   CustomerModel(
   //       customerId: 1,
@@ -54,7 +53,6 @@ class AutoCompleteCustomer extends StatelessWidget {
         autocompleteSelected = selectedModel;
         debugPrint(
             'You just selected ${_displayStringForOption(selectedModel)}');
-        debugPrint('Do something');
       },
     );
   }

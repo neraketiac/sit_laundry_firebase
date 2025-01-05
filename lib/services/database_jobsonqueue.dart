@@ -48,8 +48,7 @@ class DatabaseJobsOnQueue {
         );
   }
 
-  void updateJobsOnQueue(
-      String jobsOnQueueId, JobsOnQueueModel jobsOnQueueModel) {
-    _jobsOnQueueRef.doc(jobsOnQueueId).update(jobsOnQueueModel.toJson());
+  void updateJobsOnQueue(String docId, JobsOnQueueModel jobsOnQueueModel) {
+    _jobsOnQueueRef.doc(docId).update(jobsOnQueueModel.toJson());
   }
 }
