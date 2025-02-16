@@ -20,31 +20,31 @@ class DatabaseJobsOnQueue {
             fromFirestore: (snapshots, _) => JobsOnQueueModel.fromJson(
                   snapshots.data()!,
                 ),
-            toFirestore: (jobsOnQueueModel1, _) => jobsOnQueueModel1.toJson());
+            toFirestore: (jOQM, _) => jOQM.toJson());
   }
 
   Stream<QuerySnapshot> getJobsOnQueue() {
-    return _jobsOnQueueRef.snapshots();
+    return _jobsOnQueueRef.orderBy('A1_DateQ', descending: false).snapshots();
   }
 
-  void addJobsOnQueue(JobsOnQueueModel jobsOnQueueModel,
-      List<OtherItemModel> thisListAddOnItems) async {
+  void addJobsOnQueue(
+      JobsOnQueueModel jOQM, List<OtherItemModel> listAddOnItems) async {
     //String addJobsOnQueue(JobsOnQueueModel jobsOnQueue) {
 
     DatabaseOtherItems databaseOtherItems;
 
     _jobsOnQueueRef
-        .add(jobsOnQueueModel)
+        .add(jOQM)
         .then((value) => {
-              print("Insert Done.${jobsOnQueueModel.customerId}"),
+              print("Insert Done.${jOQM.customerId}"),
               databaseOtherItems = DatabaseOtherItems(value.id),
-              thisListAddOnItems.forEach((listOtherItemModel) {
-                databaseOtherItems.addOtherItems(listOtherItemModel);
+              listAddOnItems.forEach((addOnItem) {
+                databaseOtherItems.addOtherItems(addOnItem);
               }),
             })
         // ignore: invalid_return_type_for_catch_error
         .catchError(
-          (error) => print("Failed : $error ${jobsOnQueueModel.customerId}"),
+          (error) => print("Failed : $error ${jOQM.customerId}"),
         );
   }
 

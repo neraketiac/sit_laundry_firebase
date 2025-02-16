@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import 'package:laundry_firebase/models/jobsonqueuemodel.dart';
 import 'package:laundry_firebase/models/otheritemmodel.dart';
 import 'package:laundry_firebase/services/database_jobsonqueue.dart';
+import 'package:laundry_firebase/services/database_other_items.dart';
 //import 'package:laundry_firebase/variables/item_count_helper.dart';
 import 'package:laundry_firebase/variables/variables.dart';
 
@@ -127,7 +128,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                   const SizedBox(
                     height: 1,
                   ),
-                  _readDataJobsOnQueueJson(),
+                  _readDataJobsOnQueue(),
                 ]),
               ),
             ),
@@ -199,17 +200,17 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
   }
 
   //read JobsOnQueue
-  Widget _readDataJobsOnQueueJson() {
+  Widget _readDataJobsOnQueue() {
     DatabaseJobsOnQueue databaseJobsOnQueue = DatabaseJobsOnQueue();
     bool zebra = false;
     //read
     return StreamBuilder<QuerySnapshot>(
       stream: databaseJobsOnQueue.getJobsOnQueue(),
       builder: (context, snapshot) {
-        List jobsOnQueueModels = snapshot.data?.docs ?? [];
+        List listJOQM = snapshot.data?.docs ?? [];
         bHeader = true;
         List<TableRow> rowDatas = [];
-        if (jobsOnQueueModels.isNotEmpty) {
+        if (listJOQM.isNotEmpty) {
           //header
           if (bHeader) {
             const rowData = TableRow(
@@ -225,14 +226,10 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
             bHeader = false;
           }
 
-          jobsOnQueueModels.forEach((jobsOnQueueModelData) {
-            JobsOnQueueModel jobsOnQueueModel = jobsOnQueueModelData.data();
-            /*
-            _giFinalKilo = jobsOnQueueModel.finalKilo!;
-            _giFinalLoad = jobsOnQueueModel.finalLoad!;
-            _giFinalPrice = jobsOnQueueModel.finalPrice!;
-            */
-
+          listJOQM.forEach((jOQMData) {
+            JobsOnQueueModel jOQM = jOQMData.data();
+            // DatabaseOtherItems dbOI = DatabaseOtherItems(jOQMData.id);
+            //_readOtherItems(jOQMData.id);
             final rowData = TableRow(
                 decoration:
                     BoxDecoration(color: zebra ? Colors.black : Colors.black),
@@ -272,6 +269,9 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                           alterQueueMobile();
                           */
                           //alterQueueMobileJson(jobsOnQueueModel);
+
+                          showAlterJobsOnQueueVar(
+                              context, jOQMData.id.toString(), jOQM);
 /*
                           editAll(
                             jobsOnQueueModel,
@@ -300,18 +300,21 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                           );
                           */
                         },
-                        //Container display JobsOnQueue
-                        child: _conDisplayJson(
-                          false,
-                          jobsOnQueueModel,
-                        ),
-                        //child: Text("watata"),
+                        child: conDisplayVar(false, jOQM),
                       ),
                     ),
                   )
                 ]);
 
             rowDatas.add(rowData);
+
+            // final rowDataAddOn = TableRow(
+            //     decoration:
+            //         BoxDecoration(color: Color.fromARGB(255, 9, 194, 49)),
+            //     children: [
+            //       //Text(_readOtherItems(jOQMData.id) + "WATATa"),
+            //     ]);
+            // rowDatas.add(rowDataAddOn);
           });
         }
 
@@ -322,153 +325,32 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
     );
   }
 
-  //read JobsOnQueue
-  Widget _readDataJobsOnQueue(String streamName, BuildContext context) {
-    bool zebra = false;
-    //read
-    return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance
-          .collection('JobsOnQueue')
-          .orderBy('A1_DateQ', descending: true)
-          .snapshots(),
-      builder: (context, snapshot) {
-        bHeader = true;
-        List<TableRow> rowDatas = [];
-        if (snapshot.hasData) {
-          //header
-          if (bHeader) {
-            const rowData = TableRow(
-                decoration:
-                    BoxDecoration(color: Color.fromARGB(255, 9, 194, 49)),
-                children: [
-                  Text(
-                    "Jobs On Queue",
-                    style: TextStyle(fontSize: 10),
-                  ),
-                ]);
-            rowDatas.add(rowData);
-            bHeader = false;
-          }
+  //read OtherItems
+  Future<void> _readOtherItems(String id) async {
+    //String _readOtherItems(String id) {
+    late String asdf = "";
+    CollectionReference users = FirebaseFirestore.instance
+        .collection('JobsOnQueue')
+        .doc(id)
+        .collection('OtherItems');
 
-          //body
-          final buffRecords = snapshot.data?.docs.reversed.toList();
+    users.get().then((QuerySnapshot snapshot) {
+      for (var doc in snapshot.docs) {
+        asdf = asdf + doc['itemName'];
+      }
+      print("asdf=" + asdf);
+    }).catchError((error) => print("Failed to fetch users: $error"));
+  }
 
-          for (var buffRecord in buffRecords!) {
-            if (zebra) {
-              zebra = false;
-            } else {
-              zebra = true;
-            }
+  Future<List<OtherItemModel>> _readOtherItemsList(String id) async {
+    List<OtherItemModel> listOIM = [];
+    DatabaseOtherItems dbOI = DatabaseOtherItems(id);
 
-            //required initialize start
-            _gbWithFinalLoad = false;
-            try {
-              _giFinalKilo = buffRecord['B1_FinalKilo'];
-              _giFinalLoad = buffRecord['B2_FinalLoad'];
-              _gbWithFinalLoad = true;
-            } on Exception catch (exception) {
-            } catch (error) {}
+    //List listJOQM = snapshot.data?.docs ?? [];
 
-            _gbWithFinalPrice = false;
-            try {
-              _giFinalPrice = buffRecord['B3_FinalPrice'];
-              _gbWithFinalPrice = true;
-            } on Exception catch (exception) {
-            } catch (error) {}
-            //required initialize end
+    Stream stream = dbOI.getOtherItems();
 
-            final rowData = TableRow(
-                decoration:
-                    BoxDecoration(color: zebra ? Colors.black : Colors.black),
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(2.0),
-                    child: Center(
-                      child: GestureDetector(
-                        onTap: () {
-                          _gsId = buffRecord.id.toString();
-                          _gtDateQ = buffRecord['A1_DateQ'];
-                          _gsCreatedBy = buffRecord['A4_CreatedBy'];
-                          _gsCustomer = buffRecord['Customer'];
-                          _giInitialKilo = buffRecord['A6_InitialKilo'];
-                          _giInitialLoad = buffRecord['A7_InitialLoad'];
-                          _giInitialPrice = buffRecord['A8_InitialPrice'];
-                          _gsQueueStat = buffRecord['QueueStat'];
-                          if (_gsQueueStat ==
-                              mapQueueStat[forSorting].toString()) {
-                            _bRiderPickup = false;
-                          }
-                          if (_gsQueueStat ==
-                              mapQueueStat[riderPickup].toString()) {
-                            _bRiderPickup = true;
-                          }
-                          _gsPaymentStat = buffRecord['PaymentStat'];
-                          _gsPaymentReceivedBy =
-                              buffRecord['C9_PaymentReceivedBy'];
-                          _gtNeedOn = buffRecord['B9_NeedOn'];
-                          _gbMaxFab = buffRecord['MaxFab'];
-                          _gbFold = buffRecord['C1_Fold'];
-                          _gbMix = buffRecord['C2_Mix'];
-                          _giBasket = buffRecord['C3_Basket'];
-                          _giBag = buffRecord['C4_Bag'];
-                          _giKulang = buffRecord['Kulang'];
-                          _giMaySukli = buffRecord['MaySukli'];
-
-                          try {
-                            _giFinalKilo = buffRecord['B1_FinalKilo'];
-                            _giFinalLoad = buffRecord['B2_FinalLoad'];
-                          } on Exception catch (exception) {
-                            _giFinalKilo = buffRecord['A6_InitialKilo'];
-                            _giFinalLoad = buffRecord['A7_InitialLoad'];
-                          } catch (error) {
-                            _giFinalKilo = buffRecord['A6_InitialKilo'];
-                            _giFinalLoad = buffRecord['A7_InitialLoad'];
-                          }
-
-                          try {
-                            _giFinalPrice = buffRecord['B3_FinalPrice'];
-                          } on Exception catch (exception) {
-                            _giFinalPrice = buffRecord['A8_InitialPrice'];
-                          } catch (error) {
-                            _giFinalPrice = buffRecord['A8_InitialPrice'];
-                          }
-
-                          _gdNeedOn = _gtNeedOn.toDate();
-
-                          alterQueueMobile();
-                        },
-                        //Container display JobsOnQueue
-                        child: _conDisplay(
-                          context,
-                          false,
-                          Color.fromRGBO(250, 175, 175, 1),
-                          buffRecord['Customer'],
-                          //buffRecord['Customer'],
-                          buffRecord['QueueStat'],
-                          buffRecord['A6_InitialKilo'],
-                          buffRecord['A7_InitialLoad'],
-                          buffRecord['C3_Basket'],
-                          buffRecord['C4_Bag'],
-                          buffRecord['MaxFab'],
-                          buffRecord['C2_Mix'],
-                          buffRecord['C1_Fold'],
-                          buffRecord['PaymentStat'],
-                          buffRecord['A8_InitialPrice'],
-                          buffRecord['B9_NeedOn'],
-                        ),
-                      ),
-                    ),
-                  )
-                ]);
-            rowDatas.add(rowData);
-          }
-        }
-
-        return Table(
-          children: rowDatas,
-        );
-      },
-    );
+    return listOIM;
   }
 
   //read JobsOnGoing
@@ -3472,6 +3354,18 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
             (error) => messageResultQueueMobile(context, "Failed : $error"));
   }
 
+  // Future<String> getOtherItems(int jobsId) async {
+  //   DatabaseOtherItems dbOIs = DatabaseOtherItems(jobsId.toString());
+  //   var querySnapshots = await dbOIs.getOtherItems().toList();
+  //   String s = "";
+
+  //   for (var doc in querySnapshots) {
+  //     s = s + doc['a'].toString();
+  //   }
+  //   ;
+  //   return s;
+  // }
+
   Future<void> moveUp(int jobsId) async {
     var collection = FirebaseFirestore.instance.collection('JobsOnGoing');
     var querySnapshots = await collection.get();
@@ -4483,7 +4377,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                                           Checkbox(
                                               value: bDetAddOnEditAll,
                                               onChanged: (val) {
-                                                resetAddOn();
+                                                resetAddOnVar();
                                                 setState(
                                                   () {
                                                     bDetAddOnEditAll = val!;
@@ -4501,7 +4395,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                                           Checkbox(
                                               value: bFabAddOnEditAll,
                                               onChanged: (val) {
-                                                resetAddOn();
+                                                resetAddOnVar();
                                                 setState(
                                                   () {
                                                     bFabAddOnEditAll = val!;
@@ -4519,7 +4413,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                                           Checkbox(
                                               value: bBleAddOnEditAll,
                                               onChanged: (val) {
-                                                resetAddOn();
+                                                resetAddOnVar();
                                                 setState(
                                                   () {
                                                     bBleAddOnEditAll = val!;
@@ -4537,7 +4431,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                                           Checkbox(
                                               value: bOthAddOnEditAll,
                                               onChanged: (val) {
-                                                resetAddOn();
+                                                resetAddOnVar();
                                                 setState(
                                                   () {
                                                     bOthAddOnEditAll = val!;
@@ -5012,7 +4906,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                     Navigator.pop(context);
                     listAddOnItems.clear();
                     jobsOnQueueModelEditAll.initialOthersPrice = 0;
-                    resetAddOn();
+                    resetAddOnVar();
                     editAll(
                       jobsOnQueueModelEditAll,
                       bRiderPickupEditAll,
@@ -5327,4 +5221,157 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
     DatabaseJobsOnQueue databaseJobsOnQueue = DatabaseJobsOnQueue();
     databaseJobsOnQueue.updateJobsOnQueue(docId, jobsOnQueueModelEditAll);
   }
+
+/*
+  //read JobsOnQueue
+  Widget _readDataJobsOnQueue(String streamName, BuildContext context) {
+    bool zebra = false;
+    //read
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('JobsOnQueue')
+          .orderBy('A1_DateQ', descending: true)
+          .snapshots(),
+      builder: (context, snapshot) {
+        bHeader = true;
+        List<TableRow> rowDatas = [];
+        if (snapshot.hasData) {
+          //header
+          if (bHeader) {
+            const rowData = TableRow(
+                decoration:
+                    BoxDecoration(color: Color.fromARGB(255, 9, 194, 49)),
+                children: [
+                  Text(
+                    "Jobs On Queue",
+                    style: TextStyle(fontSize: 10),
+                  ),
+                ]);
+            rowDatas.add(rowData);
+            bHeader = false;
+          }
+
+          //body
+          final buffRecords = snapshot.data?.docs.reversed.toList();
+
+          for (var buffRecord in buffRecords!) {
+            if (zebra) {
+              zebra = false;
+            } else {
+              zebra = true;
+            }
+
+            print(buffRecord['A1_DateQ'] + "watata");
+
+            //required initialize start
+            _gbWithFinalLoad = false;
+            try {
+              _giFinalKilo = buffRecord['B1_FinalKilo'];
+              _giFinalLoad = buffRecord['B2_FinalLoad'];
+              _gbWithFinalLoad = true;
+            } on Exception catch (exception) {
+            } catch (error) {}
+
+            _gbWithFinalPrice = false;
+            try {
+              _giFinalPrice = buffRecord['B3_FinalPrice'];
+              _gbWithFinalPrice = true;
+            } on Exception catch (exception) {
+            } catch (error) {}
+            //required initialize end
+
+            final rowData = TableRow(
+                decoration:
+                    BoxDecoration(color: zebra ? Colors.black : Colors.black),
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(2.0),
+                    child: Center(
+                      child: GestureDetector(
+                        onTap: () {
+                          _gsId = buffRecord.id.toString();
+                          _gtDateQ = buffRecord['A1_DateQ'];
+                          _gsCreatedBy = buffRecord['A4_CreatedBy'];
+                          _gsCustomer = buffRecord['Customer'];
+                          _giInitialKilo = buffRecord['A6_InitialKilo'];
+                          _giInitialLoad = buffRecord['A7_InitialLoad'];
+                          _giInitialPrice = buffRecord['A8_InitialPrice'];
+                          _gsQueueStat = buffRecord['QueueStat'];
+                          if (_gsQueueStat ==
+                              mapQueueStat[forSorting].toString()) {
+                            _bRiderPickup = false;
+                          }
+                          if (_gsQueueStat ==
+                              mapQueueStat[riderPickup].toString()) {
+                            _bRiderPickup = true;
+                          }
+                          _gsPaymentStat = buffRecord['PaymentStat'];
+                          _gsPaymentReceivedBy =
+                              buffRecord['C9_PaymentReceivedBy'];
+                          _gtNeedOn = buffRecord['B9_NeedOn'];
+                          _gbMaxFab = buffRecord['MaxFab'];
+                          _gbFold = buffRecord['C1_Fold'];
+                          _gbMix = buffRecord['C2_Mix'];
+                          _giBasket = buffRecord['C3_Basket'];
+                          _giBag = buffRecord['C4_Bag'];
+                          _giKulang = buffRecord['Kulang'];
+                          _giMaySukli = buffRecord['MaySukli'];
+
+                          try {
+                            _giFinalKilo = buffRecord['B1_FinalKilo'];
+                            _giFinalLoad = buffRecord['B2_FinalLoad'];
+                          } on Exception catch (exception) {
+                            _giFinalKilo = buffRecord['A6_InitialKilo'];
+                            _giFinalLoad = buffRecord['A7_InitialLoad'];
+                          } catch (error) {
+                            _giFinalKilo = buffRecord['A6_InitialKilo'];
+                            _giFinalLoad = buffRecord['A7_InitialLoad'];
+                          }
+
+                          try {
+                            _giFinalPrice = buffRecord['B3_FinalPrice'];
+                          } on Exception catch (exception) {
+                            _giFinalPrice = buffRecord['A8_InitialPrice'];
+                          } catch (error) {
+                            _giFinalPrice = buffRecord['A8_InitialPrice'];
+                          }
+
+                          _gdNeedOn = _gtNeedOn.toDate();
+
+                          alterQueueMobile();
+                        },
+                        //Container display JobsOnQueue
+                        child: _conDisplay(
+                          context,
+                          false,
+                          Color.fromRGBO(250, 175, 175, 1),
+                          buffRecord['Customer'],
+                          //buffRecord['Customer'],
+                          buffRecord['QueueStat'],
+                          buffRecord['A6_InitialKilo'],
+                          buffRecord['A7_InitialLoad'],
+                          buffRecord['C3_Basket'],
+                          buffRecord['C4_Bag'],
+                          buffRecord['MaxFab'],
+                          buffRecord['C2_Mix'],
+                          buffRecord['C1_Fold'],
+                          buffRecord['PaymentStat'],
+                          buffRecord['A8_InitialPrice'],
+                          buffRecord['B9_NeedOn'],
+                        ),
+                      ),
+                    ),
+                  )
+                ]);
+            rowDatas.add(rowData);
+          }
+        }
+
+        return Table(
+          children: rowDatas,
+        );
+      },
+    );
+  }
+*/
 }

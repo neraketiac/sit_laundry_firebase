@@ -20,64 +20,12 @@ class MyQueue extends StatefulWidget {
 
 class _MyQueueState extends State<MyQueue> {
   late String _sEmpId;
-
-  //final _formKey = GlobalKey<FormState>();
-  late JobsOnQueueModel gjobsOnQueueModel = JobsOnQueueModel(
-      dateQ: Timestamp.now(),
-      forSorting: true,
-      riderPickup: false,
-      createdBy: "",
-      customerId: 0,
-      perKilo: true,
-      initialKilo: 8,
-      initialLoad: 1,
-      initialPrice: 155,
-      initialOthersPrice: 0,
-      finalKilo: 0,
-      finalLoad: 0,
-      finalPrice: 0,
-      finalOthersPrice: 0,
-      regular: true,
-      sayosabon: false,
-      others: false,
-      addOns: false,
-      needOn: Timestamp.now(),
-      fold: true,
-      mix: true,
-      basket: 0,
-      bag: 0,
-      remarks: "",
-      unpaid: true,
-      paidcash: false,
-      paidgcash: false,
-      paymentReceivedBy: "",
-      dateO: Timestamp.fromDate(DateTime(2000)),
-      paidD: Timestamp.fromDate(DateTime(2000)),
-      waiting: false,
-      washing: false,
-      drying: false,
-      folding: false,
-      dateD: Timestamp.fromDate(DateTime(2000)),
-      waitCustomerPickup: false,
-      waitRiderDelivery: false,
-      nasaCustomerNa: false,
-      waitingOneWeek: false,
-      waitingTwoWeeks: false,
-      forDisposal: false,
-      disposed: false);
-
   @override
   void initState() {
     super.initState();
 
     _sEmpId = widget.empid;
-    gjobsOnQueueModel.createdBy = _sEmpId;
-    /*
-    gjobsOnQueueModel.initialKilo = 8;
-    gjobsOnQueueModel.initialPrice =
-        (gjobsOnQueueModel.initialKilo ~/ 8) * iPriceDivider(bRegularSabonVar);
-    gjobsOnQueueModel.initialLoad = (gjobsOnQueueModel.initialKilo ~/ 8);
-    */
+    jobsOnQueueModelGlobal.createdBy = _sEmpId;
   }
 
   @override
@@ -91,7 +39,8 @@ class _MyQueueState extends State<MyQueue> {
           FloatingActionButton(
             heroTag: "JobsOnQueue",
             onPressed: () {
-              showJobsOnQueueEntryJson();
+              //showJobsOnQueueEntryJson();
+              showJobsOnQueue();
             },
             child: const Icon(Icons.local_laundry_service_sharp),
           ),
@@ -108,6 +57,59 @@ class _MyQueueState extends State<MyQueue> {
     );
   }
 
+  void showJobsOnQueue() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(builder: (context, setState) {
+          return AlertDialog(
+            title: Text(
+              "New Laundry ${DateTime.now().toString().substring(5, 13)}",
+              style: TextStyle(backgroundColor: Colors.amber[300]),
+            ),
+            content: SingleChildScrollView(
+              scrollDirection: Axis.vertical,
+              child: Container(
+                padding: EdgeInsets.all(8.0),
+                decoration: BoxDecoration(
+                    border: Border.all(color: Colors.blueAccent, width: 2.0)),
+                child: Form(
+                  //key: _formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      conEnterCustomer(context, setState),
+                      conQueueStat(setState),
+                      conOrderMode(setState),
+                      visAddOn(setState),
+                      conTotalPrice(setState),
+                      conBasket(setState),
+                      conBag(setState),
+                      conPayment(setState),
+                      conRemarks(setState),
+                      conMoreOptions(setState),
+                      visFold(setState),
+                      visMix(setState),
+                      visNeedOn(setState),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            actions: [
+              //cancel button
+              cancelButtonVar(context),
+
+              //save button
+              createNewJOQVar(context),
+            ],
+          );
+        });
+      },
+    );
+  }
+
+/*
   //jobsonqueuejson
   void showJobsOnQueueEntryJson() {
     showDialog(
@@ -743,6 +745,372 @@ class _MyQueueState extends State<MyQueue> {
                           ],
                         ),
                       ),
+                      //Add On
+                      SizedBox(
+                        height: 5,
+                      ),
+                      Visibility(
+                        visible: (bViewMoreOptions
+                            ? true
+                            : (gjobsOnQueueModel.others ? true : false)),
+                        child: Container(
+                          decoration: containerSayoSabonBoxDecoration(),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              Column(
+                                children: [
+                                  Text(
+                                    "Clear Add Ons",
+                                    style: TextStyle(fontSize: 10),
+                                  ),
+                                  IconButton(
+                                      onPressed: () {
+                                        listAddOnItems.clear();
+                                        gjobsOnQueueModel.initialOthersPrice =
+                                            0;
+                                        setState(
+                                          () {
+                                            gjobsOnQueueModel.others = false;
+                                            bViewMoreOptions = false;
+                                          },
+                                        );
+
+                                        //resetAddOn();
+                                      },
+                                      icon: Icon(Icons.delete_outline)),
+                                  //checkboxes add on
+                                  Visibility(
+                                    visible: (bViewMoreOptions
+                                        ? true
+                                        : (gjobsOnQueueModel.others
+                                            ? true
+                                            : false)),
+                                    child: Container(
+                                      padding: EdgeInsets.all(1.0),
+                                      child: Row(
+                                        children: [
+                                          Column(
+                                            children: [
+                                              Text(
+                                                "Det",
+                                                style: TextStyle(fontSize: 10),
+                                              ),
+                                              Checkbox(
+                                                  value: bDetAddOnVar,
+                                                  onChanged: (val) {
+                                                    resetAddOn();
+                                                    setState(
+                                                      () {
+                                                        bDetAddOnVar = val!;
+                                                      },
+                                                    );
+                                                  })
+                                            ],
+                                          ),
+                                          Column(
+                                            children: [
+                                              Text(
+                                                "Fab",
+                                                style: TextStyle(fontSize: 10),
+                                              ),
+                                              Checkbox(
+                                                  value: bFabAddOnVar,
+                                                  onChanged: (val) {
+                                                    resetAddOn();
+                                                    setState(
+                                                      () {
+                                                        bFabAddOnVar = val!;
+                                                      },
+                                                    );
+                                                  })
+                                            ],
+                                          ),
+                                          Column(
+                                            children: [
+                                              Text(
+                                                "Ble",
+                                                style: TextStyle(fontSize: 10),
+                                              ),
+                                              Checkbox(
+                                                  value: bBleAddOnVar,
+                                                  onChanged: (val) {
+                                                    resetAddOn();
+                                                    setState(
+                                                      () {
+                                                        bBleAddOnVar = val!;
+                                                      },
+                                                    );
+                                                  })
+                                            ],
+                                          ),
+                                          Column(
+                                            children: [
+                                              Text(
+                                                "Oth",
+                                                style: TextStyle(fontSize: 10),
+                                              ),
+                                              Checkbox(
+                                                  value: bOthAddOnVar,
+                                                  onChanged: (val) {
+                                                    resetAddOn();
+                                                    setState(
+                                                      () {
+                                                        bOthAddOnVar = val!;
+                                                      },
+                                                    );
+                                                  })
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  //dropdown det
+                                  // addOnDropDown(
+                                  //     bDetAddOnVar, selectedDetVar, listDetItems),
+                                  Visibility(
+                                    visible: bDetAddOnVar,
+                                    child: Container(
+                                      padding: EdgeInsets.all(1.0),
+                                      child: Row(
+                                        children: [
+                                          DropdownButton<OtherItemModel>(
+                                            value: selectedDetVar,
+                                            icon: Icon(Icons.arrow_downward),
+                                            iconSize: 24,
+                                            elevation: 16,
+                                            style: TextStyle(
+                                                color: Colors.purple[700]),
+                                            underline: Container(
+                                              height: 2,
+                                              color: Colors.purple[700],
+                                            ),
+                                            items: listDetItems
+                                                .map((OtherItemModel map) {
+                                              return DropdownMenuItem<
+                                                      OtherItemModel>(
+                                                  value: map,
+                                                  child: Text(
+                                                      "${map.itemGroup}-${map.itemName}(${map.itemPrice}Php)"));
+                                            }).toList(),
+                                            onChanged: (newItemModel) {
+                                              setState(
+                                                () {
+                                                  updateSelectedVar(
+                                                      newItemModel!);
+                                                },
+                                              );
+                                            },
+                                          ),
+                                          IconButton(
+                                            onPressed: () {
+                                              setState(
+                                                () {
+                                                  listAddOnItems
+                                                      .add(selectedDetVar);
+                                                  gjobsOnQueueModel
+                                                          .initialOthersPrice =
+                                                      gjobsOnQueueModel
+                                                              .initialOthersPrice +
+                                                          selectedDetVar
+                                                              .itemPrice;
+                                                },
+                                              );
+                                            },
+                                            icon: const Icon(Icons.add_circle),
+                                            color: Colors.blueAccent,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  //dropdown fab
+                                  // addOnDropDown(
+                                  //     bFabAddOnVar, selectedFabVar, listFabItems),
+                                  Visibility(
+                                    visible: bFabAddOnVar,
+                                    child: Container(
+                                      padding: EdgeInsets.all(1.0),
+                                      child: Row(
+                                        children: [
+                                          DropdownButton<OtherItemModel>(
+                                            value: selectedFabVar,
+                                            icon: Icon(Icons.arrow_downward),
+                                            iconSize: 24,
+                                            elevation: 16,
+                                            style: TextStyle(
+                                                color: Colors.purple[700]),
+                                            underline: Container(
+                                              height: 2,
+                                              color: Colors.purple[700],
+                                            ),
+                                            items: listFabItems
+                                                .map((OtherItemModel map) {
+                                              return DropdownMenuItem<
+                                                      OtherItemModel>(
+                                                  value: map,
+                                                  child: Text(
+                                                      "${map.itemGroup}-${map.itemName}(${map.itemPrice}Php)"));
+                                            }).toList(),
+                                            onChanged: (newItemModel) {
+                                              setState(
+                                                () {
+                                                  updateSelectedVar(
+                                                      newItemModel!);
+                                                },
+                                              );
+                                            },
+                                          ),
+                                          IconButton(
+                                            onPressed: () {
+                                              setState(
+                                                () {
+                                                  listAddOnItems
+                                                      .add(selectedFabVar);
+                                                  gjobsOnQueueModel
+                                                          .initialOthersPrice =
+                                                      gjobsOnQueueModel
+                                                              .initialOthersPrice +
+                                                          selectedFabVar
+                                                              .itemPrice;
+                                                },
+                                              );
+                                            },
+                                            icon: const Icon(Icons.add_circle),
+                                            color: Colors.blueAccent,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  //dropdown ble
+                                  // addOnDropDown(
+                                  //     bBleAddOnVar, selectedBleVar, listBleItems),
+                                  Visibility(
+                                    visible: bBleAddOnVar,
+                                    child: Container(
+                                      padding: EdgeInsets.all(1.0),
+                                      child: Row(
+                                        children: [
+                                          DropdownButton<OtherItemModel>(
+                                            value: selectedBleVar,
+                                            icon: Icon(Icons.arrow_downward),
+                                            iconSize: 24,
+                                            elevation: 16,
+                                            style: TextStyle(
+                                                color: Colors.purple[700]),
+                                            underline: Container(
+                                              height: 2,
+                                              color: Colors.purple[700],
+                                            ),
+                                            items: listBleItems
+                                                .map((OtherItemModel map) {
+                                              return DropdownMenuItem<
+                                                      OtherItemModel>(
+                                                  value: map,
+                                                  child: Text(
+                                                      "${map.itemGroup}-${map.itemName}(${map.itemPrice}Php)"));
+                                            }).toList(),
+                                            onChanged: (newItemModel) {
+                                              setState(
+                                                () {
+                                                  updateSelectedVar(
+                                                      newItemModel!);
+                                                },
+                                              );
+                                            },
+                                          ),
+                                          IconButton(
+                                            onPressed: () {
+                                              setState(
+                                                () {
+                                                  listAddOnItems
+                                                      .add(selectedBleVar);
+                                                  gjobsOnQueueModel
+                                                          .initialOthersPrice =
+                                                      gjobsOnQueueModel
+                                                              .initialOthersPrice +
+                                                          selectedBleVar
+                                                              .itemPrice;
+                                                },
+                                              );
+                                            },
+                                            icon: const Icon(Icons.add_circle),
+                                            color: Colors.blueAccent,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  // dropdown oth
+                                  // addOnDropDown(
+                                  //     bOthAddOnVar, selectedOthVar, listOthItems),
+                                  Visibility(
+                                    visible: bOthAddOnVar,
+                                    child: Container(
+                                      padding: EdgeInsets.all(1.0),
+                                      child: Row(
+                                        children: [
+                                          DropdownButton<OtherItemModel>(
+                                            value: selectedOthVar,
+                                            icon: Icon(Icons.arrow_downward),
+                                            iconSize: 24,
+                                            elevation: 16,
+                                            style: TextStyle(
+                                                color: Colors.purple[700]),
+                                            underline: Container(
+                                              height: 2,
+                                              color: Colors.purple[700],
+                                            ),
+                                            items: listOthItems
+                                                .map((OtherItemModel map) {
+                                              return DropdownMenuItem<
+                                                      OtherItemModel>(
+                                                  value: map,
+                                                  child: Text(
+                                                      "${map.itemGroup}-${map.itemName}(${map.itemPrice}Php)"));
+                                            }).toList(),
+                                            onChanged: (newItemModel) {
+                                              setState(
+                                                () {
+                                                  updateSelectedVar(
+                                                      newItemModel!);
+                                                },
+                                              );
+                                            },
+                                          ),
+                                          IconButton(
+                                            onPressed: () {
+                                              setState(
+                                                () {
+                                                  listAddOnItems
+                                                      .add(selectedOthVar);
+                                                  gjobsOnQueueModel
+                                                          .initialOthersPrice =
+                                                      gjobsOnQueueModel
+                                                              .initialOthersPrice +
+                                                          selectedOthVar
+                                                              .itemPrice;
+                                                },
+                                              );
+                                            },
+                                            icon: const Icon(Icons.add_circle),
+                                            color: Colors.blueAccent,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  _readAddedData(listAddOnItems),
+                                  //_dtAddedOthers(addOnItems),
+                                  //_addedOn(addOnItems),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                       //Total Price
                       SizedBox(
                         height: 5,
@@ -760,370 +1128,6 @@ class _MyQueueState extends State<MyQueue> {
                             Text(
                               "Php ${gjobsOnQueueModel.initialPrice + gjobsOnQueueModel.initialOthersPrice}.00",
                               style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                          ],
-                        ),
-                      ),
-                      //Add On
-                      SizedBox(
-                        height: 5,
-                      ),
-                      Container(
-                        decoration: containerSayoSabonBoxDecoration(),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            Column(
-                              children: [
-                                Text(
-                                  "Add On",
-                                  style: TextStyle(fontSize: 10),
-                                ),
-                                Checkbox(
-                                    value: gjobsOnQueueModel.addOns,
-                                    onChanged: (val) {
-                                      if (listAddOnItems.isNotEmpty) {
-                                        if (!val!) {
-                                          listAddOnItems.clear();
-                                          gjobsOnQueueModel.initialOthersPrice =
-                                              0;
-                                          resetAddOn();
-                                          //pop box
-                                          //Navigator.pop(context);
-                                          // messageResultNew(
-                                          //     "Uncheck will delete add on?");
-                                        }
-                                      }
-
-                                      setState(
-                                        () {
-                                          gjobsOnQueueModel.addOns = val!;
-                                        },
-                                      );
-                                    }),
-                                //checkboxes add on
-                                Visibility(
-                                  visible: gjobsOnQueueModel.addOns,
-                                  child: Container(
-                                    padding: EdgeInsets.all(1.0),
-                                    child: Row(
-                                      children: [
-                                        Column(
-                                          children: [
-                                            Text(
-                                              "Det",
-                                              style: TextStyle(fontSize: 10),
-                                            ),
-                                            Checkbox(
-                                                value: bDetAddOnVar,
-                                                onChanged: (val) {
-                                                  resetAddOn();
-                                                  setState(
-                                                    () {
-                                                      bDetAddOnVar = val!;
-                                                    },
-                                                  );
-                                                })
-                                          ],
-                                        ),
-                                        Column(
-                                          children: [
-                                            Text(
-                                              "Fab",
-                                              style: TextStyle(fontSize: 10),
-                                            ),
-                                            Checkbox(
-                                                value: bFabAddOnVar,
-                                                onChanged: (val) {
-                                                  resetAddOn();
-                                                  setState(
-                                                    () {
-                                                      bFabAddOnVar = val!;
-                                                    },
-                                                  );
-                                                })
-                                          ],
-                                        ),
-                                        Column(
-                                          children: [
-                                            Text(
-                                              "Ble",
-                                              style: TextStyle(fontSize: 10),
-                                            ),
-                                            Checkbox(
-                                                value: bBleAddOnVar,
-                                                onChanged: (val) {
-                                                  resetAddOn();
-                                                  setState(
-                                                    () {
-                                                      bBleAddOnVar = val!;
-                                                    },
-                                                  );
-                                                })
-                                          ],
-                                        ),
-                                        Column(
-                                          children: [
-                                            Text(
-                                              "Oth",
-                                              style: TextStyle(fontSize: 10),
-                                            ),
-                                            Checkbox(
-                                                value: bOthAddOnVar,
-                                                onChanged: (val) {
-                                                  resetAddOn();
-                                                  setState(
-                                                    () {
-                                                      bOthAddOnVar = val!;
-                                                    },
-                                                  );
-                                                })
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                                //dropdown det
-                                // addOnDropDown(
-                                //     bDetAddOnVar, selectedDetVar, listDetItems),
-                                Visibility(
-                                  visible: bDetAddOnVar,
-                                  child: Container(
-                                    padding: EdgeInsets.all(1.0),
-                                    child: Row(
-                                      children: [
-                                        DropdownButton<OtherItemModel>(
-                                          value: selectedDetVar,
-                                          icon: Icon(Icons.arrow_downward),
-                                          iconSize: 24,
-                                          elevation: 16,
-                                          style: TextStyle(
-                                              color: Colors.purple[700]),
-                                          underline: Container(
-                                            height: 2,
-                                            color: Colors.purple[700],
-                                          ),
-                                          items: listDetItems
-                                              .map((OtherItemModel map) {
-                                            return DropdownMenuItem<
-                                                    OtherItemModel>(
-                                                value: map,
-                                                child: Text(
-                                                    "${map.itemGroup}-${map.itemName}(${map.itemPrice}Php)"));
-                                          }).toList(),
-                                          onChanged: (newItemModel) {
-                                            setState(
-                                              () {
-                                                updateSelectedVar(
-                                                    newItemModel!);
-                                              },
-                                            );
-                                          },
-                                        ),
-                                        IconButton(
-                                          onPressed: () {
-                                            setState(
-                                              () {
-                                                listAddOnItems
-                                                    .add(selectedDetVar);
-                                                gjobsOnQueueModel
-                                                        .initialOthersPrice =
-                                                    gjobsOnQueueModel
-                                                            .initialOthersPrice +
-                                                        selectedDetVar
-                                                            .itemPrice;
-                                              },
-                                            );
-                                          },
-                                          icon: const Icon(Icons.add_circle),
-                                          color: Colors.blueAccent,
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                                //dropdown fab
-                                // addOnDropDown(
-                                //     bFabAddOnVar, selectedFabVar, listFabItems),
-                                Visibility(
-                                  visible: bFabAddOnVar,
-                                  child: Container(
-                                    padding: EdgeInsets.all(1.0),
-                                    child: Row(
-                                      children: [
-                                        DropdownButton<OtherItemModel>(
-                                          value: selectedFabVar,
-                                          icon: Icon(Icons.arrow_downward),
-                                          iconSize: 24,
-                                          elevation: 16,
-                                          style: TextStyle(
-                                              color: Colors.purple[700]),
-                                          underline: Container(
-                                            height: 2,
-                                            color: Colors.purple[700],
-                                          ),
-                                          items: listFabItems
-                                              .map((OtherItemModel map) {
-                                            return DropdownMenuItem<
-                                                    OtherItemModel>(
-                                                value: map,
-                                                child: Text(
-                                                    "${map.itemGroup}-${map.itemName}(${map.itemPrice}Php)"));
-                                          }).toList(),
-                                          onChanged: (newItemModel) {
-                                            setState(
-                                              () {
-                                                updateSelectedVar(
-                                                    newItemModel!);
-                                              },
-                                            );
-                                          },
-                                        ),
-                                        IconButton(
-                                          onPressed: () {
-                                            setState(
-                                              () {
-                                                listAddOnItems
-                                                    .add(selectedFabVar);
-                                                gjobsOnQueueModel
-                                                        .initialOthersPrice =
-                                                    gjobsOnQueueModel
-                                                            .initialOthersPrice +
-                                                        selectedFabVar
-                                                            .itemPrice;
-                                              },
-                                            );
-                                          },
-                                          icon: const Icon(Icons.add_circle),
-                                          color: Colors.blueAccent,
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                                //dropdown ble
-                                // addOnDropDown(
-                                //     bBleAddOnVar, selectedBleVar, listBleItems),
-                                Visibility(
-                                  visible: bBleAddOnVar,
-                                  child: Container(
-                                    padding: EdgeInsets.all(1.0),
-                                    child: Row(
-                                      children: [
-                                        DropdownButton<OtherItemModel>(
-                                          value: selectedBleVar,
-                                          icon: Icon(Icons.arrow_downward),
-                                          iconSize: 24,
-                                          elevation: 16,
-                                          style: TextStyle(
-                                              color: Colors.purple[700]),
-                                          underline: Container(
-                                            height: 2,
-                                            color: Colors.purple[700],
-                                          ),
-                                          items: listBleItems
-                                              .map((OtherItemModel map) {
-                                            return DropdownMenuItem<
-                                                    OtherItemModel>(
-                                                value: map,
-                                                child: Text(
-                                                    "${map.itemGroup}-${map.itemName}(${map.itemPrice}Php)"));
-                                          }).toList(),
-                                          onChanged: (newItemModel) {
-                                            setState(
-                                              () {
-                                                updateSelectedVar(
-                                                    newItemModel!);
-                                              },
-                                            );
-                                          },
-                                        ),
-                                        IconButton(
-                                          onPressed: () {
-                                            setState(
-                                              () {
-                                                listAddOnItems
-                                                    .add(selectedBleVar);
-                                                gjobsOnQueueModel
-                                                        .initialOthersPrice =
-                                                    gjobsOnQueueModel
-                                                            .initialOthersPrice +
-                                                        selectedBleVar
-                                                            .itemPrice;
-                                              },
-                                            );
-                                          },
-                                          icon: const Icon(Icons.add_circle),
-                                          color: Colors.blueAccent,
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                                // dropdown oth
-                                // addOnDropDown(
-                                //     bOthAddOnVar, selectedOthVar, listOthItems),
-                                Visibility(
-                                  visible: bOthAddOnVar,
-                                  child: Container(
-                                    padding: EdgeInsets.all(1.0),
-                                    child: Row(
-                                      children: [
-                                        DropdownButton<OtherItemModel>(
-                                          value: selectedOthVar,
-                                          icon: Icon(Icons.arrow_downward),
-                                          iconSize: 24,
-                                          elevation: 16,
-                                          style: TextStyle(
-                                              color: Colors.purple[700]),
-                                          underline: Container(
-                                            height: 2,
-                                            color: Colors.purple[700],
-                                          ),
-                                          items: listOthItems
-                                              .map((OtherItemModel map) {
-                                            return DropdownMenuItem<
-                                                    OtherItemModel>(
-                                                value: map,
-                                                child: Text(
-                                                    "${map.itemGroup}-${map.itemName}(${map.itemPrice}Php)"));
-                                          }).toList(),
-                                          onChanged: (newItemModel) {
-                                            setState(
-                                              () {
-                                                updateSelectedVar(
-                                                    newItemModel!);
-                                              },
-                                            );
-                                          },
-                                        ),
-                                        IconButton(
-                                          onPressed: () {
-                                            setState(
-                                              () {
-                                                listAddOnItems
-                                                    .add(selectedOthVar);
-                                                gjobsOnQueueModel
-                                                        .initialOthersPrice =
-                                                    gjobsOnQueueModel
-                                                            .initialOthersPrice +
-                                                        selectedOthVar
-                                                            .itemPrice;
-                                              },
-                                            );
-                                          },
-                                          icon: const Icon(Icons.add_circle),
-                                          color: Colors.blueAccent,
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                                _readAddedData(listAddOnItems),
-                                //_dtAddedOthers(addOnItems),
-                                //_addedOn(addOnItems),
-                              ],
                             ),
                           ],
                         ),
@@ -1256,58 +1260,10 @@ class _MyQueueState extends State<MyQueue> {
                           ],
                         ),
                       ),
-                      //No Fold
-                      SizedBox(
-                        height: 5,
-                      ),
-                      Container(
-                        alignment: Alignment.center,
-                        padding: EdgeInsets.all(1.0),
-                        decoration: containerQueBoxDecoration(),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text("No Fold"),
-                            Switch.adaptive(
-                              value: gjobsOnQueueModel.fold,
-                              onChanged: (bool value) {
-                                setState(() {
-                                  gjobsOnQueueModel.fold = value;
-                                });
-                              },
-                            ),
-                            Text("Fold"),
-                          ],
-                        ),
-                      ),
-                      //Dont mix
-                      SizedBox(
-                        height: 5,
-                      ),
-                      Container(
-                        alignment: Alignment.center,
-                        padding: EdgeInsets.all(1.0),
-                        decoration: containerQueBoxDecoration(),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text("Dont Mix"),
-                            Switch.adaptive(
-                              value: gjobsOnQueueModel.mix,
-                              onChanged: (bool value) {
-                                setState(() {
-                                  gjobsOnQueueModel.mix = value;
-                                });
-                              },
-                            ),
-                            Text("Mix"),
-                          ],
-                        ),
-                      ),
-                      SizedBox(
-                        height: 5,
-                      ),
                       //Remarks
+                      SizedBox(
+                        height: 5,
+                      ),
                       Container(
                         padding: EdgeInsets.all(1.0),
                         decoration: containerQueBoxDecoration(),
@@ -1316,103 +1272,182 @@ class _MyQueueState extends State<MyQueue> {
                           textAlign: TextAlign.start,
                           controller: remarksControllerVar,
                           decoration: InputDecoration(
-                              labelText: 'Remarks', hintText: 'Anu kakaiba'),
+                              labelText: 'Remarks', hintText: 'Notes'),
                           validator: (val) {},
+                        ),
+                      ),
+                      //QueueStat
+                      SizedBox(
+                        height: 5,
+                      ),
+                      Container(
+                        alignment: Alignment.center,
+                        padding: EdgeInsets.all(1.0),
+                        decoration: containerSayoSabonBoxDecoration(),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text("Hide"),
+                            Switch.adaptive(
+                              value: bViewMoreOptions,
+                              onChanged: (bool value) {
+                                setState(() {
+                                  bViewMoreOptions = value;
+                                });
+                              },
+                            ),
+                            Text("More"),
+                          ],
+                        ),
+                      ),
+                      //No Fold
+                      SizedBox(
+                        height: 5,
+                      ),
+                      Visibility(
+                        visible: bViewMoreOptions,
+                        child: Container(
+                          alignment: Alignment.center,
+                          padding: EdgeInsets.all(1.0),
+                          decoration: containerSayoSabonBoxDecoration(),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text("No Fold"),
+                              Switch.adaptive(
+                                value: gjobsOnQueueModel.fold,
+                                onChanged: (bool value) {
+                                  setState(() {
+                                    gjobsOnQueueModel.fold = value;
+                                  });
+                                },
+                              ),
+                              Text("Fold"),
+                            ],
+                          ),
+                        ),
+                      ),
+                      //Dont mix
+                      SizedBox(
+                        height: 5,
+                      ),
+                      Visibility(
+                        visible: bViewMoreOptions,
+                        child: Container(
+                          alignment: Alignment.center,
+                          padding: EdgeInsets.all(1.0),
+                          decoration: containerSayoSabonBoxDecoration(),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text("Dont Mix"),
+                              Switch.adaptive(
+                                value: gjobsOnQueueModel.mix,
+                                onChanged: (bool value) {
+                                  setState(() {
+                                    gjobsOnQueueModel.mix = value;
+                                  });
+                                },
+                              ),
+                              Text("Mix"),
+                            ],
+                          ),
                         ),
                       ),
                       SizedBox(
                         height: 5,
                       ),
                       //Need On Date +
-                      Container(
-                        padding: EdgeInsets.all(1.0),
-                        decoration: containerQueBoxDecoration(),
-                        child: Column(
-                          children: [
-                            Container(
-                              padding: EdgeInsets.all(1.0),
-                              decoration: BoxDecoration(
-                                  border: Border.all(
-                                      color: Color.fromARGB(0, 212, 212, 212),
-                                      width: 0)),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text("-1 day"),
-                                  IconButton(
-                                    onPressed: () {
-                                      setState(() => dNeedOnVar =
-                                          dNeedOnVar.add(Duration(days: -1)));
-                                    },
-                                    icon: const Icon(
-                                        Icons.remove_circle_outlined),
-                                    color: Colors.blueAccent,
-                                  ),
-                                  IconButton(
-                                    onPressed: () {
-                                      setState(() => dNeedOnVar =
-                                          dNeedOnVar.add(Duration(days: 1)));
-                                    },
-                                    icon: const Icon(Icons.add_circle),
-                                    color: Colors.blueAccent,
-                                  ),
-                                  Text("+1 day"),
-                                ],
+                      Visibility(
+                        visible: bViewMoreOptions,
+                        child: Container(
+                          padding: EdgeInsets.all(1.0),
+                          decoration: containerSayoSabonBoxDecoration(),
+                          child: Column(
+                            children: [
+                              Container(
+                                padding: EdgeInsets.all(1.0),
+                                decoration: BoxDecoration(
+                                    border: Border.all(
+                                        color: Color.fromARGB(0, 212, 212, 212),
+                                        width: 0)),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text("-1 day"),
+                                    IconButton(
+                                      onPressed: () {
+                                        setState(() => dNeedOnVar =
+                                            dNeedOnVar.add(Duration(days: -1)));
+                                      },
+                                      icon: const Icon(
+                                          Icons.remove_circle_outlined),
+                                      color: Colors.blueAccent,
+                                    ),
+                                    IconButton(
+                                      onPressed: () {
+                                        setState(() => dNeedOnVar =
+                                            dNeedOnVar.add(Duration(days: 1)));
+                                      },
+                                      icon: const Icon(Icons.add_circle),
+                                      color: Colors.blueAccent,
+                                    ),
+                                    Text("+1 day"),
+                                  ],
+                                ),
                               ),
-                            ),
-                            //Need On date?
-                            Container(
-                              padding: EdgeInsets.all(1.0),
-                              decoration: BoxDecoration(
-                                  border: Border.all(
-                                      color: Color.fromARGB(0, 212, 212, 212),
-                                      width: 0)),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    "Need On: ${dNeedOnVar.toString().substring(5, 14)}00",
-                                  ),
-                                ],
+                              //Need On date?
+                              Container(
+                                padding: EdgeInsets.all(1.0),
+                                decoration: BoxDecoration(
+                                    border: Border.all(
+                                        color: Color.fromARGB(0, 212, 212, 212),
+                                        width: 0)),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      "Need On: ${dNeedOnVar.toString().substring(5, 14)}00",
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ),
-                            //Need On Date +
-                            Container(
-                              padding: EdgeInsets.all(1.0),
-                              decoration: BoxDecoration(
-                                  border: Border.all(
-                                      color: Color.fromARGB(0, 212, 212, 212),
-                                      width: 0)),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text("-1 hr"),
-                                  IconButton(
-                                    onPressed: () {
-                                      setState(() => dNeedOnVar =
-                                          dNeedOnVar.add(Duration(hours: -1)));
-                                    },
-                                    icon:
-                                        const Icon(Icons.remove_circle_outline),
-                                    color: Colors.blueAccent,
-                                  ),
-                                  IconButton(
-                                    onPressed: () {
-                                      setState(() => dNeedOnVar =
-                                          dNeedOnVar.add(Duration(hours: 1)));
-                                    },
-                                    icon: const Icon(Icons.add_circle_outline),
-                                    color: Colors.blueAccent,
-                                  ),
-                                  Text("+1 hr"),
-                                ],
+                              //Need On Date +
+                              Container(
+                                padding: EdgeInsets.all(1.0),
+                                decoration: BoxDecoration(
+                                    border: Border.all(
+                                        color: Color.fromARGB(0, 212, 212, 212),
+                                        width: 0)),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text("-1 hr"),
+                                    IconButton(
+                                      onPressed: () {
+                                        setState(() => dNeedOnVar = dNeedOnVar
+                                            .add(Duration(hours: -1)));
+                                      },
+                                      icon: const Icon(
+                                          Icons.remove_circle_outline),
+                                      color: Colors.blueAccent,
+                                    ),
+                                    IconButton(
+                                      onPressed: () {
+                                        setState(() => dNeedOnVar =
+                                            dNeedOnVar.add(Duration(hours: 1)));
+                                      },
+                                      icon:
+                                          const Icon(Icons.add_circle_outline),
+                                      color: Colors.blueAccent,
+                                    ),
+                                    Text("+1 hr"),
+                                  ],
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
-                      SizedBox(
-                        height: 5,
                       ),
                     ],
                   ),
@@ -1750,4 +1785,6 @@ class _MyQueueState extends State<MyQueue> {
     Navigator.of(context)
         .push(MaterialPageRoute(builder: (context) => const LoyaltyAdmin()));
   }
+
+*/
 }

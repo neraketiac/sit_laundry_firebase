@@ -31,6 +31,7 @@ class JobsOnQueueModel {
   Timestamp paidD;
   bool forSorting;
   bool riderPickup;
+  int jobsId;
   bool waiting;
   bool washing;
   bool drying;
@@ -75,6 +76,7 @@ class JobsOnQueueModel {
     required this.paidD,
     required this.forSorting,
     required this.riderPickup,
+    required this.jobsId,
     required this.waiting,
     required this.washing,
     required this.drying,
@@ -120,6 +122,7 @@ class JobsOnQueueModel {
     Timestamp? paidD,
     bool? forSorting,
     bool? riderPickup,
+    int? jobsId,
     bool? waiting,
     bool? washing,
     bool? drying,
@@ -164,6 +167,7 @@ class JobsOnQueueModel {
       paidD: paidD ?? this.paidD,
       forSorting: forSorting ?? this.forSorting,
       riderPickup: riderPickup ?? this.riderPickup,
+      jobsId: jobsId ?? this.jobsId,
       waiting: waiting ?? this.waiting,
       washing: washing ?? this.washing,
       drying: drying ?? this.drying,
@@ -211,6 +215,7 @@ class JobsOnQueueModel {
             paymentReceivedBy: json['C9_PaymentReceivedBy']! as String,
             dateO: json['D1_DateO']! as Timestamp,
             paidD: json['D2_PaidD']! as Timestamp,
+            jobsId: json['D30_JobsId'] as int,
             waiting: json['D3_Waiting']! as bool,
             washing: json['D4_Washing']! as bool,
             drying: json['D5_Drying']! as bool,
@@ -255,6 +260,7 @@ class JobsOnQueueModel {
         'C9_PaymentReceivedBy': paymentReceivedBy,
         'D1_DateO': dateO,
         'D2_PaidD': paidD,
+        'D30_JobsId': jobsId,
         'D3_Waiting': waiting,
         'D4_Washing': washing,
         'D5_Drying': drying,
