@@ -26,6 +26,7 @@ class _MyQueueState extends State<MyQueue> {
 
     _sEmpId = widget.empid;
     jobsOnQueueModelGlobal.createdBy = _sEmpId;
+    jobsOnQueueModelGlobal.currentEmpId = _sEmpId;
   }
 
   @override

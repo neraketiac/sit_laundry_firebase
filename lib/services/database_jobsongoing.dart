@@ -2,20 +2,20 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:laundry_firebase/models/jobsonqueuemodel.dart';
 import 'package:laundry_firebase/models/otheritemmodel.dart';
-import 'package:laundry_firebase/services/database_other_items_onqueue.dart';
+import 'package:laundry_firebase/services/database_other_items_ongoing.dart';
 import 'package:laundry_firebase/services/navigator_key.dart';
 
-const String JOBS_ON_QUEUE_REF = "JobsOnQueue";
+const String JOBS_ON_GOING_REF = "JobsOnGoing";
 const Color _gcButtons = Color.fromRGBO(134, 218, 252, 0.733);
 
-class DatabaseJobsOnQueue {
+class DatabaseJobsOnGoing {
   final _firestore = FirebaseFirestore.instance;
 
-  late final CollectionReference _jobsOnQueueRef;
+  late final CollectionReference _jobsOnGoingRef;
 
-  DatabaseJobsOnQueue() {
-    _jobsOnQueueRef = _firestore
-        .collection(JOBS_ON_QUEUE_REF)
+  DatabaseJobsOnGoing() {
+    _jobsOnGoingRef = _firestore
+        .collection(JOBS_ON_GOING_REF)
         .withConverter<JobsOnQueueModel>(
             fromFirestore: (snapshots, _) => JobsOnQueueModel.fromJson(
                   snapshots.data()!,
@@ -23,16 +23,16 @@ class DatabaseJobsOnQueue {
             toFirestore: (jOQM, _) => jOQM.toJson());
   }
 
-  Stream<QuerySnapshot> getJobsOnQueue() {
-    return _jobsOnQueueRef.orderBy('A1_DateQ', descending: false).snapshots();
+  Stream<QuerySnapshot> getJobsOnGoing() {
+    return _jobsOnGoingRef.orderBy('D30_JobsId', descending: false).snapshots();
   }
 
-  void addJobsOnQueue(JobsOnQueueModel jOQM, List<OtherItemModel> lAOI) async {
+  void addJobsOnGoing(JobsOnQueueModel jOQM, List<OtherItemModel> lAOI) async {
     //String addJobsOnQueue(JobsOnQueueModel jobsOnQueue) {
 
-    DatabaseOtherItemsOnQueue databaseOtherItemsOnQueue;
+    DatabaseOtherItemsOnGoing databaseOtherItemsOnGoing;
 
-    _jobsOnQueueRef
+    _jobsOnGoingRef
         .add(jOQM)
         .then((value) => {
               print("Insert Done.${jOQM.customerId}"),
@@ -82,9 +82,9 @@ class DatabaseJobsOnQueue {
                   waitingTwoWeeks: jOQM.waitingTwoWeeks,
                   forDisposal: jOQM.forDisposal,
                   disposed: jOQM.disposed)),
-              databaseOtherItemsOnQueue = DatabaseOtherItemsOnQueue(value.id),
+              databaseOtherItemsOnGoing = DatabaseOtherItemsOnGoing(value.id),
               lAOI.forEach((addOnItem) {
-                databaseOtherItemsOnQueue.addOtherItems(addOnItem);
+                databaseOtherItemsOnGoing.addOtherItems(addOnItem);
               }),
             })
         // ignore: invalid_return_type_for_catch_error
@@ -94,7 +94,7 @@ class DatabaseJobsOnQueue {
   }
 
   void updateDocId(JobsOnQueueModel jOQM) async {
-    _jobsOnQueueRef
+    _jobsOnGoingRef
         .doc(jOQM.docId)
         .update(jOQM.toJson())
         .then((value) => {
@@ -105,30 +105,18 @@ class DatabaseJobsOnQueue {
         );
   }
 
-  void updateJobsOnQueue(String docId, JobsOnQueueModel jobsOnQueueModel,
+  void updateJobsOnGoing(String docId, JobsOnQueueModel jobsOnQueueModel,
       List<OtherItemModel> lAOI) async {
-    _jobsOnQueueRef.doc(docId).update(jobsOnQueueModel.toJson());
-    DatabaseOtherItemsOnQueue databaseOtherItemsOnQueue;
-    databaseOtherItemsOnQueue = DatabaseOtherItemsOnQueue(docId);
+    _jobsOnGoingRef.doc(docId).update(jobsOnQueueModel.toJson());
+    DatabaseOtherItemsOnGoing databaseOtherItemsOnGoing;
+    databaseOtherItemsOnGoing = DatabaseOtherItemsOnGoing(docId);
     lAOI.forEach((aOI) {
       //if (databaseOtherItems.checkIfDocExists(aOI)) {
       if (aOI.docId != "") {
         //databaseOtherItems.udpateOtherItems(aOI.docId, aOI);
       } else {
-        databaseOtherItemsOnQueue.addOtherItems(aOI);
+        databaseOtherItemsOnGoing.addOtherItems(aOI);
       }
     });
-  }
-
-  void deleteJobsOnQueue(String docId) async {
-    _jobsOnQueueRef
-        .doc(docId)
-        .delete()
-        .then((value) => {
-              print("Delete JobsOnQueue Done."),
-            })
-        .catchError(
-          (error) => print("Delete Failed : $error"),
-        );
   }
 }

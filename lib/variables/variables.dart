@@ -6,9 +6,13 @@ import 'package:laundry_firebase/models/jobsonqueuemodel.dart';
 import 'package:laundry_firebase/models/otheritemmodel.dart';
 import 'package:laundry_firebase/pages/autocompletecustomer.dart';
 import 'package:laundry_firebase/pages/loyalty_admin.dart';
+import 'package:laundry_firebase/pages/queue.dart';
+import 'package:laundry_firebase/services/database_jobsongoing.dart';
 import 'package:laundry_firebase/services/database_jobsonqueue.dart';
+import 'package:laundry_firebase/services/database_other_items_onqueue.dart';
 
 bool showDet = false, showFab = false, showBle = false, showOth = false;
+bool bDelAddOnsVar = true;
 
 late JobsOnQueueModel jobsOnQueueModelGlobal;
 
@@ -21,7 +25,7 @@ List<OtherItemModel> listDetItems = [];
 List<OtherItemModel> listFabItems = [];
 List<OtherItemModel> listBleItems = [];
 List<OtherItemModel> listOthItems = [];
-List<OtherItemModel> listAddOnItems = [];
+List<OtherItemModel> listAddOnItemsGlobal = [];
 
 late OtherItemModel gselectedItemModel;
 
@@ -165,94 +169,112 @@ void putEntries() {
 
   //detItems
   listDetItems.add(OtherItemModel(
+      docId: "",
       itemId: menuDetBreezeDVal,
       itemGroup: groupDet,
       itemName: "Breeze",
       itemPrice: 15));
   listDetItems.add(OtherItemModel(
+      docId: "",
       itemId: menuDetArielDVal,
       itemGroup: groupDet,
       itemName: "Ariel Twinpack",
       itemPrice: 15));
   listDetItems.add(OtherItemModel(
+      docId: "",
       itemId: menuDetTideDVal,
       itemGroup: groupDet,
       itemName: "Tide",
       itemPrice: 15));
   listDetItems.add(OtherItemModel(
+      docId: "",
       itemId: menuDetWingsBlueDVal,
       itemGroup: groupDet,
       itemName: "Wings Blue",
       itemPrice: 15));
   listDetItems.add(OtherItemModel(
+      docId: "",
       itemId: menuDetWingsRedDVal,
       itemGroup: groupDet,
       itemName: "Wings Red",
       itemPrice: 8));
   listDetItems.add(OtherItemModel(
+      docId: "",
       itemId: menuDetPowerCleanDVal,
       itemGroup: groupDet,
       itemName: "WKL",
       itemPrice: 8));
   listDetItems.add(OtherItemModel(
+      docId: "",
       itemId: menuDetSurfDVal,
       itemGroup: groupDet,
       itemName: "Surf",
       itemPrice: 10));
   listDetItems.add(OtherItemModel(
+      docId: "",
       itemId: menuDetKlinDVal,
       itemGroup: groupDet,
       itemName: "Klin Twinpack",
       itemPrice: 15));
   //fab items
   listFabItems.add(OtherItemModel(
+      docId: "",
       itemId: menuFabSurf24mlDVal,
       itemGroup: groupFab,
       itemName: "Surf 24ml",
       itemPrice: 8));
   listFabItems.add(OtherItemModel(
+      docId: "",
       itemId: menuFabDowny24mlDVal,
       itemGroup: groupFab,
       itemName: "Downy 24ml",
       itemPrice: 8));
   listFabItems.add(OtherItemModel(
+      docId: "",
       itemId: menuFabDownyTripidDVal,
       itemGroup: groupFab,
       itemName: "Downy Tripid",
       itemPrice: 17));
   listFabItems.add(OtherItemModel(
+      docId: "",
       itemId: menuFabDowny36mlDVal,
       itemGroup: groupFab,
       itemName: "Downy 36ml",
       itemPrice: 10));
   listFabItems.add(OtherItemModel(
+      docId: "",
       itemId: menuFabSurfTripidDVal,
       itemGroup: groupFab,
       itemName: "Surf Tripid",
       itemPrice: 17));
   listFabItems.add(OtherItemModel(
+      docId: "",
       itemId: menuFabWKL24mlDVal,
       itemGroup: groupFab,
       itemName: "WKL Fabcon 24ml",
       itemPrice: 8));
   //bel items
   listBleItems.add(OtherItemModel(
+      docId: "",
       itemId: menuBleColorSafeDVal,
       itemGroup: groupBle,
       itemName: "Color Safe",
       itemPrice: 5));
   //oth items
   listOthItems.add(OtherItemModel(
+      docId: "",
       itemId: menuOthWash,
       itemGroup: groupOth,
       itemName: "Wash",
       itemPrice: 49));
   listOthItems.add(OtherItemModel(
+      docId: "",
       itemId: menuOthWash,
       itemGroup: groupOth,
       itemName: "2Wash 1Dry(Regular)",
       itemPrice: 195));
   listOthItems.add(OtherItemModel(
+      docId: "",
       itemId: menuOthWash,
       itemGroup: groupOth,
       itemName: "2Wash 1Dry(SayoSabon)",
@@ -403,23 +425,22 @@ Color borderColor() {
   return Colors.black54;
 }
 
-Color? containerQueColor() {
+Color? colAmber() {
   return Colors.amber[50];
 }
 
-BoxDecoration containerQueBoxDecoration() {
+BoxDecoration decoAmber() {
   return BoxDecoration(
-      color: containerQueColor(),
-      border: Border.all(color: borderColor(), width: 2.0));
+      color: colAmber(), border: Border.all(color: borderColor(), width: 2.0));
 }
 
-Color? containerSayoSabonColor() {
+Color? colLightBlue() {
   return Colors.lightBlue[100];
 }
 
-BoxDecoration containerSayoSabonBoxDecoration() {
+BoxDecoration decoLightBlue() {
   return BoxDecoration(
-      color: containerSayoSabonColor(),
+      color: colLightBlue(),
       border: Border.all(color: borderColor(), width: 2.0));
 }
 
@@ -561,10 +582,12 @@ void allCardsVar(BuildContext context) {
 
 void resetJobsOnQueueModelVar() {
   jobsOnQueueModelGlobal = JobsOnQueueModel(
+      docId: "",
       dateQ: Timestamp.now(),
       forSorting: true,
       riderPickup: false,
       createdBy: "",
+      currentEmpId: "",
       customerId: 0,
       perKilo: true,
       initialKilo: 8,
@@ -671,6 +694,66 @@ Widget createNewJOQVar(BuildContext context) {
   );
 }
 
+Widget createNewJOGVar(BuildContext context, String docId,
+    JobsOnQueueModel jOQM, List<OtherItemModel> lAOI) {
+  return MaterialButton(
+    onPressed: () {
+      if (jOQM.customerId == 1) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text(
+                  'Cannot save, please add name in loyalty records first.')),
+        );
+        // } else if (_formKey.currentState!.validate()) {
+      } else if (true) {
+        // If the form is valid, display a snackbar. In the real world,
+        // you'd often call a server or save the information in a database.
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Processing Data')),
+        );
+
+        //pop box
+        Navigator.pop(context);
+
+        insertDataJobsOnGoingVar(jOQM, lAOI);
+        deleteJOQVar(jOQM.docId, lAOI);
+      }
+    },
+    color: cButtons,
+    child: const Text("On Going"),
+  );
+}
+
+Widget createNewJDVar(BuildContext context, String docId, JobsOnQueueModel jOQM,
+    List<OtherItemModel> lAOI) {
+  return MaterialButton(
+    onPressed: () {
+      if (jOQM.customerId == 1) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text(
+                  'Cannot save, please add name in loyalty records first.')),
+        );
+        // } else if (_formKey.currentState!.validate()) {
+      } else if (true) {
+        // If the form is valid, display a snackbar. In the real world,
+        // you'd often call a server or save the information in a database.
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Processing Data')),
+        );
+
+        //pop box
+        Navigator.pop(context);
+
+        // insertDataJobsOnGoingVar(jOQM, lAOI);
+        // deleteJOQVar(jOQM.docId, lAOI);
+      }
+    },
+    color: cButtons,
+    child: const Text("Jobs Done"),
+  );
+}
+
 Widget readAddedDataVar(List<OtherItemModel> listAddedOthers) {
   bool zebra = false;
   //read
@@ -728,10 +811,18 @@ Widget readAddedDataVar(List<OtherItemModel> listAddedOthers) {
   );
 }
 
-//insert new
+//insert new Queue
 void insertDataJobsOnQueueVar(JobsOnQueueModel jOQM) {
   DatabaseJobsOnQueue databaseJobsOnQueue = DatabaseJobsOnQueue();
-  databaseJobsOnQueue.addJobsOnQueue(jOQM, listAddOnItems);
+  databaseJobsOnQueue.addJobsOnQueue(jOQM, listAddOnItemsGlobal);
+  resetJobsOnQueueModelVar();
+}
+
+//insert new OnGoing
+void insertDataJobsOnGoingVar(
+    JobsOnQueueModel jOQM, List<OtherItemModel> lAOI) {
+  DatabaseJobsOnGoing databaseJobsOnGoing = DatabaseJobsOnGoing();
+  databaseJobsOnGoing.addJobsOnGoing(jOQM, lAOI);
   resetJobsOnQueueModelVar();
 }
 
@@ -739,7 +830,7 @@ void insertDataJobsOnQueueVar(JobsOnQueueModel jOQM) {
 Container conEnterCustomer(BuildContext context, Function setState) {
   return Container(
     padding: EdgeInsets.all(1.0),
-    decoration: containerQueBoxDecoration(),
+    decoration: decoAmber(),
     child: Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
@@ -771,7 +862,7 @@ Container conCustomerName(
   return Container(
     width: 300,
     padding: EdgeInsets.all(1.0),
-    decoration: containerQueBoxDecoration(),
+    decoration: decoAmber(),
     child: Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
@@ -792,7 +883,7 @@ Container conQueueStat(Function setState) {
   return Container(
     alignment: Alignment.center,
     padding: EdgeInsets.all(1.0),
-    decoration: containerQueBoxDecoration(),
+    decoration: decoAmber(),
     child: Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -816,10 +907,38 @@ Container conQueueStat(Function setState) {
   );
 }
 
+Container conQueueStatVar(Function setState, JobsOnQueueModel jOQM) {
+  return Container(
+    alignment: Alignment.center,
+    padding: EdgeInsets.all(1.0),
+    decoration: decoAmber(),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text("Sort"),
+        Switch.adaptive(
+          value: jOQM.riderPickup,
+          onChanged: (bool value) {
+            setState(() {
+              jOQM.riderPickup = value;
+              if (jOQM.riderPickup) {
+                jOQM.forSorting = false;
+              } else {
+                jOQM.forSorting = true;
+              }
+            });
+          },
+        ),
+        Text("RiderPickup"),
+      ],
+    ),
+  );
+}
+
 Container conOrderMode(Function setState) {
   return Container(
     padding: EdgeInsets.all(1.0),
-    decoration: containerQueBoxDecoration(),
+    decoration: decoAmber(),
     child: Column(
       children: [
         Row(
@@ -1046,7 +1165,7 @@ Container conOrderMode(Function setState) {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text("Load:"),
-                      Text("${jobsOnQueueModelGlobal.initialKilo}"),
+                      Text("${jobsOnQueueModelGlobal.initialLoad}"),
                     ],
                   ),
                 ),
@@ -1094,8 +1213,9 @@ Container conOrderMode(Function setState) {
                                           ? 25
                                           : 25); //8-9kilo 25
 
-                              jobsOnQueueModelGlobal.initialLoad =
-                                  jobsOnQueueModelGlobal.initialLoad - 1;
+                              //should be after kilo - 1;
+                              // jobsOnQueueModelGlobal.initialLoad =
+                              //     jobsOnQueueModelGlobal.initialLoad - 1;
                             } else if (jobsOnQueueModelGlobal.initialKilo % 8 ==
                                 2) {
                               jobsOnQueueModelGlobal.initialPrice =
@@ -1122,19 +1242,26 @@ Container conOrderMode(Function setState) {
                               jobsOnQueueModelGlobal.initialPrice =
                                   jobsOnQueueModelGlobal.initialPrice -
                                       (jobsOnQueueModelGlobal.regular
-                                          ? 25
+                                          ? 35
                                           : 0); //12-13kilo
-                            } else if (jobsOnQueueModelGlobal.initialKilo % 8 ==
-                                6) {
-                              jobsOnQueueModelGlobal.initialPrice =
-                                  jobsOnQueueModelGlobal.initialPrice -
-                                      (jobsOnQueueModelGlobal.regular
-                                          ? 10
-                                          : 0); //13-16kilo
                             }
-
+                            // else if (jobsOnQueueModelGlobal.initialKilo % 8 ==
+                            //     6) {
+                            //   jobsOnQueueModelGlobal.initialPrice =
+                            //       jobsOnQueueModelGlobal.initialPrice -
+                            //           (jobsOnQueueModelGlobal.regular
+                            //               ? 10
+                            //               : 0); //13-16kilo
+                            // }
                             jobsOnQueueModelGlobal.initialKilo =
                                 jobsOnQueueModelGlobal.initialKilo - 1;
+
+                            if (jobsOnQueueModelGlobal.initialKilo % 8 == 1) {
+                              //8-9kilo 25
+
+                              jobsOnQueueModelGlobal.initialLoad =
+                                  jobsOnQueueModelGlobal.initialLoad - 1;
+                            }
                           }
                           setState(() {
                             jobsOnQueueModelGlobal.initialKilo;
@@ -1183,8 +1310,8 @@ Container conOrderMode(Function setState) {
                                     (jobsOnQueueModelGlobal.regular
                                         ? 45
                                         : 50); //9-10kilo
-                            setState(() => jobsOnQueueModelGlobal.initialLoad =
-                                jobsOnQueueModelGlobal.initialLoad + 1);
+                            jobsOnQueueModelGlobal.initialLoad =
+                                jobsOnQueueModelGlobal.initialLoad + 1;
                           } else if (jobsOnQueueModelGlobal.initialKilo % 8 ==
                               3) {
                             jobsOnQueueModelGlobal.initialPrice =
@@ -1204,25 +1331,396 @@ Container conOrderMode(Function setState) {
                             jobsOnQueueModelGlobal.initialPrice =
                                 jobsOnQueueModelGlobal.initialPrice +
                                     (jobsOnQueueModelGlobal.regular
-                                        ? 25
+                                        ? 35
                                         : 0); //12-13kilo
-                          } else {
-                            if (jobsOnQueueModelGlobal.initialPrice %
-                                    (iPriceDivider(
-                                        jobsOnQueueModelGlobal.regular)) !=
-                                0) {
-                              jobsOnQueueModelGlobal.initialPrice =
-                                  jobsOnQueueModelGlobal.initialPrice +
-                                      (jobsOnQueueModelGlobal.regular
-                                          ? 10
-                                          : 0); //13-16kilo
-                            }
                           }
+                          // else {
+                          //   if (jobsOnQueueModelGlobal.initialPrice %
+                          //           (iPriceDivider(
+                          //               jobsOnQueueModelGlobal.regular)) !=
+                          //       0) {
+                          //     jobsOnQueueModelGlobal.initialPrice =
+                          //         jobsOnQueueModelGlobal.initialPrice +
+                          //             (jobsOnQueueModelGlobal.regular
+                          //                 ? 10
+                          //                 : 0); //13-16kilo
+                          //   }
+                          // }
 
                           setState(() {
                             jobsOnQueueModelGlobal.initialKilo;
                             jobsOnQueueModelGlobal.initialLoad;
                             jobsOnQueueModelGlobal.initialPrice;
+                          });
+                        },
+                        icon: const Icon(Icons.add_circle),
+                        color: Colors.blueAccent,
+                      ),
+                    ],
+                  ),
+                )
+              ],
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+Container conOrderModeVar(
+    Function setState, JobsOnQueueModel jOQM, BoxDecoration conDecoration) {
+  return Container(
+    padding: EdgeInsets.all(1.0),
+    decoration: conDecoration,
+    child: Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            Column(
+              children: [
+                Text(
+                  "Regular",
+                  style: TextStyle(fontSize: 10),
+                ),
+                Checkbox(
+                    value: jOQM.regular,
+                    onChanged: (val) {
+                      jOQM = resetRegular(jOQM);
+
+                      if (val!) {
+                        setState(
+                          () {
+                            jOQM.regular = val;
+                          },
+                        );
+                      }
+
+                      jOQM.initialKilo = 8;
+                      jOQM.initialPrice =
+                          (jOQM.initialKilo ~/ 8) * iPriceDivider(jOQM.regular);
+                      jOQM.initialLoad = (jOQM.initialKilo ~/ 8);
+                    })
+              ],
+            ),
+            Column(
+              children: [
+                Text(
+                  "Sayo Sabon",
+                  style: TextStyle(fontSize: 10),
+                ),
+                Checkbox(
+                    value: jOQM.sayosabon,
+                    onChanged: (val) {
+                      jOQM = resetRegular(jOQM);
+
+                      if (val!) {
+                        setState(
+                          () {
+                            jOQM.sayosabon = val;
+                          },
+                        );
+                      }
+
+                      jOQM.initialKilo = 8;
+                      jOQM.initialPrice =
+                          (jOQM.initialKilo ~/ 8) * iPriceDivider(jOQM.regular);
+                      jOQM.initialLoad = (jOQM.initialKilo ~/ 8);
+                    })
+              ],
+            ),
+            Column(
+              children: [
+                Text(
+                  "Others",
+                  style: TextStyle(fontSize: 10),
+                ),
+                Checkbox(
+                    value: jOQM.others,
+                    onChanged: (val) {
+                      jOQM = resetRegular(jOQM);
+                      bShowKiloLoadDisplayVar = false;
+
+                      if (val!) {
+                        setState(
+                          () {
+                            jOQM.others = val;
+                          },
+                        );
+                      }
+
+                      jOQM.initialKilo = 0;
+                      jOQM.initialPrice = 0;
+                      jOQM.initialLoad = 0;
+                    })
+              ],
+            ),
+          ],
+        ),
+        //New estimate load +-8 kilo
+        Visibility(
+          visible: bShowKiloLoadDisplayVar,
+          child: Container(
+            padding: EdgeInsets.all(0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding:
+                      EdgeInsets.only(left: 3, bottom: 0, top: 0, right: 3),
+                  decoration: BoxDecoration(
+                      color: Colors.amber[200],
+                      borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(20),
+                          bottomLeft: Radius.circular(20))),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      IconButton(
+                        onPressed: () {
+                          if (jOQM.initialKilo < 8) {
+                            jOQM.initialKilo = 8;
+                            jOQM.initialPrice = (jOQM.initialKilo ~/ 8) *
+                                iPriceDivider(jOQM.regular);
+                            jOQM.initialLoad = (jOQM.initialKilo ~/ 8);
+                          } else {
+                            if (jOQM.initialKilo % 8 != 0) {
+                              jOQM.initialKilo =
+                                  jOQM.initialKilo - (jOQM.initialKilo % 8);
+                            } else {
+                              jOQM.initialKilo = jOQM.initialKilo - 8;
+                            }
+
+                            jOQM.initialPrice = (jOQM.initialKilo ~/ 8) *
+                                iPriceDivider(jOQM.regular);
+
+                            jOQM.initialLoad = (jOQM.initialKilo ~/ 8);
+                          }
+                          setState(() {
+                            jOQM.initialKilo;
+                            jOQM.initialLoad;
+                            jOQM.initialPrice;
+                          });
+                        },
+                        icon: const Icon(Icons.remove_circle_outlined),
+                        color: Colors.blueAccent,
+                      ),
+                      Text("-8 kg"),
+                    ],
+                  ),
+                ),
+                SizedBox(
+                  width: 3,
+                ),
+                Container(
+                  padding:
+                      EdgeInsets.only(left: 3, bottom: 0, top: 0, right: 3),
+                  decoration: BoxDecoration(
+                      color: Colors.amber[200],
+                      borderRadius: BorderRadius.only(
+                          topRight: Radius.circular(20),
+                          bottomRight: Radius.circular(20))),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Text("+8 kg"),
+                      IconButton(
+                        onPressed: () {
+                          if (jOQM.initialKilo % 8 != 0) {
+                            jOQM.initialKilo =
+                                jOQM.initialKilo + 8 - (jOQM.initialKilo % 8);
+                          } else {
+                            jOQM.initialKilo = jOQM.initialKilo + 8;
+                          }
+
+                          jOQM.initialPrice = (jOQM.initialKilo ~/ 8) *
+                              (iPriceDivider(jOQM.regular));
+                          jOQM.initialLoad = jOQM.initialKilo ~/ 8;
+                          setState(() {
+                            jOQM.initialKilo;
+                            jOQM.initialLoad;
+                            jOQM.initialPrice;
+                          });
+                        },
+                        icon: const Icon(Icons.add_circle),
+                        color: Colors.blueAccent,
+                      ),
+                    ],
+                  ),
+                )
+              ],
+            ),
+          ),
+        ),
+        //New Estimate Load display
+        Visibility(
+          visible: bShowKiloLoadDisplayVar,
+          child: Container(
+            padding: EdgeInsets.all(3),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: EdgeInsets.only(left: 10, right: 10),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text("Weight:"),
+                      Text("${kiloDisplay(jOQM.initialKilo)} kilo"),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding: EdgeInsets.only(left: 10, right: 10),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text("Load:"),
+                      Text("${jOQM.initialLoad}"),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding: EdgeInsets.only(left: 10, right: 10),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text("Load Price:"),
+                      Text(
+                          "${autoPriceDisplay(jOQM.initialPrice, jOQM.regular)}.00"),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        //New Estimate Load (+- 1 kilo)
+        Visibility(
+          visible: bShowKiloLoadDisplayVar,
+          child: Container(
+            padding: EdgeInsets.all(0.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding:
+                      EdgeInsets.only(left: 3, bottom: 0, top: 0, right: 3),
+                  decoration: BoxDecoration(
+                      color: Colors.amber[200],
+                      borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(20),
+                          bottomLeft: Radius.circular(20))),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      IconButton(
+                        onPressed: () {
+                          if (jOQM.initialKilo > 8) {
+                            if (jOQM.initialKilo % 8 == 1) {
+                              jOQM.initialPrice = jOQM.initialPrice -
+                                  (jOQM.regular ? 25 : 25); //8-9kilo 25
+
+                              //should be after kilo - 1;
+                              // jOQM.initialLoad =
+                              //     jOQM.initialLoad - 1;
+                            } else if (jOQM.initialKilo % 8 == 2) {
+                              jOQM.initialPrice = jOQM.initialPrice -
+                                  (jOQM.regular ? 45 : 50); //9-10kilo 45
+                            } else if (jOQM.initialKilo % 8 == 3) {
+                              jOQM.initialPrice = jOQM.initialPrice -
+                                  (jOQM.regular ? 25 : 25); //10-11kilo 25
+                            } else if (jOQM.initialKilo % 8 == 4) {
+                              jOQM.initialPrice = jOQM.initialPrice -
+                                  (jOQM.regular ? 25 : 25); //11-12kilo
+                            } else if (jOQM.initialKilo % 8 == 5) {
+                              jOQM.initialPrice = jOQM.initialPrice -
+                                  (jOQM.regular ? 35 : 0); //12-13kilo
+                            }
+                            // else if (jOQM.initialKilo % 8 ==
+                            //     6) {
+                            //   jOQM.initialPrice =
+                            //       jOQM.initialPrice -
+                            //           (jOQM.regular
+                            //               ? 10
+                            //               : 0); //13-16kilo
+                            // }
+                            jOQM.initialKilo = jOQM.initialKilo - 1;
+
+                            if (jOQM.initialKilo % 8 == 1) {
+                              //8-9kilo 25
+
+                              jOQM.initialLoad = jOQM.initialLoad - 1;
+                            }
+                          }
+                          setState(() {
+                            jOQM.initialKilo;
+                            jOQM.initialLoad;
+                            jOQM.initialPrice;
+                          });
+                        },
+                        icon: const Icon(Icons.remove_circle_outlined),
+                        color: Colors.blueAccent,
+                      ),
+                      Text("-1 kg"),
+                    ],
+                  ),
+                ),
+                SizedBox(
+                  width: 3,
+                ),
+                Container(
+                  padding:
+                      EdgeInsets.only(left: 3, bottom: 0, top: 0, right: 3),
+                  decoration: BoxDecoration(
+                      color: Colors.amber[200],
+                      borderRadius: BorderRadius.only(
+                          topRight: Radius.circular(20),
+                          bottomRight: Radius.circular(20))),
+                  child: Row(
+                    children: [
+                      Text("+1 kg"),
+                      IconButton(
+                        onPressed: () {
+                          if (jOQM.initialKilo >= 8) {
+                            jOQM.initialKilo = jOQM.initialKilo + 1;
+                          }
+
+                          if (jOQM.initialKilo % 8 == 1) {
+                            jOQM.initialPrice = jOQM.initialPrice +
+                                (jOQM.regular ? 25 : 25); //8-9kilo
+                          } else if (jOQM.initialKilo % 8 == 2) {
+                            jOQM.initialPrice = jOQM.initialPrice +
+                                (jOQM.regular ? 45 : 50); //9-10kilo
+                            jOQM.initialLoad = jOQM.initialLoad + 1;
+                          } else if (jOQM.initialKilo % 8 == 3) {
+                            jOQM.initialPrice = jOQM.initialPrice +
+                                (jOQM.regular ? 25 : 25); //10-11kilo
+                          } else if (jOQM.initialKilo % 8 == 4) {
+                            jOQM.initialPrice = jOQM.initialPrice +
+                                (jOQM.regular ? 25 : 25); //11-12kilo
+                          } else if (jOQM.initialKilo % 8 == 5) {
+                            jOQM.initialPrice = jOQM.initialPrice +
+                                (jOQM.regular ? 35 : 0); //12-13kilo
+                          }
+                          // else {
+                          //   if (jOQM.initialPrice %
+                          //           (iPriceDivider(
+                          //               jOQM.regular)) !=
+                          //       0) {
+                          //     jOQM.initialPrice =
+                          //         jOQM.initialPrice +
+                          //             (jOQM.regular
+                          //                 ? 10
+                          //                 : 0); //13-16kilo
+                          //   }
+                          // }
+
+                          setState(() {
+                            jOQM.initialKilo;
+                            jOQM.initialLoad;
+                            jOQM.initialPrice;
                           });
                         },
                         icon: const Icon(Icons.add_circle),
@@ -1246,7 +1744,7 @@ Visibility visAddOn(Function setState) {
         ? true
         : (jobsOnQueueModelGlobal.others ? true : false)),
     child: Container(
-      decoration: containerSayoSabonBoxDecoration(),
+      decoration: decoLightBlue(),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
@@ -1258,7 +1756,21 @@ Visibility visAddOn(Function setState) {
               ),
               IconButton(
                   onPressed: () {
-                    listAddOnItems.clear();
+                    DatabaseOtherItemsOnQueue databaseOtherItemsOnQueue =
+                        DatabaseOtherItemsOnQueue(jobsOnQueueModelGlobal.docId);
+
+                    listAddOnItemsGlobal.forEach((aOIG) {
+                      print("delete docid=${aOIG.docId}");
+                      if (aOIG.docId != "") {
+                        databaseOtherItemsOnQueue.deleteOtheritems(aOIG.docId);
+                        bDelAddOnsVar = true;
+                      } else {
+                        //need to relogin to delete
+                        bDelAddOnsVar = false;
+                      }
+                    });
+
+                    listAddOnItemsGlobal.clear();
                     jobsOnQueueModelGlobal.initialOthersPrice = 0;
                     setState(
                       () {
@@ -1266,7 +1778,6 @@ Visibility visAddOn(Function setState) {
                         bViewMoreOptions = false;
                       },
                     );
-
                     //resetAddOn();
                   },
                   icon: Icon(Icons.delete_outline)),
@@ -1389,7 +1900,7 @@ Visibility visAddOn(Function setState) {
                         onPressed: () {
                           setState(
                             () {
-                              listAddOnItems.add(selectedDetVar);
+                              listAddOnItemsGlobal.add(selectedDetVar);
                               jobsOnQueueModelGlobal.initialOthersPrice =
                                   jobsOnQueueModelGlobal.initialOthersPrice +
                                       selectedDetVar.itemPrice;
@@ -1437,7 +1948,7 @@ Visibility visAddOn(Function setState) {
                         onPressed: () {
                           setState(
                             () {
-                              listAddOnItems.add(selectedFabVar);
+                              listAddOnItemsGlobal.add(selectedFabVar);
                               jobsOnQueueModelGlobal.initialOthersPrice =
                                   jobsOnQueueModelGlobal.initialOthersPrice +
                                       selectedFabVar.itemPrice;
@@ -1485,7 +1996,7 @@ Visibility visAddOn(Function setState) {
                         onPressed: () {
                           setState(
                             () {
-                              listAddOnItems.add(selectedBleVar);
+                              listAddOnItemsGlobal.add(selectedBleVar);
                               jobsOnQueueModelGlobal.initialOthersPrice =
                                   jobsOnQueueModelGlobal.initialOthersPrice +
                                       selectedBleVar.itemPrice;
@@ -1533,7 +2044,7 @@ Visibility visAddOn(Function setState) {
                         onPressed: () {
                           setState(
                             () {
-                              listAddOnItems.add(selectedOthVar);
+                              listAddOnItemsGlobal.add(selectedOthVar);
                               jobsOnQueueModelGlobal.initialOthersPrice =
                                   jobsOnQueueModelGlobal.initialOthersPrice +
                                       selectedOthVar.itemPrice;
@@ -1547,7 +2058,335 @@ Visibility visAddOn(Function setState) {
                   ),
                 ),
               ),
-              readAddedDataVar(listAddOnItems),
+              readAddedDataVar(listAddOnItemsGlobal),
+              //_dtAddedOthers(addOnItems),
+              //_addedOn(addOnItems),
+            ],
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+Visibility visAddOnVar(
+    Function setState, JobsOnQueueModel jOQM, List<OtherItemModel> lOIM) {
+  return Visibility(
+    visible: (bViewMoreOptions ? true : (jOQM.others ? true : false)),
+    child: Container(
+      decoration: decoLightBlue(),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          Column(
+            children: [
+              Text(
+                "Clear Add Ons",
+                style: TextStyle(fontSize: 10),
+              ),
+              IconButton(
+                  onPressed: () {
+                    DatabaseOtherItemsOnQueue databaseOtherItemsOnQueue =
+                        DatabaseOtherItemsOnQueue(jOQM.docId);
+                    print(lOIM.length.toString() + "Size add on");
+                    lOIM.forEach((aOIG) {
+                      print("delete docid=${aOIG.docId}");
+                      if (aOIG.docId != "") {
+                        databaseOtherItemsOnQueue.deleteOtheritems(aOIG.docId);
+                        bDelAddOnsVar = true;
+                      } else {
+                        //need to relogin to delete
+                        bDelAddOnsVar = false;
+                      }
+                    });
+
+                    jOQM.initialOthersPrice = 0;
+                    setState(
+                      () {
+                        jOQM.others = false;
+                        bViewMoreOptions = false;
+                      },
+                    );
+                    //resetAddOn();
+                  },
+                  icon: Icon(Icons.delete_outline)),
+              //checkboxes add on
+              Visibility(
+                visible:
+                    (bViewMoreOptions ? true : (jOQM.others ? true : false)),
+                child: Container(
+                  padding: EdgeInsets.all(1.0),
+                  child: Row(
+                    children: [
+                      Column(
+                        children: [
+                          Text(
+                            "Det",
+                            style: TextStyle(fontSize: 10),
+                          ),
+                          Checkbox(
+                              value: bDetAddOnVar,
+                              onChanged: (val) {
+                                resetAddOnVar();
+                                setState(
+                                  () {
+                                    bDetAddOnVar = val!;
+                                  },
+                                );
+                              })
+                        ],
+                      ),
+                      Column(
+                        children: [
+                          Text(
+                            "Fab",
+                            style: TextStyle(fontSize: 10),
+                          ),
+                          Checkbox(
+                              value: bFabAddOnVar,
+                              onChanged: (val) {
+                                resetAddOnVar();
+                                setState(
+                                  () {
+                                    bFabAddOnVar = val!;
+                                  },
+                                );
+                              })
+                        ],
+                      ),
+                      Column(
+                        children: [
+                          Text(
+                            "Ble",
+                            style: TextStyle(fontSize: 10),
+                          ),
+                          Checkbox(
+                              value: bBleAddOnVar,
+                              onChanged: (val) {
+                                resetAddOnVar();
+                                setState(
+                                  () {
+                                    bBleAddOnVar = val!;
+                                  },
+                                );
+                              })
+                        ],
+                      ),
+                      Column(
+                        children: [
+                          Text(
+                            "Oth",
+                            style: TextStyle(fontSize: 10),
+                          ),
+                          Checkbox(
+                              value: bOthAddOnVar,
+                              onChanged: (val) {
+                                resetAddOnVar();
+                                setState(
+                                  () {
+                                    bOthAddOnVar = val!;
+                                  },
+                                );
+                              })
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Visibility(
+                visible: bDetAddOnVar,
+                child: Container(
+                  padding: EdgeInsets.all(1.0),
+                  child: Row(
+                    children: [
+                      DropdownButton<OtherItemModel>(
+                        value: selectedDetVar,
+                        icon: Icon(Icons.arrow_downward),
+                        iconSize: 24,
+                        elevation: 16,
+                        style: TextStyle(color: Colors.purple[700]),
+                        underline: Container(
+                          height: 2,
+                          color: Colors.purple[700],
+                        ),
+                        items: listDetItems.map((OtherItemModel map) {
+                          return DropdownMenuItem<OtherItemModel>(
+                              value: map,
+                              child: Text(
+                                  "${map.itemGroup}-${map.itemName}(${map.itemPrice}Php)"));
+                        }).toList(),
+                        onChanged: (newItemModel) {
+                          setState(
+                            () {
+                              updateSelectedVar(newItemModel!);
+                            },
+                          );
+                        },
+                      ),
+                      IconButton(
+                        onPressed: () {
+                          setState(
+                            () {
+                              lOIM.add(selectedDetVar);
+                              jOQM.initialOthersPrice =
+                                  jOQM.initialOthersPrice +
+                                      selectedDetVar.itemPrice;
+                            },
+                          );
+                        },
+                        icon: const Icon(Icons.add_circle),
+                        color: Colors.blueAccent,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Visibility(
+                visible: bFabAddOnVar,
+                child: Container(
+                  padding: EdgeInsets.all(1.0),
+                  child: Row(
+                    children: [
+                      DropdownButton<OtherItemModel>(
+                        value: selectedFabVar,
+                        icon: Icon(Icons.arrow_downward),
+                        iconSize: 24,
+                        elevation: 16,
+                        style: TextStyle(color: Colors.purple[700]),
+                        underline: Container(
+                          height: 2,
+                          color: Colors.purple[700],
+                        ),
+                        items: listFabItems.map((OtherItemModel map) {
+                          return DropdownMenuItem<OtherItemModel>(
+                              value: map,
+                              child: Text(
+                                  "${map.itemGroup}-${map.itemName}(${map.itemPrice}Php)"));
+                        }).toList(),
+                        onChanged: (newItemModel) {
+                          setState(
+                            () {
+                              updateSelectedVar(newItemModel!);
+                            },
+                          );
+                        },
+                      ),
+                      IconButton(
+                        onPressed: () {
+                          setState(
+                            () {
+                              lOIM.add(selectedFabVar);
+                              jOQM.initialOthersPrice =
+                                  jOQM.initialOthersPrice +
+                                      selectedFabVar.itemPrice;
+                            },
+                          );
+                        },
+                        icon: const Icon(Icons.add_circle),
+                        color: Colors.blueAccent,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Visibility(
+                visible: bBleAddOnVar,
+                child: Container(
+                  padding: EdgeInsets.all(1.0),
+                  child: Row(
+                    children: [
+                      DropdownButton<OtherItemModel>(
+                        value: selectedBleVar,
+                        icon: Icon(Icons.arrow_downward),
+                        iconSize: 24,
+                        elevation: 16,
+                        style: TextStyle(color: Colors.purple[700]),
+                        underline: Container(
+                          height: 2,
+                          color: Colors.purple[700],
+                        ),
+                        items: listBleItems.map((OtherItemModel map) {
+                          return DropdownMenuItem<OtherItemModel>(
+                              value: map,
+                              child: Text(
+                                  "${map.itemGroup}-${map.itemName}(${map.itemPrice}Php)"));
+                        }).toList(),
+                        onChanged: (newItemModel) {
+                          setState(
+                            () {
+                              updateSelectedVar(newItemModel!);
+                            },
+                          );
+                        },
+                      ),
+                      IconButton(
+                        onPressed: () {
+                          setState(
+                            () {
+                              lOIM.add(selectedBleVar);
+                              jOQM.initialOthersPrice =
+                                  jOQM.initialOthersPrice +
+                                      selectedBleVar.itemPrice;
+                            },
+                          );
+                        },
+                        icon: const Icon(Icons.add_circle),
+                        color: Colors.blueAccent,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Visibility(
+                visible: bOthAddOnVar,
+                child: Container(
+                  padding: EdgeInsets.all(1.0),
+                  child: Row(
+                    children: [
+                      DropdownButton<OtherItemModel>(
+                        value: selectedOthVar,
+                        icon: Icon(Icons.arrow_downward),
+                        iconSize: 24,
+                        elevation: 16,
+                        style: TextStyle(color: Colors.purple[700]),
+                        underline: Container(
+                          height: 2,
+                          color: Colors.purple[700],
+                        ),
+                        items: listOthItems.map((OtherItemModel map) {
+                          return DropdownMenuItem<OtherItemModel>(
+                              value: map,
+                              child: Text(
+                                  "${map.itemGroup}-${map.itemName}(${map.itemPrice}Php)"));
+                        }).toList(),
+                        onChanged: (newItemModel) {
+                          setState(
+                            () {
+                              updateSelectedVar(newItemModel!);
+                            },
+                          );
+                        },
+                      ),
+                      IconButton(
+                        onPressed: () {
+                          setState(
+                            () {
+                              lOIM.add(selectedOthVar);
+                              jOQM.initialOthersPrice =
+                                  jOQM.initialOthersPrice +
+                                      selectedOthVar.itemPrice;
+                            },
+                          );
+                        },
+                        icon: const Icon(Icons.add_circle),
+                        color: Colors.blueAccent,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              readAddedDataVar(lOIM),
               //_dtAddedOthers(addOnItems),
               //_addedOn(addOnItems),
             ],
@@ -1578,10 +2417,30 @@ Container conTotalPrice(Function setState) {
   );
 }
 
+Container conTotalPriceVar(Function setState, JobsOnQueueModel jOQM) {
+  return Container(
+    decoration: containerTotalPriceBoxDecoration(),
+    padding: EdgeInsets.only(left: 10, right: 10),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          "Total Price:",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        Text(
+          "Php ${jOQM.initialPrice + jOQM.initialOthersPrice}.00",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+      ],
+    ),
+  );
+}
+
 Container conBasket(Function setState) {
   return Container(
     padding: EdgeInsets.all(1.0),
-    decoration: containerQueBoxDecoration(),
+    decoration: decoAmber(),
     child: Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -1605,10 +2464,38 @@ Container conBasket(Function setState) {
   );
 }
 
+Container conBasketVar(
+    Function setState, JobsOnQueueModel jOQM, BoxDecoration conDecoration) {
+  return Container(
+    padding: EdgeInsets.all(1.0),
+    decoration: conDecoration, //decoAmber(),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        IconButton(
+          onPressed: () {
+            setState(() => jOQM.basket--);
+          },
+          icon: const Icon(Icons.remove_circle_outlined),
+          color: Colors.blueAccent,
+        ),
+        Text("Basket: ${jOQM.basket}"),
+        IconButton(
+          onPressed: () {
+            setState(() => jOQM.basket++);
+          },
+          icon: const Icon(Icons.add_circle),
+          color: Colors.blueAccent,
+        ),
+      ],
+    ),
+  );
+}
+
 Container conBag(Function setState) {
   return Container(
     padding: EdgeInsets.all(1.0),
-    decoration: containerQueBoxDecoration(),
+    decoration: decoAmber(),
     child: Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -1632,9 +2519,37 @@ Container conBag(Function setState) {
   );
 }
 
+Container conBagVar(
+    Function setState, JobsOnQueueModel jOQM, BoxDecoration conDecoration) {
+  return Container(
+    padding: EdgeInsets.all(1.0),
+    decoration: conDecoration,
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        IconButton(
+          onPressed: () {
+            setState(() => jOQM.bag--);
+          },
+          icon: const Icon(Icons.remove_circle_outlined),
+          color: Colors.blueAccent,
+        ),
+        Text("Bag: ${jOQM.bag}"),
+        IconButton(
+          onPressed: () {
+            setState(() => jOQM.bag++);
+          },
+          icon: const Icon(Icons.add_circle),
+          color: Colors.blueAccent,
+        ),
+      ],
+    ),
+  );
+}
+
 Container conPayment(Function setState) {
   return Container(
-    decoration: containerQueBoxDecoration(),
+    decoration: decoAmber(),
     child: Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
@@ -1703,11 +2618,82 @@ Container conPayment(Function setState) {
   );
 }
 
+Container conPaymentVar(Function setState, JobsOnQueueModel jOQM) {
+  return Container(
+    decoration: decoAmber(),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        Column(
+          children: [
+            Text(
+              "Unpaid",
+              style: TextStyle(fontSize: 10),
+            ),
+            Checkbox(
+                value: jOQM.unpaid,
+                onChanged: (val) {
+                  resetPaymentQueueBool(jOQM);
+                  if (val!) {
+                    setState(
+                      () {
+                        jOQM.unpaid = val;
+                      },
+                    );
+                  }
+                })
+          ],
+        ),
+        Column(
+          children: [
+            Text(
+              "PaidCash",
+              style: TextStyle(fontSize: 10),
+            ),
+            Checkbox(
+                value: jOQM.paidcash,
+                onChanged: (val) {
+                  resetPaymentQueueBool(jOQM);
+                  if (val!) {
+                    setState(
+                      () {
+                        jOQM.paidcash = val;
+                      },
+                    );
+                  }
+                })
+          ],
+        ),
+        Column(
+          children: [
+            Text(
+              "PaidGcash",
+              style: TextStyle(fontSize: 10),
+            ),
+            Checkbox(
+                value: jOQM.paidgcash,
+                onChanged: (val) {
+                  resetPaymentQueueBool(jOQM);
+                  if (val!) {
+                    setState(
+                      () {
+                        jOQM.paidgcash = val;
+                      },
+                    );
+                  }
+                })
+          ],
+        ),
+      ],
+    ),
+  );
+}
+
 Container conRemarks(Function setState) {
   remarksControllerVar.text = jobsOnQueueModelGlobal.remarks;
   return Container(
     padding: EdgeInsets.all(1.0),
-    decoration: containerQueBoxDecoration(),
+    decoration: decoAmber(),
     child: TextFormField(
       textCapitalization: TextCapitalization.words,
       textAlign: TextAlign.start,
@@ -1718,11 +2704,28 @@ Container conRemarks(Function setState) {
   );
 }
 
+Container conRemarksVar(Function setState, JobsOnQueueModel jOQM) {
+  remarksControllerVar.text = jOQM.remarks;
+  return Container(
+    padding: EdgeInsets.all(1.0),
+    decoration: decoAmber(),
+    child: TextFormField(
+      textCapitalization: TextCapitalization.words,
+      textAlign: TextAlign.start,
+      controller: remarksControllerVar,
+      decoration: InputDecoration(labelText: 'Remarks', hintText: 'Notes'),
+      validator: (val) {
+        jOQM.remarks = remarksControllerVar.text;
+      },
+    ),
+  );
+}
+
 Container conMoreOptions(Function setState) {
   return Container(
     alignment: Alignment.center,
     padding: EdgeInsets.all(1.0),
-    decoration: containerSayoSabonBoxDecoration(),
+    decoration: decoLightBlue(),
     child: Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -1747,7 +2750,7 @@ Visibility visFold(Function setState) {
     child: Container(
       alignment: Alignment.center,
       padding: EdgeInsets.all(1.0),
-      decoration: containerSayoSabonBoxDecoration(),
+      decoration: decoLightBlue(),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -1767,13 +2770,39 @@ Visibility visFold(Function setState) {
   );
 }
 
+Visibility visFoldVar(Function setState, JobsOnQueueModel jOQM) {
+  return Visibility(
+    visible: bViewMoreOptions,
+    child: Container(
+      alignment: Alignment.center,
+      padding: EdgeInsets.all(1.0),
+      decoration: decoLightBlue(),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text("No Fold"),
+          Switch.adaptive(
+            value: jOQM.fold,
+            onChanged: (bool value) {
+              setState(() {
+                jOQM.fold = value;
+              });
+            },
+          ),
+          Text("Fold"),
+        ],
+      ),
+    ),
+  );
+}
+
 Visibility visMix(Function setState) {
   return Visibility(
     visible: bViewMoreOptions,
     child: Container(
       alignment: Alignment.center,
       padding: EdgeInsets.all(1.0),
-      decoration: containerSayoSabonBoxDecoration(),
+      decoration: decoLightBlue(),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -1793,12 +2822,38 @@ Visibility visMix(Function setState) {
   );
 }
 
+Visibility visMixVar(Function setState, JobsOnQueueModel jOQM) {
+  return Visibility(
+    visible: bViewMoreOptions,
+    child: Container(
+      alignment: Alignment.center,
+      padding: EdgeInsets.all(1.0),
+      decoration: decoLightBlue(),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text("Dont Mix"),
+          Switch.adaptive(
+            value: jOQM.mix,
+            onChanged: (bool value) {
+              setState(() {
+                jOQM.mix = value;
+              });
+            },
+          ),
+          Text("Mix"),
+        ],
+      ),
+    ),
+  );
+}
+
 Visibility visNeedOn(Function setState) {
   return Visibility(
     visible: bViewMoreOptions,
     child: Container(
       padding: EdgeInsets.all(1.0),
-      decoration: containerSayoSabonBoxDecoration(),
+      decoration: decoLightBlue(),
       child: Column(
         children: [
           Container(
@@ -1938,29 +2993,39 @@ String displayDateVar(String s) {
 Future<void> moveUpVar(int jobsId) async {
   var collection = FirebaseFirestore.instance.collection('JobsOnGoing');
   var querySnapshots = await collection.get();
+  bool bOnlyOne = false;
+  if (querySnapshots.size == 1) {
+    bOnlyOne = true;
+  }
   for (var doc in querySnapshots.docs) {
-    if (jobsId == 1) {
-      //updatePrevOne25(jobsId);
-      //break;
-      if (doc['JobsId'] == 1) {
-        await doc.reference.update({
-          'JobsId': 25,
-        });
-      }
-      if (doc['JobsId'] == 25) {
-        await doc.reference.update({
-          'JobsId': 1,
-        });
-      }
+    if (bOnlyOne && doc['D30_JobsId'] == 0) {
+      await doc.reference.update({
+        'D30_JobsId': 1,
+      });
     } else {
-      if ((jobsId - 1) == doc['JobsId']) {
-        await doc.reference.update({
-          'JobsId': jobsId,
-        });
-      } else if ((jobsId) == doc['JobsId']) {
-        await doc.reference.update({
-          'JobsId': jobsId - 1,
-        });
+      if (jobsId == 1) {
+        //updatePrevOne25(jobsId);
+        //break;
+        if (doc['D30_JobsId'] == 1) {
+          await doc.reference.update({
+            'D30_JobsId': 25,
+          });
+        }
+        if (doc['D30_JobsId'] == 25) {
+          await doc.reference.update({
+            'D30_JobsId': 1,
+          });
+        }
+      } else {
+        if ((jobsId - 1) == doc['D30_JobsId']) {
+          await doc.reference.update({
+            'D30_JobsId': jobsId,
+          });
+        } else if ((jobsId) == doc['D30_JobsId']) {
+          await doc.reference.update({
+            'D30_JobsId': jobsId - 1,
+          });
+        }
       }
     }
   }
@@ -1978,6 +3043,40 @@ Container conDisplayVar(
     child: Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
+        Expanded(
+          child: Column(
+            mainAxisSize: MainAxisSize.max,
+            children: [
+              Text(
+                "${customerName(jOQM.customerId.toString())} (${jOQM.finalLoad == 0 ? jOQM.initialLoad : jOQM.finalLoad}) ${jOQM.basket == 0 ? "" : "${jOQM.basket}BK"} ${jOQM.bag == 0 ? "" : "${jOQM.bag}BG"}",
+                style: const TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.end,
+              ),
+              Text(
+                "${jOQM.finalKilo == 0 ? jOQM.initialKilo : jOQM.finalKilo} kg ${jOQM.mix ? "" : "DM"} ${jOQM.fold ? "" : "NF"}",
+                style: const TextStyle(fontSize: 9),
+              ),
+              Text(
+                "${jOQM.unpaid ? "Unpaid" : jOQM.paidcash ? "Paid Cash" : {
+                    jOQM.paidgcash ? "Paid GCash" : "Unknown"
+                  }} : Php ${jOQM.initialPrice + jOQM.initialOthersPrice}.00",
+                style:
+                    const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+              ),
+              Text(
+                //displayDateVar(convertTimeStampVar(jOQM.needOn)),
+                "Need On: ${isItToday(jOQM.needOn) ? "Today" : (isItTomorrow(jOQM.needOn) ? "Tomorrow" : (displayDateVar(convertTimeStampVar(jOQM.needOn))))}",
+                style: const TextStyle(
+                  fontSize: 10,
+                ),
+                textAlign: TextAlign.right,
+              ),
+            ],
+          ),
+        ),
         Column(
           children: [
             InkWell(
@@ -1990,7 +3089,7 @@ Container conDisplayVar(
               },
               child: Text(
                 //(buffJobsId == 0 ? "" : "#$buffJobsId"),
-                (jOQM.jobsId == 0 ? "" : jOQM.jobsId.toString()),
+                (jOQM.jobsId == 0 ? "" : "#${jOQM.jobsId}"),
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                 ),
@@ -2009,52 +3108,21 @@ Container conDisplayVar(
             ),
           ],
         ),
-        Expanded(
-          child: Column(
-            mainAxisSize: MainAxisSize.max,
-            children: [
-              Text(
-                "${customerName(jOQM.customerId.toString())} (${jOQM.finalLoad == 0 ? jOQM.initialLoad : jOQM.finalLoad}) ${jOQM.basket == 0 ? "" : "${jOQM.basket}BK"} ${jOQM.bag == 0 ? "" : "${jOQM.bag}BG"}",
-                style: const TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.bold,
-                ),
-                textAlign: TextAlign.end,
-              ),
-              Text(
-                "${jOQM.finalKilo == 0 ? jOQM.initialKilo : jOQM.finalKilo} kg ${jOQM.mix ? "" : "DM"} ${jOQM.fold ? "" : "NF"}",
-                style: const TextStyle(fontSize: 9),
-              ),
-              Text(
-                "${jOQM.unpaid ? "Unpaid" : {
-                    jOQM.paidcash
-                        ? "Paid Cash"
-                        : {jOQM.paidgcash ? "Paid GCash" : "Unknown"}
-                  }} : Php ${jOQM.initialPrice + jOQM.initialOthersPrice}.00",
-                style:
-                    const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
-              ),
-              Text(
-                //displayDateVar(convertTimeStampVar(jOQM.needOn)),
-                "Need On: ${isItToday(jOQM.needOn) ? "Today" : (isItTomorrow(jOQM.needOn) ? "Tomorrow" : (displayDateVar(convertTimeStampVar(jOQM.needOn))))}",
-                style: const TextStyle(
-                  fontSize: 10,
-                ),
-                textAlign: TextAlign.right,
-              ),
-            ],
-          ),
-        ),
       ],
     ),
   );
 }
 
 //alterjobsonqueue
-void showAlterJobsOnQueueVar(
-    BuildContext context, String docId, JobsOnQueueModel jOQM) {
-  jobsOnQueueModelGlobal = jOQM;
-  dNeedOnVar = jobsOnQueueModelGlobal.needOn.toDate();
+void showAlterJobsOnQueueVar(BuildContext context, String docId,
+    JobsOnQueueModel jOQM, List<OtherItemModel> lOIM) async {
+  //jobsOnQueueModelGlobal = jOQM;
+  //listAddOnItemsGlobal = lOIM;
+  dNeedOnVar = jOQM.needOn.toDate();
+  bViewMoreOptions = false;
+  if (lOIM.isNotEmpty) {
+    bViewMoreOptions = true;
+  }
   showDialog(
     context: context,
     builder: (BuildContext context) {
@@ -2076,17 +3144,17 @@ void showAlterJobsOnQueueVar(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     conCustomerName(context, setState, jOQM),
-                    conQueueStat(setState),
-                    conOrderMode(setState),
-                    visAddOn(setState),
-                    conTotalPrice(setState),
-                    conBasket(setState),
-                    conBag(setState),
-                    conPayment(setState),
-                    conRemarks(setState),
+                    conQueueStatVar(setState, jOQM),
+                    conOrderModeVar(setState, jOQM, decoAmber()),
+                    visAddOnVar(setState, jOQM, lOIM),
+                    conTotalPriceVar(setState, jOQM),
+                    conBasketVar(setState, jOQM, decoAmber()),
+                    conBagVar(setState, jOQM, decoAmber()),
+                    conPaymentVar(setState, jOQM),
+                    conRemarksVar(setState, jOQM),
                     conMoreOptions(setState),
-                    visFold(setState),
-                    visMix(setState),
+                    visFoldVar(setState, jOQM),
+                    visMixVar(setState, jOQM),
                     visNeedOn(setState),
                   ],
                 ),
@@ -2098,7 +3166,20 @@ void showAlterJobsOnQueueVar(
             cancelButtonVar(context),
 
             //save button
-            updateJOQVar(context, docId, jOQM),
+            updateButtonJOQVar(
+                // context, docId, jobsOnQueueModelGlobal, listAddOnItemsGlobal),
+                context,
+                docId,
+                jOQM,
+                lOIM),
+
+            //move to ongoing
+            createNewJOGVar(
+                // context, docId, jobsOnQueueModelGlobal, listAddOnItemsGlobal),
+                context,
+                docId,
+                jOQM,
+                lOIM),
           ],
         );
       });
@@ -2106,24 +3187,182 @@ void showAlterJobsOnQueueVar(
   );
 }
 
-Widget updateJOQVar(BuildContext context, String docId, JobsOnQueueModel jOQM) {
+//alterjobsonqueue
+void showAlterJobsOnGoingVar(BuildContext context, String docId,
+    JobsOnQueueModel jOQM, List<OtherItemModel> lOIM) async {
+  //jobsOnQueueModelGlobal = jOQM;
+  //listAddOnItemsGlobal = lOIM;
+  bViewMoreOptions = false;
+  if (lOIM.isNotEmpty) {
+    bViewMoreOptions = true;
+  }
+  dNeedOnVar = jOQM.needOn.toDate();
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return StatefulBuilder(builder: (context, setState) {
+        return AlertDialog(
+          title: Text(
+            "New Laundry ${DateTime.now().toString().substring(5, 13)}",
+            style: TextStyle(backgroundColor: Colors.amber[300]),
+          ),
+          content: SingleChildScrollView(
+            scrollDirection: Axis.vertical,
+            child: Container(
+              padding: EdgeInsets.all(8.0),
+              decoration: BoxDecoration(
+                  border: Border.all(color: Colors.blueAccent, width: 2.0)),
+              child: Form(
+                //key: _formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    conCustomerName(context, setState, jOQM),
+                    //conQueueStatVar(setState, jOQM),
+                    Visibility(
+                        visible: bViewMoreOptions,
+                        child:
+                            conOrderModeVar(setState, jOQM, decoLightBlue())),
+                    visAddOnVar(setState, jOQM, lOIM),
+                    conTotalPriceVar(setState, jOQM),
+                    Visibility(
+                        visible: bViewMoreOptions,
+                        child: conBasketVar(setState, jOQM, decoLightBlue())),
+                    Visibility(
+                        visible: bViewMoreOptions,
+                        child: conBagVar(setState, jOQM, decoLightBlue())),
+                    conPaymentVar(setState, jOQM),
+                    conRemarksVar(setState, jOQM),
+                    conMoreOptions(setState),
+                    visFoldVar(setState, jOQM),
+                    visMixVar(setState, jOQM),
+                    visNeedOn(setState),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          actions: [
+            //cancel button
+            cancelButtonVar(context),
+
+            //save button
+            updateButtonJOGVar(
+                // context, docId, jobsOnQueueModelGlobal, listAddOnItemsGlobal),
+                context,
+                docId,
+                jOQM,
+                lOIM),
+
+            //move to ongoing
+            // createNewJOGVar(
+            //     // context, docId, jobsOnQueueModelGlobal, listAddOnItemsGlobal),
+            //     context,
+            //     docId,
+            //     jOQM,
+            //     lOIM),
+          ],
+        );
+      });
+    },
+  );
+}
+
+Widget updateButtonJOQVar(BuildContext context, String docId,
+    JobsOnQueueModel jOQM, List<OtherItemModel> lAOI) {
   return MaterialButton(
     onPressed: () {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Processing Data')),
-      );
+      if (bDelAddOnsVar) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Processing Data')),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text('Failed delete add ons, please delete again.')),
+        );
+      }
+
+      bViewMoreOptions = false;
 
       //pop box
       Navigator.pop(context);
-      udpateJOQMVar(docId, jOQM);
+      updateJOQMVar(docId, jOQM, lAOI);
+      if (lAOI.isNotEmpty) {
+        bViewMoreOptions = true;
+        Navigator.pop(context);
+      }
+
+      // Navigator.of(context).push(
+      //     MaterialPageRoute(builder: (context) => MyQueue(jOQM.currentEmpId)));
     },
     color: cButtons,
     child: const Text("Update"),
   );
 }
 
-void udpateJOQMVar(String docId, JobsOnQueueModel jOQM) {
+Widget updateButtonJOGVar(BuildContext context, String docId,
+    JobsOnQueueModel jOQM, List<OtherItemModel> lAOI) {
+  return MaterialButton(
+    onPressed: () {
+      if (bDelAddOnsVar) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Processing Data')),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text('Failed delete add ons, please delete again.')),
+        );
+      }
+
+      bViewMoreOptions = false;
+
+      //pop box
+      Navigator.pop(context);
+      updateJOGMVar(docId, jOQM, lAOI);
+      if (lAOI.isNotEmpty) {
+        bViewMoreOptions = true;
+        Navigator.pop(context);
+      }
+
+      // Navigator.of(context).push(
+      //     MaterialPageRoute(builder: (context) => MyQueue(jOQM.currentEmpId)));
+    },
+    color: cButtons,
+    child: const Text("Update"),
+  );
+}
+
+void updateJOQMVar(
+    String docId, JobsOnQueueModel jOQM, List<OtherItemModel> lAOI) {
   DatabaseJobsOnQueue databaseJobsOnQueue = DatabaseJobsOnQueue();
   jOQM.needOn = Timestamp.fromDate(dNeedOnVar);
-  databaseJobsOnQueue.updateJobsOnQueue(docId, jOQM);
+  databaseJobsOnQueue.updateJobsOnQueue(docId, jOQM, lAOI);
+}
+
+void updateJOGMVar(
+    String docId, JobsOnQueueModel jOQM, List<OtherItemModel> lAOI) {
+  DatabaseJobsOnGoing databaseJobsOnGoing = DatabaseJobsOnGoing();
+  jOQM.needOn = Timestamp.fromDate(dNeedOnVar);
+  databaseJobsOnGoing.updateJobsOnGoing(docId, jOQM, lAOI);
+}
+
+void deleteJOQVar(String docId, List<OtherItemModel> lAOI) {
+  DatabaseOtherItemsOnQueue databaseOtherItemsOnQueue =
+      DatabaseOtherItemsOnQueue(docId);
+
+  lAOI.forEach((aOIG) {
+    print("delete for ongoing docid=${aOIG.docId}");
+    if (aOIG.docId != "") {
+      databaseOtherItemsOnQueue.deleteOtheritems(aOIG.docId);
+      // bDelAddOnsVar = true;
+    } else {
+      //need to relogin to delete
+      // bDelAddOnsVar = false;
+    }
+  });
+
+  DatabaseJobsOnQueue databaseJobsOnQueue = DatabaseJobsOnQueue();
+  databaseJobsOnQueue.deleteJobsOnQueue(docId);
 }

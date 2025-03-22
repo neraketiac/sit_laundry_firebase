@@ -7,8 +7,10 @@ import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:laundry_firebase/models/jobsonqueuemodel.dart';
 import 'package:laundry_firebase/models/otheritemmodel.dart';
+import 'package:laundry_firebase/services/database_jobsongoing.dart';
 import 'package:laundry_firebase/services/database_jobsonqueue.dart';
-import 'package:laundry_firebase/services/database_other_items.dart';
+import 'package:laundry_firebase/services/database_other_items_ongoing.dart';
+import 'package:laundry_firebase/services/database_other_items_onqueue.dart';
 //import 'package:laundry_firebase/variables/item_count_helper.dart';
 import 'package:laundry_firebase/variables/variables.dart';
 
@@ -98,6 +100,8 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
 
     empid = widget.empid;
 
+    bDelAddOnsVar = true;
+
     //putEntries();
   }
 
@@ -142,7 +146,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                   const SizedBox(
                     height: 1,
                   ),
-                  _readDataJobsOnGoing('JobsOnGoing', context),
+                  _readDataJobsOnGoing(),
                 ]),
               ),
             ),
@@ -228,8 +232,12 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
 
           listJOQM.forEach((jOQMData) {
             JobsOnQueueModel jOQM = jOQMData.data();
-            // DatabaseOtherItems dbOI = DatabaseOtherItems(jOQMData.id);
+            List<OtherItemModel> lOIM;
+            DatabaseOtherItemsOnQueue dbOIOQ =
+                DatabaseOtherItemsOnQueue(jOQMData.id);
             //_readOtherItems(jOQMData.id);
+            lOIM =
+                _readAllOtherItemModel(jOQMData.id.toString(), 'JobsOnQueue');
             final rowData = TableRow(
                 decoration:
                     BoxDecoration(color: zebra ? Colors.black : Colors.black),
@@ -271,7 +279,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                           //alterQueueMobileJson(jobsOnQueueModel);
 
                           showAlterJobsOnQueueVar(
-                              context, jOQMData.id.toString(), jOQM);
+                              context, jOQMData.id.toString(), jOQM, lOIM);
 /*
                           editAll(
                             jobsOnQueueModel,
@@ -325,6 +333,70 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
     );
   }
 
+  //read JobsOnGoing
+  Widget _readDataJobsOnGoing() {
+    DatabaseJobsOnGoing databaseJobsOnGoing = DatabaseJobsOnGoing();
+    bool zebra = false;
+    //read
+    return StreamBuilder<QuerySnapshot>(
+      stream: databaseJobsOnGoing.getJobsOnGoing(),
+      builder: (context, snapshot) {
+        List listJOQM = snapshot.data?.docs ?? [];
+        bHeader = true;
+        List<TableRow> rowDatas = [];
+        if (listJOQM.isNotEmpty) {
+          //header
+          if (bHeader) {
+            const rowData = TableRow(
+                decoration:
+                    BoxDecoration(color: Color.fromARGB(255, 9, 194, 49)),
+                children: [
+                  Text(
+                    "Jobs On Going",
+                    style: TextStyle(fontSize: 10),
+                  ),
+                ]);
+            rowDatas.add(rowData);
+            bHeader = false;
+          }
+
+          listJOQM.forEach((jOQMData) {
+            JobsOnQueueModel jOQM = jOQMData.data();
+            List<OtherItemModel> lOIM;
+            DatabaseOtherItemsOnGoing dbOIOQ =
+                DatabaseOtherItemsOnGoing(jOQMData.id);
+            //_readOtherItems(jOQMData.id);
+            lOIM =
+                _readAllOtherItemModel(jOQMData.id.toString(), 'JobsOnGoing');
+            final rowData = TableRow(
+                decoration:
+                    BoxDecoration(color: zebra ? Colors.black : Colors.black),
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(2.0),
+                    child: Center(
+                      child: GestureDetector(
+                        onTap: () {
+                          showAlterJobsOnGoingVar(
+                              context, jOQMData.id.toString(), jOQM, lOIM);
+                        },
+                        child: conDisplayVar(true, jOQM),
+                      ),
+                    ),
+                  )
+                ]);
+
+            rowDatas.add(rowData);
+          });
+        }
+
+        return Table(
+          children: rowDatas,
+        );
+      },
+    );
+  }
+
   //read OtherItems
   Future<void> _readOtherItems(String id) async {
     //String _readOtherItems(String id) {
@@ -342,17 +414,44 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
     }).catchError((error) => print("Failed to fetch users: $error"));
   }
 
+  List<OtherItemModel> _readAllOtherItemModel(
+      String id, String sMainCollection) {
+    List<OtherItemModel> lOIM = [];
+
+    late String asdf = "";
+    CollectionReference users = FirebaseFirestore.instance
+        .collection(sMainCollection)
+        .doc(id)
+        .collection('OtherItems');
+
+    users.get().then((QuerySnapshot snapshot) {
+      for (var doc in snapshot.docs) {
+        OtherItemModel oIM = OtherItemModel(
+            docId: doc['docId'],
+            itemId: doc['itemId'],
+            itemGroup: doc['itemGroup'],
+            itemName: doc['itemName'],
+            itemPrice: doc['itemPrice']);
+        print("asdf=" + oIM.itemName);
+        lOIM.add(oIM);
+      }
+    }).catchError((error) => print("Failed to fetch users: $error"));
+
+    return lOIM;
+  }
+
   Future<List<OtherItemModel>> _readOtherItemsList(String id) async {
     List<OtherItemModel> listOIM = [];
-    DatabaseOtherItems dbOI = DatabaseOtherItems(id);
+    DatabaseOtherItemsOnQueue dbOIOQ = DatabaseOtherItemsOnQueue(id);
 
     //List listJOQM = snapshot.data?.docs ?? [];
 
-    Stream stream = dbOI.getOtherItems();
+    Stream stream = dbOIOQ.getOtherItems();
 
     return listOIM;
   }
 
+  /*
   //read JobsOnGoing
   Widget _readDataJobsOnGoing(String streamName, BuildContext context) {
     bool zebra = false;
@@ -577,6 +676,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
       },
     );
   }
+  */
 
   //read JobsDone Wala sa Customer
   Widget _readDataJobsDone(String streamName, BuildContext context) {
@@ -1267,7 +1367,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                     Container(
                       alignment: Alignment.center,
                       padding: EdgeInsets.all(1.0),
-                      decoration: containerQueBoxDecoration(),
+                      decoration: decoAmber(),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -1355,7 +1455,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                     // QeueeStat CheckBox
                     // Container(
                     //   padding: EdgeInsets.all(1.0),
-                    //   decoration: containerQueBoxDecoration(),
+                    //   decoration: decoAmber(),
                     //   child: Row(
                     //     mainAxisAlignment: MainAxisAlignment.center,
                     //     children: [
@@ -1420,7 +1520,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                     Container(
                       alignment: Alignment.center,
                       padding: EdgeInsets.all(1.0),
-                      decoration: containerQueBoxDecoration(),
+                      decoration: decoAmber(),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -3711,7 +3811,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                     Container(
                       alignment: Alignment.center,
                       padding: EdgeInsets.all(1.0),
-                      decoration: containerQueBoxDecoration(),
+                      decoration: decoAmber(),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -3739,7 +3839,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                     ),
                     Container(
                       padding: EdgeInsets.all(1.0),
-                      decoration: containerQueBoxDecoration(),
+                      decoration: decoAmber(),
                       child: Column(
                         children: [
                           Row(
@@ -4316,7 +4416,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                       height: 5,
                     ),
                     Container(
-                      decoration: containerSayoSabonBoxDecoration(),
+                      decoration: decoLightBlue(),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
@@ -4329,7 +4429,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                               Checkbox(
                                   value: bAddOnEditAll,
                                   onChanged: (val) {
-                                    if (listAddOnItems.isNotEmpty) {
+                                    if (listAddOnItemsGlobal.isNotEmpty) {
                                       if (!val!) {
                                         //pop box
                                         Navigator.pop(context);
@@ -4536,7 +4636,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                                 dNeedOnEditAll,
                                 docId,
                               ),
-                              readAddedDataEditAll(listAddOnItems),
+                              readAddedDataEditAll(listAddOnItemsGlobal),
                               //_dtAddedOthers(addOnItems),
                               //_addedOn(addOnItems),
                             ],
@@ -4550,7 +4650,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                     ),
                     Container(
                       padding: EdgeInsets.all(1.0),
-                      decoration: containerQueBoxDecoration(),
+                      decoration: decoAmber(),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -4578,7 +4678,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                     ),
                     Container(
                       padding: EdgeInsets.all(1.0),
-                      decoration: containerQueBoxDecoration(),
+                      decoration: decoAmber(),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -4605,7 +4705,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                       height: 5,
                     ),
                     Container(
-                      decoration: containerQueBoxDecoration(),
+                      decoration: decoAmber(),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
@@ -4685,7 +4785,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                     Container(
                       alignment: Alignment.center,
                       padding: EdgeInsets.all(1.0),
-                      decoration: containerQueBoxDecoration(),
+                      decoration: decoAmber(),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -4709,7 +4809,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                     Container(
                       alignment: Alignment.center,
                       padding: EdgeInsets.all(1.0),
-                      decoration: containerQueBoxDecoration(),
+                      decoration: decoAmber(),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -4732,7 +4832,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                     //Remarks
                     Container(
                       padding: EdgeInsets.all(1.0),
-                      decoration: containerQueBoxDecoration(),
+                      decoration: decoAmber(),
                       child: TextFormField(
                         textCapitalization: TextCapitalization.words,
                         textAlign: TextAlign.start,
@@ -4748,7 +4848,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                     //Need On Date +
                     Container(
                       padding: EdgeInsets.all(1.0),
-                      decoration: containerQueBoxDecoration(),
+                      decoration: decoAmber(),
                       child: Column(
                         children: [
                           Container(
@@ -4904,7 +5004,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                 MaterialButton(
                   onPressed: () {
                     Navigator.pop(context);
-                    listAddOnItems.clear();
+                    listAddOnItemsGlobal.clear();
                     jobsOnQueueModelEditAll.initialOthersPrice = 0;
                     resetAddOnVar();
                     editAll(
@@ -5013,7 +5113,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
             IconButton(
               onPressed: () {
                 Navigator.pop(context);
-                listAddOnItems.add(selectedItemModel);
+                listAddOnItemsGlobal.add(selectedItemModel);
                 //reset dropdowns
                 if (listDetItems.contains(selectedItemModel)) {
                   selectedDetVar = selectedItemModel;
@@ -5186,7 +5286,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
   void insertDataJobsOnQueueJson(JobsOnQueueModel jobsOnQueueModel) {
     DatabaseJobsOnQueue databaseJobsOnQueue = DatabaseJobsOnQueue();
 
-    databaseJobsOnQueue.addJobsOnQueue(jobsOnQueueModel, listAddOnItems);
+    databaseJobsOnQueue.addJobsOnQueue(jobsOnQueueModel, listAddOnItemsGlobal);
 
     //databaseJobsOnQueue.addJobsOnQueueSolo(jobsOnQueueModel);
   }
@@ -5219,7 +5319,8 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
   void _updateDataQueueMobileEditAll(
       String docId, JobsOnQueueModel jobsOnQueueModelEditAll) {
     DatabaseJobsOnQueue databaseJobsOnQueue = DatabaseJobsOnQueue();
-    databaseJobsOnQueue.updateJobsOnQueue(docId, jobsOnQueueModelEditAll);
+
+    ///databaseJobsOnQueue.updateJobsOnQueue(docId, jobsOnQueueModelEditAll);
   }
 
 /*

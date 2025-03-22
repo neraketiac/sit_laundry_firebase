@@ -1,8 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class JobsOnQueueModel {
+  String docId;
   Timestamp dateQ;
   String createdBy;
+  String currentEmpId;
   int customerId;
   bool perKilo;
   int initialKilo;
@@ -46,8 +48,10 @@ class JobsOnQueueModel {
   bool disposed;
 
   JobsOnQueueModel({
+    required this.docId,
     required this.dateQ,
     required this.createdBy,
+    required this.currentEmpId,
     required this.customerId,
     required this.perKilo,
     required this.initialKilo,
@@ -92,8 +96,10 @@ class JobsOnQueueModel {
   });
 
   JobsOnQueueModel coyWith({
+    String? docId,
     Timestamp? dateQ,
     String? createdBy,
+    String? currentEmpId,
     int? customerId,
     bool? perKilo,
     int? initialKilo,
@@ -137,8 +143,10 @@ class JobsOnQueueModel {
     bool? disposed,
   }) {
     return JobsOnQueueModel(
+      docId: docId ?? this.docId,
       dateQ: dateQ ?? this.dateQ,
       createdBy: createdBy ?? this.createdBy,
+      currentEmpId: currentEmpId ?? this.currentEmpId,
       customerId: customerId ?? this.customerId,
       perKilo: perKilo ?? this.perKilo,
       initialKilo: initialKilo ?? this.initialKilo,
@@ -185,10 +193,12 @@ class JobsOnQueueModel {
 
   JobsOnQueueModel.fromJson(Map<String, dynamic> json)
       : this(
+            docId: json['A0_DocId']! as String,
             dateQ: json['A1_DateQ']! as Timestamp,
             forSorting: json['A2_ForSorting']! as bool,
             riderPickup: json['A3_RiderPickup']! as bool,
             createdBy: json['A4_CreatedBy']! as String,
+            currentEmpId: json['A41_CurrentEmpId']! as String,
             customerId: json['A5_CustomerId']! as int,
             perKilo: json['A51_PerKilo']! as bool,
             initialKilo: json['A6_InitialKilo']! as int,
@@ -230,10 +240,12 @@ class JobsOnQueueModel {
             disposed: json['E5_Disposed']! as bool);
 
   Map<String, dynamic> toJson() => {
+        'A0_DocId': docId,
         'A1_DateQ': dateQ,
         'A2_ForSorting': forSorting,
         'A3_RiderPickup': riderPickup,
         'A4_CreatedBy': createdBy,
+        'A41_CurrentEmpId': currentEmpId,
         'A5_CustomerId': customerId,
         'A51_PerKilo': perKilo,
         'A6_InitialKilo': initialKilo,
