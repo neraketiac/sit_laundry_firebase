@@ -4,6 +4,7 @@ import 'package:laundry_firebase/models/jobsonqueuemodel.dart';
 import 'package:laundry_firebase/models/otheritemmodel.dart';
 import 'package:laundry_firebase/services/database_other_items_ongoing.dart';
 import 'package:laundry_firebase/services/navigator_key.dart';
+import 'package:laundry_firebase/variables/variables.dart';
 
 const String JOBS_ON_GOING_REF = "JobsOnGoing";
 const Color _gcButtons = Color.fromRGBO(134, 218, 252, 0.733);
@@ -30,12 +31,14 @@ class DatabaseJobsOnGoing {
   void addJobsOnGoing(JobsOnQueueModel jOQM, List<OtherItemModel> lAOI) async {
     //String addJobsOnQueue(JobsOnQueueModel jobsOnQueue) {
 
-    DatabaseOtherItemsOnGoing databaseOtherItemsOnGoing;
+    ///DatabaseOtherItemsOnGoing databaseOtherItemsOnGoing;
 
     _jobsOnGoingRef
         .add(jOQM)
         .then((value) => {
               print("Insert Done.${jOQM.customerId}"),
+              deleteJOQVar(jOQM.docId, lAOI),
+              /*
               updateDocId(JobsOnQueueModel(
                   docId: value.id,
                   dateQ: jOQM.dateO,
@@ -86,6 +89,7 @@ class DatabaseJobsOnGoing {
               lAOI.forEach((addOnItem) {
                 databaseOtherItemsOnGoing.addOtherItems(addOnItem);
               }),
+              */
             })
         // ignore: invalid_return_type_for_catch_error
         .catchError(

@@ -45,6 +45,8 @@ const String groupDet = "Det",
     groupOth = "Oth";
 //new end
 
+int autoNumber = 0;
+
 //det
 Map<int, String> mapDetNames = {};
 Map<int, int> mapDetPrice = {};
@@ -614,7 +616,7 @@ void resetJobsOnQueueModelVar() {
       paymentReceivedBy: "",
       dateO: Timestamp.fromDate(DateTime(2000)),
       paidD: Timestamp.fromDate(DateTime(2000)),
-      jobsId: 0,
+      jobsId: 99,
       waiting: false,
       washing: false,
       drying: false,
@@ -641,6 +643,23 @@ void updateSelectedVar(OtherItemModel selectedItemModel) {
   }
 }
 
+Widget cancelButtonReloginVar(BuildContext context, JobsOnQueueModel jOQM) {
+  return MaterialButton(
+      onPressed: () {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Records not save')),
+        );
+        //pop box
+        Navigator.pop(context);
+        Navigator.pop(context);
+
+        Navigator.of(context).push(MaterialPageRoute(
+            builder: (context) => MyQueue(jOQM.currentEmpId)));
+      },
+      color: cButtons,
+      child: const Text("Cancel"));
+}
+
 Widget cancelButtonVar(BuildContext context) {
   return MaterialButton(
       onPressed: () {
@@ -649,6 +668,16 @@ Widget cancelButtonVar(BuildContext context) {
       },
       color: cButtons,
       child: const Text("Cancel"));
+}
+
+Widget closeButtonVar(BuildContext context) {
+  return MaterialButton(
+      onPressed: () {
+        //pop box
+        Navigator.pop(context);
+      },
+      color: cButtons,
+      child: const Text("Close"));
 }
 
 Widget createNewJOQVar(BuildContext context) {
@@ -694,15 +723,13 @@ Widget createNewJOQVar(BuildContext context) {
   );
 }
 
-Widget createNewJOGVar(BuildContext context, String docId,
-    JobsOnQueueModel jOQM, List<OtherItemModel> lAOI) {
+Widget moveToJOGVar(BuildContext context, String docId, JobsOnQueueModel jOQM,
+    List<OtherItemModel> lAOI) {
   return MaterialButton(
-    onPressed: () {
-      if (jOQM.customerId == 1) {
+    onPressed: () async {
+      if (await onGoingFull()) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text(
-                  'Cannot save, please add name in loyalty records first.')),
+          SnackBar(content: Text('Cannot proceed, on going is full(25).')),
         );
         // } else if (_formKey.currentState!.validate()) {
       } else if (true) {
@@ -716,11 +743,14 @@ Widget createNewJOGVar(BuildContext context, String docId,
         Navigator.pop(context);
 
         insertDataJobsOnGoingVar(jOQM, lAOI);
-        deleteJOQVar(jOQM.docId, lAOI);
+        //deleteJOQVar(jOQM.docId, lAOI);
+        autoNumber = await getNumberAutoVarV2();
+        finalNumberAutoVarV2();
+        showMessage(context, "Move to OnGoing", "Added to #$autoNumber");
       }
     },
     color: cButtons,
-    child: const Text("On Going"),
+    child: const Text("Move To OnGoing"),
   );
 }
 
@@ -2991,9 +3021,11 @@ String displayDateVar(String s) {
 }
 
 Future<void> moveUpVar(int jobsId) async {
+  bool bOnlyOne = false;
+
   var collection = FirebaseFirestore.instance.collection('JobsOnGoing');
   var querySnapshots = await collection.get();
-  bool bOnlyOne = false;
+
   if (querySnapshots.size == 1) {
     bOnlyOne = true;
   }
@@ -3026,6 +3058,192 @@ Future<void> moveUpVar(int jobsId) async {
             'D30_JobsId': jobsId - 1,
           });
         }
+      }
+    }
+  }
+}
+
+Future<bool> onGoingFull() async {
+  var colAuto = FirebaseFirestore.instance.collection('JobsOnGoing');
+  var queryAuto = await colAuto.get();
+  if (queryAuto.size == 25) {
+    return true;
+  }
+  return false;
+}
+
+Future<int> getNumberAutoVarV2() async {
+  var colAuto = FirebaseFirestore.instance
+      .collection('JobsOnGoing')
+      .orderBy('D30_JobsId');
+  var queryAuto = await colAuto.get();
+  int nFirstLowest = 0,
+      nSecondLowest = 0,
+      nPrevJobsIdFetch = 0,
+      nCurrJobsIdFetch = 0;
+  for (var doc in queryAuto.docs) {
+    if (nCurrJobsIdFetch != doc['D30_JobsId']) {
+      nPrevJobsIdFetch = nCurrJobsIdFetch;
+      nCurrJobsIdFetch = doc['D30_JobsId'];
+    }
+
+    if ((nPrevJobsIdFetch + 1) != nCurrJobsIdFetch &&
+        nFirstLowest != 0 &&
+        nSecondLowest == 0) {
+      nSecondLowest = nPrevJobsIdFetch + 1;
+    }
+
+    if ((nPrevJobsIdFetch + 1) != nCurrJobsIdFetch &&
+        nFirstLowest == 0 &&
+        nSecondLowest == 0) {
+      nFirstLowest = nPrevJobsIdFetch + 1;
+    }
+
+    print("nFirstLowest=$nFirstLowest nSecondLowest=$nSecondLowest");
+
+    //final
+    if (doc['D30_JobsId'] == 99) {
+      if (nSecondLowest == 0 || nSecondLowest > 25) {
+        return nFirstLowest;
+      } else {
+        return nSecondLowest;
+      }
+    }
+  }
+  return 99;
+}
+
+//
+Future<void> assignNumberAutoVar() async {
+  var colAuto = FirebaseFirestore.instance
+      .collection('JobsOnGoing')
+      .orderBy('D30_JobsId');
+  var queryAuto = await colAuto.get();
+  bool bOnlyOne = false;
+  bool bFirstLoopOnly = true;
+  bool bMiddleVacant = true;
+  int nFirstLowest = 0, nSecondLowest = 0, nPrevJobsIdFetch = 0;
+  if (queryAuto.size == 1) {
+    bOnlyOne = true;
+  }
+  for (var doc in queryAuto.docs) {
+    //once only
+    if (bOnlyOne && doc['D30_JobsId'] == 99) {
+      await doc.reference.update({
+        'D30_JobsId': 1,
+      });
+      break;
+    }
+
+    //once only
+    if (bFirstLoopOnly) {
+      if (doc['D30_JobsId'] != 1) {
+        nFirstLowest = 1;
+      }
+      bFirstLoopOnly = false;
+    }
+
+    //once only
+    if (nPrevJobsIdFetch == 0) {
+      if (doc['D30_JobsId'] == 1) {
+        nPrevJobsIdFetch = 1;
+      } else {
+        nPrevJobsIdFetch = doc['D30_JobsId'] - 1;
+      }
+    }
+
+    //loop
+    if (nPrevJobsIdFetch != 0) {
+      if (nPrevJobsIdFetch + 1 == doc['D30_JobsId']) {
+        nPrevJobsIdFetch = doc['D30_JobsId'];
+      } else {
+        //once found
+        if (bMiddleVacant) {
+          nPrevJobsIdFetch++;
+          if (nFirstLowest == 0) {
+            nFirstLowest = nPrevJobsIdFetch;
+          } else if (nSecondLowest == 0 && nPrevJobsIdFetch <= 25) {
+            nSecondLowest = nPrevJobsIdFetch;
+          }
+          bMiddleVacant = false;
+        }
+      }
+    }
+
+    //final
+    if (doc['D30_JobsId'] == 99) {
+      if (nSecondLowest == 0) {
+        await doc.reference.update({
+          'D30_JobsId': nFirstLowest,
+        });
+      } else {
+        await doc.reference.update({
+          'D30_JobsId': nSecondLowest,
+        });
+      }
+      // await doc.reference.update({
+      //   'D30_JobsId': 9,
+      // });
+    }
+  }
+}
+
+Future<void> finalNumberAutoVarV2() async {
+  var colAuto = FirebaseFirestore.instance
+      .collection('JobsOnGoing')
+      .orderBy('D30_JobsId', descending: true);
+  var queryAuto = await colAuto.get();
+  for (var doc in queryAuto.docs) {
+    if (doc['D30_JobsId'] == 99) {
+      await doc.reference.update({
+        'D30_JobsId': autoNumber,
+      });
+    }
+    break;
+  }
+}
+
+Future<void> assignNumberAutoVarV2() async {
+  var colAuto = FirebaseFirestore.instance
+      .collection('JobsOnGoing')
+      .orderBy('D30_JobsId');
+  var queryAuto = await colAuto.get();
+  int nFirstLowest = 0,
+      nSecondLowest = 0,
+      nPrevJobsIdFetch = 0,
+      nCurrJobsIdFetch = 0;
+  for (var doc in queryAuto.docs) {
+    if (nCurrJobsIdFetch != doc['D30_JobsId']) {
+      nPrevJobsIdFetch = nCurrJobsIdFetch;
+      nCurrJobsIdFetch = doc['D30_JobsId'];
+    }
+
+    if ((nPrevJobsIdFetch + 1) != nCurrJobsIdFetch &&
+        nFirstLowest != 0 &&
+        nSecondLowest == 0) {
+      nSecondLowest = nPrevJobsIdFetch + 1;
+    }
+
+    if ((nPrevJobsIdFetch + 1) != nCurrJobsIdFetch &&
+        nFirstLowest == 0 &&
+        nSecondLowest == 0) {
+      nFirstLowest = nPrevJobsIdFetch + 1;
+    }
+
+    print("nFirstLowest=$nFirstLowest nSecondLowest=$nSecondLowest");
+
+    //final
+    if (doc['D30_JobsId'] == 99) {
+      if (nSecondLowest == 0 || nSecondLowest > 25) {
+        //autoNumber = nFirstLowest;
+        await doc.reference.update({
+          'D30_JobsId': nFirstLowest,
+        });
+      } else {
+        //autoNumber = nSecondLowest;
+        await doc.reference.update({
+          'D30_JobsId': nSecondLowest,
+        });
       }
     }
   }
@@ -3089,7 +3307,7 @@ Container conDisplayVar(
               },
               child: Text(
                 //(buffJobsId == 0 ? "" : "#$buffJobsId"),
-                (jOQM.jobsId == 0 ? "" : "#${jOQM.jobsId}"),
+                (jOQM.jobsId == 99 ? "" : "#${jOQM.jobsId}"),
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                 ),
@@ -3163,7 +3381,7 @@ void showAlterJobsOnQueueVar(BuildContext context, String docId,
           ),
           actions: [
             //cancel button
-            cancelButtonVar(context),
+            cancelButtonReloginVar(context, jOQM),
 
             //save button
             updateButtonJOQVar(
@@ -3174,7 +3392,7 @@ void showAlterJobsOnQueueVar(BuildContext context, String docId,
                 lOIM),
 
             //move to ongoing
-            createNewJOGVar(
+            moveToJOGVar(
                 // context, docId, jobsOnQueueModelGlobal, listAddOnItemsGlobal),
                 context,
                 docId,
@@ -3244,7 +3462,7 @@ void showAlterJobsOnGoingVar(BuildContext context, String docId,
           ),
           actions: [
             //cancel button
-            cancelButtonVar(context),
+            cancelButtonReloginVar(context, jOQM),
 
             //save button
             updateButtonJOGVar(
@@ -3255,12 +3473,48 @@ void showAlterJobsOnGoingVar(BuildContext context, String docId,
                 lOIM),
 
             //move to ongoing
-            // createNewJOGVar(
+            // moveToJOGVar(
             //     // context, docId, jobsOnQueueModelGlobal, listAddOnItemsGlobal),
             //     context,
             //     docId,
             //     jOQM,
             //     lOIM),
+          ],
+        );
+      });
+    },
+  );
+}
+
+void showMessage(BuildContext context, String title, String message) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return StatefulBuilder(builder: (context, setState) {
+        return AlertDialog(
+          title: Text(
+            title,
+            style: TextStyle(backgroundColor: Colors.amber[300]),
+          ),
+          content: SingleChildScrollView(
+            scrollDirection: Axis.vertical,
+            child: Container(
+              padding: EdgeInsets.all(8.0),
+              decoration: BoxDecoration(
+                  border: Border.all(color: Colors.blueAccent, width: 2.0)),
+              child: Form(
+                //key: _formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(message),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          actions: [
+            closeButtonVar(context),
           ],
         );
       });
@@ -3274,7 +3528,8 @@ Widget updateButtonJOQVar(BuildContext context, String docId,
     onPressed: () {
       if (bDelAddOnsVar) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Processing Data')),
+          SnackBar(
+              content: Text('Processing Data, you may need to login again.')),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -3307,7 +3562,8 @@ Widget updateButtonJOGVar(BuildContext context, String docId,
     onPressed: () {
       if (bDelAddOnsVar) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Processing Data')),
+          SnackBar(
+              content: Text('Processing Data, you may need to login again.')),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
