@@ -10,11 +10,14 @@ import 'package:laundry_firebase/pages/queue.dart';
 import 'package:laundry_firebase/services/database_jobsongoing.dart';
 import 'package:laundry_firebase/services/database_jobsonqueue.dart';
 import 'package:laundry_firebase/services/database_other_items_onqueue.dart';
+import 'package:laundry_firebase/services/database_other_items.dart';
 
 bool showDet = false, showFab = false, showBle = false, showOth = false;
 bool bDelAddOnsVar = true;
 
 late JobsOnQueueModel jobsOnQueueModelGlobal;
+late String empIdGlobal = "";
+late String selectedNumberVar = "1";
 
 //general
 const int menuDetDVal = 1, menuFabDVal = 2, menuBleDVal = 3, menuOthDVal = 4;
@@ -74,7 +77,15 @@ const int menuBleOriginalDVal = 302, menuBleColorSafeDVal = 301;
 
 //others
 Map<int, String> mapOthNames = {};
-const int menuOthWash = 401, menuOthDry = 402;
+const int menuOthWash = 401,
+    menuOth2W1DR = 402,
+    menuOth2W1DSS = 403,
+    menuOthDry = 404,
+    menuOth195 = 405,
+    menuOth165 = 406,
+    menuOthXD = 407,
+    menuOthXW = 408,
+    menuOthXR = 409;
 
 //queuestats
 Map<int, String> mapQueueStat = {};
@@ -107,37 +118,40 @@ const int unpaid = 801, paidCash = 802, paidGCash = 803, waitGCash = 804;
 
 // List<OthItems> othItems = [];
 
-final List<String> finListNumbering = [
-  "#1",
-  "#2",
-  "#3",
-  "#4",
-  "#5",
-  "#6",
-  "#7",
-  "#8",
-  "#9",
-  "#10",
-  "#11",
-  "#12",
-  "#13",
-  "#14",
-  "#15",
-  "#16",
-  "#17",
-  "#18",
-  "#19",
-  "#20",
-  "#21",
-  "#22",
-  "#23",
-  "#24",
-  "#25"
+late List<String> finListNumbering = [];
+late List<String> lasListNumbering = [];
+final List<String> completeListNumbering = [
+  "1",
+  "2",
+  "3",
+  "4",
+  "5",
+  "6",
+  "7",
+  "8",
+  "9",
+  "10",
+  "11",
+  "12",
+  "13",
+  "14",
+  "15",
+  "16",
+  "17",
+  "18",
+  "19",
+  "20",
+  "21",
+  "22",
+  "23",
+  "24",
+  "25"
 ];
 
 const mobileWidth = 600;
 
 bool bViewMoreOptions = false;
+bool bViewAddOnDtlOnGoing = false;
 
 //variable in alterDetailJobsJson for all jobs
 bool bRiderPickupVar = false;
@@ -166,8 +180,14 @@ DateTime dNeedOnVar = DateTime.now().add(Duration(minutes: 210));
 // Timestamp tNeedOnVar = Timestamp.now();
 
 void putEntries() {
-  resetJobsOnQueueModelVar();
+  resetJOQMGlobalVar();
+  listAddOnItemsGlobal.clear();
   fetchUsers();
+  refillJobsList();
+  listDetItems.clear();
+  listFabItems.clear();
+  listBleItems.clear();
+  listOthItems.clear();
 
   //detItems
   listDetItems.add(OtherItemModel(
@@ -271,16 +291,41 @@ void putEntries() {
       itemPrice: 49));
   listOthItems.add(OtherItemModel(
       docId: "",
-      itemId: menuOthWash,
+      itemId: menuOthDry,
+      itemGroup: groupOth,
+      itemName: "Dry",
+      itemPrice: 49));
+  listOthItems.add(OtherItemModel(
+      docId: "",
+      itemId: menuOth2W1DR,
       itemGroup: groupOth,
       itemName: "2Wash 1Dry(Regular)",
       itemPrice: 195));
   listOthItems.add(OtherItemModel(
       docId: "",
-      itemId: menuOthWash,
+      itemId: menuOth2W1DSS,
       itemGroup: groupOth,
       itemName: "2Wash 1Dry(SayoSabon)",
       itemPrice: 165));
+
+  listOthItems.add(OtherItemModel(
+      docId: "",
+      itemId: menuOthXD,
+      itemGroup: groupOth,
+      itemName: "Extra Dry",
+      itemPrice: 15));
+  listOthItems.add(OtherItemModel(
+      docId: "",
+      itemId: menuOthXW,
+      itemGroup: groupOth,
+      itemName: "Extra Wash",
+      itemPrice: 15));
+  listOthItems.add(OtherItemModel(
+      docId: "",
+      itemId: menuOthXR,
+      itemGroup: groupOth,
+      itemName: "Extra Rinse",
+      itemPrice: 15));
 
   //det names
   mapDetNames.addEntries({menuDetBreezeDVal: "Breeze(15php)"}.entries);
@@ -320,6 +365,9 @@ void putEntries() {
   //oth names
   mapOthNames.addEntries({menuOthWash: "Wash"}.entries);
   mapOthNames.addEntries({menuOthDry: "Dry"}.entries);
+  mapOthNames.addEntries({menuOthXD: "Extra Dry"}.entries);
+  mapOthNames.addEntries({menuOthXW: "Extra Wash"}.entries);
+  mapOthNames.addEntries({menuOthXR: "Extra Rinse"}.entries);
 
   //queueStat
   mapQueueStat.addEntries({forSorting: "ForSorting"}.entries);
@@ -523,66 +571,71 @@ void resetAddOnVar() {
   bOthAddOnVar = false;
 }
 
-//jobsonqueue
-void showJobsOnQueueVar(BuildContext context) {
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return StatefulBuilder(builder: (context, setState) {
-        return AlertDialog(
-          title: Text(
-            "New Laundry ${DateTime.now().toString().substring(5, 13)}",
-            style: TextStyle(backgroundColor: Colors.amber[300]),
-          ),
-          content: SingleChildScrollView(
-            scrollDirection: Axis.vertical,
-            child: Container(
-              padding: EdgeInsets.all(8.0),
-              decoration: BoxDecoration(
-                  border: Border.all(color: Colors.blueAccent, width: 2.0)),
-              child: Form(
-                //key: _formKey,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    conEnterCustomer(context, setState),
-                    conQueueStat(setState),
-                    conOrderMode(setState),
-                    visAddOn(setState),
-                    conTotalPrice(setState),
-                    conBasket(setState),
-                    conBag(setState),
-                    conPayment(setState),
-                    conRemarks(setState),
-                    conMoreOptions(setState),
-                    visFold(setState),
-                    visMix(setState),
-                    visNeedOn(setState),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          actions: [
-            //cancel button
-            cancelButtonVar(context),
-
-            //save button
-            createNewJOQVar(context),
-          ],
-        );
-      });
-    },
-  );
-}
-
 void allCardsVar(BuildContext context) {
   Navigator.pop(context);
   Navigator.of(context)
       .push(MaterialPageRoute(builder: (context) => const LoyaltyAdmin()));
 }
 
-void resetJobsOnQueueModelVar() {
+void refillJobsList() {
+  finListNumbering = [
+    "#1#",
+    "#2#",
+    "#3#",
+    "#4#",
+    "#5#",
+    "#6#",
+    "#7#",
+    "#8#",
+    "#9#",
+    "#10#",
+    "#11#",
+    "#12#",
+    "#13#",
+    "#14#",
+    "#15#",
+    "#16#",
+    "#17#",
+    "#18#",
+    "#19#",
+    "#20#",
+    "#21#",
+    "#22#",
+    "#23#",
+    "#24#",
+    "#25#"
+  ];
+
+  lasListNumbering = [
+    "#1#",
+    "#2#",
+    "#3#",
+    "#4#",
+    "#5#",
+    "#6#",
+    "#7#",
+    "#8#",
+    "#9#",
+    "#10#",
+    "#11#",
+    "#12#",
+    "#13#",
+    "#14#",
+    "#15#",
+    "#16#",
+    "#17#",
+    "#18#",
+    "#19#",
+    "#20#",
+    "#21#",
+    "#22#",
+    "#23#",
+    "#24#",
+    "#25#"
+  ];
+}
+
+void resetJOQMGlobalVar() {
   jobsOnQueueModelGlobal = JobsOnQueueModel(
       docId: "",
       dateQ: Timestamp.now(),
@@ -653,8 +706,8 @@ Widget cancelButtonReloginVar(BuildContext context, JobsOnQueueModel jOQM) {
         Navigator.pop(context);
         Navigator.pop(context);
 
-        Navigator.of(context).push(MaterialPageRoute(
-            builder: (context) => MyQueue(jOQM.currentEmpId)));
+        Navigator.of(context).push(
+            MaterialPageRoute(builder: (context) => MyQueue(empIdGlobal)));
       },
       color: cButtons,
       child: const Text("Cancel"));
@@ -706,9 +759,7 @@ Widget createNewJOQVar(BuildContext context) {
         jobsOnQueueModelGlobal.finalPrice = 0;
         jobsOnQueueModelGlobal.finalOthersPrice = 0;
         jobsOnQueueModelGlobal.paymentReceivedBy =
-            (jobsOnQueueModelGlobal.unpaid
-                ? ""
-                : jobsOnQueueModelGlobal.createdBy);
+            (jobsOnQueueModelGlobal.unpaid ? "" : empIdGlobal);
         jobsOnQueueModelGlobal.paidD = (jobsOnQueueModelGlobal.unpaid
             ? Timestamp.fromDate(DateTime(2000))
             : Timestamp.now());
@@ -719,12 +770,12 @@ Widget createNewJOQVar(BuildContext context) {
       }
     },
     color: cButtons,
-    child: const Text("Save"),
+    child: const Text("Insert Queue"),
   );
 }
 
 Widget moveToJOGVar(BuildContext context, String docId, JobsOnQueueModel jOQM,
-    List<OtherItemModel> lAOI) {
+    List<OtherItemModel> lOIM) {
   return MaterialButton(
     onPressed: () async {
       if (await onGoingFull()) {
@@ -742,8 +793,11 @@ Widget moveToJOGVar(BuildContext context, String docId, JobsOnQueueModel jOQM,
         //pop box
         Navigator.pop(context);
 
-        insertDataJobsOnGoingVar(jOQM, lAOI);
-        //deleteJOQVar(jOQM.docId, lAOI);
+        jOQM.riderPickup = false;
+        jOQM.forSorting = false;
+        jOQM.waiting = true;
+        insertDataJobsOnGoingVar(jOQM, lOIM);
+        //deleteJOQVar(jOQM.docId, lOIM);
         autoNumber = await getNumberAutoVarV2();
         finalNumberAutoVarV2();
         showMessage(context, "Move to OnGoing", "Added to #$autoNumber");
@@ -755,7 +809,7 @@ Widget moveToJOGVar(BuildContext context, String docId, JobsOnQueueModel jOQM,
 }
 
 Widget createNewJDVar(BuildContext context, String docId, JobsOnQueueModel jOQM,
-    List<OtherItemModel> lAOI) {
+    List<OtherItemModel> lOIM) {
   return MaterialButton(
     onPressed: () {
       if (jOQM.customerId == 1) {
@@ -775,8 +829,8 @@ Widget createNewJDVar(BuildContext context, String docId, JobsOnQueueModel jOQM,
         //pop box
         Navigator.pop(context);
 
-        // insertDataJobsOnGoingVar(jOQM, lAOI);
-        // deleteJOQVar(jOQM.docId, lAOI);
+        // insertDataJobsOnGoingVar(jOQM, lOIM);
+        // deleteJOQVar(jOQM.docId, lOIM);
       }
     },
     color: cButtons,
@@ -845,15 +899,15 @@ Widget readAddedDataVar(List<OtherItemModel> listAddedOthers) {
 void insertDataJobsOnQueueVar(JobsOnQueueModel jOQM) {
   DatabaseJobsOnQueue databaseJobsOnQueue = DatabaseJobsOnQueue();
   databaseJobsOnQueue.addJobsOnQueue(jOQM, listAddOnItemsGlobal);
-  resetJobsOnQueueModelVar();
+  resetJOQMGlobalVar();
 }
 
 //insert new OnGoing
 void insertDataJobsOnGoingVar(
-    JobsOnQueueModel jOQM, List<OtherItemModel> lAOI) {
+    JobsOnQueueModel jOQM, List<OtherItemModel> lOIM) {
   DatabaseJobsOnGoing databaseJobsOnGoing = DatabaseJobsOnGoing();
-  databaseJobsOnGoing.addJobsOnGoing(jOQM, lAOI);
-  resetJobsOnQueueModelVar();
+  databaseJobsOnGoing.addJobsOnGoing(jOQM, lOIM);
+  resetJOQMGlobalVar();
 }
 
 //displays in Popup
@@ -909,34 +963,6 @@ Container conCustomerName(
   );
 }
 
-Container conQueueStat(Function setState) {
-  return Container(
-    alignment: Alignment.center,
-    padding: EdgeInsets.all(1.0),
-    decoration: decoAmber(),
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Text("Sort"),
-        Switch.adaptive(
-          value: jobsOnQueueModelGlobal.riderPickup,
-          onChanged: (bool value) {
-            setState(() {
-              jobsOnQueueModelGlobal.riderPickup = value;
-              if (jobsOnQueueModelGlobal.riderPickup) {
-                jobsOnQueueModelGlobal.forSorting = false;
-              } else {
-                jobsOnQueueModelGlobal.forSorting = true;
-              }
-            });
-          },
-        ),
-        Text("RiderPickup"),
-      ],
-    ),
-  );
-}
-
 Container conQueueStatVar(Function setState, JobsOnQueueModel jOQM) {
   return Container(
     alignment: Alignment.center,
@@ -965,435 +991,261 @@ Container conQueueStatVar(Function setState, JobsOnQueueModel jOQM) {
   );
 }
 
-Container conOrderMode(Function setState) {
+Container conOnGoingStatVar(Function setState, JobsOnQueueModel jOQM) {
   return Container(
+    alignment: Alignment.center,
     padding: EdgeInsets.all(1.0),
     decoration: decoAmber(),
-    child: Column(
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            Column(
-              children: [
-                Text(
-                  "Regular",
-                  style: TextStyle(fontSize: 10),
-                ),
-                Checkbox(
-                    value: jobsOnQueueModelGlobal.regular,
-                    onChanged: (val) {
-                      jobsOnQueueModelGlobal =
-                          resetRegular(jobsOnQueueModelGlobal);
+        Checkbox(
+            value: jOQM.waiting,
+            onChanged: (val) {
+              jOQM.waiting = true;
+              jOQM.washing = false;
+              jOQM.drying = false;
+              jOQM.folding = false;
 
-                      if (val!) {
-                        setState(
-                          () {
-                            jobsOnQueueModelGlobal.regular = val;
-                          },
-                        );
-                      }
-
-                      jobsOnQueueModelGlobal.initialKilo = 8;
-                      jobsOnQueueModelGlobal.initialPrice =
-                          (jobsOnQueueModelGlobal.initialKilo ~/ 8) *
-                              iPriceDivider(jobsOnQueueModelGlobal.regular);
-                      jobsOnQueueModelGlobal.initialLoad =
-                          (jobsOnQueueModelGlobal.initialKilo ~/ 8);
-                    })
-              ],
-            ),
-            Column(
-              children: [
-                Text(
-                  "Sayo Sabon",
-                  style: TextStyle(fontSize: 10),
-                ),
-                Checkbox(
-                    value: jobsOnQueueModelGlobal.sayosabon,
-                    onChanged: (val) {
-                      jobsOnQueueModelGlobal =
-                          resetRegular(jobsOnQueueModelGlobal);
-
-                      if (val!) {
-                        setState(
-                          () {
-                            jobsOnQueueModelGlobal.sayosabon = val;
-                          },
-                        );
-                      }
-
-                      jobsOnQueueModelGlobal.initialKilo = 8;
-                      jobsOnQueueModelGlobal.initialPrice =
-                          (jobsOnQueueModelGlobal.initialKilo ~/ 8) *
-                              iPriceDivider(jobsOnQueueModelGlobal.regular);
-                      jobsOnQueueModelGlobal.initialLoad =
-                          (jobsOnQueueModelGlobal.initialKilo ~/ 8);
-                    })
-              ],
-            ),
-            Column(
-              children: [
-                Text(
-                  "Others",
-                  style: TextStyle(fontSize: 10),
-                ),
-                Checkbox(
-                    value: jobsOnQueueModelGlobal.others,
-                    onChanged: (val) {
-                      jobsOnQueueModelGlobal =
-                          resetRegular(jobsOnQueueModelGlobal);
-                      bShowKiloLoadDisplayVar = false;
-
-                      if (val!) {
-                        setState(
-                          () {
-                            jobsOnQueueModelGlobal.others = val;
-                          },
-                        );
-                      }
-
-                      jobsOnQueueModelGlobal.initialKilo = 0;
-                      jobsOnQueueModelGlobal.initialPrice = 0;
-                      jobsOnQueueModelGlobal.initialLoad = 0;
-                    })
-              ],
-            ),
-          ],
+              setState(
+                () {
+                  jOQM.waiting;
+                  jOQM.washing;
+                  jOQM.drying;
+                  jOQM.folding;
+                },
+              );
+            }),
+        Text("Wait"),
+        SizedBox(
+          width: 5,
         ),
-        //New estimate load +-8 kilo
-        Visibility(
-          visible: bShowKiloLoadDisplayVar,
-          child: Container(
-            padding: EdgeInsets.all(0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  padding:
-                      EdgeInsets.only(left: 3, bottom: 0, top: 0, right: 3),
-                  decoration: BoxDecoration(
-                      color: Colors.amber[200],
-                      borderRadius: const BorderRadius.only(
-                          topLeft: Radius.circular(20),
-                          bottomLeft: Radius.circular(20))),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      IconButton(
-                        onPressed: () {
-                          if (jobsOnQueueModelGlobal.initialKilo < 8) {
-                            jobsOnQueueModelGlobal.initialKilo = 8;
-                            jobsOnQueueModelGlobal.initialPrice =
-                                (jobsOnQueueModelGlobal.initialKilo ~/ 8) *
-                                    iPriceDivider(
-                                        jobsOnQueueModelGlobal.regular);
-                            jobsOnQueueModelGlobal.initialLoad =
-                                (jobsOnQueueModelGlobal.initialKilo ~/ 8);
-                          } else {
-                            if (jobsOnQueueModelGlobal.initialKilo % 8 != 0) {
-                              jobsOnQueueModelGlobal.initialKilo =
-                                  jobsOnQueueModelGlobal.initialKilo -
-                                      (jobsOnQueueModelGlobal.initialKilo % 8);
-                            } else {
-                              jobsOnQueueModelGlobal.initialKilo =
-                                  jobsOnQueueModelGlobal.initialKilo - 8;
-                            }
+        Checkbox(
+            value: jOQM.washing,
+            onChanged: (val) {
+              jOQM.waiting = false;
+              jOQM.washing = true;
+              jOQM.drying = false;
+              jOQM.folding = false;
 
-                            jobsOnQueueModelGlobal.initialPrice =
-                                (jobsOnQueueModelGlobal.initialKilo ~/ 8) *
-                                    iPriceDivider(
-                                        jobsOnQueueModelGlobal.regular);
-
-                            jobsOnQueueModelGlobal.initialLoad =
-                                (jobsOnQueueModelGlobal.initialKilo ~/ 8);
-                          }
-                          setState(() {
-                            jobsOnQueueModelGlobal.initialKilo;
-                            jobsOnQueueModelGlobal.initialLoad;
-                            jobsOnQueueModelGlobal.initialPrice;
-                          });
-                        },
-                        icon: const Icon(Icons.remove_circle_outlined),
-                        color: Colors.blueAccent,
-                      ),
-                      Text("-8 kg"),
-                    ],
-                  ),
-                ),
-                SizedBox(
-                  width: 3,
-                ),
-                Container(
-                  padding:
-                      EdgeInsets.only(left: 3, bottom: 0, top: 0, right: 3),
-                  decoration: BoxDecoration(
-                      color: Colors.amber[200],
-                      borderRadius: BorderRadius.only(
-                          topRight: Radius.circular(20),
-                          bottomRight: Radius.circular(20))),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Text("+8 kg"),
-                      IconButton(
-                        onPressed: () {
-                          if (jobsOnQueueModelGlobal.initialKilo % 8 != 0) {
-                            jobsOnQueueModelGlobal.initialKilo =
-                                jobsOnQueueModelGlobal.initialKilo +
-                                    8 -
-                                    (jobsOnQueueModelGlobal.initialKilo % 8);
-                          } else {
-                            jobsOnQueueModelGlobal.initialKilo =
-                                jobsOnQueueModelGlobal.initialKilo + 8;
-                          }
-
-                          jobsOnQueueModelGlobal.initialPrice =
-                              (jobsOnQueueModelGlobal.initialKilo ~/ 8) *
-                                  (iPriceDivider(
-                                      jobsOnQueueModelGlobal.regular));
-                          jobsOnQueueModelGlobal.initialLoad =
-                              jobsOnQueueModelGlobal.initialKilo ~/ 8;
-                          setState(() {
-                            jobsOnQueueModelGlobal.initialKilo;
-                            jobsOnQueueModelGlobal.initialLoad;
-                            jobsOnQueueModelGlobal.initialPrice;
-                          });
-                        },
-                        icon: const Icon(Icons.add_circle),
-                        color: Colors.blueAccent,
-                      ),
-                    ],
-                  ),
-                )
-              ],
-            ),
-          ),
+              setState(
+                () {
+                  jOQM.waiting;
+                  jOQM.washing;
+                  jOQM.drying;
+                  jOQM.folding;
+                },
+              );
+            }),
+        Text("Wash"),
+        SizedBox(
+          width: 5,
         ),
-        //New Estimate Load display
-        Visibility(
-          visible: bShowKiloLoadDisplayVar,
-          child: Container(
-            padding: EdgeInsets.all(3),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  padding: EdgeInsets.only(left: 10, right: 10),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text("Weight:"),
-                      Text(
-                          "${kiloDisplay(jobsOnQueueModelGlobal.initialKilo)} kilo"),
-                    ],
-                  ),
-                ),
-                Container(
-                  padding: EdgeInsets.only(left: 10, right: 10),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text("Load:"),
-                      Text("${jobsOnQueueModelGlobal.initialLoad}"),
-                    ],
-                  ),
-                ),
-                Container(
-                  padding: EdgeInsets.only(left: 10, right: 10),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text("Load Price:"),
-                      Text(
-                          "${autoPriceDisplay(jobsOnQueueModelGlobal.initialPrice, jobsOnQueueModelGlobal.regular)}.00"),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
+        Checkbox(
+            value: jOQM.drying,
+            onChanged: (val) {
+              jOQM.waiting = false;
+              jOQM.washing = false;
+              jOQM.drying = true;
+              jOQM.folding = false;
+
+              setState(
+                () {
+                  jOQM.waiting;
+                  jOQM.washing;
+                  jOQM.drying;
+                  jOQM.folding;
+                },
+              );
+            }),
+        Text("Dry"),
+        SizedBox(
+          width: 5,
         ),
-        //New Estimate Load (+- 1 kilo)
-        Visibility(
-          visible: bShowKiloLoadDisplayVar,
-          child: Container(
-            padding: EdgeInsets.all(0.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  padding:
-                      EdgeInsets.only(left: 3, bottom: 0, top: 0, right: 3),
-                  decoration: BoxDecoration(
-                      color: Colors.amber[200],
-                      borderRadius: const BorderRadius.only(
-                          topLeft: Radius.circular(20),
-                          bottomLeft: Radius.circular(20))),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      IconButton(
-                        onPressed: () {
-                          if (jobsOnQueueModelGlobal.initialKilo > 8) {
-                            if (jobsOnQueueModelGlobal.initialKilo % 8 == 1) {
-                              jobsOnQueueModelGlobal.initialPrice =
-                                  jobsOnQueueModelGlobal.initialPrice -
-                                      (jobsOnQueueModelGlobal.regular
-                                          ? 25
-                                          : 25); //8-9kilo 25
+        Checkbox(
+            value: jOQM.folding,
+            onChanged: (val) {
+              jOQM.waiting = false;
+              jOQM.washing = false;
+              jOQM.drying = false;
+              jOQM.folding = true;
 
-                              //should be after kilo - 1;
-                              // jobsOnQueueModelGlobal.initialLoad =
-                              //     jobsOnQueueModelGlobal.initialLoad - 1;
-                            } else if (jobsOnQueueModelGlobal.initialKilo % 8 ==
-                                2) {
-                              jobsOnQueueModelGlobal.initialPrice =
-                                  jobsOnQueueModelGlobal.initialPrice -
-                                      (jobsOnQueueModelGlobal.regular
-                                          ? 45
-                                          : 50); //9-10kilo 45
-                            } else if (jobsOnQueueModelGlobal.initialKilo % 8 ==
-                                3) {
-                              jobsOnQueueModelGlobal.initialPrice =
-                                  jobsOnQueueModelGlobal.initialPrice -
-                                      (jobsOnQueueModelGlobal.regular
-                                          ? 25
-                                          : 25); //10-11kilo 25
-                            } else if (jobsOnQueueModelGlobal.initialKilo % 8 ==
-                                4) {
-                              jobsOnQueueModelGlobal.initialPrice =
-                                  jobsOnQueueModelGlobal.initialPrice -
-                                      (jobsOnQueueModelGlobal.regular
-                                          ? 25
-                                          : 25); //11-12kilo
-                            } else if (jobsOnQueueModelGlobal.initialKilo % 8 ==
-                                5) {
-                              jobsOnQueueModelGlobal.initialPrice =
-                                  jobsOnQueueModelGlobal.initialPrice -
-                                      (jobsOnQueueModelGlobal.regular
-                                          ? 35
-                                          : 0); //12-13kilo
-                            }
-                            // else if (jobsOnQueueModelGlobal.initialKilo % 8 ==
-                            //     6) {
-                            //   jobsOnQueueModelGlobal.initialPrice =
-                            //       jobsOnQueueModelGlobal.initialPrice -
-                            //           (jobsOnQueueModelGlobal.regular
-                            //               ? 10
-                            //               : 0); //13-16kilo
-                            // }
-                            jobsOnQueueModelGlobal.initialKilo =
-                                jobsOnQueueModelGlobal.initialKilo - 1;
-
-                            if (jobsOnQueueModelGlobal.initialKilo % 8 == 1) {
-                              //8-9kilo 25
-
-                              jobsOnQueueModelGlobal.initialLoad =
-                                  jobsOnQueueModelGlobal.initialLoad - 1;
-                            }
-                          }
-                          setState(() {
-                            jobsOnQueueModelGlobal.initialKilo;
-                            jobsOnQueueModelGlobal.initialLoad;
-                            jobsOnQueueModelGlobal.initialPrice;
-                          });
-                        },
-                        icon: const Icon(Icons.remove_circle_outlined),
-                        color: Colors.blueAccent,
-                      ),
-                      Text("-1 kg"),
-                    ],
-                  ),
-                ),
-                SizedBox(
-                  width: 3,
-                ),
-                Container(
-                  padding:
-                      EdgeInsets.only(left: 3, bottom: 0, top: 0, right: 3),
-                  decoration: BoxDecoration(
-                      color: Colors.amber[200],
-                      borderRadius: BorderRadius.only(
-                          topRight: Radius.circular(20),
-                          bottomRight: Radius.circular(20))),
-                  child: Row(
-                    children: [
-                      Text("+1 kg"),
-                      IconButton(
-                        onPressed: () {
-                          if (jobsOnQueueModelGlobal.initialKilo >= 8) {
-                            jobsOnQueueModelGlobal.initialKilo =
-                                jobsOnQueueModelGlobal.initialKilo + 1;
-                          }
-
-                          if (jobsOnQueueModelGlobal.initialKilo % 8 == 1) {
-                            jobsOnQueueModelGlobal.initialPrice =
-                                jobsOnQueueModelGlobal.initialPrice +
-                                    (jobsOnQueueModelGlobal.regular
-                                        ? 25
-                                        : 25); //8-9kilo
-                          } else if (jobsOnQueueModelGlobal.initialKilo % 8 ==
-                              2) {
-                            jobsOnQueueModelGlobal.initialPrice =
-                                jobsOnQueueModelGlobal.initialPrice +
-                                    (jobsOnQueueModelGlobal.regular
-                                        ? 45
-                                        : 50); //9-10kilo
-                            jobsOnQueueModelGlobal.initialLoad =
-                                jobsOnQueueModelGlobal.initialLoad + 1;
-                          } else if (jobsOnQueueModelGlobal.initialKilo % 8 ==
-                              3) {
-                            jobsOnQueueModelGlobal.initialPrice =
-                                jobsOnQueueModelGlobal.initialPrice +
-                                    (jobsOnQueueModelGlobal.regular
-                                        ? 25
-                                        : 25); //10-11kilo
-                          } else if (jobsOnQueueModelGlobal.initialKilo % 8 ==
-                              4) {
-                            jobsOnQueueModelGlobal.initialPrice =
-                                jobsOnQueueModelGlobal.initialPrice +
-                                    (jobsOnQueueModelGlobal.regular
-                                        ? 25
-                                        : 25); //11-12kilo
-                          } else if (jobsOnQueueModelGlobal.initialKilo % 8 ==
-                              5) {
-                            jobsOnQueueModelGlobal.initialPrice =
-                                jobsOnQueueModelGlobal.initialPrice +
-                                    (jobsOnQueueModelGlobal.regular
-                                        ? 35
-                                        : 0); //12-13kilo
-                          }
-                          // else {
-                          //   if (jobsOnQueueModelGlobal.initialPrice %
-                          //           (iPriceDivider(
-                          //               jobsOnQueueModelGlobal.regular)) !=
-                          //       0) {
-                          //     jobsOnQueueModelGlobal.initialPrice =
-                          //         jobsOnQueueModelGlobal.initialPrice +
-                          //             (jobsOnQueueModelGlobal.regular
-                          //                 ? 10
-                          //                 : 0); //13-16kilo
-                          //   }
-                          // }
-
-                          setState(() {
-                            jobsOnQueueModelGlobal.initialKilo;
-                            jobsOnQueueModelGlobal.initialLoad;
-                            jobsOnQueueModelGlobal.initialPrice;
-                          });
-                        },
-                        icon: const Icon(Icons.add_circle),
-                        color: Colors.blueAccent,
-                      ),
-                    ],
-                  ),
-                )
-              ],
-            ),
-          ),
-        ),
+              setState(
+                () {
+                  jOQM.waiting;
+                  jOQM.washing;
+                  jOQM.drying;
+                  jOQM.folding;
+                },
+              );
+            }),
+        Text("Fold"),
       ],
+    ),
+  );
+}
+
+Visibility visExtraOnQueueVar(BuildContext context, Function setState,
+    JobsOnQueueModel jOQM, List<OtherItemModel> lOIM) {
+  return Visibility(
+    visible: bViewMoreOptions,
+    child: Container(
+      alignment: Alignment.center,
+      padding: EdgeInsets.all(1.0),
+      decoration: decoLightBlue(),
+      child: Column(
+        children: [
+          Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text("Add WKL Fab"),
+                  IconButton(
+                    onPressed: () {
+                      setState(
+                        () {
+                          lOIM.add(OtherItemModel(
+                              docId: "",
+                              itemId: menuFabWKL24mlDVal,
+                              itemGroup: groupFab,
+                              itemName: "WKL Fabcon 24ml",
+                              itemPrice: 8));
+                          bViewMoreOptions = true;
+
+                          jOQM.initialOthersPrice =
+                              jOQM.initialOthersPrice + 15;
+
+                          showMessage(context, "Extras", "Add Fab added.");
+                        },
+                      );
+                    },
+                    icon: const Icon(Icons.flare_outlined),
+                    color: Colors.blueAccent,
+                  ),
+                  Text("Extra Dry"),
+                  IconButton(
+                    onPressed: () {
+                      setState(
+                        () {
+                          lOIM.add(OtherItemModel(
+                              docId: "",
+                              itemId: menuOthXD,
+                              itemGroup: groupOth,
+                              itemName: "Extra Dry",
+                              itemPrice: 15));
+                          bViewMoreOptions = true;
+
+                          jOQM.initialOthersPrice =
+                              jOQM.initialOthersPrice + 15;
+
+                          showMessage(context, "Extras", "Extra Dry added.");
+                        },
+                      );
+                    },
+                    icon: const Icon(Icons.dry_cleaning_outlined),
+                    color: Colors.blueAccent,
+                  ),
+                ],
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text("Extra Wash"),
+                  IconButton(
+                    onPressed: () {
+                      setState(
+                        () {
+                          lOIM.add(OtherItemModel(
+                              docId: "",
+                              itemId: menuOthXW,
+                              itemGroup: groupOth,
+                              itemName: "Extra Wash",
+                              itemPrice: 15));
+                          bViewMoreOptions = true;
+
+                          jOQM.initialOthersPrice =
+                              jOQM.initialOthersPrice + 15;
+
+                          showMessage(context, "Extras", "Extra Wash added.");
+                        },
+                      );
+                    },
+                    icon: const Icon(Icons.water_drop_outlined),
+                    color: Colors.blueAccent,
+                  ),
+                  Text("Extra Rinse"),
+                  IconButton(
+                    onPressed: () {
+                      setState(
+                        () {
+                          lOIM.add(OtherItemModel(
+                              docId: "",
+                              itemId: menuOthXR,
+                              itemGroup: groupOth,
+                              itemName: "Extra Rinse",
+                              itemPrice: 15));
+                          bViewMoreOptions = true;
+
+                          jOQM.initialOthersPrice =
+                              jOQM.initialOthersPrice + 15;
+
+                          showMessage(context, "Extras", "Extra Rinse added.");
+                        },
+                      );
+                    },
+                    icon: const Icon(Icons.webhook_outlined),
+                    color: Colors.blueAccent,
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+Visibility visExtraOnGoingVar(BuildContext context, Function setState,
+    JobsOnQueueModel jOQM, List<OtherItemModel> lOIM) {
+  return Visibility(
+    visible: true,
+    child: Container(
+      alignment: Alignment.center,
+      padding: EdgeInsets.all(1.0),
+      decoration: decoAmber(),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text("Extra Dry"),
+              IconButton(
+                onPressed: () {
+                  setState(
+                    () {
+                      lOIM.add(OtherItemModel(
+                          docId: "",
+                          itemId: menuOthXD,
+                          itemGroup: groupOth,
+                          itemName: "Extra Dry",
+                          itemPrice: 15));
+                      bViewAddOnDtlOnGoing = true;
+
+                      jOQM.initialOthersPrice = jOQM.initialOthersPrice + 15;
+
+                      showMessage(context, "Extras", "Extra Dry added.");
+                    },
+                  );
+                },
+                icon: const Icon(Icons.dry_cleaning_outlined),
+                color: Colors.blueAccent,
+              ),
+            ],
+          ),
+        ],
+      ),
     ),
   );
 }
@@ -1487,6 +1339,49 @@ Container conOrderModeVar(
               ],
             ),
           ],
+        ),
+        //New Estimate Load display
+        Visibility(
+          visible: bShowKiloLoadDisplayVar,
+          child: Container(
+            padding: EdgeInsets.all(3),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: EdgeInsets.only(left: 10, right: 10),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text("Weight:"),
+                      Text("${kiloDisplay(jOQM.initialKilo)} kilo"),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding: EdgeInsets.only(left: 10, right: 10),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text("Load:"),
+                      Text("${jOQM.initialLoad}"),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding: EdgeInsets.only(left: 10, right: 10),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text("Load Price:"),
+                      Text(
+                          "${autoPriceDisplay(jOQM.initialPrice, jOQM.regular)}.00"),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
         //New estimate load +-8 kilo
         Visibility(
@@ -1583,48 +1478,8 @@ Container conOrderModeVar(
             ),
           ),
         ),
-        //New Estimate Load display
-        Visibility(
-          visible: bShowKiloLoadDisplayVar,
-          child: Container(
-            padding: EdgeInsets.all(3),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  padding: EdgeInsets.only(left: 10, right: 10),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text("Weight:"),
-                      Text("${kiloDisplay(jOQM.initialKilo)} kilo"),
-                    ],
-                  ),
-                ),
-                Container(
-                  padding: EdgeInsets.only(left: 10, right: 10),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text("Load:"),
-                      Text("${jOQM.initialLoad}"),
-                    ],
-                  ),
-                ),
-                Container(
-                  padding: EdgeInsets.only(left: 10, right: 10),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text("Load Price:"),
-                      Text(
-                          "${autoPriceDisplay(jOQM.initialPrice, jOQM.regular)}.00"),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
+        SizedBox(
+          height: 5,
         ),
         //New Estimate Load (+- 1 kilo)
         Visibility(
@@ -1768,11 +1623,12 @@ Container conOrderModeVar(
   );
 }
 
-Visibility visAddOn(Function setState) {
+Visibility visAddOnVar(BuildContext context, Function setState,
+    JobsOnQueueModel jOQM, List<OtherItemModel> lOIM, String colRef) {
   return Visibility(
-    visible: (bViewMoreOptions
+    visible: (bViewAddOnDtlOnGoing
         ? true
-        : (jobsOnQueueModelGlobal.others ? true : false)),
+        : (bViewMoreOptions ? true : (jOQM.others ? true : false))),
     child: Container(
       decoration: decoLightBlue(),
       child: Row(
@@ -1786,358 +1642,8 @@ Visibility visAddOn(Function setState) {
               ),
               IconButton(
                   onPressed: () {
-                    DatabaseOtherItemsOnQueue databaseOtherItemsOnQueue =
-                        DatabaseOtherItemsOnQueue(jobsOnQueueModelGlobal.docId);
-
-                    listAddOnItemsGlobal.forEach((aOIG) {
-                      print("delete docid=${aOIG.docId}");
-                      if (aOIG.docId != "") {
-                        databaseOtherItemsOnQueue.deleteOtheritems(aOIG.docId);
-                        bDelAddOnsVar = true;
-                      } else {
-                        //need to relogin to delete
-                        bDelAddOnsVar = false;
-                      }
-                    });
-
-                    listAddOnItemsGlobal.clear();
-                    jobsOnQueueModelGlobal.initialOthersPrice = 0;
-                    setState(
-                      () {
-                        jobsOnQueueModelGlobal.others = false;
-                        bViewMoreOptions = false;
-                      },
-                    );
-                    //resetAddOn();
-                  },
-                  icon: Icon(Icons.delete_outline)),
-              //checkboxes add on
-              Visibility(
-                visible: (bViewMoreOptions
-                    ? true
-                    : (jobsOnQueueModelGlobal.others ? true : false)),
-                child: Container(
-                  padding: EdgeInsets.all(1.0),
-                  child: Row(
-                    children: [
-                      Column(
-                        children: [
-                          Text(
-                            "Det",
-                            style: TextStyle(fontSize: 10),
-                          ),
-                          Checkbox(
-                              value: bDetAddOnVar,
-                              onChanged: (val) {
-                                resetAddOnVar();
-                                setState(
-                                  () {
-                                    bDetAddOnVar = val!;
-                                  },
-                                );
-                              })
-                        ],
-                      ),
-                      Column(
-                        children: [
-                          Text(
-                            "Fab",
-                            style: TextStyle(fontSize: 10),
-                          ),
-                          Checkbox(
-                              value: bFabAddOnVar,
-                              onChanged: (val) {
-                                resetAddOnVar();
-                                setState(
-                                  () {
-                                    bFabAddOnVar = val!;
-                                  },
-                                );
-                              })
-                        ],
-                      ),
-                      Column(
-                        children: [
-                          Text(
-                            "Ble",
-                            style: TextStyle(fontSize: 10),
-                          ),
-                          Checkbox(
-                              value: bBleAddOnVar,
-                              onChanged: (val) {
-                                resetAddOnVar();
-                                setState(
-                                  () {
-                                    bBleAddOnVar = val!;
-                                  },
-                                );
-                              })
-                        ],
-                      ),
-                      Column(
-                        children: [
-                          Text(
-                            "Oth",
-                            style: TextStyle(fontSize: 10),
-                          ),
-                          Checkbox(
-                              value: bOthAddOnVar,
-                              onChanged: (val) {
-                                resetAddOnVar();
-                                setState(
-                                  () {
-                                    bOthAddOnVar = val!;
-                                  },
-                                );
-                              })
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              Visibility(
-                visible: bDetAddOnVar,
-                child: Container(
-                  padding: EdgeInsets.all(1.0),
-                  child: Row(
-                    children: [
-                      DropdownButton<OtherItemModel>(
-                        value: selectedDetVar,
-                        icon: Icon(Icons.arrow_downward),
-                        iconSize: 24,
-                        elevation: 16,
-                        style: TextStyle(color: Colors.purple[700]),
-                        underline: Container(
-                          height: 2,
-                          color: Colors.purple[700],
-                        ),
-                        items: listDetItems.map((OtherItemModel map) {
-                          return DropdownMenuItem<OtherItemModel>(
-                              value: map,
-                              child: Text(
-                                  "${map.itemGroup}-${map.itemName}(${map.itemPrice}Php)"));
-                        }).toList(),
-                        onChanged: (newItemModel) {
-                          setState(
-                            () {
-                              updateSelectedVar(newItemModel!);
-                            },
-                          );
-                        },
-                      ),
-                      IconButton(
-                        onPressed: () {
-                          setState(
-                            () {
-                              listAddOnItemsGlobal.add(selectedDetVar);
-                              jobsOnQueueModelGlobal.initialOthersPrice =
-                                  jobsOnQueueModelGlobal.initialOthersPrice +
-                                      selectedDetVar.itemPrice;
-                            },
-                          );
-                        },
-                        icon: const Icon(Icons.add_circle),
-                        color: Colors.blueAccent,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              Visibility(
-                visible: bFabAddOnVar,
-                child: Container(
-                  padding: EdgeInsets.all(1.0),
-                  child: Row(
-                    children: [
-                      DropdownButton<OtherItemModel>(
-                        value: selectedFabVar,
-                        icon: Icon(Icons.arrow_downward),
-                        iconSize: 24,
-                        elevation: 16,
-                        style: TextStyle(color: Colors.purple[700]),
-                        underline: Container(
-                          height: 2,
-                          color: Colors.purple[700],
-                        ),
-                        items: listFabItems.map((OtherItemModel map) {
-                          return DropdownMenuItem<OtherItemModel>(
-                              value: map,
-                              child: Text(
-                                  "${map.itemGroup}-${map.itemName}(${map.itemPrice}Php)"));
-                        }).toList(),
-                        onChanged: (newItemModel) {
-                          setState(
-                            () {
-                              updateSelectedVar(newItemModel!);
-                            },
-                          );
-                        },
-                      ),
-                      IconButton(
-                        onPressed: () {
-                          setState(
-                            () {
-                              listAddOnItemsGlobal.add(selectedFabVar);
-                              jobsOnQueueModelGlobal.initialOthersPrice =
-                                  jobsOnQueueModelGlobal.initialOthersPrice +
-                                      selectedFabVar.itemPrice;
-                            },
-                          );
-                        },
-                        icon: const Icon(Icons.add_circle),
-                        color: Colors.blueAccent,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              Visibility(
-                visible: bBleAddOnVar,
-                child: Container(
-                  padding: EdgeInsets.all(1.0),
-                  child: Row(
-                    children: [
-                      DropdownButton<OtherItemModel>(
-                        value: selectedBleVar,
-                        icon: Icon(Icons.arrow_downward),
-                        iconSize: 24,
-                        elevation: 16,
-                        style: TextStyle(color: Colors.purple[700]),
-                        underline: Container(
-                          height: 2,
-                          color: Colors.purple[700],
-                        ),
-                        items: listBleItems.map((OtherItemModel map) {
-                          return DropdownMenuItem<OtherItemModel>(
-                              value: map,
-                              child: Text(
-                                  "${map.itemGroup}-${map.itemName}(${map.itemPrice}Php)"));
-                        }).toList(),
-                        onChanged: (newItemModel) {
-                          setState(
-                            () {
-                              updateSelectedVar(newItemModel!);
-                            },
-                          );
-                        },
-                      ),
-                      IconButton(
-                        onPressed: () {
-                          setState(
-                            () {
-                              listAddOnItemsGlobal.add(selectedBleVar);
-                              jobsOnQueueModelGlobal.initialOthersPrice =
-                                  jobsOnQueueModelGlobal.initialOthersPrice +
-                                      selectedBleVar.itemPrice;
-                            },
-                          );
-                        },
-                        icon: const Icon(Icons.add_circle),
-                        color: Colors.blueAccent,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              Visibility(
-                visible: bOthAddOnVar,
-                child: Container(
-                  padding: EdgeInsets.all(1.0),
-                  child: Row(
-                    children: [
-                      DropdownButton<OtherItemModel>(
-                        value: selectedOthVar,
-                        icon: Icon(Icons.arrow_downward),
-                        iconSize: 24,
-                        elevation: 16,
-                        style: TextStyle(color: Colors.purple[700]),
-                        underline: Container(
-                          height: 2,
-                          color: Colors.purple[700],
-                        ),
-                        items: listOthItems.map((OtherItemModel map) {
-                          return DropdownMenuItem<OtherItemModel>(
-                              value: map,
-                              child: Text(
-                                  "${map.itemGroup}-${map.itemName}(${map.itemPrice}Php)"));
-                        }).toList(),
-                        onChanged: (newItemModel) {
-                          setState(
-                            () {
-                              updateSelectedVar(newItemModel!);
-                            },
-                          );
-                        },
-                      ),
-                      IconButton(
-                        onPressed: () {
-                          setState(
-                            () {
-                              listAddOnItemsGlobal.add(selectedOthVar);
-                              jobsOnQueueModelGlobal.initialOthersPrice =
-                                  jobsOnQueueModelGlobal.initialOthersPrice +
-                                      selectedOthVar.itemPrice;
-                            },
-                          );
-                        },
-                        icon: const Icon(Icons.add_circle),
-                        color: Colors.blueAccent,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              readAddedDataVar(listAddOnItemsGlobal),
-              //_dtAddedOthers(addOnItems),
-              //_addedOn(addOnItems),
-            ],
-          ),
-        ],
-      ),
-    ),
-  );
-}
-
-Visibility visAddOnVar(
-    Function setState, JobsOnQueueModel jOQM, List<OtherItemModel> lOIM) {
-  return Visibility(
-    visible: (bViewMoreOptions ? true : (jOQM.others ? true : false)),
-    child: Container(
-      decoration: decoLightBlue(),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          Column(
-            children: [
-              Text(
-                "Clear Add Ons",
-                style: TextStyle(fontSize: 10),
-              ),
-              IconButton(
-                  onPressed: () {
-                    DatabaseOtherItemsOnQueue databaseOtherItemsOnQueue =
-                        DatabaseOtherItemsOnQueue(jOQM.docId);
-                    print(lOIM.length.toString() + "Size add on");
-                    lOIM.forEach((aOIG) {
-                      print("delete docid=${aOIG.docId}");
-                      if (aOIG.docId != "") {
-                        databaseOtherItemsOnQueue.deleteOtheritems(aOIG.docId);
-                        bDelAddOnsVar = true;
-                      } else {
-                        //need to relogin to delete
-                        bDelAddOnsVar = false;
-                      }
-                    });
-
-                    jOQM.initialOthersPrice = 0;
-                    setState(
-                      () {
-                        jOQM.others = false;
-                        bViewMoreOptions = false;
-                      },
-                    );
-                    //resetAddOn();
+                    showMessageDeleteAddOns(context, setState, "Delete Add On",
+                        "Delete?", jOQM, lOIM, colRef);
                   },
                   icon: Icon(Icons.delete_outline)),
               //checkboxes add on
@@ -2427,26 +1933,6 @@ Visibility visAddOnVar(
   );
 }
 
-Container conTotalPrice(Function setState) {
-  return Container(
-    decoration: containerTotalPriceBoxDecoration(),
-    padding: EdgeInsets.only(left: 10, right: 10),
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          "Total Price:",
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        Text(
-          "Php ${jobsOnQueueModelGlobal.initialPrice + jobsOnQueueModelGlobal.initialOthersPrice}.00",
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-      ],
-    ),
-  );
-}
-
 Container conTotalPriceVar(Function setState, JobsOnQueueModel jOQM) {
   return Container(
     decoration: containerTotalPriceBoxDecoration(),
@@ -2461,33 +1947,6 @@ Container conTotalPriceVar(Function setState, JobsOnQueueModel jOQM) {
         Text(
           "Php ${jOQM.initialPrice + jOQM.initialOthersPrice}.00",
           style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-      ],
-    ),
-  );
-}
-
-Container conBasket(Function setState) {
-  return Container(
-    padding: EdgeInsets.all(1.0),
-    decoration: decoAmber(),
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        IconButton(
-          onPressed: () {
-            setState(() => jobsOnQueueModelGlobal.basket--);
-          },
-          icon: const Icon(Icons.remove_circle_outlined),
-          color: Colors.blueAccent,
-        ),
-        Text("Basket: ${jobsOnQueueModelGlobal.basket}"),
-        IconButton(
-          onPressed: () {
-            setState(() => jobsOnQueueModelGlobal.basket++);
-          },
-          icon: const Icon(Icons.add_circle),
-          color: Colors.blueAccent,
         ),
       ],
     ),
@@ -2522,33 +1981,6 @@ Container conBasketVar(
   );
 }
 
-Container conBag(Function setState) {
-  return Container(
-    padding: EdgeInsets.all(1.0),
-    decoration: decoAmber(),
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        IconButton(
-          onPressed: () {
-            setState(() => jobsOnQueueModelGlobal.bag--);
-          },
-          icon: const Icon(Icons.remove_circle_outlined),
-          color: Colors.blueAccent,
-        ),
-        Text("Bag: ${jobsOnQueueModelGlobal.bag}"),
-        IconButton(
-          onPressed: () {
-            setState(() => jobsOnQueueModelGlobal.bag++);
-          },
-          icon: const Icon(Icons.add_circle),
-          color: Colors.blueAccent,
-        ),
-      ],
-    ),
-  );
-}
-
 Container conBagVar(
     Function setState, JobsOnQueueModel jOQM, BoxDecoration conDecoration) {
   return Container(
@@ -2571,77 +2003,6 @@ Container conBagVar(
           },
           icon: const Icon(Icons.add_circle),
           color: Colors.blueAccent,
-        ),
-      ],
-    ),
-  );
-}
-
-Container conPayment(Function setState) {
-  return Container(
-    decoration: decoAmber(),
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [
-        Column(
-          children: [
-            Text(
-              "Unpaid",
-              style: TextStyle(fontSize: 10),
-            ),
-            Checkbox(
-                value: jobsOnQueueModelGlobal.unpaid,
-                onChanged: (val) {
-                  resetPaymentQueueBool(jobsOnQueueModelGlobal);
-                  if (val!) {
-                    setState(
-                      () {
-                        jobsOnQueueModelGlobal.unpaid = val;
-                      },
-                    );
-                  }
-                })
-          ],
-        ),
-        Column(
-          children: [
-            Text(
-              "PaidCash",
-              style: TextStyle(fontSize: 10),
-            ),
-            Checkbox(
-                value: jobsOnQueueModelGlobal.paidcash,
-                onChanged: (val) {
-                  resetPaymentQueueBool(jobsOnQueueModelGlobal);
-                  if (val!) {
-                    setState(
-                      () {
-                        jobsOnQueueModelGlobal.paidcash = val;
-                      },
-                    );
-                  }
-                })
-          ],
-        ),
-        Column(
-          children: [
-            Text(
-              "PaidGcash",
-              style: TextStyle(fontSize: 10),
-            ),
-            Checkbox(
-                value: jobsOnQueueModelGlobal.paidgcash,
-                onChanged: (val) {
-                  resetPaymentQueueBool(jobsOnQueueModelGlobal);
-                  if (val!) {
-                    setState(
-                      () {
-                        jobsOnQueueModelGlobal.paidgcash = val;
-                      },
-                    );
-                  }
-                })
-          ],
         ),
       ],
     ),
@@ -2719,21 +2080,6 @@ Container conPaymentVar(Function setState, JobsOnQueueModel jOQM) {
   );
 }
 
-Container conRemarks(Function setState) {
-  remarksControllerVar.text = jobsOnQueueModelGlobal.remarks;
-  return Container(
-    padding: EdgeInsets.all(1.0),
-    decoration: decoAmber(),
-    child: TextFormField(
-      textCapitalization: TextCapitalization.words,
-      textAlign: TextAlign.start,
-      controller: remarksControllerVar,
-      decoration: InputDecoration(labelText: 'Remarks', hintText: 'Notes'),
-      validator: (val) {},
-    ),
-  );
-}
-
 Container conRemarksVar(Function setState, JobsOnQueueModel jOQM) {
   remarksControllerVar.text = jOQM.remarks;
   return Container(
@@ -2774,32 +2120,6 @@ Container conMoreOptions(Function setState) {
   );
 }
 
-Visibility visFold(Function setState) {
-  return Visibility(
-    visible: bViewMoreOptions,
-    child: Container(
-      alignment: Alignment.center,
-      padding: EdgeInsets.all(1.0),
-      decoration: decoLightBlue(),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text("No Fold"),
-          Switch.adaptive(
-            value: jobsOnQueueModelGlobal.fold,
-            onChanged: (bool value) {
-              setState(() {
-                jobsOnQueueModelGlobal.fold = value;
-              });
-            },
-          ),
-          Text("Fold"),
-        ],
-      ),
-    ),
-  );
-}
-
 Visibility visFoldVar(Function setState, JobsOnQueueModel jOQM) {
   return Visibility(
     visible: bViewMoreOptions,
@@ -2820,32 +2140,6 @@ Visibility visFoldVar(Function setState, JobsOnQueueModel jOQM) {
             },
           ),
           Text("Fold"),
-        ],
-      ),
-    ),
-  );
-}
-
-Visibility visMix(Function setState) {
-  return Visibility(
-    visible: bViewMoreOptions,
-    child: Container(
-      alignment: Alignment.center,
-      padding: EdgeInsets.all(1.0),
-      decoration: decoLightBlue(),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text("Dont Mix"),
-          Switch.adaptive(
-            value: jobsOnQueueModelGlobal.mix,
-            onChanged: (bool value) {
-              setState(() {
-                jobsOnQueueModelGlobal.mix = value;
-              });
-            },
-          ),
-          Text("Mix"),
         ],
       ),
     ),
@@ -3113,80 +2407,80 @@ Future<int> getNumberAutoVarV2() async {
   return 99;
 }
 
-//
-Future<void> assignNumberAutoVar() async {
-  var colAuto = FirebaseFirestore.instance
-      .collection('JobsOnGoing')
-      .orderBy('D30_JobsId');
-  var queryAuto = await colAuto.get();
-  bool bOnlyOne = false;
-  bool bFirstLoopOnly = true;
-  bool bMiddleVacant = true;
-  int nFirstLowest = 0, nSecondLowest = 0, nPrevJobsIdFetch = 0;
-  if (queryAuto.size == 1) {
-    bOnlyOne = true;
-  }
-  for (var doc in queryAuto.docs) {
-    //once only
-    if (bOnlyOne && doc['D30_JobsId'] == 99) {
-      await doc.reference.update({
-        'D30_JobsId': 1,
-      });
-      break;
-    }
+// //
+// Future<void> assignNumberAutoVar() async {
+//   var colAuto = FirebaseFirestore.instance
+//       .collection('JobsOnGoing')
+//       .orderBy('D30_JobsId');
+//   var queryAuto = await colAuto.get();
+//   bool bOnlyOne = false;
+//   bool bFirstLoopOnly = true;
+//   bool bMiddleVacant = true;
+//   int nFirstLowest = 0, nSecondLowest = 0, nPrevJobsIdFetch = 0;
+//   if (queryAuto.size == 1) {
+//     bOnlyOne = true;
+//   }
+//   for (var doc in queryAuto.docs) {
+//     //once only
+//     if (bOnlyOne && doc['D30_JobsId'] == 99) {
+//       await doc.reference.update({
+//         'D30_JobsId': 1,
+//       });
+//       break;
+//     }
 
-    //once only
-    if (bFirstLoopOnly) {
-      if (doc['D30_JobsId'] != 1) {
-        nFirstLowest = 1;
-      }
-      bFirstLoopOnly = false;
-    }
+//     //once only
+//     if (bFirstLoopOnly) {
+//       if (doc['D30_JobsId'] != 1) {
+//         nFirstLowest = 1;
+//       }
+//       bFirstLoopOnly = false;
+//     }
 
-    //once only
-    if (nPrevJobsIdFetch == 0) {
-      if (doc['D30_JobsId'] == 1) {
-        nPrevJobsIdFetch = 1;
-      } else {
-        nPrevJobsIdFetch = doc['D30_JobsId'] - 1;
-      }
-    }
+//     //once only
+//     if (nPrevJobsIdFetch == 0) {
+//       if (doc['D30_JobsId'] == 1) {
+//         nPrevJobsIdFetch = 1;
+//       } else {
+//         nPrevJobsIdFetch = doc['D30_JobsId'] - 1;
+//       }
+//     }
 
-    //loop
-    if (nPrevJobsIdFetch != 0) {
-      if (nPrevJobsIdFetch + 1 == doc['D30_JobsId']) {
-        nPrevJobsIdFetch = doc['D30_JobsId'];
-      } else {
-        //once found
-        if (bMiddleVacant) {
-          nPrevJobsIdFetch++;
-          if (nFirstLowest == 0) {
-            nFirstLowest = nPrevJobsIdFetch;
-          } else if (nSecondLowest == 0 && nPrevJobsIdFetch <= 25) {
-            nSecondLowest = nPrevJobsIdFetch;
-          }
-          bMiddleVacant = false;
-        }
-      }
-    }
+//     //loop
+//     if (nPrevJobsIdFetch != 0) {
+//       if (nPrevJobsIdFetch + 1 == doc['D30_JobsId']) {
+//         nPrevJobsIdFetch = doc['D30_JobsId'];
+//       } else {
+//         //once found
+//         if (bMiddleVacant) {
+//           nPrevJobsIdFetch++;
+//           if (nFirstLowest == 0) {
+//             nFirstLowest = nPrevJobsIdFetch;
+//           } else if (nSecondLowest == 0 && nPrevJobsIdFetch <= 25) {
+//             nSecondLowest = nPrevJobsIdFetch;
+//           }
+//           bMiddleVacant = false;
+//         }
+//       }
+//     }
 
-    //final
-    if (doc['D30_JobsId'] == 99) {
-      if (nSecondLowest == 0) {
-        await doc.reference.update({
-          'D30_JobsId': nFirstLowest,
-        });
-      } else {
-        await doc.reference.update({
-          'D30_JobsId': nSecondLowest,
-        });
-      }
-      // await doc.reference.update({
-      //   'D30_JobsId': 9,
-      // });
-    }
-  }
-}
+//     //final
+//     if (doc['D30_JobsId'] == 99) {
+//       if (nSecondLowest == 0) {
+//         await doc.reference.update({
+//           'D30_JobsId': nFirstLowest,
+//         });
+//       } else {
+//         await doc.reference.update({
+//           'D30_JobsId': nSecondLowest,
+//         });
+//       }
+//       // await doc.reference.update({
+//       //   'D30_JobsId': 9,
+//       // });
+//     }
+//   }
+// }
 
 Future<void> finalNumberAutoVarV2() async {
   var colAuto = FirebaseFirestore.instance
@@ -3203,54 +2497,55 @@ Future<void> finalNumberAutoVarV2() async {
   }
 }
 
-Future<void> assignNumberAutoVarV2() async {
-  var colAuto = FirebaseFirestore.instance
-      .collection('JobsOnGoing')
-      .orderBy('D30_JobsId');
-  var queryAuto = await colAuto.get();
-  int nFirstLowest = 0,
-      nSecondLowest = 0,
-      nPrevJobsIdFetch = 0,
-      nCurrJobsIdFetch = 0;
-  for (var doc in queryAuto.docs) {
-    if (nCurrJobsIdFetch != doc['D30_JobsId']) {
-      nPrevJobsIdFetch = nCurrJobsIdFetch;
-      nCurrJobsIdFetch = doc['D30_JobsId'];
-    }
+// Future<void> assignNumberAutoVarV2() async {
+//   var colAuto = FirebaseFirestore.instance
+//       .collection('JobsOnGoing')
+//       .orderBy('D30_JobsId');
+//   var queryAuto = await colAuto.get();
+//   int nFirstLowest = 0,
+//       nSecondLowest = 0,
+//       nPrevJobsIdFetch = 0,
+//       nCurrJobsIdFetch = 0;
+//   for (var doc in queryAuto.docs) {
+//     if (nCurrJobsIdFetch != doc['D30_JobsId']) {
+//       nPrevJobsIdFetch = nCurrJobsIdFetch;
+//       nCurrJobsIdFetch = doc['D30_JobsId'];
+//     }
 
-    if ((nPrevJobsIdFetch + 1) != nCurrJobsIdFetch &&
-        nFirstLowest != 0 &&
-        nSecondLowest == 0) {
-      nSecondLowest = nPrevJobsIdFetch + 1;
-    }
+//     if ((nPrevJobsIdFetch + 1) != nCurrJobsIdFetch &&
+//         nFirstLowest != 0 &&
+//         nSecondLowest == 0) {
+//       nSecondLowest = nPrevJobsIdFetch + 1;
+//     }
 
-    if ((nPrevJobsIdFetch + 1) != nCurrJobsIdFetch &&
-        nFirstLowest == 0 &&
-        nSecondLowest == 0) {
-      nFirstLowest = nPrevJobsIdFetch + 1;
-    }
+//     if ((nPrevJobsIdFetch + 1) != nCurrJobsIdFetch &&
+//         nFirstLowest == 0 &&
+//         nSecondLowest == 0) {
+//       nFirstLowest = nPrevJobsIdFetch + 1;
+//     }
 
-    print("nFirstLowest=$nFirstLowest nSecondLowest=$nSecondLowest");
+//     print("nFirstLowest=$nFirstLowest nSecondLowest=$nSecondLowest");
 
-    //final
-    if (doc['D30_JobsId'] == 99) {
-      if (nSecondLowest == 0 || nSecondLowest > 25) {
-        //autoNumber = nFirstLowest;
-        await doc.reference.update({
-          'D30_JobsId': nFirstLowest,
-        });
-      } else {
-        //autoNumber = nSecondLowest;
-        await doc.reference.update({
-          'D30_JobsId': nSecondLowest,
-        });
-      }
-    }
-  }
-}
+//     //final
+//     if (doc['D30_JobsId'] == 99) {
+//       if (nSecondLowest == 0 || nSecondLowest > 25) {
+//         //autoNumber = nFirstLowest;
+//         await doc.reference.update({
+//           'D30_JobsId': nFirstLowest,
+//         });
+//       } else {
+//         //autoNumber = nSecondLowest;
+//         await doc.reference.update({
+//           'D30_JobsId': nSecondLowest,
+//         });
+//       }
+//     }
+//   }
+// }
 
 //Display
 Container conDisplayVar(
+  BuildContext context,
   bool showUpArrow,
   JobsOnQueueModel jOQM,
   //[int buffExtraDryPrice = 0, int buffJobsId = 0]
@@ -3285,6 +2580,22 @@ Container conDisplayVar(
                     const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
               ),
               Text(
+                (jOQM.waiting
+                    ? "Waiting"
+                    : (jOQM.washing
+                        ? "Washing"
+                        : (jOQM.drying
+                            ? "Drying"
+                            : (jOQM.folding
+                                ? "Folding"
+                                : (jOQM.forSorting
+                                    ? "For Sorting"
+                                    : (jOQM.riderPickup
+                                        ? "Rider Pickup"
+                                        : "N/A")))))),
+                style: const TextStyle(fontSize: 9),
+              ),
+              Text(
                 //displayDateVar(convertTimeStampVar(jOQM.needOn)),
                 "Need On: ${isItToday(jOQM.needOn) ? "Today" : (isItTomorrow(jOQM.needOn) ? "Tomorrow" : (displayDateVar(convertTimeStampVar(jOQM.needOn))))}",
                 style: const TextStyle(
@@ -3299,11 +2610,9 @@ Container conDisplayVar(
           children: [
             InkWell(
               onDoubleTap: () {
-                /*
-                  if (jobsOnQueueModel.queueStat == "Waiting") {
-                    alterNumberMobile(buffJobsId);
-                  }
-                  */
+                if (jOQM.waiting) {
+                  alterNumberMobileVar(context, jOQM.jobsId);
+                }
               },
               child: Text(
                 //(buffJobsId == 0 ? "" : "#$buffJobsId"),
@@ -3334,8 +2643,6 @@ Container conDisplayVar(
 //alterjobsonqueue
 void showAlterJobsOnQueueVar(BuildContext context, String docId,
     JobsOnQueueModel jOQM, List<OtherItemModel> lOIM) async {
-  //jobsOnQueueModelGlobal = jOQM;
-  //listAddOnItemsGlobal = lOIM;
   dNeedOnVar = jOQM.needOn.toDate();
   bViewMoreOptions = false;
   if (lOIM.isNotEmpty) {
@@ -3347,7 +2654,7 @@ void showAlterJobsOnQueueVar(BuildContext context, String docId,
       return StatefulBuilder(builder: (context, setState) {
         return AlertDialog(
           title: Text(
-            "New Laundry ${DateTime.now().toString().substring(5, 13)}",
+            "Change Jobs On Queue",
             style: TextStyle(backgroundColor: Colors.amber[300]),
           ),
           content: SingleChildScrollView(
@@ -3364,13 +2671,14 @@ void showAlterJobsOnQueueVar(BuildContext context, String docId,
                     conCustomerName(context, setState, jOQM),
                     conQueueStatVar(setState, jOQM),
                     conOrderModeVar(setState, jOQM, decoAmber()),
-                    visAddOnVar(setState, jOQM, lOIM),
                     conTotalPriceVar(setState, jOQM),
                     conBasketVar(setState, jOQM, decoAmber()),
                     conBagVar(setState, jOQM, decoAmber()),
                     conPaymentVar(setState, jOQM),
                     conRemarksVar(setState, jOQM),
                     conMoreOptions(setState),
+                    visAddOnVar(context, setState, jOQM, lOIM, "JobsOnQueue"),
+                    visExtraOnQueueVar(context, setState, jOQM, lOIM),
                     visFoldVar(setState, jOQM),
                     visMixVar(setState, jOQM),
                     visNeedOn(setState),
@@ -3384,20 +2692,10 @@ void showAlterJobsOnQueueVar(BuildContext context, String docId,
             cancelButtonReloginVar(context, jOQM),
 
             //save button
-            updateButtonJOQVar(
-                // context, docId, jobsOnQueueModelGlobal, listAddOnItemsGlobal),
-                context,
-                docId,
-                jOQM,
-                lOIM),
+            updateButtonJOQVar(context, docId, jOQM, lOIM),
 
             //move to ongoing
-            moveToJOGVar(
-                // context, docId, jobsOnQueueModelGlobal, listAddOnItemsGlobal),
-                context,
-                docId,
-                jOQM,
-                lOIM),
+            moveToJOGVar(context, docId, jOQM, lOIM),
           ],
         );
       });
@@ -3408,9 +2706,8 @@ void showAlterJobsOnQueueVar(BuildContext context, String docId,
 //alterjobsonqueue
 void showAlterJobsOnGoingVar(BuildContext context, String docId,
     JobsOnQueueModel jOQM, List<OtherItemModel> lOIM) async {
-  //jobsOnQueueModelGlobal = jOQM;
-  //listAddOnItemsGlobal = lOIM;
   bViewMoreOptions = false;
+  bViewAddOnDtlOnGoing = false;
   if (lOIM.isNotEmpty) {
     bViewMoreOptions = true;
   }
@@ -3436,12 +2733,12 @@ void showAlterJobsOnGoingVar(BuildContext context, String docId,
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     conCustomerName(context, setState, jOQM),
+                    conOnGoingStatVar(setState, jOQM),
                     //conQueueStatVar(setState, jOQM),
                     Visibility(
                         visible: bViewMoreOptions,
                         child:
                             conOrderModeVar(setState, jOQM, decoLightBlue())),
-                    visAddOnVar(setState, jOQM, lOIM),
                     conTotalPriceVar(setState, jOQM),
                     Visibility(
                         visible: bViewMoreOptions,
@@ -3452,6 +2749,8 @@ void showAlterJobsOnGoingVar(BuildContext context, String docId,
                     conPaymentVar(setState, jOQM),
                     conRemarksVar(setState, jOQM),
                     conMoreOptions(setState),
+                    visAddOnVar(context, setState, jOQM, lOIM, "JobsOnGoing"),
+                    visExtraOnGoingVar(context, setState, jOQM, lOIM),
                     visFoldVar(setState, jOQM),
                     visMixVar(setState, jOQM),
                     visNeedOn(setState),
@@ -3465,16 +2764,10 @@ void showAlterJobsOnGoingVar(BuildContext context, String docId,
             cancelButtonReloginVar(context, jOQM),
 
             //save button
-            updateButtonJOGVar(
-                // context, docId, jobsOnQueueModelGlobal, listAddOnItemsGlobal),
-                context,
-                docId,
-                jOQM,
-                lOIM),
+            updateButtonJOGVar(context, docId, jOQM, lOIM),
 
             //move to ongoing
             // moveToJOGVar(
-            //     // context, docId, jobsOnQueueModelGlobal, listAddOnItemsGlobal),
             //     context,
             //     docId,
             //     jOQM,
@@ -3522,8 +2815,53 @@ void showMessage(BuildContext context, String title, String message) {
   );
 }
 
+void showMessageDeleteAddOns(
+    BuildContext context,
+    Function setState,
+    String title,
+    String message,
+    JobsOnQueueModel jOQM,
+    List<OtherItemModel> lOIM,
+    String colRef) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return StatefulBuilder(builder: (context, setState) {
+        return AlertDialog(
+          title: Text(
+            title,
+            style: TextStyle(backgroundColor: Colors.amber[300]),
+          ),
+          content: SingleChildScrollView(
+            scrollDirection: Axis.vertical,
+            child: Container(
+              padding: EdgeInsets.all(8.0),
+              decoration: BoxDecoration(
+                  border: Border.all(color: Colors.blueAccent, width: 2.0)),
+              child: Form(
+                //key: _formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(message),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          actions: [
+            closeButtonVar(context),
+            deleteButtonAddOnVar(
+                context, setState, jOQM.docId, jOQM, lOIM, colRef)
+          ],
+        );
+      });
+    },
+  );
+}
+
 Widget updateButtonJOQVar(BuildContext context, String docId,
-    JobsOnQueueModel jOQM, List<OtherItemModel> lAOI) {
+    JobsOnQueueModel jOQM, List<OtherItemModel> lOIM) {
   return MaterialButton(
     onPressed: () {
       if (bDelAddOnsVar) {
@@ -3542,14 +2880,18 @@ Widget updateButtonJOQVar(BuildContext context, String docId,
 
       //pop box
       Navigator.pop(context);
-      updateJOQMVar(docId, jOQM, lAOI);
-      if (lAOI.isNotEmpty) {
+      updateJOQMVar(docId, jOQM, lOIM);
+
+      //listAddOnItemsGlobal.clear();
+      resetJOQMGlobalVar();
+
+      if (lOIM.isNotEmpty) {
         bViewMoreOptions = true;
         Navigator.pop(context);
       }
 
       // Navigator.of(context).push(
-      //     MaterialPageRoute(builder: (context) => MyQueue(jOQM.currentEmpId)));
+      //     MaterialPageRoute(builder: (context) => MyQueue(empidGlobal)));
     },
     color: cButtons,
     child: const Text("Update"),
@@ -3557,7 +2899,7 @@ Widget updateButtonJOQVar(BuildContext context, String docId,
 }
 
 Widget updateButtonJOGVar(BuildContext context, String docId,
-    JobsOnQueueModel jOQM, List<OtherItemModel> lAOI) {
+    JobsOnQueueModel jOQM, List<OtherItemModel> lOIM) {
   return MaterialButton(
     onPressed: () {
       if (bDelAddOnsVar) {
@@ -3573,42 +2915,85 @@ Widget updateButtonJOGVar(BuildContext context, String docId,
       }
 
       bViewMoreOptions = false;
+      bViewAddOnDtlOnGoing = false;
 
       //pop box
       Navigator.pop(context);
-      updateJOGMVar(docId, jOQM, lAOI);
-      if (lAOI.isNotEmpty) {
+      updateJOGMVar(docId, jOQM, lOIM);
+      if (lOIM.isNotEmpty) {
         bViewMoreOptions = true;
         Navigator.pop(context);
       }
 
       // Navigator.of(context).push(
-      //     MaterialPageRoute(builder: (context) => MyQueue(jOQM.currentEmpId)));
+      //     MaterialPageRoute(builder: (context) => MyQueue(jOQM.empidGlobal)));
     },
     color: cButtons,
     child: const Text("Update"),
   );
 }
 
+Widget deleteButtonAddOnVar(
+    BuildContext context,
+    Function setState,
+    String docId,
+    JobsOnQueueModel jOQM,
+    List<OtherItemModel> lOIM,
+    String colRef) {
+  return MaterialButton(
+    onPressed: () {
+      DatabaseOtherItems databaseOtherItems =
+          DatabaseOtherItems(colRef, jOQM.docId);
+      lOIM.forEach((aOIG) async {
+        jOQM.initialOthersPrice = jOQM.initialOthersPrice - aOIG.itemPrice;
+        await databaseOtherItems.deleteOtheritems(aOIG.docId);
+        print("delete other items docid=${aOIG.docId}");
+      });
+
+      jOQM.initialOthersPrice = 0;
+
+      ///need to update the fb to requery the data, not the same with global variables
+      if (colRef == "JobsOnQueue") {
+        updateJOQMVar(jOQM.docId, jOQM, lOIM);
+      } else {
+        updateJOGMVar(jOQM.docId, jOQM, lOIM);
+      }
+
+      setState(
+        () {
+          jOQM.others = false;
+          bViewMoreOptions = false;
+          bViewAddOnDtlOnGoing = false;
+        },
+      );
+      Navigator.pop(context);
+      Navigator.pop(context);
+      Navigator.pop(context); //need to relogin
+    },
+    color: cButtons,
+    child: const Text("Delete"),
+  );
+}
+
 void updateJOQMVar(
-    String docId, JobsOnQueueModel jOQM, List<OtherItemModel> lAOI) {
+    String docId, JobsOnQueueModel jOQM, List<OtherItemModel> lOIM) {
   DatabaseJobsOnQueue databaseJobsOnQueue = DatabaseJobsOnQueue();
   jOQM.needOn = Timestamp.fromDate(dNeedOnVar);
-  databaseJobsOnQueue.updateJobsOnQueue(docId, jOQM, lAOI);
+  databaseJobsOnQueue.updateJobsOnQueue(docId, jOQM, lOIM);
 }
 
 void updateJOGMVar(
-    String docId, JobsOnQueueModel jOQM, List<OtherItemModel> lAOI) {
+    String docId, JobsOnQueueModel jOQM, List<OtherItemModel> lOIM) {
   DatabaseJobsOnGoing databaseJobsOnGoing = DatabaseJobsOnGoing();
   jOQM.needOn = Timestamp.fromDate(dNeedOnVar);
-  databaseJobsOnGoing.updateJobsOnGoing(docId, jOQM, lAOI);
+  databaseJobsOnGoing.updateJobsOnGoing(docId, jOQM, lOIM);
 }
 
-void deleteJOQVar(String docId, List<OtherItemModel> lAOI) {
+void deleteJOQVar(String docId, List<OtherItemModel> lOIM) {
   DatabaseOtherItemsOnQueue databaseOtherItemsOnQueue =
       DatabaseOtherItemsOnQueue(docId);
 
-  lAOI.forEach((aOIG) {
+  lOIM.forEach((aOIG) {
     print("delete for ongoing docid=${aOIG.docId}");
     if (aOIG.docId != "") {
       databaseOtherItemsOnQueue.deleteOtheritems(aOIG.docId);
@@ -3621,4 +3006,88 @@ void deleteJOQVar(String docId, List<OtherItemModel> lAOI) {
 
   DatabaseJobsOnQueue databaseJobsOnQueue = DatabaseJobsOnQueue();
   databaseJobsOnQueue.deleteJobsOnQueue(docId);
+}
+
+void updateSwapVar(String sourceJobsId, String destinationJobsId) async {
+  var collection = FirebaseFirestore.instance.collection('JobsOnGoing');
+  var querySnapshots = await collection.get();
+  for (var doc in querySnapshots.docs) {
+    if (destinationJobsId == "${doc['D30_JobsId']}") {
+      await doc.reference.update({
+        'D30_JobsId': int.parse(sourceJobsId.replaceAll("#", "")),
+      }).catchError((error) => print("Failed : $error"));
+      ;
+    } else if (sourceJobsId == "${doc['D30_JobsId']}") {
+      await doc.reference.update({
+        'D30_JobsId': int.parse(destinationJobsId.replaceAll("#", "")),
+      }).catchError((error) => print("Failed : $error"));
+    }
+  }
+}
+
+void alterNumberMobileVar(BuildContext context, int jobsId) {
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: Text(
+        "Swapping no. #$jobsId",
+        style: TextStyle(backgroundColor: Colors.green[50]),
+      ),
+      content: SingleChildScrollView(
+        scrollDirection: Axis.vertical,
+        child: StatefulBuilder(
+            builder: (BuildContext context, StateSetter setState) {
+          return Container(
+            padding: EdgeInsets.all(8.0),
+            decoration: BoxDecoration(
+                border: Border.all(color: Colors.blueAccent, width: 2.0)),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizedBox(
+                  height: 5,
+                ),
+                SizedBox(
+                  height: 5,
+                ),
+                DropdownButton<String>(
+                  hint: Text("Select"),
+                  value: selectedNumberVar,
+                  onChanged: (val) {
+                    setState(() {
+                      selectedNumberVar = val!;
+                    });
+                  },
+                  items: completeListNumbering
+                      .map<DropdownMenuItem<String>>((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text("#$value"),
+                    );
+                  }).toList(),
+                ),
+                TextButton(
+                    style: ButtonStyle(
+                        backgroundColor:
+                            WidgetStatePropertyAll(Colors.amberAccent)),
+                    onPressed: () {
+                      updateSwapVar("$jobsId", selectedNumberVar);
+                      showMessage(context, "Success", "Swap complete");
+                    },
+                    child: Text(
+                        "Click here to swap number #$jobsId to #$selectedNumberVar")),
+              ],
+            ),
+          );
+        }),
+      ),
+      actions: [
+        //cancel button
+        closeButtonVar(context),
+
+        //swap jobs id
+        //_swapJobsId("#$jobsId", _selectedNumber)
+      ],
+    ),
+  );
 }

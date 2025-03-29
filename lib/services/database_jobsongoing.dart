@@ -38,7 +38,6 @@ class DatabaseJobsOnGoing {
         .then((value) => {
               print("Insert Done.${jOQM.customerId}"),
               deleteJOQVar(jOQM.docId, lAOI),
-              /*
               updateDocId(JobsOnQueueModel(
                   docId: value.id,
                   dateQ: jOQM.dateO,
@@ -85,11 +84,10 @@ class DatabaseJobsOnGoing {
                   waitingTwoWeeks: jOQM.waitingTwoWeeks,
                   forDisposal: jOQM.forDisposal,
                   disposed: jOQM.disposed)),
-              databaseOtherItemsOnGoing = DatabaseOtherItemsOnGoing(value.id),
-              lAOI.forEach((addOnItem) {
-                databaseOtherItemsOnGoing.addOtherItems(addOnItem);
-              }),
-              */
+              // databaseOtherItemsOnGoing = DatabaseOtherItemsOnGoing(value.id),
+              // lAOI.forEach((addOnItem) {
+              //   databaseOtherItemsOnGoing.addOtherItems(addOnItem);
+              // }),
             })
         // ignore: invalid_return_type_for_catch_error
         .catchError(
