@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:laundry_firebase/models/customermodel.dart';
 import 'package:laundry_firebase/models/jobsonqueuemodel.dart';
 import 'package:laundry_firebase/models/otheritemmodel.dart';
+import 'package:laundry_firebase/models/suppliesmodelhist.dart';
 import 'package:laundry_firebase/pages/loyalty_admin.dart';
 import 'package:laundry_firebase/pages/queue_mobile.dart';
 import 'package:laundry_firebase/pages/autocompletecustomer.dart';
@@ -49,8 +50,10 @@ class _MyQueueState extends State<MyQueue> {
             height: 5,
           ),
           FloatingActionButton(
-            heroTag: "Gcash",
-            onPressed: () {},
+            heroTag: "Supplies",
+            onPressed: () {
+              showSuppliesHist();
+            },
             child: const Icon(Icons.g_mobiledata),
           ),
         ],
@@ -1155,6 +1158,21 @@ class _MyQueueState extends State<MyQueue> {
     );
   }
 
+  Container conCounterQ(Function setState) {
+    counterControllerVar.text = "";
+    return Container(
+      padding: EdgeInsets.all(1.0),
+      decoration: decoAmber(),
+      child: TextFormField(
+        textCapitalization: TextCapitalization.words,
+        textAlign: TextAlign.start,
+        controller: counterControllerVar,
+        decoration: InputDecoration(labelText: 'Counter', hintText: 'Counter'),
+        validator: (val) {},
+      ),
+    );
+  }
+
   Container conMoreOptionsQ(Function setState) {
     return Container(
       alignment: Alignment.center,
@@ -1316,6 +1334,99 @@ class _MyQueueState extends State<MyQueue> {
       },
       color: cButtons,
       child: const Text("Delete"),
+    );
+  }
+
+  void showSuppliesHist() {
+    SuppliesModelHist sMH;
+    sMH = suppliesModelHistGlobal;
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(builder: (context, setState) {
+          return AlertDialog(
+            title: Text(
+              "Supplies ${DateTime.now().toString().substring(5, 13)}",
+              style: TextStyle(backgroundColor: Colors.amber[300]),
+            ),
+            content: SingleChildScrollView(
+              scrollDirection: Axis.vertical,
+              child: Container(
+                padding: EdgeInsets.all(8.0),
+                decoration: BoxDecoration(
+                    border: Border.all(color: Colors.blueAccent, width: 2.0)),
+                child: Form(
+                  //key: _formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      visAddOnSupplies(context, setState, sMH),
+                      conCounterQ(setState),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            actions: [
+              //cancel button
+              cancelButtonQ(context, setState),
+
+              createNewSuppVar(context, sMH),
+
+              //save button
+              //createNewJOQVar(context),
+            ],
+          );
+        });
+      },
+    );
+  }
+
+  Visibility visAddOnSupplies(
+      BuildContext context, Function setState, SuppliesModelHist sMH) {
+    return Visibility(
+      visible: true,
+      child: Container(
+        padding: EdgeInsets.all(1.0),
+        child: Row(
+          children: [
+            DropdownButton<OtherItemModel>(
+              value: selectedSupVar,
+              icon: Icon(Icons.arrow_downward),
+              iconSize: 24,
+              elevation: 16,
+              style: TextStyle(color: Colors.purple[700]),
+              underline: Container(
+                height: 2,
+                color: Colors.purple[700],
+              ),
+              items: listSuppItems.map((OtherItemModel map) {
+                return DropdownMenuItem<OtherItemModel>(
+                    value: map,
+                    child: Text(
+                        "${map.itemGroup}-${map.itemName}(${map.itemPrice}Php)"));
+              }).toList(),
+              onChanged: (val) {
+                setState(
+                  () {
+                    selectedSupVar = val!;
+                  },
+                );
+
+                sMH.docId = selectedSupVar.docId;
+                sMH.itemId = selectedSupVar.itemId;
+
+                // suppliesModelHistGlobal = SuppliesModelHist(
+                //     docId: selectedSupVar.docId,
+                //     itemId: selectedSupVar.itemId,
+                //     counter: int.parse(counterControllerVar.text),
+                //     currentStocks: 50,
+                //     logDate: Timestamp.now());
+              },
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

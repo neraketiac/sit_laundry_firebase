@@ -3,41 +3,67 @@ import 'package:flutter/material.dart';
 import 'package:laundry_firebase/models/jobsonqueuemodel.dart';
 import 'package:laundry_firebase/models/otheritemmodel.dart';
 import 'package:laundry_firebase/services/database_other_items.dart';
-import 'package:laundry_firebase/services/navigator_key.dart';
 import 'package:laundry_firebase/variables/variables.dart';
 
-const String JOBS_ON_GOING_REF = "JobsOnGoing";
+const String JOBS_DONE_REF = "JobsDone";
 const Color _gcButtons = Color.fromRGBO(134, 218, 252, 0.733);
 
-class DatabaseJobsOnGoing {
+class DatabaseJobsDone {
   final _firestore = FirebaseFirestore.instance;
 
-  late final CollectionReference _jobsOnGoingRef;
+  late final CollectionReference _jobsDoneRef;
 
-  DatabaseJobsOnGoing() {
-    _jobsOnGoingRef = _firestore
-        .collection(JOBS_ON_GOING_REF)
-        .withConverter<JobsOnQueueModel>(
+  DatabaseJobsDone() {
+    _jobsDoneRef =
+        _firestore.collection(JOBS_DONE_REF).withConverter<JobsOnQueueModel>(
             fromFirestore: (snapshots, _) => JobsOnQueueModel.fromJson(
                   snapshots.data()!,
                 ),
             toFirestore: (jOQM, _) => jOQM.toJson());
   }
 
-  Stream<QuerySnapshot> getJobsOnGoing() {
-    return _jobsOnGoingRef.orderBy('D30_JobsId', descending: false).snapshots();
+  Stream<QuerySnapshot> getJobsDone() {
+    return _jobsDoneRef.orderBy("D7_DateD", descending: false).snapshots();
   }
 
-  void addJobsOnGoing(JobsOnQueueModel jOQM, List<OtherItemModel> lAOI) async {
+  Stream<QuerySnapshot> getJobsDoneFilter(String columnTrue) {
+    return _jobsDoneRef
+        .where(columnTrue, isEqualTo: true)
+        .orderBy('D7_DateD', descending: false)
+        .snapshots();
+  }
+
+  Stream<QuerySnapshot> getJobsDoneForCustomerPickup() {
+    return _jobsDoneRef
+        .where('D8_WaitCustomerPickup', isEqualTo: true)
+        .orderBy('D7_DateD', descending: false)
+        .snapshots();
+  }
+
+  Stream<QuerySnapshot> getJobsDoneWaitRiderDelivery() {
+    return _jobsDoneRef
+        .where('D9_WaitRiderDelivery', isEqualTo: true)
+        .orderBy('D7_DateD', descending: false)
+        .snapshots();
+  }
+
+  Stream<QuerySnapshot> getJobsDoneNasaCustomerNa() {
+    return _jobsDoneRef
+        .where('E1_NasaCustomerNa', isEqualTo: true)
+        .orderBy('D7_DateD', descending: false)
+        .snapshots();
+  }
+
+  void addJobsDone(JobsOnQueueModel jOQM, List<OtherItemModel> lAOI) async {
     //String addJobsOnQueue(JobsOnQueueModel jobsOnQueue) {
 
     DatabaseOtherItems databaseOtherItems;
 
-    _jobsOnGoingRef
+    _jobsDoneRef
         .add(jOQM)
         .then((value) => {
               print("Insert Done.${jOQM.customerId}"),
-              deleteJOQVar(jOQM.docId, lAOI),
+              deleteJOGVar(jOQM.docId, lAOI),
               updateDocId(JobsOnQueueModel(
                   docId: value.id,
                   dateQ: jOQM.dateO,
@@ -85,7 +111,7 @@ class DatabaseJobsOnGoing {
                   waitingTwoWeeks: jOQM.waitingTwoWeeks,
                   forDisposal: jOQM.forDisposal,
                   disposed: jOQM.disposed)),
-              databaseOtherItems = DatabaseOtherItems("JobsOnGoing", value.id),
+              databaseOtherItems = DatabaseOtherItems("JobsDone", value.id),
               lAOI.forEach((addOnItem) {
                 databaseOtherItems.addOtherItems(addOnItem);
               }),
@@ -97,7 +123,7 @@ class DatabaseJobsOnGoing {
   }
 
   void updateDocId(JobsOnQueueModel jOQM) async {
-    _jobsOnGoingRef
+    _jobsDoneRef
         .doc(jOQM.docId)
         .update(jOQM.toJson())
         .then((value) => {
@@ -108,11 +134,13 @@ class DatabaseJobsOnGoing {
         );
   }
 
-  void updateJobsOnGoing(String docId, JobsOnQueueModel jobsOnQueueModel,
+  void updateJobsDone(String docId, JobsOnQueueModel jobsOnQueueModel,
       List<OtherItemModel> lAOI) async {
-    _jobsOnGoingRef.doc(docId).update(jobsOnQueueModel.toJson());
+    _jobsDoneRef.doc(docId).update(jobsOnQueueModel.toJson());
+    // DatabaseOtherItemsOnGoing databaseOtherItemsOnGoing;
+    // databaseOtherItemsOnGoing = DatabaseOtherItemsOnGoing(docId);
     DatabaseOtherItems databaseOtherItems =
-        DatabaseOtherItems("JobsOnGoing", docId);
+        DatabaseOtherItems("JobsDone", docId);
     lAOI.forEach((aOI) {
       //if (databaseOtherItems.checkIfDocExists(aOI)) {
       if (aOI.docId != "") {
@@ -121,17 +149,5 @@ class DatabaseJobsOnGoing {
         databaseOtherItems.addOtherItems(aOI);
       }
     });
-  }
-
-  void deleteJobsOnGoing(String docId) async {
-    _jobsOnGoingRef
-        .doc(docId)
-        .delete()
-        .then((value) => {
-              print("Delete JobsOnGoing Done."),
-            })
-        .catchError(
-          (error) => print("Delete Failed : $error"),
-        );
   }
 }

@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:laundry_firebase/models/jobsonqueuemodel.dart';
 import 'package:laundry_firebase/models/otheritemmodel.dart';
 import 'package:laundry_firebase/services/database_other_items_onqueue.dart';
-import 'package:laundry_firebase/services/navigator_key.dart';
 
 const String JOBS_ON_QUEUE_REF = "JobsOnQueue";
 const Color _gcButtons = Color.fromRGBO(134, 218, 252, 0.733);
@@ -64,6 +63,7 @@ class DatabaseJobsOnQueue {
                   unpaid: jOQM.unpaid,
                   paidcash: jOQM.paidcash,
                   paidgcash: jOQM.paidgcash,
+                  paidgcashverified: jOQM.paidgcashverified,
                   paymentReceivedBy: jOQM.paymentReceivedBy,
                   dateO: jOQM.dateO,
                   paidD: jOQM.paidD,
@@ -118,6 +118,24 @@ class DatabaseJobsOnQueue {
         databaseOtherItemsOnQueue.addOtherItems(aOI);
       }
     });
+  }
+
+  void deleteJOQ(String docId, List<OtherItemModel> lOIM) {
+    DatabaseOtherItemsOnQueue databaseOtherItemsOnQueue =
+        DatabaseOtherItemsOnQueue(docId);
+
+    lOIM.forEach((aOIG) {
+      print("delete for ongoing docid=${aOIG.docId}");
+      if (aOIG.docId != "") {
+        databaseOtherItemsOnQueue.deleteOtheritems(aOIG.docId);
+        // bDelAddOnsVar = true;
+      } else {
+        //need to relogin to delete
+        // bDelAddOnsVar = false;
+      }
+    });
+
+    deleteJobsOnQueue(docId);
   }
 
   void deleteJobsOnQueue(String docId) async {

@@ -28,6 +28,7 @@ class JobsOnQueueModel {
   bool unpaid;
   bool paidcash;
   bool paidgcash;
+  bool paidgcashverified;
   String paymentReceivedBy;
   Timestamp dateO;
   Timestamp paidD;
@@ -75,6 +76,7 @@ class JobsOnQueueModel {
     required this.unpaid,
     required this.paidcash,
     required this.paidgcash,
+    required this.paidgcashverified,
     required this.paymentReceivedBy,
     required this.dateO,
     required this.paidD,
@@ -123,6 +125,7 @@ class JobsOnQueueModel {
     bool? unpaid,
     bool? paidcash,
     bool? paidgcash,
+    bool? paidgcashverified,
     String? paymentReceivedBy,
     Timestamp? dateO,
     Timestamp? paidD,
@@ -170,6 +173,7 @@ class JobsOnQueueModel {
       unpaid: unpaid ?? this.unpaid,
       paidcash: paidcash ?? this.paidcash,
       paidgcash: paidgcash ?? this.paidgcash,
+      paidgcashverified: paidgcashverified ?? this.paidgcashverified,
       paymentReceivedBy: paymentReceivedBy ?? this.paymentReceivedBy,
       dateO: dateO ?? this.dateO,
       paidD: paidD ?? this.paidD,
@@ -222,6 +226,7 @@ class JobsOnQueueModel {
             unpaid: json['C6_Unpaid']! as bool,
             paidcash: json['C7_PaidCash']! as bool,
             paidgcash: json['C8_PaidGCash']! as bool,
+            paidgcashverified: json['C81_PaidGCashVerified']! as bool,
             paymentReceivedBy: json['C9_PaymentReceivedBy']! as String,
             dateO: json['D1_DateO']! as Timestamp,
             paidD: json['D2_PaidD']! as Timestamp,
@@ -269,6 +274,7 @@ class JobsOnQueueModel {
         'C6_Unpaid': unpaid,
         'C7_PaidCash': paidcash,
         'C8_PaidGCash': paidgcash,
+        'C81_PaidGCashVerified': paidgcashverified,
         'C9_PaymentReceivedBy': paymentReceivedBy,
         'D1_DateO': dateO,
         'D2_PaidD': paidD,

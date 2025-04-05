@@ -1,21 +1,28 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:laundry_firebase/models/customermodel.dart';
 import 'package:laundry_firebase/models/jobsonqueuemodel.dart';
 import 'package:laundry_firebase/models/otheritemmodel.dart';
+import 'package:laundry_firebase/models/suppliesmodelhist.dart';
 import 'package:laundry_firebase/pages/autocompletecustomer.dart';
 import 'package:laundry_firebase/pages/loyalty_admin.dart';
 import 'package:laundry_firebase/pages/queue.dart';
+import 'package:laundry_firebase/services/database_jobsdone.dart';
 import 'package:laundry_firebase/services/database_jobsongoing.dart';
 import 'package:laundry_firebase/services/database_jobsonqueue.dart';
 import 'package:laundry_firebase/services/database_other_items_onqueue.dart';
 import 'package:laundry_firebase/services/database_other_items.dart';
+import 'package:laundry_firebase/services/database_supplies_hist.dart';
 
+late bool bHaveInternet = false;
 bool showDet = false, showFab = false, showBle = false, showOth = false;
 bool bDelAddOnsVar = true;
 
 late JobsOnQueueModel jobsOnQueueModelGlobal;
+late SuppliesModelHist suppliesModelHistGlobal;
 late String empIdGlobal = "";
 late String selectedNumberVar = "1";
 
@@ -29,6 +36,17 @@ List<OtherItemModel> listFabItems = [];
 List<OtherItemModel> listBleItems = [];
 List<OtherItemModel> listOthItems = [];
 List<OtherItemModel> listAddOnItemsGlobal = [];
+
+List<OtherItemModel> listSuppItems = [];
+// const int suppIdDetWKL = 11001,
+//     suppIdDetAriel = 11002,
+//     suppIdFabGreenSof = 12001,
+//     suppIdFabPurpleSof = 12002,
+//     suppIdFabPinkSof = 12003,
+//     suppIdSmallPlastic = 13001,
+//     suppIdMediumPlastic = 13002,
+//     suppIdLargePlastic = 13003,
+//     suppIdXLPlastic = 13004;
 
 late OtherItemModel gselectedItemModel;
 
@@ -100,7 +118,7 @@ const int forSorting = 501,
     nasaCustomerNa = 703;
 
 //paymentStats
-Map<int, String> mapPaymentStat = {};
+//Map<int, String> mapPaymentStat = {};
 const int unpaid = 801, paidCash = 802, paidGCash = 803, waitGCash = 804;
 
 // class OthItems {
@@ -171,11 +189,13 @@ bool bAddOnVar = false,
 late OtherItemModel selectedDetVar,
     selectedFabVar,
     selectedBleVar,
-    selectedOthVar;
+    selectedOthVar,
+    selectedSupVar;
 // int iBasketVar = 0, iBagVar = 0;
 bool bUnpaidVar = true, bPaidCashVar = false, bPaidGCashVar = false;
 // bool bMixVar = true, bFoldVar = true;
 TextEditingController remarksControllerVar = TextEditingController();
+TextEditingController counterControllerVar = TextEditingController();
 DateTime dNeedOnVar = DateTime.now().add(Duration(minutes: 210));
 // Timestamp tNeedOnVar = Timestamp.now();
 
@@ -188,6 +208,7 @@ void putEntries() {
   listFabItems.clear();
   listBleItems.clear();
   listOthItems.clear();
+  listSuppItems.clear();
 
   //detItems
   listDetItems.add(OtherItemModel(
@@ -380,18 +401,43 @@ void putEntries() {
   mapQueueStat.addEntries({waitRiderDelivery: "WaitRiderDelivery"}.entries);
   mapQueueStat.addEntries({nasaCustomerNa: "NasaCustomerNa"}.entries);
 
-  //paymentStat
-  mapPaymentStat.addEntries({unpaid: "Unpaid"}.entries);
-  mapPaymentStat.addEntries({paidCash: "PaidCash"}.entries);
-  mapPaymentStat.addEntries({paidGCash: "PaidGCash"}.entries);
-  mapPaymentStat.addEntries({waitGCash: "WaitGCash"}.entries);
+  // //paymentStat
+  // mapPaymentStat.addEntries({unpaid: "Unpaid"}.entries);
+  // mapPaymentStat.addEntries({paidCash: "PaidCash"}.entries);
+  // mapPaymentStat.addEntries({paidGCash: "PaidGCash"}.entries);
+  // mapPaymentStat.addEntries({waitGCash: "WaitGCash"}.entries);
 
   //dropdown first value
   selectedDetVar = listDetItems[0];
   selectedFabVar = listFabItems[0];
   selectedBleVar = listBleItems[0];
   selectedOthVar = listOthItems[0];
+  selectedSupVar = listDetItems[0];
   gselectedItemModel = listOthItems[1];
+  listSuppItems.addAll(listDetItems);
+  listSuppItems.addAll(listFabItems);
+  listSuppItems.addAll(listBleItems);
+
+  resetSHGlobalVar();
+}
+
+Future<void> checkInternet(BuildContext context) async {
+  try {
+    final result = await InternetAddress.lookup('google.com');
+    if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
+      bHaveInternet = true;
+    } else {
+      bHaveInternet = false;
+    }
+  } on Exception catch (exception) {
+  } catch (error) {}
+  if (!bHaveInternet) {
+    showMessageNoInternet(context);
+  }
+}
+
+void showMessageNoInternet(BuildContext context) {
+  showMessage(context, "No internet", "Check your internet.");
 }
 
 //var mapEmpId = {"0550", "Jeng", "0808", "Abi", "0413", "Ket", "0316", "DonP"};
@@ -540,6 +586,17 @@ String customerName(String customerId) {
   return thisCustomerName;
 }
 
+String getItemName(int itemId) {
+  String thisItemName = "no data";
+  listSuppItems.forEach((thisData) {
+    if (thisData.itemId == itemId) {
+      thisItemName = "${thisData.itemGroup} - ${thisData.itemName}";
+    }
+  });
+
+  return thisItemName;
+}
+
 JobsOnQueueModel resetPaymentQueueBool(JobsOnQueueModel jOQM) {
   jOQM.unpaid = false;
   jOQM.paidcash = false;
@@ -666,6 +723,7 @@ void resetJOQMGlobalVar() {
       unpaid: true,
       paidcash: false,
       paidgcash: false,
+      paidgcashverified: false,
       paymentReceivedBy: "",
       dateO: Timestamp.fromDate(DateTime(2000)),
       paidD: Timestamp.fromDate(DateTime(2000)),
@@ -682,6 +740,16 @@ void resetJOQMGlobalVar() {
       waitingTwoWeeks: false,
       forDisposal: false,
       disposed: false);
+}
+
+void resetSHGlobalVar() {
+  suppliesModelHistGlobal = SuppliesModelHist(
+      docId: selectedSupVar.docId,
+      itemId: selectedSupVar.itemId,
+      counter: 0,
+      currentStocks: 0,
+      stocksAlert: 0,
+      logDate: Timestamp.now());
 }
 
 void updateSelectedVar(OtherItemModel selectedItemModel) {
@@ -713,6 +781,134 @@ Widget cancelButtonReloginVar(BuildContext context, JobsOnQueueModel jOQM) {
       child: const Text("Cancel"));
 }
 
+Widget cancelButtonNoChangeVar(
+  BuildContext context,
+  Function setState,
+  JobsOnQueueModel jOQM,
+  List<OtherItemModel> lOIM,
+  JobsOnQueueModel jOQMNoChange,
+  List<OtherItemModel> lOIMNoChange,
+) {
+  return MaterialButton(
+      onPressed: () {
+        //pop box
+        //not working
+        //jOQM = jOQMNoChange;
+
+        resetJOQMToNoChange(jOQM, jOQMNoChange);
+        lOIM.clear();
+        lOIM.addAll(lOIMNoChange);
+        setState(() {
+          jOQM;
+          lOIM;
+        });
+        Navigator.pop(context);
+      },
+      color: cButtons,
+      child: const Text("Cancel"));
+}
+
+void resetTest(JobsOnQueueModel jOQM, JobsOnQueueModel jOQMNoChange) {
+  jOQM = jOQMNoChange;
+}
+
+void resetJOQMToNoChange(JobsOnQueueModel jOQM, JobsOnQueueModel jOQMNoChange) {
+  jOQM.docId = jOQMNoChange.docId;
+  jOQM.dateQ = jOQMNoChange.dateQ;
+  jOQM.createdBy = jOQMNoChange.createdBy;
+  jOQM.currentEmpId = jOQMNoChange.currentEmpId;
+  jOQM.customerId = jOQMNoChange.customerId;
+  jOQM.perKilo = jOQMNoChange.perKilo;
+  jOQM.initialKilo = jOQMNoChange.initialKilo;
+  jOQM.initialLoad = jOQMNoChange.initialLoad;
+  jOQM.initialPrice = jOQMNoChange.initialPrice;
+  jOQM.initialOthersPrice = jOQMNoChange.initialOthersPrice;
+  jOQM.finalKilo = jOQMNoChange.finalKilo;
+  jOQM.finalLoad = jOQMNoChange.finalLoad;
+  jOQM.finalPrice = jOQMNoChange.finalPrice;
+  jOQM.finalOthersPrice = jOQMNoChange.finalOthersPrice;
+  jOQM.regular = jOQMNoChange.regular;
+  jOQM.sayosabon = jOQMNoChange.sayosabon;
+  jOQM.others = jOQMNoChange.others;
+  jOQM.addOns = jOQMNoChange.addOns;
+  jOQM.needOn = jOQMNoChange.needOn;
+  jOQM.fold = jOQMNoChange.fold;
+  jOQM.mix = jOQMNoChange.mix;
+  jOQM.basket = jOQMNoChange.basket;
+  jOQM.bag = jOQMNoChange.bag;
+  jOQM.remarks = jOQMNoChange.remarks;
+  jOQM.unpaid = jOQMNoChange.unpaid;
+  jOQM.paidcash = jOQMNoChange.paidcash;
+  jOQM.paidgcash = jOQMNoChange.paidgcash;
+  jOQM.paymentReceivedBy = jOQMNoChange.paymentReceivedBy;
+  jOQM.dateO = jOQMNoChange.dateO;
+  jOQM.paidD = jOQMNoChange.paidD;
+  jOQM.forSorting = jOQMNoChange.forSorting;
+  jOQM.riderPickup = jOQMNoChange.riderPickup;
+  jOQM.jobsId = jOQMNoChange.jobsId;
+  jOQM.waiting = jOQMNoChange.waiting;
+  jOQM.washing = jOQMNoChange.washing;
+  jOQM.drying = jOQMNoChange.drying;
+  jOQM.folding = jOQMNoChange.folding;
+  jOQM.dateD = jOQMNoChange.dateD;
+  jOQM.waitCustomerPickup = jOQMNoChange.waitCustomerPickup;
+  jOQM.waitRiderDelivery = jOQMNoChange.waitRiderDelivery;
+  jOQM.nasaCustomerNa = jOQMNoChange.nasaCustomerNa;
+  jOQM.waitingOneWeek = jOQMNoChange.waitingOneWeek;
+  jOQM.waitingTwoWeeks = jOQMNoChange.waitingTwoWeeks;
+  jOQM.forDisposal = jOQMNoChange.forDisposal;
+  jOQM.disposed = jOQMNoChange.disposed;
+}
+
+void resetJOQMNoChangeToJOQM(
+    JobsOnQueueModel jOQMNoChange, JobsOnQueueModel jOQM) {
+  jOQMNoChange.docId = jOQM.docId;
+  jOQMNoChange.dateQ = jOQM.dateQ;
+  jOQMNoChange.createdBy = jOQM.createdBy;
+  jOQMNoChange.currentEmpId = jOQM.currentEmpId;
+  jOQMNoChange.customerId = jOQM.customerId;
+  jOQMNoChange.perKilo = jOQM.perKilo;
+  jOQMNoChange.initialKilo = jOQM.initialKilo;
+  jOQMNoChange.initialLoad = jOQM.initialLoad;
+  jOQMNoChange.initialPrice = jOQM.initialPrice;
+  jOQMNoChange.initialOthersPrice = jOQM.initialOthersPrice;
+  jOQMNoChange.finalKilo = jOQM.finalKilo;
+  jOQMNoChange.finalLoad = jOQM.finalLoad;
+  jOQMNoChange.finalPrice = jOQM.finalPrice;
+  jOQMNoChange.finalOthersPrice = jOQM.finalOthersPrice;
+  jOQMNoChange.regular = jOQM.regular;
+  jOQMNoChange.sayosabon = jOQM.sayosabon;
+  jOQMNoChange.others = jOQM.others;
+  jOQMNoChange.addOns = jOQM.addOns;
+  jOQMNoChange.needOn = jOQM.needOn;
+  jOQMNoChange.fold = jOQM.fold;
+  jOQMNoChange.mix = jOQM.mix;
+  jOQMNoChange.basket = jOQM.basket;
+  jOQMNoChange.bag = jOQM.bag;
+  jOQMNoChange.remarks = jOQM.remarks;
+  jOQMNoChange.unpaid = jOQM.unpaid;
+  jOQMNoChange.paidcash = jOQM.paidcash;
+  jOQMNoChange.paidgcash = jOQM.paidgcash;
+  jOQMNoChange.paymentReceivedBy = jOQM.paymentReceivedBy;
+  jOQMNoChange.dateO = jOQM.dateO;
+  jOQMNoChange.paidD = jOQM.paidD;
+  jOQMNoChange.forSorting = jOQM.forSorting;
+  jOQMNoChange.riderPickup = jOQM.riderPickup;
+  jOQMNoChange.jobsId = jOQM.jobsId;
+  jOQMNoChange.waiting = jOQM.waiting;
+  jOQMNoChange.washing = jOQM.washing;
+  jOQMNoChange.drying = jOQM.drying;
+  jOQMNoChange.folding = jOQM.folding;
+  jOQMNoChange.dateD = jOQM.dateD;
+  jOQMNoChange.waitCustomerPickup = jOQM.waitCustomerPickup;
+  jOQMNoChange.waitRiderDelivery = jOQM.waitRiderDelivery;
+  jOQMNoChange.nasaCustomerNa = jOQM.nasaCustomerNa;
+  jOQMNoChange.waitingOneWeek = jOQM.waitingOneWeek;
+  jOQMNoChange.waitingTwoWeeks = jOQM.waitingTwoWeeks;
+  jOQMNoChange.forDisposal = jOQM.forDisposal;
+  jOQMNoChange.disposed = jOQM.disposed;
+}
+
 Widget cancelButtonVar(BuildContext context) {
   return MaterialButton(
       onPressed: () {
@@ -727,6 +923,17 @@ Widget closeButtonVar(BuildContext context) {
   return MaterialButton(
       onPressed: () {
         //pop box
+        Navigator.pop(context);
+      },
+      color: cButtons,
+      child: const Text("Close"));
+}
+
+Widget closeButton2popVar(BuildContext context) {
+  return MaterialButton(
+      onPressed: () {
+        //pop box
+        Navigator.pop(context);
         Navigator.pop(context);
       },
       color: cButtons,
@@ -770,7 +977,33 @@ Widget createNewJOQVar(BuildContext context) {
       }
     },
     color: cButtons,
-    child: const Text("Insert Queue"),
+    child: const Text("Save Queue"),
+  );
+}
+
+Widget createNewSuppVar(BuildContext context, SuppliesModelHist sMH) {
+  return MaterialButton(
+    onPressed: () async {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Processing Data')),
+      );
+
+      if (await insertDataSuppliesHistVar(sMH)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Success')),
+        );
+        print("Sucess");
+        Navigator.pop(context);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Cannot Save')),
+        );
+        print("Failed");
+      }
+      //pop box
+    },
+    color: cButtons,
+    child: const Text("Save Supplies"),
   );
 }
 
@@ -805,6 +1038,33 @@ Widget moveToJOGVar(BuildContext context, String docId, JobsOnQueueModel jOQM,
     },
     color: cButtons,
     child: const Text("Move To OnGoing"),
+  );
+}
+
+Widget moveToJDVar(BuildContext context, String docId, JobsOnQueueModel jOQM,
+    List<OtherItemModel> lOIM) {
+  return MaterialButton(
+    onPressed: () async {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Processing Data')),
+      );
+
+      //pop box
+      Navigator.pop(context);
+
+      jOQM.riderPickup = false;
+      jOQM.forSorting = false;
+      jOQM.waiting = false;
+      jOQM.washing = false;
+      jOQM.drying = false;
+      jOQM.folding = false;
+      jOQM.waitCustomerPickup = true;
+      insertDataJobsDoneVar(jOQM, lOIM);
+      //deleteJOQVar(jOQM.docId, lOIM);
+      showMessage(context, "Move to Jobs Done", "Done.");
+    },
+    color: cButtons,
+    child: const Text("Move To Jobs Done"),
   );
 }
 
@@ -902,11 +1162,37 @@ void insertDataJobsOnQueueVar(JobsOnQueueModel jOQM) {
   resetJOQMGlobalVar();
 }
 
+//insert new Supplies
+// void insertDataSuppliesHistVar() {
+Future<bool> insertDataSuppliesHistVar(SuppliesModelHist sMH) async {
+  DatabaseSuppliesHist databaseSuppliesHist = DatabaseSuppliesHist();
+
+  sMH.counter = int.parse(counterControllerVar.text);
+  sMH.currentStocks = 50;
+  sMH.stocksAlert = 10;
+  sMH.logDate = Timestamp.now();
+
+  return await databaseSuppliesHist.addSuppliesHist(sMH);
+
+  // if (await databaseSuppliesHist.addSuppliesHist(suppliesModelHistGlobal)) {
+  //   return true;
+  // } else {
+  //   return false;
+  // }
+}
+
 //insert new OnGoing
 void insertDataJobsOnGoingVar(
     JobsOnQueueModel jOQM, List<OtherItemModel> lOIM) {
   DatabaseJobsOnGoing databaseJobsOnGoing = DatabaseJobsOnGoing();
   databaseJobsOnGoing.addJobsOnGoing(jOQM, lOIM);
+  resetJOQMGlobalVar();
+}
+
+//insert new Done
+void insertDataJobsDoneVar(JobsOnQueueModel jOQM, List<OtherItemModel> lOIM) {
+  DatabaseJobsDone databaseJobsDone = DatabaseJobsDone();
+  databaseJobsDone.addJobsDone(jOQM, lOIM);
   resetJOQMGlobalVar();
 }
 
@@ -1080,6 +1366,96 @@ Container conOnGoingStatVar(Function setState, JobsOnQueueModel jOQM) {
               );
             }),
         Text("Fold"),
+      ],
+    ),
+  );
+}
+
+Container conDoneStatVar(Function setState, JobsOnQueueModel jOQM) {
+  return Container(
+    alignment: Alignment.center,
+    padding: EdgeInsets.all(1.0),
+    decoration: decoAmber(),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Checkbox(
+            value: jOQM.waitCustomerPickup,
+            onChanged: (val) {
+              jOQM.waitCustomerPickup = true;
+              jOQM.waitRiderDelivery = false;
+              jOQM.nasaCustomerNa = false;
+
+              setState(
+                () {
+                  jOQM.waitCustomerPickup;
+                  jOQM.waitRiderDelivery;
+                  jOQM.nasaCustomerNa;
+                },
+              );
+            }),
+        Text("Customer Pickup"),
+        SizedBox(
+          width: 5,
+        ),
+        Checkbox(
+            value: jOQM.waitRiderDelivery,
+            onChanged: (val) {
+              jOQM.waitCustomerPickup = false;
+              jOQM.waitRiderDelivery = true;
+              jOQM.nasaCustomerNa = false;
+
+              setState(
+                () {
+                  jOQM.waitCustomerPickup;
+                  jOQM.waitRiderDelivery;
+                  jOQM.nasaCustomerNa;
+                },
+              );
+            }),
+        Text("For Delivery"),
+        SizedBox(
+          width: 5,
+        ),
+        Checkbox(
+            value: jOQM.nasaCustomerNa,
+            onChanged: (val) {
+              jOQM.waitCustomerPickup = false;
+              jOQM.waitRiderDelivery = false;
+              jOQM.nasaCustomerNa = true;
+
+              setState(
+                () {
+                  jOQM.waitCustomerPickup;
+                  jOQM.waitRiderDelivery;
+                  jOQM.nasaCustomerNa;
+                },
+              );
+            }),
+        Text("Nasa Customer"),
+      ],
+    ),
+  );
+}
+
+Container conGCashVerified(Function setState, JobsOnQueueModel jOQM) {
+  return Container(
+    alignment: Alignment.center,
+    padding: EdgeInsets.all(1.0),
+    decoration: decoAmber(),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Checkbox(
+            value: jOQM.paidgcashverified,
+            onChanged: (val) {
+              setState(
+                () {
+                  jOQM.paidgcashverified = val!;
+                },
+              );
+            }),
+        Text("Gcash Verification Done"),
       ],
     ),
   );
@@ -1395,7 +1771,7 @@ Container conOrderModeVar(
                   padding:
                       EdgeInsets.only(left: 3, bottom: 0, top: 0, right: 3),
                   decoration: BoxDecoration(
-                      color: Colors.amber[200],
+                      color: Colors.amber[400],
                       borderRadius: const BorderRadius.only(
                           topLeft: Radius.circular(20),
                           bottomLeft: Radius.circular(20))),
@@ -1442,7 +1818,7 @@ Container conOrderModeVar(
                   padding:
                       EdgeInsets.only(left: 3, bottom: 0, top: 0, right: 3),
                   decoration: BoxDecoration(
-                      color: Colors.amber[200],
+                      color: Colors.amber[400],
                       borderRadius: BorderRadius.only(
                           topRight: Radius.circular(20),
                           bottomRight: Radius.circular(20))),
@@ -1623,8 +1999,13 @@ Container conOrderModeVar(
   );
 }
 
-Visibility visAddOnVar(BuildContext context, Function setState,
-    JobsOnQueueModel jOQM, List<OtherItemModel> lOIM, String colRef) {
+Visibility visAddOnVar(
+    BuildContext context,
+    Function setState,
+    JobsOnQueueModel jOQM,
+    List<OtherItemModel> lOIM,
+    String colRef,
+    JobsOnQueueModel jOQMNoChange) {
   return Visibility(
     visible: (bViewAddOnDtlOnGoing
         ? true
@@ -1642,8 +2023,15 @@ Visibility visAddOnVar(BuildContext context, Function setState,
               ),
               IconButton(
                   onPressed: () {
-                    showMessageDeleteAddOns(context, setState, "Delete Add On",
-                        "Delete?", jOQM, lOIM, colRef);
+                    showMessageDeleteAddOns(
+                        context,
+                        setState,
+                        "Delete Add On $colRef",
+                        "Delete?",
+                        jOQM,
+                        lOIM,
+                        colRef,
+                        jOQMNoChange);
                   },
                   icon: Icon(Icons.delete_outline)),
               //checkboxes add on
@@ -2180,35 +2568,6 @@ Visibility visNeedOn(Function setState) {
       decoration: decoLightBlue(),
       child: Column(
         children: [
-          Container(
-            padding: EdgeInsets.all(1.0),
-            decoration: BoxDecoration(
-                border: Border.all(
-                    color: Color.fromARGB(0, 212, 212, 212), width: 0)),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text("-1 day"),
-                IconButton(
-                  onPressed: () {
-                    setState(
-                        () => dNeedOnVar = dNeedOnVar.add(Duration(days: -1)));
-                  },
-                  icon: const Icon(Icons.remove_circle_outlined),
-                  color: Colors.blueAccent,
-                ),
-                IconButton(
-                  onPressed: () {
-                    setState(
-                        () => dNeedOnVar = dNeedOnVar.add(Duration(days: 1)));
-                  },
-                  icon: const Icon(Icons.add_circle),
-                  color: Colors.blueAccent,
-                ),
-                Text("+1 day"),
-              ],
-            ),
-          ),
           //Need On date?
           Container(
             padding: EdgeInsets.all(1.0),
@@ -2233,7 +2592,38 @@ Visibility visNeedOn(Function setState) {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text("-1 hr"),
+                IconButton(
+                  onPressed: () {
+                    setState(
+                        () => dNeedOnVar = dNeedOnVar.add(Duration(days: -1)));
+                  },
+                  icon: const Icon(Icons.remove_circle_outlined),
+                  color: Colors.blueAccent,
+                ),
+                Text("-1 day"),
+                SizedBox(
+                  width: 30,
+                ),
+                Text("+1 day"),
+                IconButton(
+                  onPressed: () {
+                    setState(
+                        () => dNeedOnVar = dNeedOnVar.add(Duration(days: 1)));
+                  },
+                  icon: const Icon(Icons.add_circle),
+                  color: Colors.blueAccent,
+                ),
+              ],
+            ),
+          ),
+          Container(
+            padding: EdgeInsets.all(1.0),
+            decoration: BoxDecoration(
+                border: Border.all(
+                    color: Color.fromARGB(0, 212, 212, 212), width: 0)),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
                 IconButton(
                   onPressed: () {
                     setState(
@@ -2242,6 +2632,11 @@ Visibility visNeedOn(Function setState) {
                   icon: const Icon(Icons.remove_circle_outline),
                   color: Colors.blueAccent,
                 ),
+                Text("-1 hr"),
+                SizedBox(
+                  width: 30,
+                ),
+                Text("+1 hr"),
                 IconButton(
                   onPressed: () {
                     setState(
@@ -2250,7 +2645,6 @@ Visibility visNeedOn(Function setState) {
                   icon: const Icon(Icons.add_circle_outline),
                   color: Colors.blueAccent,
                 ),
-                Text("+1 hr"),
               ],
             ),
           ),
@@ -2283,6 +2677,16 @@ Color getCOlorStatusVar(JobsOnQueueModel jOQM) {
     return cNasaCustomerNa;
   } else {
     return cRiderOnDelivery;
+  }
+  ;
+}
+
+//Display Queue Tables
+Color getCOlorSuppliesHistoryVar(SuppliesModelHist sMH) {
+  if (sMH.currentStocks <= sMH.stocksAlert) {
+    return cRiderPickup;
+  } else {
+    return cWaiting;
   }
   ;
 }
@@ -2573,11 +2977,18 @@ Container conDisplayVar(
                 style: const TextStyle(fontSize: 9),
               ),
               Text(
-                "${jOQM.unpaid ? "Unpaid" : jOQM.paidcash ? "Paid Cash" : {
-                    jOQM.paidgcash ? "Paid GCash" : "Unknown"
-                  }} : Php ${jOQM.initialPrice + jOQM.initialOthersPrice}.00",
-                style:
-                    const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                "${jOQM.unpaid ? "Unpaid" : jOQM.paidcash ? "Paid Cash" : jOQM.paidgcash ? "Paid GCash" : "Unknown"} : Php ${jOQM.initialPrice + jOQM.initialOthersPrice}.00",
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                  backgroundColor: (jOQM.unpaid
+                      ? Colors.red[300]
+                      : (jOQM.paidgcash
+                          ? (jOQM.paidgcashverified
+                              ? Colors.transparent
+                              : Colors.red[100])
+                          : Colors.transparent)),
+                ),
               ),
               Text(
                 (jOQM.waiting
@@ -2592,7 +3003,13 @@ Container conDisplayVar(
                                     ? "For Sorting"
                                     : (jOQM.riderPickup
                                         ? "Rider Pickup"
-                                        : "N/A")))))),
+                                        : (jOQM.waitCustomerPickup
+                                            ? "Wait Customer"
+                                            : (jOQM.waitRiderDelivery
+                                                ? "Deliver to Customer"
+                                                : (jOQM.nasaCustomerNa
+                                                    ? "Nasa Customer Na"
+                                                    : "N/A"))))))))),
                 style: const TextStyle(fontSize: 9),
               ),
               Text(
@@ -2611,7 +3028,7 @@ Container conDisplayVar(
             InkWell(
               onDoubleTap: () {
                 if (jOQM.waiting) {
-                  alterNumberMobileVar(context, jOQM.jobsId);
+                  alterNumberMobileVar(context, jOQM);
                 }
               },
               child: Text(
@@ -2627,7 +3044,12 @@ Container conDisplayVar(
               visible: showUpArrow,
               child: IconButton(
                 onPressed: () {
-                  moveUpVar(jOQM.jobsId);
+                  //moveUpVar(jOQM.jobsId);
+                  showMessageOptionChangeJobId(
+                      context,
+                      "Move/Swap Up Job#",
+                      "Move up #${jOQM.jobsId} (${customerName(jOQM.customerId.toString())}) to #${(jOQM.jobsId == 1 ? 25 : jOQM.jobsId - 1)}?",
+                      jOQM);
                 },
                 icon: const Icon(Icons.arrow_upward),
                 color: Colors.blueAccent,
@@ -2640,9 +3062,51 @@ Container conDisplayVar(
   );
 }
 
+//Display
+Container conDisplaySuppliesHistoryVar(
+  BuildContext context,
+  SuppliesModelHist sMH,
+) {
+  return Container(
+    height: 20,
+    color: getCOlorSuppliesHistoryVar(sMH),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Expanded(
+          child: Column(
+            mainAxisSize: MainAxisSize.max,
+            // mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                height: 2,
+              ),
+              Text(
+                "  ${getItemName(sMH.itemId)} - (${sMH.counter}/${sMH.currentStocks})",
+                style: const TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.end,
+              ),
+            ],
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
 //alterjobsonqueue
-void showAlterJobsOnQueueVar(BuildContext context, String docId,
-    JobsOnQueueModel jOQM, List<OtherItemModel> lOIM) async {
+void showAlterJobsOnQueueVar(
+  BuildContext context,
+  String docId,
+  JobsOnQueueModel jOQM,
+  List<OtherItemModel> lOIM,
+  JobsOnQueueModel jOQMNoChange,
+  List<OtherItemModel> lOIMNoChange,
+) async {
   dNeedOnVar = jOQM.needOn.toDate();
   bViewMoreOptions = false;
   if (lOIM.isNotEmpty) {
@@ -2677,7 +3141,8 @@ void showAlterJobsOnQueueVar(BuildContext context, String docId,
                     conPaymentVar(setState, jOQM),
                     conRemarksVar(setState, jOQM),
                     conMoreOptions(setState),
-                    visAddOnVar(context, setState, jOQM, lOIM, "JobsOnQueue"),
+                    visAddOnVar(context, setState, jOQM, lOIM, "JobsOnQueue",
+                        jOQMNoChange),
                     visExtraOnQueueVar(context, setState, jOQM, lOIM),
                     visFoldVar(setState, jOQM),
                     visMixVar(setState, jOQM),
@@ -2688,14 +3153,16 @@ void showAlterJobsOnQueueVar(BuildContext context, String docId,
             ),
           ),
           actions: [
+            //move to ongoing
+            moveToJOGVar(context, docId, jOQM, lOIM),
+
             //cancel button
-            cancelButtonReloginVar(context, jOQM),
+            ///cancelButtonReloginVar(context, jOQM),
+            cancelButtonNoChangeVar(
+                context, setState, jOQM, lOIM, jOQMNoChange, lOIMNoChange),
 
             //save button
             updateButtonJOQVar(context, docId, jOQM, lOIM),
-
-            //move to ongoing
-            moveToJOGVar(context, docId, jOQM, lOIM),
           ],
         );
       });
@@ -2703,9 +3170,16 @@ void showAlterJobsOnQueueVar(BuildContext context, String docId,
   );
 }
 
-//alterjobsonqueue
-void showAlterJobsOnGoingVar(BuildContext context, String docId,
-    JobsOnQueueModel jOQM, List<OtherItemModel> lOIM) async {
+//alterjobsongoing
+void showAlterJobsOnGoingVar(
+  BuildContext context,
+  Function setState,
+  String docId,
+  JobsOnQueueModel jOQM,
+  List<OtherItemModel> lOIM,
+  JobsOnQueueModel jOQMNoChange,
+  List<OtherItemModel> lOIMNoChange,
+) async {
   bViewMoreOptions = false;
   bViewAddOnDtlOnGoing = false;
   if (lOIM.isNotEmpty) {
@@ -2749,7 +3223,8 @@ void showAlterJobsOnGoingVar(BuildContext context, String docId,
                     conPaymentVar(setState, jOQM),
                     conRemarksVar(setState, jOQM),
                     conMoreOptions(setState),
-                    visAddOnVar(context, setState, jOQM, lOIM, "JobsOnGoing"),
+                    visAddOnVar(context, setState, jOQM, lOIM, "JobsOnGoing",
+                        jOQMNoChange),
                     visExtraOnGoingVar(context, setState, jOQM, lOIM),
                     visFoldVar(setState, jOQM),
                     visMixVar(setState, jOQM),
@@ -2760,11 +3235,16 @@ void showAlterJobsOnGoingVar(BuildContext context, String docId,
             ),
           ),
           actions: [
+            //move to ongoing
+            moveToJDVar(context, docId, jOQM, lOIM),
+
             //cancel button
-            cancelButtonReloginVar(context, jOQM),
+            //cancelButtonReloginVar(context, jOQM),
+            cancelButtonNoChangeVar(
+                context, setState, jOQM, lOIM, jOQMNoChange, lOIMNoChange),
 
             //save button
-            updateButtonJOGVar(context, docId, jOQM, lOIM),
+            updateButtonJOGVar(context, docId, jOQM, lOIM, jOQMNoChange),
 
             //move to ongoing
             // moveToJOGVar(
@@ -2772,6 +3252,88 @@ void showAlterJobsOnGoingVar(BuildContext context, String docId,
             //     docId,
             //     jOQM,
             //     lOIM),
+          ],
+        );
+      });
+    },
+  );
+}
+
+//alterjobsdone
+void showAlterJobsDoneVar(
+  BuildContext context,
+  Function setState,
+  String docId,
+  JobsOnQueueModel jOQM,
+  List<OtherItemModel> lOIM,
+  JobsOnQueueModel jOQMNoChange,
+  List<OtherItemModel> lOIMNoChange,
+) async {
+  bViewMoreOptions = false;
+  bViewAddOnDtlOnGoing = false;
+  if (lOIM.isNotEmpty) {
+    bViewMoreOptions = true;
+  }
+  dNeedOnVar = jOQM.needOn.toDate();
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return StatefulBuilder(builder: (context, setState) {
+        return AlertDialog(
+          title: Text(
+            "New Laundry ${DateTime.now().toString().substring(5, 13)}",
+            style: TextStyle(backgroundColor: Colors.amber[300]),
+          ),
+          content: SingleChildScrollView(
+            scrollDirection: Axis.vertical,
+            child: Container(
+              padding: EdgeInsets.all(8.0),
+              decoration: BoxDecoration(
+                  border: Border.all(color: Colors.blueAccent, width: 2.0)),
+              child: Form(
+                //key: _formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    conCustomerName(context, setState, jOQM),
+                    conDoneStatVar(setState, jOQM),
+                    //conQueueStatVar(setState, jOQM),
+                    // Visibility(
+                    //     visible: bViewMoreOptions,
+                    //     child:
+                    //         conOrderModeVar(setState, jOQM, decoLightBlue())),
+                    conTotalPriceVar(setState, jOQM),
+                    Visibility(
+                        visible: bViewMoreOptions,
+                        child: conBasketVar(setState, jOQM, decoLightBlue())),
+                    Visibility(
+                        visible: bViewMoreOptions,
+                        child: conBagVar(setState, jOQM, decoLightBlue())),
+                    conPaymentVar(setState, jOQM),
+                    Visibility(
+                        visible: (jOQM.paidgcash ? true : false),
+                        child: conGCashVerified(setState, jOQM)),
+                    conRemarksVar(setState, jOQM),
+                    conMoreOptions(setState),
+                    visAddOnVar(context, setState, jOQM, lOIM, "JobsDone",
+                        jOQMNoChange),
+                    // visExtraOnGoingVar(context, setState, jOQM, lOIM),
+                    // visFoldVar(setState, jOQM),
+                    // visMixVar(setState, jOQM),
+                    visNeedOn(setState),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          actions: [
+            //cancel button
+            //cancelButtonReloginVar(context, jOQM),
+            cancelButtonNoChangeVar(
+                context, setState, jOQM, lOIM, jOQMNoChange, lOIMNoChange),
+
+            //save button
+            updateButtonJDVar(context, docId, jOQM, lOIM, jOQMNoChange),
           ],
         );
       });
@@ -2815,6 +3377,43 @@ void showMessage(BuildContext context, String title, String message) {
   );
 }
 
+void showMessageSwapComplete(
+    BuildContext context, String title, String message) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return StatefulBuilder(builder: (context, setState) {
+        return AlertDialog(
+          title: Text(
+            title,
+            style: TextStyle(backgroundColor: Colors.amber[300]),
+          ),
+          content: SingleChildScrollView(
+            scrollDirection: Axis.vertical,
+            child: Container(
+              padding: EdgeInsets.all(8.0),
+              decoration: BoxDecoration(
+                  border: Border.all(color: Colors.blueAccent, width: 2.0)),
+              child: Form(
+                //key: _formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(message),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          actions: [
+            closeButton2popVar(context),
+          ],
+        );
+      });
+    },
+  );
+}
+
 void showMessageDeleteAddOns(
     BuildContext context,
     Function setState,
@@ -2822,7 +3421,8 @@ void showMessageDeleteAddOns(
     String message,
     JobsOnQueueModel jOQM,
     List<OtherItemModel> lOIM,
-    String colRef) {
+    String colRef,
+    JobsOnQueueModel jOQMNoChange) {
   showDialog(
     context: context,
     builder: (BuildContext context) {
@@ -2851,8 +3451,46 @@ void showMessageDeleteAddOns(
           ),
           actions: [
             closeButtonVar(context),
-            deleteButtonAddOnVar(
-                context, setState, jOQM.docId, jOQM, lOIM, colRef)
+            deleteButtonAddOnVar(context, setState, jOQM.docId, jOQM, lOIM,
+                colRef, jOQMNoChange),
+          ],
+        );
+      });
+    },
+  );
+}
+
+void showMessageOptionChangeJobId(
+    BuildContext context, String title, String message, JobsOnQueueModel jOQM) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return StatefulBuilder(builder: (context, setState) {
+        return AlertDialog(
+          title: Text(
+            title,
+            style: TextStyle(backgroundColor: Colors.amber[300]),
+          ),
+          content: SingleChildScrollView(
+            scrollDirection: Axis.vertical,
+            child: Container(
+              padding: EdgeInsets.all(8.0),
+              decoration: BoxDecoration(
+                  border: Border.all(color: Colors.blueAccent, width: 2.0)),
+              child: Form(
+                //key: _formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(message),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          actions: [
+            closeButtonVar(context),
+            changeButtonJobsIdVar(context, jOQM),
           ],
         );
       });
@@ -2898,8 +3536,12 @@ Widget updateButtonJOQVar(BuildContext context, String docId,
   );
 }
 
-Widget updateButtonJOGVar(BuildContext context, String docId,
-    JobsOnQueueModel jOQM, List<OtherItemModel> lOIM) {
+Widget updateButtonJOGVar(
+    BuildContext context,
+    String docId,
+    JobsOnQueueModel jOQM,
+    List<OtherItemModel> lOIM,
+    JobsOnQueueModel jOQMNoChange) {
   return MaterialButton(
     onPressed: () {
       if (bDelAddOnsVar) {
@@ -2922,8 +3564,52 @@ Widget updateButtonJOGVar(BuildContext context, String docId,
       updateJOGMVar(docId, jOQM, lOIM);
       if (lOIM.isNotEmpty) {
         bViewMoreOptions = true;
+
         Navigator.pop(context);
       }
+      //jOQMNoChange = jOQM;
+      resetJOQMNoChangeToJOQM(jOQMNoChange, jOQM);
+
+      // Navigator.of(context).push(
+      //     MaterialPageRoute(builder: (context) => MyQueue(jOQM.empidGlobal)));
+    },
+    color: cButtons,
+    child: const Text("Update"),
+  );
+}
+
+Widget updateButtonJDVar(
+    BuildContext context,
+    String docId,
+    JobsOnQueueModel jOQM,
+    List<OtherItemModel> lOIM,
+    JobsOnQueueModel jOQMNoChange) {
+  return MaterialButton(
+    onPressed: () {
+      if (bDelAddOnsVar) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Processing Data.')),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text('Failed delete add ons, please delete again.')),
+        );
+      }
+
+      bViewMoreOptions = false;
+      bViewAddOnDtlOnGoing = false;
+
+      //pop box
+      Navigator.pop(context);
+      updateJDMVar(docId, jOQM, lOIM);
+      if (lOIM.isNotEmpty) {
+        bViewMoreOptions = true;
+
+        Navigator.pop(context);
+      }
+      //jOQMNoChange = jOQM;
+      resetJOQMNoChangeToJOQM(jOQMNoChange, jOQM);
 
       // Navigator.of(context).push(
       //     MaterialPageRoute(builder: (context) => MyQueue(jOQM.empidGlobal)));
@@ -2939,7 +3625,8 @@ Widget deleteButtonAddOnVar(
     String docId,
     JobsOnQueueModel jOQM,
     List<OtherItemModel> lOIM,
-    String colRef) {
+    String colRef,
+    JobsOnQueueModel jOQMNoChange) {
   return MaterialButton(
     onPressed: () {
       DatabaseOtherItems databaseOtherItems =
@@ -2950,20 +3637,28 @@ Widget deleteButtonAddOnVar(
         print("delete other items docid=${aOIG.docId}");
       });
 
+      lOIM.clear();
+
       jOQM.initialOthersPrice = 0;
+      jOQMNoChange.initialOthersPrice = 0;
 
       ///need to update the fb to requery the data, not the same with global variables
       if (colRef == "JobsOnQueue") {
-        updateJOQMVar(jOQM.docId, jOQM, lOIM);
+        updateJOQMVar(jOQM.docId, jOQMNoChange, lOIM);
       } else {
-        updateJOGMVar(jOQM.docId, jOQM, lOIM);
+        updateJOGMVar(jOQM.docId, jOQMNoChange, lOIM);
       }
+
+      jOQMNoChange.others = false;
+
+      resetJOQMToNoChange(jOQM, jOQMNoChange);
 
       setState(
         () {
-          jOQM.others = false;
+          //jOQM.others = false;
           bViewMoreOptions = false;
           bViewAddOnDtlOnGoing = false;
+          jOQM;
         },
       );
       Navigator.pop(context);
@@ -2972,6 +3667,20 @@ Widget deleteButtonAddOnVar(
     },
     color: cButtons,
     child: const Text("Delete"),
+  );
+}
+
+Widget changeButtonJobsIdVar(
+  BuildContext context,
+  JobsOnQueueModel jOQM,
+) {
+  return MaterialButton(
+    onPressed: () {
+      moveUpVar(jOQM.jobsId);
+      Navigator.pop(context); //need to relogin
+    },
+    color: cButtons,
+    child: const Text("Move Up"),
   );
 }
 
@@ -2989,14 +3698,23 @@ void updateJOGMVar(
   databaseJobsOnGoing.updateJobsOnGoing(docId, jOQM, lOIM);
 }
 
+void updateJDMVar(
+    String docId, JobsOnQueueModel jOQM, List<OtherItemModel> lOIM) {
+  DatabaseJobsDone databaseJobsDone = DatabaseJobsDone();
+  jOQM.needOn = Timestamp.fromDate(dNeedOnVar);
+  databaseJobsDone.updateJobsDone(docId, jOQM, lOIM);
+}
+
 void deleteJOQVar(String docId, List<OtherItemModel> lOIM) {
-  DatabaseOtherItemsOnQueue databaseOtherItemsOnQueue =
-      DatabaseOtherItemsOnQueue(docId);
+  DatabaseOtherItems databaseOtherItems =
+      DatabaseOtherItems("JobsOnQueue", docId);
+  // DatabaseOtherItemsOnQueue databaseOtherItemsOnQueue =
+  //     DatabaseOtherItemsOnQueue(docId);
 
   lOIM.forEach((aOIG) {
     print("delete for ongoing docid=${aOIG.docId}");
     if (aOIG.docId != "") {
-      databaseOtherItemsOnQueue.deleteOtheritems(aOIG.docId);
+      databaseOtherItems.deleteOtheritems(aOIG.docId);
       // bDelAddOnsVar = true;
     } else {
       //need to relogin to delete
@@ -3006,6 +3724,41 @@ void deleteJOQVar(String docId, List<OtherItemModel> lOIM) {
 
   DatabaseJobsOnQueue databaseJobsOnQueue = DatabaseJobsOnQueue();
   databaseJobsOnQueue.deleteJobsOnQueue(docId);
+}
+
+void deleteJOGVar(String docId, List<OtherItemModel> lOIM) {
+  DatabaseOtherItems databaseOtherItems =
+      DatabaseOtherItems("JobsOnGoing", docId);
+  // DatabaseOtherItemsOnQueue databaseOtherItemsOnQueue =
+  //     DatabaseOtherItemsOnQueue(docId);
+
+  lOIM.forEach((aOIG) {
+    print("delete for ongoing docid=${aOIG.docId}");
+    if (aOIG.docId != "") {
+      databaseOtherItems.deleteOtheritems(aOIG.docId);
+      // bDelAddOnsVar = true;
+    } else {
+      //need to relogin to delete
+      // bDelAddOnsVar = false;
+    }
+  });
+
+  DatabaseJobsOnGoing databaseJobsOnGoing = DatabaseJobsOnGoing();
+  databaseJobsOnGoing.deleteJobsOnGoing(docId);
+}
+
+Future<bool> canSwapVar(String destinationJobsId) async {
+  var collection = FirebaseFirestore.instance.collection('JobsOnGoing');
+  var querySnapshots = await collection.get();
+  for (var doc in querySnapshots.docs) {
+    if (destinationJobsId == "${doc['D30_JobsId']}") {
+      if (!doc['D3_Waiting']) {
+        return false;
+      }
+    }
+  }
+  //can swap if waiting or no data
+  return true;
 }
 
 void updateSwapVar(String sourceJobsId, String destinationJobsId) async {
@@ -3025,12 +3778,12 @@ void updateSwapVar(String sourceJobsId, String destinationJobsId) async {
   }
 }
 
-void alterNumberMobileVar(BuildContext context, int jobsId) {
+void alterNumberMobileVar(BuildContext context, JobsOnQueueModel jOQM) {
   showDialog(
     context: context,
     builder: (context) => AlertDialog(
       title: Text(
-        "Swapping no. #$jobsId",
+        "Swapping no. #${jOQM.jobsId}",
         style: TextStyle(backgroundColor: Colors.green[50]),
       ),
       content: SingleChildScrollView(
@@ -3070,12 +3823,18 @@ void alterNumberMobileVar(BuildContext context, int jobsId) {
                     style: ButtonStyle(
                         backgroundColor:
                             WidgetStatePropertyAll(Colors.amberAccent)),
-                    onPressed: () {
-                      updateSwapVar("$jobsId", selectedNumberVar);
-                      showMessage(context, "Success", "Swap complete");
+                    onPressed: () async {
+                      if (await canSwapVar(selectedNumberVar)) {
+                        updateSwapVar("${jOQM.jobsId}", selectedNumberVar);
+                        showMessageSwapComplete(
+                            context, "Success", "Swap complete.");
+                      } else {
+                        showMessage(context, "Failed at # $selectedNumberVar",
+                            "Cannot swap to Washing/Drying/Folding. Choose other number");
+                      }
                     },
                     child: Text(
-                        "Click here to swap number #$jobsId to #$selectedNumberVar")),
+                        "Click here to swap number #${jOQM.jobsId} to #$selectedNumberVar")),
               ],
             ),
           );

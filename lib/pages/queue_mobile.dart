@@ -7,10 +7,13 @@ import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:laundry_firebase/models/jobsonqueuemodel.dart';
 import 'package:laundry_firebase/models/otheritemmodel.dart';
+import 'package:laundry_firebase/models/suppliesmodelhist.dart';
+import 'package:laundry_firebase/services/database_jobsdone.dart';
 import 'package:laundry_firebase/services/database_jobsongoing.dart';
 import 'package:laundry_firebase/services/database_jobsonqueue.dart';
 import 'package:laundry_firebase/services/database_other_items_ongoing.dart';
 import 'package:laundry_firebase/services/database_other_items_onqueue.dart';
+import 'package:laundry_firebase/services/database_supplies_hist.dart';
 //import 'package:laundry_firebase/variables/item_count_helper.dart';
 import 'package:laundry_firebase/variables/variables.dart';
 
@@ -104,7 +107,8 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
     return Scaffold(
       backgroundColor: Colors.deepPurple[100],
       appBar: AppBar(
-        title: Text("Welcome $empIdGlobal"),
+        title: Text(
+            "${convertTimeStampVar(Timestamp.now()).substring(0, 12).trim()}. Hello $empIdGlobal"),
         toolbarHeight: 25,
       ),
       body: SingleChildScrollView(
@@ -152,8 +156,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                   const SizedBox(
                     height: 1,
                   ),
-                  _readDataJobsDone('JobsDone - Andito pa ang damit',
-                      context), //WaitCustomerPickup, WaitRiderDelivery, RiderOnDelivery
+                  _readDataJobsDoneFilter('D8_WaitCustomerPickup'),
                 ]),
               ),
             ),
@@ -167,9 +170,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                   const SizedBox(
                     height: 1,
                   ),
-                  _readDataJobsDoneCustomerDone(
-                      'JobsDone - NasaCustomerNa(Unpaid)',
-                      context), //WaitCustomerPickup, WaitRiderDelivery, RiderOnDelivery
+                  _readDataJobsDoneFilter('D9_WaitRiderDelivery'),
                 ]),
               ),
             ),
@@ -183,9 +184,21 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                   const SizedBox(
                     height: 1,
                   ),
-                  _readDataJobsDoneCustomerDonePaid(
-                      'JobsDone - NasaCustomerNa(Paid)',
-                      context), //WaitCustomerPickup, WaitRiderDelivery, RiderOnDelivery
+                  _readDataJobsDoneFilter('E1_NasaCustomerNa'),
+                ]),
+              ),
+            ),
+            SingleChildScrollView(
+              scrollDirection: Axis.vertical,
+              child: Container(
+                width: 200,
+                color: Colors.blue,
+                padding: const EdgeInsets.all(8.0),
+                child: Column(children: <Widget>[
+                  const SizedBox(
+                    height: 1,
+                  ),
+                  _readDataSuppliesHistory(),
                 ]),
               ),
             ),
@@ -224,11 +237,15 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
 
           listJOQM.forEach((jOQMData) {
             JobsOnQueueModel jOQM = jOQMData.data();
+            JobsOnQueueModel jOQMNoChange = jOQMData.data();
             List<OtherItemModel> lOIM;
+            List<OtherItemModel> lOIMNoChange;
             DatabaseOtherItemsOnQueue dbOIOQ =
                 DatabaseOtherItemsOnQueue(jOQMData.id);
             //_readOtherItems(jOQMData.id);
             lOIM =
+                _readAllOtherItemModel(jOQMData.id.toString(), 'JobsOnQueue');
+            lOIMNoChange =
                 _readAllOtherItemModel(jOQMData.id.toString(), 'JobsOnQueue');
             final rowData = TableRow(
                 decoration:
@@ -240,7 +257,12 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                       child: GestureDetector(
                         onTap: () {
                           showAlterJobsOnQueueVar(
-                              context, jOQMData.id.toString(), jOQM, lOIM);
+                              context,
+                              jOQMData.id.toString(),
+                              jOQM,
+                              lOIM,
+                              jOQMNoChange,
+                              lOIMNoChange);
                         },
                         child: conDisplayVar(context, false, jOQM),
                       ),
@@ -264,7 +286,6 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
     DatabaseJobsOnGoing databaseJobsOnGoing = DatabaseJobsOnGoing();
     bool zebra = false;
     int iDisplayArrow = 0;
-    refillJobsList();
     //read
     return StreamBuilder<QuerySnapshot>(
       stream: databaseJobsOnGoing.getJobsOnGoing(),
@@ -301,6 +322,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
 
           listJOQM.forEach((jOQMData) {
             JobsOnQueueModel jOQM = jOQMData.data();
+            JobsOnQueueModel jOQMNoChange = jOQMData.data();
             if (!jOQM.waiting) {
               iDisplayArrow = 3;
             }
@@ -313,8 +335,11 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                 .removeWhere((val) => val.startsWith("#${jOQM.jobsId}#"));
 
             List<OtherItemModel> lOIM;
+            List<OtherItemModel> lOIMNoChange;
 
             lOIM =
+                _readAllOtherItemModel(jOQMData.id.toString(), 'JobsOnGoing');
+            lOIMNoChange =
                 _readAllOtherItemModel(jOQMData.id.toString(), 'JobsOnGoing');
             final rowData = TableRow(
                 decoration:
@@ -326,7 +351,13 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                       child: GestureDetector(
                         onTap: () {
                           showAlterJobsOnGoingVar(
-                              context, jOQMData.id.toString(), jOQM, lOIM);
+                              context,
+                              setState,
+                              jOQMData.id.toString(),
+                              jOQM,
+                              lOIM,
+                              jOQMNoChange,
+                              lOIMNoChange);
                         },
                         child: conDisplayVar(
                             context, (iDisplayArrow == 0 ? true : false), jOQM),
@@ -346,6 +377,143 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
 
           print(finListNumbering);
           print(lasListNumbering);
+        }
+
+        return Table(
+          children: rowDatas,
+        );
+      },
+    );
+  }
+
+  //read JobsOnGoing
+  Widget _readDataJobsDoneFilter(String columnFilter) {
+    DatabaseJobsDone databaseJobsDone = DatabaseJobsDone();
+    bool zebra = false;
+    //read
+    return StreamBuilder<QuerySnapshot>(
+      stream: databaseJobsDone.getJobsDoneFilter(columnFilter),
+      //stream: databaseJobsDone.getJobsDone(),
+      builder: (context, snapshot) {
+        List listJOQM = snapshot.data?.docs ?? [];
+        bHeader = true;
+        List<TableRow> rowDatas = [];
+        if (listJOQM.isNotEmpty) {
+          //header
+          if (bHeader) {
+            var rowData = TableRow(
+                decoration:
+                    const BoxDecoration(color: Color.fromARGB(255, 9, 194, 49)),
+                children: [
+                  Text(
+                    "Jobs ${columnFilter.substring(3)}",
+                    style: const TextStyle(fontSize: 10),
+                  ),
+                ]);
+            rowDatas.add(rowData);
+            bHeader = false;
+          }
+
+          listJOQM.forEach((jOQMData) {
+            JobsOnQueueModel jOQM = jOQMData.data();
+            JobsOnQueueModel jOQMNoChange = jOQMData.data();
+
+            List<OtherItemModel> lOIM;
+            List<OtherItemModel> lOIMNoChange;
+
+            lOIM = _readAllOtherItemModel(jOQMData.id.toString(), 'JobsDone');
+            lOIMNoChange =
+                _readAllOtherItemModel(jOQMData.id.toString(), 'JobsDone');
+            final rowData = TableRow(
+                decoration:
+                    BoxDecoration(color: zebra ? Colors.black : Colors.black),
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(2.0),
+                    child: Center(
+                      child: GestureDetector(
+                        onTap: () {
+                          showAlterJobsDoneVar(
+                              context,
+                              setState,
+                              jOQMData.id.toString(),
+                              jOQM,
+                              lOIM,
+                              jOQMNoChange,
+                              lOIMNoChange);
+                        },
+                        child: conDisplayVar(context, false, jOQM),
+                      ),
+                    ),
+                  )
+                ]);
+
+            rowDatas.add(rowData);
+          });
+        }
+
+        return Table(
+          children: rowDatas,
+        );
+      },
+    );
+  }
+
+  //read Supplies History
+  Widget _readDataSuppliesHistory() {
+    DatabaseSuppliesHist databaseSuppliesHist = DatabaseSuppliesHist();
+    bool zebra = false;
+    //read
+    return StreamBuilder<QuerySnapshot>(
+      stream: databaseSuppliesHist.getSuppliesHistory(),
+      builder: (context, snapshot) {
+        List listSMH = snapshot.data?.docs ?? [];
+        bHeader = true;
+        List<TableRow> rowDatas = [];
+        if (listSMH.isNotEmpty) {
+          //header
+          if (bHeader) {
+            const rowData = TableRow(
+                decoration:
+                    BoxDecoration(color: Color.fromARGB(255, 9, 194, 49)),
+                children: [
+                  Text(
+                    "Supplies History",
+                    style: TextStyle(fontSize: 10),
+                  ),
+                ]);
+            rowDatas.add(rowData);
+            bHeader = false;
+          }
+
+          listSMH.forEach((sMHData) {
+            SuppliesModelHist sMH = sMHData.data();
+
+            final rowData = TableRow(
+                decoration:
+                    BoxDecoration(color: zebra ? Colors.black : Colors.black),
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(2.0),
+                    child: Center(
+                      child: GestureDetector(
+                        onTap: () {
+                          // showAlterJobsOnQueueVar(
+                          //     context,
+                          //     jOQMData.id.toString(),
+                          //     jOQM,
+                          //     lOIM,
+                          //     jOQMNoChange,
+                          //     lOIMNoChange);
+                        },
+                        child: conDisplaySuppliesHistoryVar(context, sMH),
+                      ),
+                    ),
+                  )
+                ]);
+
+            rowDatas.add(rowData);
+          });
         }
 
         return Table(
@@ -410,7 +578,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
   }
 
   //read JobsDone Wala sa Customer
-  Widget _readDataJobsDone(String streamName, BuildContext context) {
+  Widget _readDataJobsDoneOld(String streamName, BuildContext context) {
     bool zebra = false;
     //read
     return StreamBuilder<QuerySnapshot>(
@@ -2305,7 +2473,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                           _selectedNumber = val!;
                         });
                       },
-                      items: completeListNumbering
+                      items: listNumbering
                           .map<DropdownMenuItem<String>>((String value) {
                         return DropdownMenuItem<String>(
                           value: value,
