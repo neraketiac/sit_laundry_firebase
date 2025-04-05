@@ -191,6 +191,8 @@ late OtherItemModel selectedDetVar,
     selectedBleVar,
     selectedOthVar,
     selectedSupVar;
+
+late bool allowDecimal = false;
 // int iBasketVar = 0, iBagVar = 0;
 bool bUnpaidVar = true, bPaidCashVar = false, bPaidGCashVar = false;
 // bool bMixVar = true, bFoldVar = true;
@@ -216,137 +218,202 @@ void putEntries() {
       itemId: menuDetBreezeDVal,
       itemGroup: groupDet,
       itemName: "Breeze",
-      itemPrice: 15));
+      itemPrice: 15,
+      stocksAlert: 5,
+      stocksType: "pcs"));
   listDetItems.add(OtherItemModel(
-      docId: "",
-      itemId: menuDetArielDVal,
-      itemGroup: groupDet,
-      itemName: "Ariel Twinpack",
-      itemPrice: 15));
+    docId: "",
+    itemId: menuDetArielDVal,
+    itemGroup: groupDet,
+    itemName: "Ariel Twinpack",
+    itemPrice: 15,
+    stocksAlert: 5,
+    stocksType: "pcs",
+  ));
   listDetItems.add(OtherItemModel(
-      docId: "",
-      itemId: menuDetTideDVal,
-      itemGroup: groupDet,
-      itemName: "Tide",
-      itemPrice: 15));
+    docId: "",
+    itemId: menuDetTideDVal,
+    itemGroup: groupDet,
+    itemName: "Tide",
+    itemPrice: 15,
+    stocksAlert: 5,
+    stocksType: "pcs",
+  ));
   listDetItems.add(OtherItemModel(
-      docId: "",
-      itemId: menuDetWingsBlueDVal,
-      itemGroup: groupDet,
-      itemName: "Wings Blue",
-      itemPrice: 15));
+    docId: "",
+    itemId: menuDetWingsBlueDVal,
+    itemGroup: groupDet,
+    itemName: "Wings Blue",
+    itemPrice: 15,
+    stocksAlert: 5,
+    stocksType: "pcs",
+  ));
   listDetItems.add(OtherItemModel(
-      docId: "",
-      itemId: menuDetWingsRedDVal,
-      itemGroup: groupDet,
-      itemName: "Wings Red",
-      itemPrice: 8));
+    docId: "",
+    itemId: menuDetWingsRedDVal,
+    itemGroup: groupDet,
+    itemName: "Wings Red",
+    itemPrice: 8,
+    stocksAlert: 5,
+    stocksType: "pcs",
+  ));
   listDetItems.add(OtherItemModel(
-      docId: "",
-      itemId: menuDetPowerCleanDVal,
-      itemGroup: groupDet,
-      itemName: "WKL",
-      itemPrice: 8));
+    docId: "",
+    itemId: menuDetPowerCleanDVal,
+    itemGroup: groupDet,
+    itemName: "WKL",
+    itemPrice: 8,
+    stocksAlert: 5,
+    stocksType: "pcs",
+  ));
   listDetItems.add(OtherItemModel(
-      docId: "",
-      itemId: menuDetSurfDVal,
-      itemGroup: groupDet,
-      itemName: "Surf",
-      itemPrice: 10));
+    docId: "",
+    itemId: menuDetSurfDVal,
+    itemGroup: groupDet,
+    itemName: "Surf",
+    itemPrice: 10,
+    stocksAlert: 5,
+    stocksType: "pcs",
+  ));
   listDetItems.add(OtherItemModel(
-      docId: "",
-      itemId: menuDetKlinDVal,
-      itemGroup: groupDet,
-      itemName: "Klin Twinpack",
-      itemPrice: 15));
+    docId: "",
+    itemId: menuDetKlinDVal,
+    itemGroup: groupDet,
+    itemName: "Klin Twinpack",
+    itemPrice: 15,
+    stocksAlert: 5,
+    stocksType: "pcs",
+  ));
   //fab items
   listFabItems.add(OtherItemModel(
-      docId: "",
-      itemId: menuFabSurf24mlDVal,
-      itemGroup: groupFab,
-      itemName: "Surf 24ml",
-      itemPrice: 8));
+    docId: "",
+    itemId: menuFabSurf24mlDVal,
+    itemGroup: groupFab,
+    itemName: "Surf 24ml",
+    itemPrice: 8,
+    stocksAlert: 5,
+    stocksType: "pcs",
+  ));
   listFabItems.add(OtherItemModel(
-      docId: "",
-      itemId: menuFabDowny24mlDVal,
-      itemGroup: groupFab,
-      itemName: "Downy 24ml",
-      itemPrice: 8));
+    docId: "",
+    itemId: menuFabDowny24mlDVal,
+    itemGroup: groupFab,
+    itemName: "Downy 24ml",
+    itemPrice: 8,
+    stocksAlert: 5,
+    stocksType: "pcs",
+  ));
   listFabItems.add(OtherItemModel(
-      docId: "",
-      itemId: menuFabDownyTripidDVal,
-      itemGroup: groupFab,
-      itemName: "Downy Tripid",
-      itemPrice: 17));
+    docId: "",
+    itemId: menuFabDownyTripidDVal,
+    itemGroup: groupFab,
+    itemName: "Downy Tripid",
+    itemPrice: 17,
+    stocksAlert: 5,
+    stocksType: "pcs",
+  ));
   listFabItems.add(OtherItemModel(
-      docId: "",
-      itemId: menuFabDowny36mlDVal,
-      itemGroup: groupFab,
-      itemName: "Downy 36ml",
-      itemPrice: 10));
+    docId: "",
+    itemId: menuFabDowny36mlDVal,
+    itemGroup: groupFab,
+    itemName: "Downy 36ml",
+    itemPrice: 10,
+    stocksAlert: 5,
+    stocksType: "pcs",
+  ));
   listFabItems.add(OtherItemModel(
-      docId: "",
-      itemId: menuFabSurfTripidDVal,
-      itemGroup: groupFab,
-      itemName: "Surf Tripid",
-      itemPrice: 17));
+    docId: "",
+    itemId: menuFabSurfTripidDVal,
+    itemGroup: groupFab,
+    itemName: "Surf Tripid",
+    itemPrice: 17,
+    stocksAlert: 5,
+    stocksType: "pcs",
+  ));
   listFabItems.add(OtherItemModel(
-      docId: "",
-      itemId: menuFabWKL24mlDVal,
-      itemGroup: groupFab,
-      itemName: "WKL Fabcon 24ml",
-      itemPrice: 8));
+    docId: "",
+    itemId: menuFabWKL24mlDVal,
+    itemGroup: groupFab,
+    itemName: "WKL Fabcon 24ml",
+    itemPrice: 8,
+    stocksAlert: 5,
+    stocksType: "pcs",
+  ));
   //bel items
   listBleItems.add(OtherItemModel(
-      docId: "",
-      itemId: menuBleColorSafeDVal,
-      itemGroup: groupBle,
-      itemName: "Color Safe",
-      itemPrice: 5));
+    docId: "",
+    itemId: menuBleColorSafeDVal,
+    itemGroup: groupBle,
+    itemName: "Color Safe",
+    itemPrice: 5,
+    stocksAlert: 5,
+    stocksType: "pcs",
+  ));
   //oth items
   listOthItems.add(OtherItemModel(
-      docId: "",
-      itemId: menuOthWash,
-      itemGroup: groupOth,
-      itemName: "Wash",
-      itemPrice: 49));
+    docId: "",
+    itemId: menuOthWash,
+    itemGroup: groupOth,
+    itemName: "Wash",
+    itemPrice: 49,
+    stocksAlert: 5,
+    stocksType: "pcs",
+  ));
   listOthItems.add(OtherItemModel(
-      docId: "",
-      itemId: menuOthDry,
-      itemGroup: groupOth,
-      itemName: "Dry",
-      itemPrice: 49));
+    docId: "",
+    itemId: menuOthDry,
+    itemGroup: groupOth,
+    itemName: "Dry",
+    itemPrice: 49,
+    stocksAlert: 5,
+    stocksType: "pcs",
+  ));
   listOthItems.add(OtherItemModel(
-      docId: "",
-      itemId: menuOth2W1DR,
-      itemGroup: groupOth,
-      itemName: "2Wash 1Dry(Regular)",
-      itemPrice: 195));
+    docId: "",
+    itemId: menuOth2W1DR,
+    itemGroup: groupOth,
+    itemName: "2Wash 1Dry(Regular)",
+    itemPrice: 195,
+    stocksAlert: 5,
+    stocksType: "pcs",
+  ));
   listOthItems.add(OtherItemModel(
-      docId: "",
-      itemId: menuOth2W1DSS,
-      itemGroup: groupOth,
-      itemName: "2Wash 1Dry(SayoSabon)",
-      itemPrice: 165));
+    docId: "",
+    itemId: menuOth2W1DSS,
+    itemGroup: groupOth,
+    itemName: "2Wash 1Dry(SayoSabon)",
+    itemPrice: 165,
+    stocksAlert: 5,
+    stocksType: "pcs",
+  ));
 
   listOthItems.add(OtherItemModel(
-      docId: "",
-      itemId: menuOthXD,
-      itemGroup: groupOth,
-      itemName: "Extra Dry",
-      itemPrice: 15));
+    docId: "",
+    itemId: menuOthXD,
+    itemGroup: groupOth,
+    itemName: "Extra Dry",
+    itemPrice: 15,
+    stocksAlert: 5,
+    stocksType: "pcs",
+  ));
   listOthItems.add(OtherItemModel(
-      docId: "",
-      itemId: menuOthXW,
-      itemGroup: groupOth,
-      itemName: "Extra Wash",
-      itemPrice: 15));
+    docId: "",
+    itemId: menuOthXW,
+    itemGroup: groupOth,
+    itemName: "Extra Wash",
+    itemPrice: 15,
+    stocksAlert: 5,
+    stocksType: "pcs",
+  ));
   listOthItems.add(OtherItemModel(
-      docId: "",
-      itemId: menuOthXR,
-      itemGroup: groupOth,
-      itemName: "Extra Rinse",
-      itemPrice: 15));
+    docId: "",
+    itemId: menuOthXR,
+    itemGroup: groupOth,
+    itemName: "Extra Rinse",
+    itemPrice: 15,
+    stocksAlert: 5,
+    stocksType: "pcs",
+  ));
 
   //det names
   mapDetNames.addEntries({menuDetBreezeDVal: "Breeze(15php)"}.entries);
@@ -422,6 +489,7 @@ void putEntries() {
 }
 
 Future<void> checkInternet(BuildContext context) async {
+  bHaveInternet = false;
   try {
     final result = await InternetAddress.lookup('google.com');
     if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
@@ -439,6 +507,9 @@ Future<void> checkInternet(BuildContext context) async {
 void showMessageNoInternet(BuildContext context) {
   showMessage(context, "No internet", "Check your internet.");
 }
+
+String getRegexStringVar() =>
+    allowDecimal ? r'[0-9] + [,.]{0,1}[0-9]*' : r'[0-9]';
 
 //var mapEmpId = {"0550", "Jeng", "0808", "Abi", "0413", "Ket", "0316", "DonP"};
 
@@ -590,7 +661,8 @@ String getItemName(int itemId) {
   String thisItemName = "no data";
   listSuppItems.forEach((thisData) {
     if (thisData.itemId == itemId) {
-      thisItemName = "${thisData.itemGroup} - ${thisData.itemName}";
+      thisItemName =
+          "${thisData.itemGroup} - ${thisData.itemName}(${thisData.stocksType})";
     }
   });
 
@@ -748,7 +820,6 @@ void resetSHGlobalVar() {
       itemId: selectedSupVar.itemId,
       counter: 0,
       currentStocks: 0,
-      stocksAlert: 0,
       logDate: Timestamp.now());
 }
 
@@ -1169,7 +1240,6 @@ Future<bool> insertDataSuppliesHistVar(SuppliesModelHist sMH) async {
 
   sMH.counter = int.parse(counterControllerVar.text);
   sMH.currentStocks = 50;
-  sMH.stocksAlert = 10;
   sMH.logDate = Timestamp.now();
 
   return await databaseSuppliesHist.addSuppliesHist(sMH);
@@ -1482,11 +1552,14 @@ Visibility visExtraOnQueueVar(BuildContext context, Function setState,
                       setState(
                         () {
                           lOIM.add(OtherItemModel(
-                              docId: "",
-                              itemId: menuFabWKL24mlDVal,
-                              itemGroup: groupFab,
-                              itemName: "WKL Fabcon 24ml",
-                              itemPrice: 8));
+                            docId: "",
+                            itemId: menuFabWKL24mlDVal,
+                            itemGroup: groupFab,
+                            itemName: "WKL Fabcon 24ml",
+                            itemPrice: 8,
+                            stocksAlert: 5,
+                            stocksType: "pcs",
+                          ));
                           bViewMoreOptions = true;
 
                           jOQM.initialOthersPrice =
@@ -1505,11 +1578,14 @@ Visibility visExtraOnQueueVar(BuildContext context, Function setState,
                       setState(
                         () {
                           lOIM.add(OtherItemModel(
-                              docId: "",
-                              itemId: menuOthXD,
-                              itemGroup: groupOth,
-                              itemName: "Extra Dry",
-                              itemPrice: 15));
+                            docId: "",
+                            itemId: menuOthXD,
+                            itemGroup: groupOth,
+                            itemName: "Extra Dry",
+                            itemPrice: 15,
+                            stocksAlert: 5,
+                            stocksType: "pcs",
+                          ));
                           bViewMoreOptions = true;
 
                           jOQM.initialOthersPrice =
@@ -1533,11 +1609,14 @@ Visibility visExtraOnQueueVar(BuildContext context, Function setState,
                       setState(
                         () {
                           lOIM.add(OtherItemModel(
-                              docId: "",
-                              itemId: menuOthXW,
-                              itemGroup: groupOth,
-                              itemName: "Extra Wash",
-                              itemPrice: 15));
+                            docId: "",
+                            itemId: menuOthXW,
+                            itemGroup: groupOth,
+                            itemName: "Extra Wash",
+                            itemPrice: 15,
+                            stocksAlert: 5,
+                            stocksType: "pcs",
+                          ));
                           bViewMoreOptions = true;
 
                           jOQM.initialOthersPrice =
@@ -1556,11 +1635,14 @@ Visibility visExtraOnQueueVar(BuildContext context, Function setState,
                       setState(
                         () {
                           lOIM.add(OtherItemModel(
-                              docId: "",
-                              itemId: menuOthXR,
-                              itemGroup: groupOth,
-                              itemName: "Extra Rinse",
-                              itemPrice: 15));
+                            docId: "",
+                            itemId: menuOthXR,
+                            itemGroup: groupOth,
+                            itemName: "Extra Rinse",
+                            itemPrice: 15,
+                            stocksAlert: 5,
+                            stocksType: "pcs",
+                          ));
                           bViewMoreOptions = true;
 
                           jOQM.initialOthersPrice =
@@ -1602,11 +1684,14 @@ Visibility visExtraOnGoingVar(BuildContext context, Function setState,
                   setState(
                     () {
                       lOIM.add(OtherItemModel(
-                          docId: "",
-                          itemId: menuOthXD,
-                          itemGroup: groupOth,
-                          itemName: "Extra Dry",
-                          itemPrice: 15));
+                        docId: "",
+                        itemId: menuOthXD,
+                        itemGroup: groupOth,
+                        itemName: "Extra Dry",
+                        itemPrice: 15,
+                        stocksAlert: 5,
+                        stocksType: "pcs",
+                      ));
                       bViewAddOnDtlOnGoing = true;
 
                       jOQM.initialOthersPrice = jOQM.initialOthersPrice + 15;
@@ -2683,12 +2768,13 @@ Color getCOlorStatusVar(JobsOnQueueModel jOQM) {
 
 //Display Queue Tables
 Color getCOlorSuppliesHistoryVar(SuppliesModelHist sMH) {
-  if (sMH.currentStocks <= sMH.stocksAlert) {
-    return cRiderPickup;
-  } else {
-    return cWaiting;
-  }
-  ;
+  return cWaiting;
+  // if (sMH.currentStocks <= sMH.stocksAlert) {
+  //   return cRiderPickup;
+  // } else {
+  //   return cWaiting;
+  // }
+  // ;
 }
 
 bool isItToday(Timestamp timestamp) {
@@ -3083,9 +3169,9 @@ Container conDisplaySuppliesHistoryVar(
                 height: 2,
               ),
               Text(
-                "  ${getItemName(sMH.itemId)} - (${sMH.counter}/${sMH.currentStocks})",
+                "  ${getItemName(sMH.itemId)} - (${sMH.counter}/${sMH.currentStocks}) - ${convertTimeStampVar(sMH.logDate)}",
                 style: const TextStyle(
-                  fontSize: 11,
+                  fontSize: 10,
                   fontWeight: FontWeight.bold,
                 ),
                 textAlign: TextAlign.end,
@@ -3645,8 +3731,12 @@ Widget deleteButtonAddOnVar(
       ///need to update the fb to requery the data, not the same with global variables
       if (colRef == "JobsOnQueue") {
         updateJOQMVar(jOQM.docId, jOQMNoChange, lOIM);
-      } else {
+      }
+      if (colRef == "JobsOnGoing") {
         updateJOGMVar(jOQM.docId, jOQMNoChange, lOIM);
+      }
+      if (colRef == "JobsDone") {
+        updateJDMVar(jOQM.docId, jOQMNoChange, lOIM);
       }
 
       jOQMNoChange.others = false;

@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:laundry_firebase/models/customermodel.dart';
 import 'package:laundry_firebase/models/jobsonqueuemodel.dart';
 import 'package:laundry_firebase/models/otheritemmodel.dart';
@@ -581,11 +582,14 @@ class _MyQueueState extends State<MyQueue> {
                     setState(
                       () {
                         listAddOnItemsGlobal.add(OtherItemModel(
-                            docId: "",
-                            itemId: menuFabWKL24mlDVal,
-                            itemGroup: groupFab,
-                            itemName: "WKL Fabcon 24ml",
-                            itemPrice: 8));
+                          docId: "",
+                          itemId: menuFabWKL24mlDVal,
+                          itemGroup: groupFab,
+                          itemName: "WKL Fabcon 24ml",
+                          itemPrice: 8,
+                          stocksAlert: 5,
+                          stocksType: "pcs",
+                        ));
 
                         bViewMoreOptionsQ = true;
 
@@ -607,11 +611,14 @@ class _MyQueueState extends State<MyQueue> {
                 IconButton(
                   onPressed: () {
                     listAddOnItemsGlobal.add(OtherItemModel(
-                        docId: "",
-                        itemId: menuOthXD,
-                        itemGroup: groupOth,
-                        itemName: "Extra Dry",
-                        itemPrice: 15));
+                      docId: "",
+                      itemId: menuOthXD,
+                      itemGroup: groupOth,
+                      itemName: "Extra Dry",
+                      itemPrice: 15,
+                      stocksAlert: 5,
+                      stocksType: "pcs",
+                    ));
 
                     setState(
                       () {
@@ -636,11 +643,14 @@ class _MyQueueState extends State<MyQueue> {
                 IconButton(
                   onPressed: () {
                     listAddOnItemsGlobal.add(OtherItemModel(
-                        docId: "",
-                        itemId: menuOthXW,
-                        itemGroup: groupOth,
-                        itemName: "Extra Wash",
-                        itemPrice: 15));
+                      docId: "",
+                      itemId: menuOthXW,
+                      itemGroup: groupOth,
+                      itemName: "Extra Wash",
+                      itemPrice: 15,
+                      stocksAlert: 5,
+                      stocksType: "pcs",
+                    ));
                     setState(
                       () {
                         bViewMoreOptionsQ = true;
@@ -662,11 +672,14 @@ class _MyQueueState extends State<MyQueue> {
                 IconButton(
                   onPressed: () {
                     listAddOnItemsGlobal.add(OtherItemModel(
-                        docId: "",
-                        itemId: menuOthXR,
-                        itemGroup: groupOth,
-                        itemName: "Extra Rinse",
-                        itemPrice: 15));
+                      docId: "",
+                      itemId: menuOthXR,
+                      itemGroup: groupOth,
+                      itemName: "Extra Rinse",
+                      itemPrice: 15,
+                      stocksAlert: 5,
+                      stocksType: "pcs",
+                    ));
 
                     setState(
                       () {
@@ -1158,17 +1171,59 @@ class _MyQueueState extends State<MyQueue> {
     );
   }
 
-  Container conCounterQ(Function setState) {
+  Container conCounterQ(Function setState, SuppliesModelHist sMH) {
     counterControllerVar.text = "";
     return Container(
       padding: EdgeInsets.all(1.0),
       decoration: decoAmber(),
-      child: TextFormField(
-        textCapitalization: TextCapitalization.words,
-        textAlign: TextAlign.start,
-        controller: counterControllerVar,
-        decoration: InputDecoration(labelText: 'Counter', hintText: 'Counter'),
-        validator: (val) {},
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          // TextFormField(
+          //   inputFormatters: <TextInputFormatter>[
+          //     FilteringTextInputFormatter.allow(RegExp(getRegexStringVar())),
+          //     TextInputFormatter.withFunction(
+          //       (oldValue, newValue) => newValue.copyWith(
+          //         text: newValue.text.replaceAll('.', ','),
+          //       ),
+          //     ),
+          //   ],
+          //   keyboardType:
+          //       TextInputType.numberWithOptions(signed: true, decimal: false),
+          //   textCapitalization: TextCapitalization.words,
+          //   textAlign: TextAlign.start,
+          //   controller: counterControllerVar,
+          //   decoration:
+          //       InputDecoration(labelText: 'Counters', hintText: 'Counter'),
+          //   validator: (val) {},
+          // ),
+          Row(
+            children: [Text("Count:"), Text('${sMH.counter}')],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              IconButton(
+                onPressed: () {
+                  setState(() {
+                    sMH.counter--;
+                  });
+                },
+                icon: const Icon(Icons.remove_circle_outlined),
+                color: Colors.blueAccent,
+              ),
+              IconButton(
+                onPressed: () {
+                  setState(() {
+                    sMH.counter++;
+                  });
+                },
+                icon: const Icon(Icons.add_circle),
+                color: Colors.blueAccent,
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -1361,7 +1416,7 @@ class _MyQueueState extends State<MyQueue> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       visAddOnSupplies(context, setState, sMH),
-                      conCounterQ(setState),
+                      conCounterQ(setState, sMH),
                     ],
                   ),
                 ),

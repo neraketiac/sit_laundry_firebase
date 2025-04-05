@@ -35,11 +35,14 @@ class DatabaseOtherItems {
               //messageResult("Insert Done.${otherItemModel.itemName}"),
               print("Insert Done.${oIM.itemName}${value.id}"),
               updateDocId(OtherItemModel(
-                  docId: value.id,
-                  itemId: oIM.itemId,
-                  itemGroup: oIM.itemGroup,
-                  itemName: oIM.itemName,
-                  itemPrice: oIM.itemPrice)),
+                docId: value.id,
+                itemId: oIM.itemId,
+                itemGroup: oIM.itemGroup,
+                itemName: oIM.itemName,
+                itemPrice: oIM.itemPrice,
+                stocksAlert: oIM.stocksAlert,
+                stocksType: oIM.stocksType,
+              )),
             })
         // ignore: invalid_return_type_for_catch_error
         .catchError(

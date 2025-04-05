@@ -223,35 +223,33 @@ class _EnterLoyaltyCodeState extends State<EnterLoyaltyCode> {
   }
 
   Future<void> _singleReadData(String s) async {
-    checkInternet();
-    if (bHaveInternet) {
-      putEntries();
-      if (s == "16") {
-        _allCards(context);
-      } else if (s == "456") {
-        _suppliesPage(context);
-      } else if (s == "369") {
-        _saveText(context);
-      } else if (s == "678") {
-        fsKey = s;
-        _menuMain(context);
+    // checkInternet(context);
+    // if (bHaveInternet) {
+    putEntries();
+    if (s == "16") {
+      _allCards(context);
+    } else if (s == "456") {
+      _suppliesPage(context);
+    } else if (s == "369") {
+      _saveText(context);
+    } else if (s == "678") {
+      fsKey = s;
+      _menuMain(context);
+    } else {
+      var collection = FirebaseFirestore.instance.collection('loyalty');
+      var docSnapshot = await collection.doc(s).get();
+      if (docSnapshot.exists) {
+        // ignore: use_build_context_synchronously
+        _singleCard(context);
       } else {
-        var collection = FirebaseFirestore.instance.collection('loyalty');
-        var docSnapshot = await collection.doc(s).get();
-        if (docSnapshot.exists) {
+        if (mapEmpId[s]!.isNotEmpty) {
           // ignore: use_build_context_synchronously
-          _singleCard(context);
+          _queuePage(context, mapEmpId[s]!);
         } else {
-          if (mapEmpId[s]!.isNotEmpty) {
-            // ignore: use_build_context_synchronously
-            _queuePage(context, mapEmpId[s]!);
-          } else {
-            memberController.clear();
-          }
+          memberController.clear();
         }
       }
-    } else {
-      showMessageNoInternet(context);
     }
+    // }
   }
 }

@@ -188,20 +188,20 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                 ]),
               ),
             ),
-            SingleChildScrollView(
-              scrollDirection: Axis.vertical,
-              child: Container(
-                width: 200,
-                color: Colors.blue,
-                padding: const EdgeInsets.all(8.0),
-                child: Column(children: <Widget>[
-                  const SizedBox(
-                    height: 1,
-                  ),
-                  _readDataSuppliesHistory(),
-                ]),
-              ),
-            ),
+            // SingleChildScrollView(
+            //   scrollDirection: Axis.vertical,
+            //   child: Container(
+            //     width: 300,
+            //     color: Colors.blue,
+            //     padding: const EdgeInsets.all(8.0),
+            //     child: Column(children: <Widget>[
+            //       const SizedBox(
+            //         height: 1,
+            //       ),
+            //       _readDataSuppliesHistory(),
+            //     ]),
+            //   ),
+            // ),
           ],
         ),
       ),
@@ -557,7 +557,9 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
             itemId: doc['itemId'],
             itemGroup: doc['itemGroup'],
             itemName: doc['itemName'],
-            itemPrice: doc['itemPrice']);
+            itemPrice: doc['itemPrice'],
+            stocksAlert: doc['stocksAlert'],
+            stocksType: doc['stocksType']);
         print("asdf=" + oIM.itemName);
         lOIM.add(oIM);
       }
