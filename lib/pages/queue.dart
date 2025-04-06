@@ -47,22 +47,30 @@ class _MyQueueState extends State<MyQueue> {
             },
             child: const Icon(Icons.local_laundry_service_sharp),
           ),
-          SizedBox(
-            height: 5,
-          ),
-          FloatingActionButton(
-            heroTag: "Supplies",
-            onPressed: () {
-              showSuppliesHist();
-            },
-            child: const Icon(Icons.g_mobiledata),
-          ),
+          // SizedBox(
+          //   height: 5,
+          // ),
+          // FloatingActionButton(
+          //   heroTag: "Supplies",
+          //   onPressed: () {
+          //     showSuppliesHist();
+          //   },
+          //   child: const Icon(Icons.g_mobiledata),
+          // ),
         ],
       ),
     );
   }
 
   void showNewJobsForQueue() {
+    // setState(
+    //   () {
+    //     resetJOQMGlobalVar();
+    //     resetAddOnsGlobalVar();
+    //     bViewMoreOptionsQ = false;
+    //   },
+    // );
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -163,7 +171,7 @@ class _MyQueueState extends State<MyQueue> {
                       onChanged: (val) {
                         jobsOnQueueModelGlobal =
                             resetRegular(jobsOnQueueModelGlobal);
-
+                        bShowKiloDisplayOthVar = false;
                         if (val!) {
                           setState(
                             () {
@@ -192,7 +200,7 @@ class _MyQueueState extends State<MyQueue> {
                       onChanged: (val) {
                         jobsOnQueueModelGlobal =
                             resetRegular(jobsOnQueueModelGlobal);
-
+                        bShowKiloDisplayOthVar = false;
                         if (val!) {
                           setState(
                             () {
@@ -222,6 +230,7 @@ class _MyQueueState extends State<MyQueue> {
                         jobsOnQueueModelGlobal =
                             resetRegular(jobsOnQueueModelGlobal);
                         bShowKiloLoadDisplayVar = false;
+                        bShowKiloDisplayOthVar = true;
 
                         if (val!) {
                           setState(
@@ -241,7 +250,8 @@ class _MyQueueState extends State<MyQueue> {
           ),
           //New Estimate Load display
           Visibility(
-            visible: bShowKiloLoadDisplayVar,
+            //visible: bShowKiloLoadDisplayVar,
+            visible: true,
             child: Container(
               padding: EdgeInsets.all(3),
               child: Column(
@@ -547,6 +557,128 @@ class _MyQueueState extends State<MyQueue> {
                               jobsOnQueueModelGlobal.initialKilo;
                               jobsOnQueueModelGlobal.initialLoad;
                               jobsOnQueueModelGlobal.initialPrice;
+                            });
+                          },
+                          icon: const Icon(Icons.add_circle),
+                          color: Colors.blueAccent,
+                        ),
+                      ],
+                    ),
+                  )
+                ],
+              ),
+            ),
+          ),
+          Visibility(
+            visible: bShowKiloDisplayOthVar,
+            child: Container(
+              padding: EdgeInsets.all(0.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    padding:
+                        EdgeInsets.only(left: 3, bottom: 0, top: 0, right: 3),
+                    decoration: BoxDecoration(
+                        color: Colors.amber[200],
+                        borderRadius: const BorderRadius.only(
+                            topLeft: Radius.circular(20),
+                            bottomLeft: Radius.circular(20))),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        IconButton(
+                          onPressed: () {
+                            setState(() {
+                              jobsOnQueueModelGlobal.initialKilo--;
+                            });
+                          },
+                          icon: const Icon(Icons.remove_circle_outlined),
+                          color: Colors.blueAccent,
+                        ),
+                        Text("-1 kg"),
+                      ],
+                    ),
+                  ),
+                  SizedBox(
+                    width: 3,
+                  ),
+                  Container(
+                    padding:
+                        EdgeInsets.only(left: 3, bottom: 0, top: 0, right: 3),
+                    decoration: BoxDecoration(
+                        color: Colors.amber[200],
+                        borderRadius: BorderRadius.only(
+                            topRight: Radius.circular(20),
+                            bottomRight: Radius.circular(20))),
+                    child: Row(
+                      children: [
+                        Text("+1 kg"),
+                        IconButton(
+                          onPressed: () {
+                            setState(() {
+                              jobsOnQueueModelGlobal.initialKilo++;
+                            });
+                          },
+                          icon: const Icon(Icons.add_circle),
+                          color: Colors.blueAccent,
+                        ),
+                      ],
+                    ),
+                  )
+                ],
+              ),
+            ),
+          ),
+          Visibility(
+            visible: bShowKiloDisplayOthVar,
+            child: Container(
+              padding: EdgeInsets.all(0.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    padding:
+                        EdgeInsets.only(left: 3, bottom: 0, top: 0, right: 3),
+                    decoration: BoxDecoration(
+                        color: Colors.amber[200],
+                        borderRadius: const BorderRadius.only(
+                            topLeft: Radius.circular(20),
+                            bottomLeft: Radius.circular(20))),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        IconButton(
+                          onPressed: () {
+                            setState(() {
+                              jobsOnQueueModelGlobal.initialLoad--;
+                            });
+                          },
+                          icon: const Icon(Icons.remove_circle_outlined),
+                          color: Colors.blueAccent,
+                        ),
+                        Text("-1 ld"),
+                      ],
+                    ),
+                  ),
+                  SizedBox(
+                    width: 3,
+                  ),
+                  Container(
+                    padding:
+                        EdgeInsets.only(left: 3, bottom: 0, top: 0, right: 3),
+                    decoration: BoxDecoration(
+                        color: Colors.amber[200],
+                        borderRadius: BorderRadius.only(
+                            topRight: Radius.circular(20),
+                            bottomRight: Radius.circular(20))),
+                    child: Row(
+                      children: [
+                        Text("+1 ld"),
+                        IconButton(
+                          onPressed: () {
+                            setState(() {
+                              jobsOnQueueModelGlobal.initialLoad++;
                             });
                           },
                           icon: const Icon(Icons.add_circle),
@@ -1307,7 +1439,7 @@ class _MyQueueState extends State<MyQueue> {
     return MaterialButton(
         onPressed: () {
           resetJOQMGlobalVar();
-          listAddOnItemsGlobal.clear();
+          resetAddOnsGlobalVar();
           //pop box
           Navigator.pop(context);
         },

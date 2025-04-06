@@ -126,8 +126,8 @@ class _MyHomeState extends State<MyHome> {
                       value: menuDetWingsRedDVal,
                       label: mapDetNames[menuDetWingsRedDVal].toString()),
                   DropdownMenuEntry(
-                      value: menuDetPowerCleanDVal,
-                      label: mapDetNames[menuDetPowerCleanDVal].toString()),
+                      value: menuDetWKL,
+                      label: mapDetNames[menuDetWKL].toString()),
                   DropdownMenuEntry(
                       value: menuDetSurfDVal,
                       label: mapDetNames[menuDetSurfDVal].toString()),

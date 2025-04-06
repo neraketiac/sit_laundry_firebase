@@ -29,11 +29,11 @@ class DatabaseOtherItems {
   }
 
   void addOtherItems(OtherItemModel oIM) async {
-    _otherItemsRef
+    await _otherItemsRef
         .add(oIM)
         .then((value) => {
               //messageResult("Insert Done.${otherItemModel.itemName}"),
-              print("Insert Done.${oIM.itemName}${value.id}"),
+              print("Insert Done Addons.${oIM.itemName}${value.id}"),
               updateDocId(OtherItemModel(
                 docId: value.id,
                 itemId: oIM.itemId,

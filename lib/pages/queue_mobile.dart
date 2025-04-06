@@ -403,7 +403,15 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
           if (bHeader) {
             var rowData = TableRow(
                 decoration:
-                    const BoxDecoration(color: Color.fromARGB(255, 9, 194, 49)),
+                    // const BoxDecoration(color: Color.fromARGB(255, 9, 194, 49)),
+                    BoxDecoration(
+                        color: (columnFilter == "D8_WaitCustomerPickup"
+                            ? cWaitCustomerPickup
+                            : (columnFilter == "D9_WaitRiderDelivery"
+                                ? cWaitRiderDelivery
+                                : (columnFilter == "E1_NasaCustomerNa"
+                                    ? cNasaCustomerNa
+                                    : cWaitCustomerPickup)))),
                 children: [
                   Text(
                     "Jobs ${columnFilter.substring(3)}",
@@ -550,7 +558,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
         .doc(id)
         .collection('OtherItems');
 
-    users.get().then((QuerySnapshot snapshot) {
+    users.get().then((QuerySnapshot snapshot) async {
       for (var doc in snapshot.docs) {
         OtherItemModel oIM = OtherItemModel(
             docId: doc['docId'],
@@ -563,6 +571,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
         print("asdf=" + oIM.itemName);
         lOIM.add(oIM);
       }
+      await lOIM;
     }).catchError((error) => print("Failed to fetch users: $error"));
 
     return lOIM;
@@ -4756,7 +4765,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                 MaterialButton(
                   onPressed: () {
                     Navigator.pop(context);
-                    listAddOnItemsGlobal.clear();
+                    resetAddOnsGlobalVar();
                     jobsOnQueueModelEditAll.initialOthersPrice = 0;
                     resetAddOnVar();
                     editAll(

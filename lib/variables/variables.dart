@@ -76,9 +76,10 @@ const int menuDetBreezeDVal = 103,
     menuDetTideDVal = 104,
     menuDetWingsBlueDVal = 105,
     menuDetWingsRedDVal = 107,
-    menuDetPowerCleanDVal = 106,
+    menuDetWKL = 106,
     menuDetSurfDVal = 102,
-    menuDetKlinDVal = 108;
+    menuDetKlinDVal = 108,
+    menuDetWKL15 = 109;
 
 //fab
 Map<int, String> mapFabNames = {};
@@ -87,7 +88,8 @@ const int menuFabSurf24mlDVal = 201,
     menuFabDownyTripidDVal = 203,
     menuFabDowny36mlDVal = 204,
     menuFabSurfTripidDVal = 205,
-    menuFabWKL24mlDVal = 206;
+    menuFabWKL24mlDVal = 206,
+    menuFabWKL48mlDVal = 207;
 
 //bleach
 Map<int, String> mapBleNames = {};
@@ -103,7 +105,19 @@ const int menuOthWash = 401,
     menuOth165 = 406,
     menuOthXD = 407,
     menuOthXW = 408,
-    menuOthXR = 409;
+    menuOthXR = 409,
+    menuOth155 = 410,
+    menuOth125 = 411,
+    menuOthDO = 412,
+    menuOthDOF = 413,
+    menuOthNF155 = 414,
+    menuOthNF195 = 415,
+    menuOthNF125 = 416,
+    menuOthNF165 = 417,
+    menuOthW8t9 = 418,
+    menuOthW9t10 = 419,
+    menuOthW10t11 = 420,
+    menuOthW11t12 = 421;
 
 //queuestats
 Map<int, String> mapQueueStat = {};
@@ -176,7 +190,8 @@ bool bRiderPickupVar = false;
 bool bRegularSabonVar = true,
     bSayoSabonVar = false,
     bOtherServicesVar = false,
-    bShowKiloLoadDisplayVar = true;
+    bShowKiloLoadDisplayVar = true,
+    bShowKiloDisplayOthVar = false;
 bool bAddOnVar = false,
     bDetAddOnVar = false,
     bFabAddOnVar = false,
@@ -203,7 +218,7 @@ DateTime dNeedOnVar = DateTime.now().add(Duration(minutes: 210));
 
 void putEntries() {
   resetJOQMGlobalVar();
-  listAddOnItemsGlobal.clear();
+  resetAddOnsGlobalVar();
   fetchUsers();
   refillJobsList();
   listDetItems.clear();
@@ -225,7 +240,7 @@ void putEntries() {
     docId: "",
     itemId: menuDetArielDVal,
     itemGroup: groupDet,
-    itemName: "Ariel Twinpack",
+    itemName: "Ariel TP",
     itemPrice: 15,
     stocksAlert: 5,
     stocksType: "pcs",
@@ -243,7 +258,7 @@ void putEntries() {
     docId: "",
     itemId: menuDetWingsBlueDVal,
     itemGroup: groupDet,
-    itemName: "Wings Blue",
+    itemName: "Wings B",
     itemPrice: 15,
     stocksAlert: 5,
     stocksType: "pcs",
@@ -252,17 +267,26 @@ void putEntries() {
     docId: "",
     itemId: menuDetWingsRedDVal,
     itemGroup: groupDet,
-    itemName: "Wings Red",
+    itemName: "Wings R",
     itemPrice: 8,
     stocksAlert: 5,
     stocksType: "pcs",
   ));
   listDetItems.add(OtherItemModel(
     docId: "",
-    itemId: menuDetPowerCleanDVal,
+    itemId: menuDetWKL,
     itemGroup: groupDet,
     itemName: "WKL",
     itemPrice: 8,
+    stocksAlert: 5,
+    stocksType: "pcs",
+  ));
+  listDetItems.add(OtherItemModel(
+    docId: "",
+    itemId: menuDetWKL15,
+    itemGroup: groupDet,
+    itemName: "WKL15",
+    itemPrice: 15,
     stocksAlert: 5,
     stocksType: "pcs",
   ));
@@ -279,7 +303,7 @@ void putEntries() {
     docId: "",
     itemId: menuDetKlinDVal,
     itemGroup: groupDet,
-    itemName: "Klin Twinpack",
+    itemName: "Klin TP",
     itemPrice: 15,
     stocksAlert: 5,
     stocksType: "pcs",
@@ -289,7 +313,7 @@ void putEntries() {
     docId: "",
     itemId: menuFabSurf24mlDVal,
     itemGroup: groupFab,
-    itemName: "Surf 24ml",
+    itemName: "Surf 24",
     itemPrice: 8,
     stocksAlert: 5,
     stocksType: "pcs",
@@ -298,7 +322,7 @@ void putEntries() {
     docId: "",
     itemId: menuFabDowny24mlDVal,
     itemGroup: groupFab,
-    itemName: "Downy 24ml",
+    itemName: "Downy 24",
     itemPrice: 8,
     stocksAlert: 5,
     stocksType: "pcs",
@@ -307,7 +331,7 @@ void putEntries() {
     docId: "",
     itemId: menuFabDownyTripidDVal,
     itemGroup: groupFab,
-    itemName: "Downy Tripid",
+    itemName: "Downy 3P",
     itemPrice: 17,
     stocksAlert: 5,
     stocksType: "pcs",
@@ -316,7 +340,7 @@ void putEntries() {
     docId: "",
     itemId: menuFabDowny36mlDVal,
     itemGroup: groupFab,
-    itemName: "Downy 36ml",
+    itemName: "Downy 36",
     itemPrice: 10,
     stocksAlert: 5,
     stocksType: "pcs",
@@ -325,7 +349,7 @@ void putEntries() {
     docId: "",
     itemId: menuFabSurfTripidDVal,
     itemGroup: groupFab,
-    itemName: "Surf Tripid",
+    itemName: "Surf 3P",
     itemPrice: 17,
     stocksAlert: 5,
     stocksType: "pcs",
@@ -334,10 +358,19 @@ void putEntries() {
     docId: "",
     itemId: menuFabWKL24mlDVal,
     itemGroup: groupFab,
-    itemName: "WKL Fabcon 24ml",
+    itemName: "WKL Fab24",
     itemPrice: 8,
     stocksAlert: 5,
-    stocksType: "pcs",
+    stocksType: "bottle",
+  ));
+  listFabItems.add(OtherItemModel(
+    docId: "",
+    itemId: menuFabWKL48mlDVal,
+    itemGroup: groupFab,
+    itemName: "WKL Fab48",
+    itemPrice: 15,
+    stocksAlert: 5,
+    stocksType: "bottle",
   ));
   //bel items
   listBleItems.add(OtherItemModel(
@@ -370,9 +403,48 @@ void putEntries() {
   ));
   listOthItems.add(OtherItemModel(
     docId: "",
+    itemId: menuOth155,
+    itemGroup: groupOth,
+    itemName: "Reg155",
+    itemPrice: 155,
+    stocksAlert: 5,
+    stocksType: "pcs",
+  ));
+  listOthItems.add(OtherItemModel(
+    docId: "",
+    itemId: menuOth125,
+    itemGroup: groupOth,
+    itemName: "Reg125",
+    itemPrice: 125,
+    stocksAlert: 5,
+    stocksType: "pcs",
+  ));
+
+  listOthItems.add(OtherItemModel(
+    docId: "",
+    itemId: menuOthDO,
+    itemGroup: groupOth,
+    itemName: "Drop Off",
+    itemPrice: 10,
+    stocksAlert: 1,
+    stocksType: "pcs",
+  ));
+
+  listOthItems.add(OtherItemModel(
+    docId: "",
+    itemId: menuOthDOF,
+    itemGroup: groupOth,
+    itemName: "Drop W/Fold",
+    itemPrice: 30,
+    stocksAlert: 1,
+    stocksType: "pcs",
+  ));
+
+  listOthItems.add(OtherItemModel(
+    docId: "",
     itemId: menuOth2W1DR,
     itemGroup: groupOth,
-    itemName: "2Wash 1Dry(Regular)",
+    itemName: "2W 1D(R)",
     itemPrice: 195,
     stocksAlert: 5,
     stocksType: "pcs",
@@ -381,7 +453,7 @@ void putEntries() {
     docId: "",
     itemId: menuOth2W1DSS,
     itemGroup: groupOth,
-    itemName: "2Wash 1Dry(SayoSabon)",
+    itemName: "2W 1D(SS)",
     itemPrice: 165,
     stocksAlert: 5,
     stocksType: "pcs",
@@ -401,7 +473,7 @@ void putEntries() {
     itemId: menuOthXW,
     itemGroup: groupOth,
     itemName: "Extra Wash",
-    itemPrice: 15,
+    itemPrice: 20,
     stocksAlert: 5,
     stocksType: "pcs",
   ));
@@ -410,20 +482,66 @@ void putEntries() {
     itemId: menuOthXR,
     itemGroup: groupOth,
     itemName: "Extra Rinse",
-    itemPrice: 15,
+    itemPrice: 20,
+    stocksAlert: 5,
+    stocksType: "pcs",
+  ));
+  listOthItems.add(OtherItemModel(
+    docId: "",
+    itemId: menuOthNF125,
+    itemGroup: groupOth,
+    itemName: "NF125",
+    itemPrice: -17,
+    stocksAlert: 5,
+    stocksType: "pcs",
+  ));
+  listOthItems.add(OtherItemModel(
+    docId: "",
+    itemId: menuOthNF165,
+    itemGroup: groupOth,
+    itemName: "NF165",
+    itemPrice: -8,
+    stocksAlert: 5,
+    stocksType: "pcs",
+  ));
+  listOthItems.add(OtherItemModel(
+    docId: "",
+    itemId: menuOthNF155,
+    itemGroup: groupOth,
+    itemName: "NF155",
+    itemPrice: -12,
+    stocksAlert: 5,
+    stocksType: "pcs",
+  ));
+  listOthItems.add(OtherItemModel(
+    docId: "",
+    itemId: menuOthNF195,
+    itemGroup: groupOth,
+    itemName: "NF195",
+    itemPrice: -3,
+    stocksAlert: 5,
+    stocksType: "pcs",
+  ));
+  listOthItems.add(OtherItemModel(
+    docId: "",
+    itemId: menuOthW8t9,
+    itemGroup: groupOth,
+    itemName: "Ex 8-9kg",
+    itemPrice: 25,
     stocksAlert: 5,
     stocksType: "pcs",
   ));
 
   //det names
-  mapDetNames.addEntries({menuDetBreezeDVal: "Breeze(15php)"}.entries);
-  mapDetNames.addEntries({menuDetArielDVal: "Ariel Twinpack(15php)"}.entries);
-  mapDetNames.addEntries({menuDetTideDVal: "Tide(15php)"}.entries);
-  mapDetNames.addEntries({menuDetWingsBlueDVal: "Wings Blue(8php)"}.entries);
-  mapDetNames.addEntries({menuDetWingsRedDVal: "Wings Red(8php)"}.entries);
-  mapDetNames.addEntries({menuDetPowerCleanDVal: "Power CLean"}.entries);
-  mapDetNames.addEntries({menuDetSurfDVal: "Surf(10php)"}.entries);
-  mapDetNames.addEntries({menuDetKlinDVal: "Klin Twinpack(15php)"}.entries);
+  mapDetNames.addEntries({menuDetBreezeDVal: "Breeze"}.entries);
+  mapDetNames.addEntries({menuDetArielDVal: "Ariel TP"}.entries);
+  mapDetNames.addEntries({menuDetTideDVal: "Tide"}.entries);
+  mapDetNames.addEntries({menuDetWingsBlueDVal: "Wings B"}.entries);
+  mapDetNames.addEntries({menuDetWingsRedDVal: "Wings R"}.entries);
+  mapDetNames.addEntries({menuDetWKL: "WKL"}.entries);
+  mapDetNames.addEntries({menuDetWKL15: "WKL15"}.entries);
+  mapDetNames.addEntries({menuDetSurfDVal: "Surf"}.entries);
+  mapDetNames.addEntries({menuDetKlinDVal: "Klin TP"}.entries);
 
   //det price
   mapDetPrice.addEntries({menuDetBreezeDVal: 15}.entries);
@@ -431,24 +549,23 @@ void putEntries() {
   mapDetPrice.addEntries({menuDetTideDVal: 15}.entries);
   mapDetPrice.addEntries({menuDetWingsBlueDVal: 8}.entries);
   mapDetPrice.addEntries({menuDetWingsRedDVal: 8}.entries);
-  mapDetPrice.addEntries({menuDetPowerCleanDVal: 15}.entries);
+  mapDetPrice.addEntries({menuDetWKL: 8}.entries);
+  mapDetPrice.addEntries({menuDetWKL15: 15}.entries);
   mapDetPrice.addEntries({menuDetSurfDVal: 10}.entries);
   mapDetPrice.addEntries({menuDetKlinDVal: 15}.entries);
 
   //fab names
-  mapFabNames.addEntries({menuFabSurf24mlDVal: "Surf 24ml(8php)"}.entries);
-  mapFabNames.addEntries({menuFabDowny24mlDVal: "Downy 24ml(8pp)"}.entries);
-  mapFabNames
-      .addEntries({menuFabDownyTripidDVal: "Downy Tripid(17php)"}.entries);
-  mapFabNames.addEntries({menuFabDowny36mlDVal: "Downy 36ml(10php)"}.entries);
-  mapFabNames.addEntries({menuFabSurfTripidDVal: "Surf Tripid(17php)"}.entries);
-  mapFabNames
-      .addEntries({menuFabWKL24mlDVal: "WKL Fabcon 24ml (8php)"}.entries);
+  mapFabNames.addEntries({menuFabSurf24mlDVal: "Surf 24(P8)"}.entries);
+  mapFabNames.addEntries({menuFabDowny24mlDVal: "Downy 24(P8)"}.entries);
+  mapFabNames.addEntries({menuFabDownyTripidDVal: "Downy 3P(P17)"}.entries);
+  mapFabNames.addEntries({menuFabDowny36mlDVal: "Downy 36(P10)"}.entries);
+  mapFabNames.addEntries({menuFabSurfTripidDVal: "Surf 3P(P17)"}.entries);
+  mapFabNames.addEntries({menuFabWKL24mlDVal: "WKL Fab 24(P8)"}.entries);
+  mapFabNames.addEntries({menuFabWKL48mlDVal: "WKL Fab 48(P15)"}.entries);
 
   //det names
-  mapBleNames
-      .addEntries({menuBleOriginalDVal: "Bleach Original(5php)"}.entries);
-  mapBleNames.addEntries({menuBleColorSafeDVal: "Color Safe(5php)"}.entries);
+  mapBleNames.addEntries({menuBleOriginalDVal: "Bleach OR(P5)"}.entries);
+  mapBleNames.addEntries({menuBleColorSafeDVal: "Color S(P5)"}.entries);
 
   //oth names
   mapOthNames.addEntries({menuOthWash: "Wash"}.entries);
@@ -514,10 +631,13 @@ String getRegexStringVar() =>
 //var mapEmpId = {"0550", "Jeng", "0808", "Abi", "0413", "Ket", "0316", "DonP"};
 
 Map<String, String> mapEmpId = {
-  '0550': 'Jeng',
-  '0808': 'Abi',
-  '1313': 'Ket',
-  '1616': 'DonP'
+  '05#50': 'Jeng',
+  '08#08': 'Abi',
+  '13#13': 'Ket',
+  '16#16': 'DonP',
+  '90#90': 'Rowel',
+  '20#20': 'Seiji',
+  '80#80': 'Ken',
 };
 
 String autoPriceDisplay(int price, bool bRegularSabon) {
@@ -647,7 +767,7 @@ Future<void> fetchUsers() {
 }
 
 String customerName(String customerId) {
-  String thisCustomerName = "no data";
+  String thisCustomerName = "err pls relogin";
   customerOptionsFromVariable.forEach((thisData) {
     if (thisData.customerId == int.parse(customerId)) {
       thisCustomerName = thisData.name;
@@ -685,6 +805,7 @@ JobsOnQueueModel resetRegular(JobsOnQueueModel jOQM) {
   jOQM.sayosabon = false;
   jOQM.others = false;
   bShowKiloLoadDisplayVar = true;
+  bShowKiloDisplayOthVar = false;
   return jOQM;
 
   // bRegularSabonVar = false;
@@ -812,6 +933,10 @@ void resetJOQMGlobalVar() {
       waitingTwoWeeks: false,
       forDisposal: false,
       disposed: false);
+}
+
+void resetAddOnsGlobalVar() {
+  listAddOnItemsGlobal.clear();
 }
 
 void resetSHGlobalVar() {
@@ -1101,8 +1226,9 @@ Widget moveToJOGVar(BuildContext context, String docId, JobsOnQueueModel jOQM,
         jOQM.forSorting = false;
         jOQM.waiting = true;
         insertDataJobsOnGoingVar(jOQM, lOIM);
-        //deleteJOQVar(jOQM.docId, lOIM);
+        //get the next number
         autoNumber = await getNumberAutoVarV2();
+        //update the 99 jobsid
         finalNumberAutoVarV2();
         showMessage(context, "Move to OnGoing", "Added to #$autoNumber");
       }
@@ -1230,7 +1356,6 @@ Widget readAddedDataVar(List<OtherItemModel> listAddedOthers) {
 void insertDataJobsOnQueueVar(JobsOnQueueModel jOQM) {
   DatabaseJobsOnQueue databaseJobsOnQueue = DatabaseJobsOnQueue();
   databaseJobsOnQueue.addJobsOnQueue(jOQM, listAddOnItemsGlobal);
-  resetJOQMGlobalVar();
 }
 
 //insert new Supplies
@@ -1256,14 +1381,14 @@ void insertDataJobsOnGoingVar(
     JobsOnQueueModel jOQM, List<OtherItemModel> lOIM) {
   DatabaseJobsOnGoing databaseJobsOnGoing = DatabaseJobsOnGoing();
   databaseJobsOnGoing.addJobsOnGoing(jOQM, lOIM);
-  resetJOQMGlobalVar();
+  //resetJOQMGlobalVar();
 }
 
 //insert new Done
 void insertDataJobsDoneVar(JobsOnQueueModel jOQM, List<OtherItemModel> lOIM) {
   DatabaseJobsDone databaseJobsDone = DatabaseJobsDone();
   databaseJobsDone.addJobsDone(jOQM, lOIM);
-  resetJOQMGlobalVar();
+  //resetJOQMGlobalVar();
 }
 
 //displays in Popup
@@ -1352,90 +1477,97 @@ Container conOnGoingStatVar(Function setState, JobsOnQueueModel jOQM) {
     alignment: Alignment.center,
     padding: EdgeInsets.all(1.0),
     decoration: decoAmber(),
-    child: Row(
+    child: Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Checkbox(
-            value: jOQM.waiting,
-            onChanged: (val) {
-              jOQM.waiting = true;
-              jOQM.washing = false;
-              jOQM.drying = false;
-              jOQM.folding = false;
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Checkbox(
+                value: jOQM.waiting,
+                onChanged: (val) {
+                  jOQM.waiting = true;
+                  jOQM.washing = false;
+                  jOQM.drying = false;
+                  jOQM.folding = false;
 
-              setState(
-                () {
-                  jOQM.waiting;
-                  jOQM.washing;
-                  jOQM.drying;
-                  jOQM.folding;
-                },
-              );
-            }),
-        Text("Wait"),
-        SizedBox(
-          width: 5,
+                  setState(
+                    () {
+                      jOQM.waiting;
+                      jOQM.washing;
+                      jOQM.drying;
+                      jOQM.folding;
+                    },
+                  );
+                }),
+            Text("Wait"),
+            SizedBox(
+              width: 5,
+            ),
+            Checkbox(
+                value: jOQM.washing,
+                onChanged: (val) {
+                  jOQM.waiting = false;
+                  jOQM.washing = true;
+                  jOQM.drying = false;
+                  jOQM.folding = false;
+
+                  setState(
+                    () {
+                      jOQM.waiting;
+                      jOQM.washing;
+                      jOQM.drying;
+                      jOQM.folding;
+                    },
+                  );
+                }),
+            Text("Wash"),
+          ],
         ),
-        Checkbox(
-            value: jOQM.washing,
-            onChanged: (val) {
-              jOQM.waiting = false;
-              jOQM.washing = true;
-              jOQM.drying = false;
-              jOQM.folding = false;
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Checkbox(
+                value: jOQM.drying,
+                onChanged: (val) {
+                  jOQM.waiting = false;
+                  jOQM.washing = false;
+                  jOQM.drying = true;
+                  jOQM.folding = false;
 
-              setState(
-                () {
-                  jOQM.waiting;
-                  jOQM.washing;
-                  jOQM.drying;
-                  jOQM.folding;
-                },
-              );
-            }),
-        Text("Wash"),
-        SizedBox(
-          width: 5,
+                  setState(
+                    () {
+                      jOQM.waiting;
+                      jOQM.washing;
+                      jOQM.drying;
+                      jOQM.folding;
+                    },
+                  );
+                }),
+            Text("Dry"),
+            SizedBox(
+              width: 5,
+            ),
+            Checkbox(
+                value: jOQM.folding,
+                onChanged: (val) {
+                  jOQM.waiting = false;
+                  jOQM.washing = false;
+                  jOQM.drying = false;
+                  jOQM.folding = true;
+
+                  setState(
+                    () {
+                      jOQM.waiting;
+                      jOQM.washing;
+                      jOQM.drying;
+                      jOQM.folding;
+                    },
+                  );
+                }),
+            Text("Fold"),
+          ],
         ),
-        Checkbox(
-            value: jOQM.drying,
-            onChanged: (val) {
-              jOQM.waiting = false;
-              jOQM.washing = false;
-              jOQM.drying = true;
-              jOQM.folding = false;
-
-              setState(
-                () {
-                  jOQM.waiting;
-                  jOQM.washing;
-                  jOQM.drying;
-                  jOQM.folding;
-                },
-              );
-            }),
-        Text("Dry"),
-        SizedBox(
-          width: 5,
-        ),
-        Checkbox(
-            value: jOQM.folding,
-            onChanged: (val) {
-              jOQM.waiting = false;
-              jOQM.washing = false;
-              jOQM.drying = false;
-              jOQM.folding = true;
-
-              setState(
-                () {
-                  jOQM.waiting;
-                  jOQM.washing;
-                  jOQM.drying;
-                  jOQM.folding;
-                },
-              );
-            }),
-        Text("Fold"),
       ],
     ),
   );
@@ -1446,63 +1578,78 @@ Container conDoneStatVar(Function setState, JobsOnQueueModel jOQM) {
     alignment: Alignment.center,
     padding: EdgeInsets.all(1.0),
     decoration: decoAmber(),
-    child: Row(
+    child: Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Checkbox(
-            value: jOQM.waitCustomerPickup,
-            onChanged: (val) {
-              jOQM.waitCustomerPickup = true;
-              jOQM.waitRiderDelivery = false;
-              jOQM.nasaCustomerNa = false;
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Checkbox(
+                value: jOQM.waitCustomerPickup,
+                onChanged: (val) {
+                  jOQM.waitCustomerPickup = true;
+                  jOQM.waitRiderDelivery = false;
+                  jOQM.nasaCustomerNa = false;
 
-              setState(
-                () {
-                  jOQM.waitCustomerPickup;
-                  jOQM.waitRiderDelivery;
-                  jOQM.nasaCustomerNa;
-                },
-              );
-            }),
-        Text("Customer Pickup"),
+                  setState(
+                    () {
+                      jOQM.waitCustomerPickup;
+                      jOQM.waitRiderDelivery;
+                      jOQM.nasaCustomerNa;
+                    },
+                  );
+                }),
+            Text("Customer Pickup"),
+          ],
+        ),
         SizedBox(
           width: 5,
         ),
-        Checkbox(
-            value: jOQM.waitRiderDelivery,
-            onChanged: (val) {
-              jOQM.waitCustomerPickup = false;
-              jOQM.waitRiderDelivery = true;
-              jOQM.nasaCustomerNa = false;
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Checkbox(
+                value: jOQM.waitRiderDelivery,
+                onChanged: (val) {
+                  jOQM.waitCustomerPickup = false;
+                  jOQM.waitRiderDelivery = true;
+                  jOQM.nasaCustomerNa = false;
 
-              setState(
-                () {
-                  jOQM.waitCustomerPickup;
-                  jOQM.waitRiderDelivery;
-                  jOQM.nasaCustomerNa;
-                },
-              );
-            }),
-        Text("For Delivery"),
+                  setState(
+                    () {
+                      jOQM.waitCustomerPickup;
+                      jOQM.waitRiderDelivery;
+                      jOQM.nasaCustomerNa;
+                    },
+                  );
+                }),
+            Text("For Delivery"),
+          ],
+        ),
         SizedBox(
           width: 5,
         ),
-        Checkbox(
-            value: jOQM.nasaCustomerNa,
-            onChanged: (val) {
-              jOQM.waitCustomerPickup = false;
-              jOQM.waitRiderDelivery = false;
-              jOQM.nasaCustomerNa = true;
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Checkbox(
+                value: jOQM.nasaCustomerNa,
+                onChanged: (val) {
+                  jOQM.waitCustomerPickup = false;
+                  jOQM.waitRiderDelivery = false;
+                  jOQM.nasaCustomerNa = true;
 
-              setState(
-                () {
-                  jOQM.waitCustomerPickup;
-                  jOQM.waitRiderDelivery;
-                  jOQM.nasaCustomerNa;
-                },
-              );
-            }),
-        Text("Nasa Customer"),
+                  setState(
+                    () {
+                      jOQM.waitCustomerPickup;
+                      jOQM.waitRiderDelivery;
+                      jOQM.nasaCustomerNa;
+                    },
+                  );
+                }),
+            Text("Nasa Customer"),
+          ],
+        ),
       ],
     ),
   );
@@ -1784,6 +1931,7 @@ Container conOrderModeVar(
                     onChanged: (val) {
                       jOQM = resetRegular(jOQM);
                       bShowKiloLoadDisplayVar = false;
+                      bShowKiloDisplayOthVar = true;
 
                       if (val!) {
                         setState(
@@ -3607,7 +3755,7 @@ Widget updateButtonJOQVar(BuildContext context, String docId,
       updateJOQMVar(docId, jOQM, lOIM);
 
       //listAddOnItemsGlobal.clear();
-      resetJOQMGlobalVar();
+      //resetJOQMGlobalVar();
 
       if (lOIM.isNotEmpty) {
         bViewMoreOptions = true;

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:laundry_firebase/models/jobsonqueuemodel.dart';
 import 'package:laundry_firebase/models/otheritemmodel.dart';
 import 'package:laundry_firebase/services/database_other_items_onqueue.dart';
+import 'package:laundry_firebase/variables/variables.dart';
 
 const String JOBS_ON_QUEUE_REF = "JobsOnQueue";
 const Color _gcButtons = Color.fromRGBO(134, 218, 252, 0.733);
@@ -30,8 +31,8 @@ class DatabaseJobsOnQueue {
     //String addJobsOnQueue(JobsOnQueueModel jobsOnQueue) {
 
     DatabaseOtherItemsOnQueue databaseOtherItemsOnQueue;
-
-    _jobsOnQueueRef
+    print("lAOI size= ${lAOI.length}");
+    await _jobsOnQueueRef
         .add(jOQM)
         .then((value) => {
               print("Insert Done.${jOQM.customerId}"),
@@ -83,9 +84,13 @@ class DatabaseJobsOnQueue {
                   forDisposal: jOQM.forDisposal,
                   disposed: jOQM.disposed)),
               databaseOtherItemsOnQueue = DatabaseOtherItemsOnQueue(value.id),
-              lAOI.forEach((addOnItem) {
+              print("lAOI size before loop= ${lAOI.length}"),
+              lAOI.forEach((addOnItem) async {
                 databaseOtherItemsOnQueue.addOtherItems(addOnItem);
               }),
+              resetAddOnVar(),
+              resetJOQMGlobalVar(),
+              resetAddOnsGlobalVar(),
             })
         // ignore: invalid_return_type_for_catch_error
         .catchError(
