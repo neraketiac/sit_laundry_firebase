@@ -13,9 +13,13 @@ import 'package:laundry_firebase/services/database_jobsongoing.dart';
 import 'package:laundry_firebase/services/database_jobsonqueue.dart';
 import 'package:laundry_firebase/services/database_other_items_ongoing.dart';
 import 'package:laundry_firebase/services/database_other_items_onqueue.dart';
-import 'package:laundry_firebase/services/database_supplies_hist.dart';
+import 'package:laundry_firebase/services/database_supplies_history.dart';
+import 'package:laundry_firebase/variables/vairables_jobsonqueue.dart';
 //import 'package:laundry_firebase/variables/item_count_helper.dart';
 import 'package:laundry_firebase/variables/variables.dart';
+import 'package:laundry_firebase/variables/variables_jobsdone.dart';
+import 'package:laundry_firebase/variables/variables_jobsongoing.dart';
+import 'package:laundry_firebase/variables/variables_supplies.dart';
 
 /*
 cd C:\Users\haali\Documents\GIT_SIT\sit_laundry_firebase
@@ -424,39 +428,43 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
 
           listJOQM.forEach((jOQMData) {
             JobsOnQueueModel jOQM = jOQMData.data();
-            JobsOnQueueModel jOQMNoChange = jOQMData.data();
+            if ((jOQM.paidcash || (jOQM.paidgcash && jOQM.paidgcashverified)) &&
+                (columnFilter == "E1_NasaCustomerNa")) {
+            } else {
+              JobsOnQueueModel jOQMNoChange = jOQMData.data();
 
-            List<OtherItemModel> lOIM;
-            List<OtherItemModel> lOIMNoChange;
+              List<OtherItemModel> lOIM;
+              List<OtherItemModel> lOIMNoChange;
 
-            lOIM = _readAllOtherItemModel(jOQMData.id.toString(), 'JobsDone');
-            lOIMNoChange =
-                _readAllOtherItemModel(jOQMData.id.toString(), 'JobsDone');
-            final rowData = TableRow(
-                decoration:
-                    BoxDecoration(color: zebra ? Colors.black : Colors.black),
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(2.0),
-                    child: Center(
-                      child: GestureDetector(
-                        onTap: () {
-                          showAlterJobsDoneVar(
-                              context,
-                              setState,
-                              jOQMData.id.toString(),
-                              jOQM,
-                              lOIM,
-                              jOQMNoChange,
-                              lOIMNoChange);
-                        },
-                        child: conDisplayVar(context, false, jOQM),
+              lOIM = _readAllOtherItemModel(jOQMData.id.toString(), 'JobsDone');
+              lOIMNoChange =
+                  _readAllOtherItemModel(jOQMData.id.toString(), 'JobsDone');
+              final rowData = TableRow(
+                  decoration:
+                      BoxDecoration(color: zebra ? Colors.black : Colors.black),
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(2.0),
+                      child: Center(
+                        child: GestureDetector(
+                          onTap: () {
+                            showAlterJobsDoneVar(
+                                context,
+                                setState,
+                                jOQMData.id.toString(),
+                                jOQM,
+                                lOIM,
+                                jOQMNoChange,
+                                lOIMNoChange);
+                          },
+                          child: conDisplayVar(context, false, jOQM),
+                        ),
                       ),
-                    ),
-                  )
-                ]);
+                    )
+                  ]);
 
-            rowDatas.add(rowData);
+              rowDatas.add(rowData);
+            }
           });
         }
 

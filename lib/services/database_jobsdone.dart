@@ -4,6 +4,7 @@ import 'package:laundry_firebase/models/jobsonqueuemodel.dart';
 import 'package:laundry_firebase/models/otheritemmodel.dart';
 import 'package:laundry_firebase/services/database_other_items.dart';
 import 'package:laundry_firebase/variables/variables.dart';
+import 'package:laundry_firebase/variables/variables_jobsongoing.dart';
 
 const String JOBS_DONE_REF = "JobsDone";
 const Color _gcButtons = Color.fromRGBO(134, 218, 252, 0.733);
@@ -98,6 +99,7 @@ class DatabaseJobsDone {
                   paidD: jOQM.paidD,
                   forSorting: jOQM.forSorting,
                   riderPickup: jOQM.riderPickup,
+                  initTagForDeliveryWhenDone: jOQM.initTagForDeliveryWhenDone,
                   jobsId: jOQM.jobsId,
                   waiting: jOQM.waiting,
                   washing: jOQM.washing,

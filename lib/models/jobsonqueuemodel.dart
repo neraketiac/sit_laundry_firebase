@@ -34,6 +34,7 @@ class JobsOnQueueModel {
   Timestamp paidD;
   bool forSorting;
   bool riderPickup;
+  bool initTagForDeliveryWhenDone;
   int jobsId;
   bool waiting;
   bool washing;
@@ -82,6 +83,7 @@ class JobsOnQueueModel {
     required this.paidD,
     required this.forSorting,
     required this.riderPickup,
+    required this.initTagForDeliveryWhenDone,
     required this.jobsId,
     required this.waiting,
     required this.washing,
@@ -131,6 +133,7 @@ class JobsOnQueueModel {
     Timestamp? paidD,
     bool? forSorting,
     bool? riderPickup,
+    bool? initTagForDeliveryWhenDone,
     int? jobsId,
     bool? waiting,
     bool? washing,
@@ -179,6 +182,8 @@ class JobsOnQueueModel {
       paidD: paidD ?? this.paidD,
       forSorting: forSorting ?? this.forSorting,
       riderPickup: riderPickup ?? this.riderPickup,
+      initTagForDeliveryWhenDone:
+          initTagForDeliveryWhenDone ?? this.initTagForDeliveryWhenDone,
       jobsId: jobsId ?? this.jobsId,
       waiting: waiting ?? this.waiting,
       washing: washing ?? this.washing,
@@ -201,6 +206,8 @@ class JobsOnQueueModel {
             dateQ: json['A1_DateQ']! as Timestamp,
             forSorting: json['A2_ForSorting']! as bool,
             riderPickup: json['A3_RiderPickup']! as bool,
+            initTagForDeliveryWhenDone:
+                json['A31_InitTagForDeliveryWhenDone']! as bool,
             createdBy: json['A4_CreatedBy']! as String,
             currentEmpId: json['A41_CurrentEmpId']! as String,
             customerId: json['A5_CustomerId']! as int,
@@ -249,6 +256,7 @@ class JobsOnQueueModel {
         'A1_DateQ': dateQ,
         'A2_ForSorting': forSorting,
         'A3_RiderPickup': riderPickup,
+        'A31_InitTagForDeliveryWhenDone': initTagForDeliveryWhenDone,
         'A4_CreatedBy': createdBy,
         'A41_CurrentEmpId': currentEmpId,
         'A5_CustomerId': customerId,

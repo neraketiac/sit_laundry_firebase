@@ -70,6 +70,7 @@ class DatabaseJobsOnQueue {
                   paidD: jOQM.paidD,
                   forSorting: jOQM.forSorting,
                   riderPickup: jOQM.riderPickup,
+                  initTagForDeliveryWhenDone: jOQM.initTagForDeliveryWhenDone,
                   jobsId: jOQM.jobsId,
                   waiting: jOQM.waiting,
                   washing: jOQM.washing,

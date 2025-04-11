@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:laundry_firebase/models/loyaltymodel.dart';
 import 'package:laundry_firebase/services/database_loyalty.dart';
+import 'package:laundry_firebase/variables/variables.dart';
 
 class LoyaltyAdmin extends StatefulWidget {
   const LoyaltyAdmin({super.key});
@@ -132,12 +133,13 @@ class _LoyaltyAdminState extends State<LoyaltyAdmin> {
 
   Widget _createNewRecord() {
     return MaterialButton(
-      onPressed: () {
+      onPressed: () async {
         //pop box
         Navigator.pop(context);
 
         //run firebase add
-        _addDataJson(docIdFbController.text);
+        await _addDataJson(docIdFbController.text);
+        fetchUsers();
       },
       child: const Text("Save"),
     );
@@ -447,7 +449,7 @@ class _LoyaltyAdminState extends State<LoyaltyAdmin> {
         .catchError((error) => showMessage(context, "Failed : $error"));
   }
 
-  void _addDataJson(String docIdFb) {
+  Future<void> _addDataJson(String docIdFb) async {
     DatabaseLoyalty databaseLoyalty = DatabaseLoyalty();
     databaseLoyalty.addCustomerWithId(
         LoyaltyModel(

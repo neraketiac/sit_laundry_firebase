@@ -15,7 +15,11 @@ import 'package:laundry_firebase/services/database_jobsongoing.dart';
 import 'package:laundry_firebase/services/database_jobsonqueue.dart';
 import 'package:laundry_firebase/services/database_other_items_onqueue.dart';
 import 'package:laundry_firebase/services/database_other_items.dart';
-import 'package:laundry_firebase/services/database_supplies_hist.dart';
+import 'package:laundry_firebase/services/database_supplies_history.dart';
+import 'package:laundry_firebase/variables/vairables_jobsonqueue.dart';
+import 'package:laundry_firebase/variables/variables_jobsdone.dart';
+import 'package:laundry_firebase/variables/variables_jobsongoing.dart';
+import 'package:laundry_firebase/variables/variables_supplies.dart';
 
 late bool bHaveInternet = false;
 bool showDet = false, showFab = false, showBle = false, showOth = false;
@@ -891,6 +895,7 @@ void resetJOQMGlobalVar() {
       dateQ: Timestamp.now(),
       forSorting: true,
       riderPickup: false,
+      initTagForDeliveryWhenDone: false,
       createdBy: "",
       currentEmpId: "",
       customerId: 0,
@@ -941,11 +946,14 @@ void resetAddOnsGlobalVar() {
 
 void resetSHGlobalVar() {
   suppliesModelHistGlobal = SuppliesModelHist(
-      docId: selectedSupVar.docId,
-      itemId: selectedSupVar.itemId,
-      counter: 0,
-      currentStocks: 0,
-      logDate: Timestamp.now());
+    docId: "",
+    countId: 0,
+    itemId: selectedSupVar.itemId,
+    currentCounter: 0,
+    currentStocks: 0,
+    logDate: Timestamp.now(),
+    empId: empIdGlobal,
+  );
 }
 
 void updateSelectedVar(OtherItemModel selectedItemModel) {
@@ -1136,47 +1144,6 @@ Widget closeButton2popVar(BuildContext context) {
       child: const Text("Close"));
 }
 
-Widget createNewJOQVar(BuildContext context) {
-  return MaterialButton(
-    onPressed: () {
-      if (autocompleteSelected.customerId == 1) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text(
-                  'Cannot save, please add name in loyalty records first.')),
-        );
-        // } else if (_formKey.currentState!.validate()) {
-      } else if (true) {
-        // If the form is valid, display a snackbar. In the real world,
-        // you'd often call a server or save the information in a database.
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Processing Data')),
-        );
-
-        //pop box
-        Navigator.pop(context);
-        jobsOnQueueModelGlobal.dateQ = Timestamp.now();
-        jobsOnQueueModelGlobal.customerId = autocompleteSelected.customerId;
-        jobsOnQueueModelGlobal.finalKilo = 0;
-        jobsOnQueueModelGlobal.finalLoad = 0;
-        jobsOnQueueModelGlobal.finalPrice = 0;
-        jobsOnQueueModelGlobal.finalOthersPrice = 0;
-        jobsOnQueueModelGlobal.paymentReceivedBy =
-            (jobsOnQueueModelGlobal.unpaid ? "" : empIdGlobal);
-        jobsOnQueueModelGlobal.paidD = (jobsOnQueueModelGlobal.unpaid
-            ? Timestamp.fromDate(DateTime(2000))
-            : Timestamp.now());
-        jobsOnQueueModelGlobal.remarks = remarksControllerVar.text;
-        jobsOnQueueModelGlobal.needOn = Timestamp.fromDate(dNeedOnVar);
-
-        insertDataJobsOnQueueVar(jobsOnQueueModelGlobal);
-      }
-    },
-    color: cButtons,
-    child: const Text("Save Queue"),
-  );
-}
-
 Widget createNewSuppVar(BuildContext context, SuppliesModelHist sMH) {
   return MaterialButton(
     onPressed: () async {
@@ -1200,98 +1167,6 @@ Widget createNewSuppVar(BuildContext context, SuppliesModelHist sMH) {
     },
     color: cButtons,
     child: const Text("Save Supplies"),
-  );
-}
-
-Widget moveToJOGVar(BuildContext context, String docId, JobsOnQueueModel jOQM,
-    List<OtherItemModel> lOIM) {
-  return MaterialButton(
-    onPressed: () async {
-      if (await onGoingFull()) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Cannot proceed, on going is full(25).')),
-        );
-        // } else if (_formKey.currentState!.validate()) {
-      } else if (true) {
-        // If the form is valid, display a snackbar. In the real world,
-        // you'd often call a server or save the information in a database.
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Processing Data')),
-        );
-
-        //pop box
-        Navigator.pop(context);
-
-        jOQM.riderPickup = false;
-        jOQM.forSorting = false;
-        jOQM.waiting = true;
-        insertDataJobsOnGoingVar(jOQM, lOIM);
-        //get the next number
-        autoNumber = await getNumberAutoVarV2();
-        //update the 99 jobsid
-        finalNumberAutoVarV2();
-        showMessage(context, "Move to OnGoing", "Added to #$autoNumber");
-      }
-    },
-    color: cButtons,
-    child: const Text("Move To OnGoing"),
-  );
-}
-
-Widget moveToJDVar(BuildContext context, String docId, JobsOnQueueModel jOQM,
-    List<OtherItemModel> lOIM) {
-  return MaterialButton(
-    onPressed: () async {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Processing Data')),
-      );
-
-      //pop box
-      Navigator.pop(context);
-
-      jOQM.riderPickup = false;
-      jOQM.forSorting = false;
-      jOQM.waiting = false;
-      jOQM.washing = false;
-      jOQM.drying = false;
-      jOQM.folding = false;
-      jOQM.waitCustomerPickup = true;
-      insertDataJobsDoneVar(jOQM, lOIM);
-      //deleteJOQVar(jOQM.docId, lOIM);
-      showMessage(context, "Move to Jobs Done", "Done.");
-    },
-    color: cButtons,
-    child: const Text("Move To Jobs Done"),
-  );
-}
-
-Widget createNewJDVar(BuildContext context, String docId, JobsOnQueueModel jOQM,
-    List<OtherItemModel> lOIM) {
-  return MaterialButton(
-    onPressed: () {
-      if (jOQM.customerId == 1) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text(
-                  'Cannot save, please add name in loyalty records first.')),
-        );
-        // } else if (_formKey.currentState!.validate()) {
-      } else if (true) {
-        // If the form is valid, display a snackbar. In the real world,
-        // you'd often call a server or save the information in a database.
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Processing Data')),
-        );
-
-        //pop box
-        Navigator.pop(context);
-
-        // insertDataJobsOnGoingVar(jOQM, lOIM);
-        // deleteJOQVar(jOQM.docId, lOIM);
-      }
-    },
-    color: cButtons,
-    child: const Text("Jobs Done"),
   );
 }
 
@@ -1358,39 +1233,6 @@ void insertDataJobsOnQueueVar(JobsOnQueueModel jOQM) {
   databaseJobsOnQueue.addJobsOnQueue(jOQM, listAddOnItemsGlobal);
 }
 
-//insert new Supplies
-// void insertDataSuppliesHistVar() {
-Future<bool> insertDataSuppliesHistVar(SuppliesModelHist sMH) async {
-  DatabaseSuppliesHist databaseSuppliesHist = DatabaseSuppliesHist();
-
-  sMH.counter = int.parse(counterControllerVar.text);
-  sMH.currentStocks = 50;
-  sMH.logDate = Timestamp.now();
-
-  return await databaseSuppliesHist.addSuppliesHist(sMH);
-
-  // if (await databaseSuppliesHist.addSuppliesHist(suppliesModelHistGlobal)) {
-  //   return true;
-  // } else {
-  //   return false;
-  // }
-}
-
-//insert new OnGoing
-void insertDataJobsOnGoingVar(
-    JobsOnQueueModel jOQM, List<OtherItemModel> lOIM) {
-  DatabaseJobsOnGoing databaseJobsOnGoing = DatabaseJobsOnGoing();
-  databaseJobsOnGoing.addJobsOnGoing(jOQM, lOIM);
-  //resetJOQMGlobalVar();
-}
-
-//insert new Done
-void insertDataJobsDoneVar(JobsOnQueueModel jOQM, List<OtherItemModel> lOIM) {
-  DatabaseJobsDone databaseJobsDone = DatabaseJobsDone();
-  databaseJobsDone.addJobsDone(jOQM, lOIM);
-  //resetJOQMGlobalVar();
-}
-
 //displays in Popup
 Container conEnterCustomer(BuildContext context, Function setState) {
   return Container(
@@ -1438,217 +1280,6 @@ Container conCustomerName(
         Text(customerName(jOQM.customerId.toString())),
         SizedBox(
           height: 5,
-        ),
-      ],
-    ),
-  );
-}
-
-Container conQueueStatVar(Function setState, JobsOnQueueModel jOQM) {
-  return Container(
-    alignment: Alignment.center,
-    padding: EdgeInsets.all(1.0),
-    decoration: decoAmber(),
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Text("Sort"),
-        Switch.adaptive(
-          value: jOQM.riderPickup,
-          onChanged: (bool value) {
-            setState(() {
-              jOQM.riderPickup = value;
-              if (jOQM.riderPickup) {
-                jOQM.forSorting = false;
-              } else {
-                jOQM.forSorting = true;
-              }
-            });
-          },
-        ),
-        Text("RiderPickup"),
-      ],
-    ),
-  );
-}
-
-Container conOnGoingStatVar(Function setState, JobsOnQueueModel jOQM) {
-  return Container(
-    alignment: Alignment.center,
-    padding: EdgeInsets.all(1.0),
-    decoration: decoAmber(),
-    child: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Checkbox(
-                value: jOQM.waiting,
-                onChanged: (val) {
-                  jOQM.waiting = true;
-                  jOQM.washing = false;
-                  jOQM.drying = false;
-                  jOQM.folding = false;
-
-                  setState(
-                    () {
-                      jOQM.waiting;
-                      jOQM.washing;
-                      jOQM.drying;
-                      jOQM.folding;
-                    },
-                  );
-                }),
-            Text("Wait"),
-            SizedBox(
-              width: 5,
-            ),
-            Checkbox(
-                value: jOQM.washing,
-                onChanged: (val) {
-                  jOQM.waiting = false;
-                  jOQM.washing = true;
-                  jOQM.drying = false;
-                  jOQM.folding = false;
-
-                  setState(
-                    () {
-                      jOQM.waiting;
-                      jOQM.washing;
-                      jOQM.drying;
-                      jOQM.folding;
-                    },
-                  );
-                }),
-            Text("Wash"),
-          ],
-        ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Checkbox(
-                value: jOQM.drying,
-                onChanged: (val) {
-                  jOQM.waiting = false;
-                  jOQM.washing = false;
-                  jOQM.drying = true;
-                  jOQM.folding = false;
-
-                  setState(
-                    () {
-                      jOQM.waiting;
-                      jOQM.washing;
-                      jOQM.drying;
-                      jOQM.folding;
-                    },
-                  );
-                }),
-            Text("Dry"),
-            SizedBox(
-              width: 5,
-            ),
-            Checkbox(
-                value: jOQM.folding,
-                onChanged: (val) {
-                  jOQM.waiting = false;
-                  jOQM.washing = false;
-                  jOQM.drying = false;
-                  jOQM.folding = true;
-
-                  setState(
-                    () {
-                      jOQM.waiting;
-                      jOQM.washing;
-                      jOQM.drying;
-                      jOQM.folding;
-                    },
-                  );
-                }),
-            Text("Fold"),
-          ],
-        ),
-      ],
-    ),
-  );
-}
-
-Container conDoneStatVar(Function setState, JobsOnQueueModel jOQM) {
-  return Container(
-    alignment: Alignment.center,
-    padding: EdgeInsets.all(1.0),
-    decoration: decoAmber(),
-    child: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Checkbox(
-                value: jOQM.waitCustomerPickup,
-                onChanged: (val) {
-                  jOQM.waitCustomerPickup = true;
-                  jOQM.waitRiderDelivery = false;
-                  jOQM.nasaCustomerNa = false;
-
-                  setState(
-                    () {
-                      jOQM.waitCustomerPickup;
-                      jOQM.waitRiderDelivery;
-                      jOQM.nasaCustomerNa;
-                    },
-                  );
-                }),
-            Text("Customer Pickup"),
-          ],
-        ),
-        SizedBox(
-          width: 5,
-        ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Checkbox(
-                value: jOQM.waitRiderDelivery,
-                onChanged: (val) {
-                  jOQM.waitCustomerPickup = false;
-                  jOQM.waitRiderDelivery = true;
-                  jOQM.nasaCustomerNa = false;
-
-                  setState(
-                    () {
-                      jOQM.waitCustomerPickup;
-                      jOQM.waitRiderDelivery;
-                      jOQM.nasaCustomerNa;
-                    },
-                  );
-                }),
-            Text("For Delivery"),
-          ],
-        ),
-        SizedBox(
-          width: 5,
-        ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Checkbox(
-                value: jOQM.nasaCustomerNa,
-                onChanged: (val) {
-                  jOQM.waitCustomerPickup = false;
-                  jOQM.waitRiderDelivery = false;
-                  jOQM.nasaCustomerNa = true;
-
-                  setState(
-                    () {
-                      jOQM.waitCustomerPickup;
-                      jOQM.waitRiderDelivery;
-                      jOQM.nasaCustomerNa;
-                    },
-                  );
-                }),
-            Text("Nasa Customer"),
-          ],
         ),
       ],
     ),
@@ -2650,6 +2281,7 @@ Container conPaymentVar(Function setState, JobsOnQueueModel jOQM) {
                     setState(
                       () {
                         jOQM.unpaid = val;
+                        jOQM.paidD = Timestamp.fromDate(DateTime(2000));
                       },
                     );
                   }
@@ -2670,6 +2302,7 @@ Container conPaymentVar(Function setState, JobsOnQueueModel jOQM) {
                     setState(
                       () {
                         jOQM.paidcash = val;
+                        jOQM.paidD = Timestamp.now();
                       },
                     );
                   }
@@ -2690,6 +2323,7 @@ Container conPaymentVar(Function setState, JobsOnQueueModel jOQM) {
                     setState(
                       () {
                         jOQM.paidgcash = val;
+                        jOQM.paidD = Timestamp.now();
                       },
                     );
                   }
@@ -2712,7 +2346,7 @@ Container conRemarksVar(Function setState, JobsOnQueueModel jOQM) {
       controller: remarksControllerVar,
       decoration: InputDecoration(labelText: 'Remarks', hintText: 'Notes'),
       validator: (val) {
-        jOQM.remarks = remarksControllerVar.text;
+        jOQM.remarks = val!;
       },
     ),
   );
@@ -2787,6 +2421,32 @@ Visibility visMixVar(Function setState, JobsOnQueueModel jOQM) {
             },
           ),
           Text("Mix"),
+        ],
+      ),
+    ),
+  );
+}
+
+Visibility visITFDWDVar(Function setState, JobsOnQueueModel jOQM) {
+  return Visibility(
+    visible: bViewMoreOptions,
+    child: Container(
+      alignment: Alignment.center,
+      padding: EdgeInsets.all(1.0),
+      decoration: decoLightBlue(),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text("CustPickup"),
+          Switch.adaptive(
+            value: jOQM.initTagForDeliveryWhenDone,
+            onChanged: (bool value) {
+              setState(() {
+                jOQM.initTagForDeliveryWhenDone = value;
+              });
+            },
+          ),
+          Text("DelToCust"),
         ],
       ),
     ),
@@ -2952,99 +2612,6 @@ String displayDateVar(String s) {
   return "${s.substring(0, s.indexOf(',') + 1)} ${s.substring(s.indexOf(':') - 2, s.indexOf(':'))} ${s.substring(s.indexOf(':') + 4, s.indexOf(':') + 6)}";
 }
 
-Future<void> moveUpVar(int jobsId) async {
-  bool bOnlyOne = false;
-
-  var collection = FirebaseFirestore.instance.collection('JobsOnGoing');
-  var querySnapshots = await collection.get();
-
-  if (querySnapshots.size == 1) {
-    bOnlyOne = true;
-  }
-  for (var doc in querySnapshots.docs) {
-    if (bOnlyOne && doc['D30_JobsId'] == 0) {
-      await doc.reference.update({
-        'D30_JobsId': 1,
-      });
-    } else {
-      if (jobsId == 1) {
-        //updatePrevOne25(jobsId);
-        //break;
-        if (doc['D30_JobsId'] == 1) {
-          await doc.reference.update({
-            'D30_JobsId': 25,
-          });
-        }
-        if (doc['D30_JobsId'] == 25) {
-          await doc.reference.update({
-            'D30_JobsId': 1,
-          });
-        }
-      } else {
-        if ((jobsId - 1) == doc['D30_JobsId']) {
-          await doc.reference.update({
-            'D30_JobsId': jobsId,
-          });
-        } else if ((jobsId) == doc['D30_JobsId']) {
-          await doc.reference.update({
-            'D30_JobsId': jobsId - 1,
-          });
-        }
-      }
-    }
-  }
-}
-
-Future<bool> onGoingFull() async {
-  var colAuto = FirebaseFirestore.instance.collection('JobsOnGoing');
-  var queryAuto = await colAuto.get();
-  if (queryAuto.size == 25) {
-    return true;
-  }
-  return false;
-}
-
-Future<int> getNumberAutoVarV2() async {
-  var colAuto = FirebaseFirestore.instance
-      .collection('JobsOnGoing')
-      .orderBy('D30_JobsId');
-  var queryAuto = await colAuto.get();
-  int nFirstLowest = 0,
-      nSecondLowest = 0,
-      nPrevJobsIdFetch = 0,
-      nCurrJobsIdFetch = 0;
-  for (var doc in queryAuto.docs) {
-    if (nCurrJobsIdFetch != doc['D30_JobsId']) {
-      nPrevJobsIdFetch = nCurrJobsIdFetch;
-      nCurrJobsIdFetch = doc['D30_JobsId'];
-    }
-
-    if ((nPrevJobsIdFetch + 1) != nCurrJobsIdFetch &&
-        nFirstLowest != 0 &&
-        nSecondLowest == 0) {
-      nSecondLowest = nPrevJobsIdFetch + 1;
-    }
-
-    if ((nPrevJobsIdFetch + 1) != nCurrJobsIdFetch &&
-        nFirstLowest == 0 &&
-        nSecondLowest == 0) {
-      nFirstLowest = nPrevJobsIdFetch + 1;
-    }
-
-    print("nFirstLowest=$nFirstLowest nSecondLowest=$nSecondLowest");
-
-    //final
-    if (doc['D30_JobsId'] == 99) {
-      if (nSecondLowest == 0 || nSecondLowest > 25) {
-        return nFirstLowest;
-      } else {
-        return nSecondLowest;
-      }
-    }
-  }
-  return 99;
-}
-
 // //
 // Future<void> assignNumberAutoVar() async {
 //   var colAuto = FirebaseFirestore.instance
@@ -3119,21 +2686,6 @@ Future<int> getNumberAutoVarV2() async {
 //     }
 //   }
 // }
-
-Future<void> finalNumberAutoVarV2() async {
-  var colAuto = FirebaseFirestore.instance
-      .collection('JobsOnGoing')
-      .orderBy('D30_JobsId', descending: true);
-  var queryAuto = await colAuto.get();
-  for (var doc in queryAuto.docs) {
-    if (doc['D30_JobsId'] == 99) {
-      await doc.reference.update({
-        'D30_JobsId': autoNumber,
-      });
-    }
-    break;
-  }
-}
 
 // Future<void> assignNumberAutoVarV2() async {
 //   var colAuto = FirebaseFirestore.instance
@@ -3296,285 +2848,6 @@ Container conDisplayVar(
   );
 }
 
-//Display
-Container conDisplaySuppliesHistoryVar(
-  BuildContext context,
-  SuppliesModelHist sMH,
-) {
-  return Container(
-    height: 20,
-    color: getCOlorSuppliesHistoryVar(sMH),
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Expanded(
-          child: Column(
-            mainAxisSize: MainAxisSize.max,
-            // mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(
-                height: 2,
-              ),
-              Text(
-                "  ${getItemName(sMH.itemId)} - (${sMH.counter}/${sMH.currentStocks}) - ${convertTimeStampVar(sMH.logDate)}",
-                style: const TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                ),
-                textAlign: TextAlign.end,
-              ),
-            ],
-          ),
-        ),
-      ],
-    ),
-  );
-}
-
-//alterjobsonqueue
-void showAlterJobsOnQueueVar(
-  BuildContext context,
-  String docId,
-  JobsOnQueueModel jOQM,
-  List<OtherItemModel> lOIM,
-  JobsOnQueueModel jOQMNoChange,
-  List<OtherItemModel> lOIMNoChange,
-) async {
-  dNeedOnVar = jOQM.needOn.toDate();
-  bViewMoreOptions = false;
-  if (lOIM.isNotEmpty) {
-    bViewMoreOptions = true;
-  }
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return StatefulBuilder(builder: (context, setState) {
-        return AlertDialog(
-          title: Text(
-            "Change Jobs On Queue",
-            style: TextStyle(backgroundColor: Colors.amber[300]),
-          ),
-          content: SingleChildScrollView(
-            scrollDirection: Axis.vertical,
-            child: Container(
-              padding: EdgeInsets.all(8.0),
-              decoration: BoxDecoration(
-                  border: Border.all(color: Colors.blueAccent, width: 2.0)),
-              child: Form(
-                //key: _formKey,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    conCustomerName(context, setState, jOQM),
-                    conQueueStatVar(setState, jOQM),
-                    conOrderModeVar(setState, jOQM, decoAmber()),
-                    conTotalPriceVar(setState, jOQM),
-                    conBasketVar(setState, jOQM, decoAmber()),
-                    conBagVar(setState, jOQM, decoAmber()),
-                    conPaymentVar(setState, jOQM),
-                    conRemarksVar(setState, jOQM),
-                    conMoreOptions(setState),
-                    visAddOnVar(context, setState, jOQM, lOIM, "JobsOnQueue",
-                        jOQMNoChange),
-                    visExtraOnQueueVar(context, setState, jOQM, lOIM),
-                    visFoldVar(setState, jOQM),
-                    visMixVar(setState, jOQM),
-                    visNeedOn(setState),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          actions: [
-            //move to ongoing
-            moveToJOGVar(context, docId, jOQM, lOIM),
-
-            //cancel button
-            ///cancelButtonReloginVar(context, jOQM),
-            cancelButtonNoChangeVar(
-                context, setState, jOQM, lOIM, jOQMNoChange, lOIMNoChange),
-
-            //save button
-            updateButtonJOQVar(context, docId, jOQM, lOIM),
-          ],
-        );
-      });
-    },
-  );
-}
-
-//alterjobsongoing
-void showAlterJobsOnGoingVar(
-  BuildContext context,
-  Function setState,
-  String docId,
-  JobsOnQueueModel jOQM,
-  List<OtherItemModel> lOIM,
-  JobsOnQueueModel jOQMNoChange,
-  List<OtherItemModel> lOIMNoChange,
-) async {
-  bViewMoreOptions = false;
-  bViewAddOnDtlOnGoing = false;
-  if (lOIM.isNotEmpty) {
-    bViewMoreOptions = true;
-  }
-  dNeedOnVar = jOQM.needOn.toDate();
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return StatefulBuilder(builder: (context, setState) {
-        return AlertDialog(
-          title: Text(
-            "New Laundry ${DateTime.now().toString().substring(5, 13)}",
-            style: TextStyle(backgroundColor: Colors.amber[300]),
-          ),
-          content: SingleChildScrollView(
-            scrollDirection: Axis.vertical,
-            child: Container(
-              padding: EdgeInsets.all(8.0),
-              decoration: BoxDecoration(
-                  border: Border.all(color: Colors.blueAccent, width: 2.0)),
-              child: Form(
-                //key: _formKey,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    conCustomerName(context, setState, jOQM),
-                    conOnGoingStatVar(setState, jOQM),
-                    //conQueueStatVar(setState, jOQM),
-                    Visibility(
-                        visible: bViewMoreOptions,
-                        child:
-                            conOrderModeVar(setState, jOQM, decoLightBlue())),
-                    conTotalPriceVar(setState, jOQM),
-                    Visibility(
-                        visible: bViewMoreOptions,
-                        child: conBasketVar(setState, jOQM, decoLightBlue())),
-                    Visibility(
-                        visible: bViewMoreOptions,
-                        child: conBagVar(setState, jOQM, decoLightBlue())),
-                    conPaymentVar(setState, jOQM),
-                    conRemarksVar(setState, jOQM),
-                    conMoreOptions(setState),
-                    visAddOnVar(context, setState, jOQM, lOIM, "JobsOnGoing",
-                        jOQMNoChange),
-                    visExtraOnGoingVar(context, setState, jOQM, lOIM),
-                    visFoldVar(setState, jOQM),
-                    visMixVar(setState, jOQM),
-                    visNeedOn(setState),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          actions: [
-            //move to ongoing
-            moveToJDVar(context, docId, jOQM, lOIM),
-
-            //cancel button
-            //cancelButtonReloginVar(context, jOQM),
-            cancelButtonNoChangeVar(
-                context, setState, jOQM, lOIM, jOQMNoChange, lOIMNoChange),
-
-            //save button
-            updateButtonJOGVar(context, docId, jOQM, lOIM, jOQMNoChange),
-
-            //move to ongoing
-            // moveToJOGVar(
-            //     context,
-            //     docId,
-            //     jOQM,
-            //     lOIM),
-          ],
-        );
-      });
-    },
-  );
-}
-
-//alterjobsdone
-void showAlterJobsDoneVar(
-  BuildContext context,
-  Function setState,
-  String docId,
-  JobsOnQueueModel jOQM,
-  List<OtherItemModel> lOIM,
-  JobsOnQueueModel jOQMNoChange,
-  List<OtherItemModel> lOIMNoChange,
-) async {
-  bViewMoreOptions = false;
-  bViewAddOnDtlOnGoing = false;
-  if (lOIM.isNotEmpty) {
-    bViewMoreOptions = true;
-  }
-  dNeedOnVar = jOQM.needOn.toDate();
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return StatefulBuilder(builder: (context, setState) {
-        return AlertDialog(
-          title: Text(
-            "New Laundry ${DateTime.now().toString().substring(5, 13)}",
-            style: TextStyle(backgroundColor: Colors.amber[300]),
-          ),
-          content: SingleChildScrollView(
-            scrollDirection: Axis.vertical,
-            child: Container(
-              padding: EdgeInsets.all(8.0),
-              decoration: BoxDecoration(
-                  border: Border.all(color: Colors.blueAccent, width: 2.0)),
-              child: Form(
-                //key: _formKey,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    conCustomerName(context, setState, jOQM),
-                    conDoneStatVar(setState, jOQM),
-                    //conQueueStatVar(setState, jOQM),
-                    // Visibility(
-                    //     visible: bViewMoreOptions,
-                    //     child:
-                    //         conOrderModeVar(setState, jOQM, decoLightBlue())),
-                    conTotalPriceVar(setState, jOQM),
-                    Visibility(
-                        visible: bViewMoreOptions,
-                        child: conBasketVar(setState, jOQM, decoLightBlue())),
-                    Visibility(
-                        visible: bViewMoreOptions,
-                        child: conBagVar(setState, jOQM, decoLightBlue())),
-                    conPaymentVar(setState, jOQM),
-                    Visibility(
-                        visible: (jOQM.paidgcash ? true : false),
-                        child: conGCashVerified(setState, jOQM)),
-                    conRemarksVar(setState, jOQM),
-                    conMoreOptions(setState),
-                    visAddOnVar(context, setState, jOQM, lOIM, "JobsDone",
-                        jOQMNoChange),
-                    // visExtraOnGoingVar(context, setState, jOQM, lOIM),
-                    // visFoldVar(setState, jOQM),
-                    // visMixVar(setState, jOQM),
-                    visNeedOn(setState),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          actions: [
-            //cancel button
-            //cancelButtonReloginVar(context, jOQM),
-            cancelButtonNoChangeVar(
-                context, setState, jOQM, lOIM, jOQMNoChange, lOIMNoChange),
-
-            //save button
-            updateButtonJDVar(context, docId, jOQM, lOIM, jOQMNoChange),
-          ],
-        );
-      });
-    },
-  );
-}
-
 void showMessage(BuildContext context, String title, String message) {
   showDialog(
     context: context,
@@ -3604,43 +2877,6 @@ void showMessage(BuildContext context, String title, String message) {
           ),
           actions: [
             closeButtonVar(context),
-          ],
-        );
-      });
-    },
-  );
-}
-
-void showMessageSwapComplete(
-    BuildContext context, String title, String message) {
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return StatefulBuilder(builder: (context, setState) {
-        return AlertDialog(
-          title: Text(
-            title,
-            style: TextStyle(backgroundColor: Colors.amber[300]),
-          ),
-          content: SingleChildScrollView(
-            scrollDirection: Axis.vertical,
-            child: Container(
-              padding: EdgeInsets.all(8.0),
-              decoration: BoxDecoration(
-                  border: Border.all(color: Colors.blueAccent, width: 2.0)),
-              child: Form(
-                //key: _formKey,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(message),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          actions: [
-            closeButton2popVar(context),
           ],
         );
       });
@@ -3691,165 +2927,6 @@ void showMessageDeleteAddOns(
         );
       });
     },
-  );
-}
-
-void showMessageOptionChangeJobId(
-    BuildContext context, String title, String message, JobsOnQueueModel jOQM) {
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return StatefulBuilder(builder: (context, setState) {
-        return AlertDialog(
-          title: Text(
-            title,
-            style: TextStyle(backgroundColor: Colors.amber[300]),
-          ),
-          content: SingleChildScrollView(
-            scrollDirection: Axis.vertical,
-            child: Container(
-              padding: EdgeInsets.all(8.0),
-              decoration: BoxDecoration(
-                  border: Border.all(color: Colors.blueAccent, width: 2.0)),
-              child: Form(
-                //key: _formKey,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(message),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          actions: [
-            closeButtonVar(context),
-            changeButtonJobsIdVar(context, jOQM),
-          ],
-        );
-      });
-    },
-  );
-}
-
-Widget updateButtonJOQVar(BuildContext context, String docId,
-    JobsOnQueueModel jOQM, List<OtherItemModel> lOIM) {
-  return MaterialButton(
-    onPressed: () {
-      if (bDelAddOnsVar) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text('Processing Data, you may need to login again.')),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text('Failed delete add ons, please delete again.')),
-        );
-      }
-
-      bViewMoreOptions = false;
-
-      //pop box
-      Navigator.pop(context);
-      updateJOQMVar(docId, jOQM, lOIM);
-
-      //listAddOnItemsGlobal.clear();
-      //resetJOQMGlobalVar();
-
-      if (lOIM.isNotEmpty) {
-        bViewMoreOptions = true;
-        Navigator.pop(context);
-      }
-
-      // Navigator.of(context).push(
-      //     MaterialPageRoute(builder: (context) => MyQueue(empidGlobal)));
-    },
-    color: cButtons,
-    child: const Text("Update"),
-  );
-}
-
-Widget updateButtonJOGVar(
-    BuildContext context,
-    String docId,
-    JobsOnQueueModel jOQM,
-    List<OtherItemModel> lOIM,
-    JobsOnQueueModel jOQMNoChange) {
-  return MaterialButton(
-    onPressed: () {
-      if (bDelAddOnsVar) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text('Processing Data, you may need to login again.')),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text('Failed delete add ons, please delete again.')),
-        );
-      }
-
-      bViewMoreOptions = false;
-      bViewAddOnDtlOnGoing = false;
-
-      //pop box
-      Navigator.pop(context);
-      updateJOGMVar(docId, jOQM, lOIM);
-      if (lOIM.isNotEmpty) {
-        bViewMoreOptions = true;
-
-        Navigator.pop(context);
-      }
-      //jOQMNoChange = jOQM;
-      resetJOQMNoChangeToJOQM(jOQMNoChange, jOQM);
-
-      // Navigator.of(context).push(
-      //     MaterialPageRoute(builder: (context) => MyQueue(jOQM.empidGlobal)));
-    },
-    color: cButtons,
-    child: const Text("Update"),
-  );
-}
-
-Widget updateButtonJDVar(
-    BuildContext context,
-    String docId,
-    JobsOnQueueModel jOQM,
-    List<OtherItemModel> lOIM,
-    JobsOnQueueModel jOQMNoChange) {
-  return MaterialButton(
-    onPressed: () {
-      if (bDelAddOnsVar) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Processing Data.')),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text('Failed delete add ons, please delete again.')),
-        );
-      }
-
-      bViewMoreOptions = false;
-      bViewAddOnDtlOnGoing = false;
-
-      //pop box
-      Navigator.pop(context);
-      updateJDMVar(docId, jOQM, lOIM);
-      if (lOIM.isNotEmpty) {
-        bViewMoreOptions = true;
-
-        Navigator.pop(context);
-      }
-      //jOQMNoChange = jOQM;
-      resetJOQMNoChangeToJOQM(jOQMNoChange, jOQM);
-
-      // Navigator.of(context).push(
-      //     MaterialPageRoute(builder: (context) => MyQueue(jOQM.empidGlobal)));
-    },
-    color: cButtons,
-    child: const Text("Update"),
   );
 }
 
@@ -3905,186 +2982,5 @@ Widget deleteButtonAddOnVar(
     },
     color: cButtons,
     child: const Text("Delete"),
-  );
-}
-
-Widget changeButtonJobsIdVar(
-  BuildContext context,
-  JobsOnQueueModel jOQM,
-) {
-  return MaterialButton(
-    onPressed: () {
-      moveUpVar(jOQM.jobsId);
-      Navigator.pop(context); //need to relogin
-    },
-    color: cButtons,
-    child: const Text("Move Up"),
-  );
-}
-
-void updateJOQMVar(
-    String docId, JobsOnQueueModel jOQM, List<OtherItemModel> lOIM) {
-  DatabaseJobsOnQueue databaseJobsOnQueue = DatabaseJobsOnQueue();
-  jOQM.needOn = Timestamp.fromDate(dNeedOnVar);
-  databaseJobsOnQueue.updateJobsOnQueue(docId, jOQM, lOIM);
-}
-
-void updateJOGMVar(
-    String docId, JobsOnQueueModel jOQM, List<OtherItemModel> lOIM) {
-  DatabaseJobsOnGoing databaseJobsOnGoing = DatabaseJobsOnGoing();
-  jOQM.needOn = Timestamp.fromDate(dNeedOnVar);
-  databaseJobsOnGoing.updateJobsOnGoing(docId, jOQM, lOIM);
-}
-
-void updateJDMVar(
-    String docId, JobsOnQueueModel jOQM, List<OtherItemModel> lOIM) {
-  DatabaseJobsDone databaseJobsDone = DatabaseJobsDone();
-  jOQM.needOn = Timestamp.fromDate(dNeedOnVar);
-  databaseJobsDone.updateJobsDone(docId, jOQM, lOIM);
-}
-
-void deleteJOQVar(String docId, List<OtherItemModel> lOIM) {
-  DatabaseOtherItems databaseOtherItems =
-      DatabaseOtherItems("JobsOnQueue", docId);
-  // DatabaseOtherItemsOnQueue databaseOtherItemsOnQueue =
-  //     DatabaseOtherItemsOnQueue(docId);
-
-  lOIM.forEach((aOIG) {
-    print("delete for ongoing docid=${aOIG.docId}");
-    if (aOIG.docId != "") {
-      databaseOtherItems.deleteOtheritems(aOIG.docId);
-      // bDelAddOnsVar = true;
-    } else {
-      //need to relogin to delete
-      // bDelAddOnsVar = false;
-    }
-  });
-
-  DatabaseJobsOnQueue databaseJobsOnQueue = DatabaseJobsOnQueue();
-  databaseJobsOnQueue.deleteJobsOnQueue(docId);
-}
-
-void deleteJOGVar(String docId, List<OtherItemModel> lOIM) {
-  DatabaseOtherItems databaseOtherItems =
-      DatabaseOtherItems("JobsOnGoing", docId);
-  // DatabaseOtherItemsOnQueue databaseOtherItemsOnQueue =
-  //     DatabaseOtherItemsOnQueue(docId);
-
-  lOIM.forEach((aOIG) {
-    print("delete for ongoing docid=${aOIG.docId}");
-    if (aOIG.docId != "") {
-      databaseOtherItems.deleteOtheritems(aOIG.docId);
-      // bDelAddOnsVar = true;
-    } else {
-      //need to relogin to delete
-      // bDelAddOnsVar = false;
-    }
-  });
-
-  DatabaseJobsOnGoing databaseJobsOnGoing = DatabaseJobsOnGoing();
-  databaseJobsOnGoing.deleteJobsOnGoing(docId);
-}
-
-Future<bool> canSwapVar(String destinationJobsId) async {
-  var collection = FirebaseFirestore.instance.collection('JobsOnGoing');
-  var querySnapshots = await collection.get();
-  for (var doc in querySnapshots.docs) {
-    if (destinationJobsId == "${doc['D30_JobsId']}") {
-      if (!doc['D3_Waiting']) {
-        return false;
-      }
-    }
-  }
-  //can swap if waiting or no data
-  return true;
-}
-
-void updateSwapVar(String sourceJobsId, String destinationJobsId) async {
-  var collection = FirebaseFirestore.instance.collection('JobsOnGoing');
-  var querySnapshots = await collection.get();
-  for (var doc in querySnapshots.docs) {
-    if (destinationJobsId == "${doc['D30_JobsId']}") {
-      await doc.reference.update({
-        'D30_JobsId': int.parse(sourceJobsId.replaceAll("#", "")),
-      }).catchError((error) => print("Failed : $error"));
-      ;
-    } else if (sourceJobsId == "${doc['D30_JobsId']}") {
-      await doc.reference.update({
-        'D30_JobsId': int.parse(destinationJobsId.replaceAll("#", "")),
-      }).catchError((error) => print("Failed : $error"));
-    }
-  }
-}
-
-void alterNumberMobileVar(BuildContext context, JobsOnQueueModel jOQM) {
-  showDialog(
-    context: context,
-    builder: (context) => AlertDialog(
-      title: Text(
-        "Swapping no. #${jOQM.jobsId}",
-        style: TextStyle(backgroundColor: Colors.green[50]),
-      ),
-      content: SingleChildScrollView(
-        scrollDirection: Axis.vertical,
-        child: StatefulBuilder(
-            builder: (BuildContext context, StateSetter setState) {
-          return Container(
-            padding: EdgeInsets.all(8.0),
-            decoration: BoxDecoration(
-                border: Border.all(color: Colors.blueAccent, width: 2.0)),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                SizedBox(
-                  height: 5,
-                ),
-                SizedBox(
-                  height: 5,
-                ),
-                DropdownButton<String>(
-                  hint: Text("Select"),
-                  value: selectedNumberVar,
-                  onChanged: (val) {
-                    setState(() {
-                      selectedNumberVar = val!;
-                    });
-                  },
-                  items: completeListNumbering
-                      .map<DropdownMenuItem<String>>((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text("#$value"),
-                    );
-                  }).toList(),
-                ),
-                TextButton(
-                    style: ButtonStyle(
-                        backgroundColor:
-                            WidgetStatePropertyAll(Colors.amberAccent)),
-                    onPressed: () async {
-                      if (await canSwapVar(selectedNumberVar)) {
-                        updateSwapVar("${jOQM.jobsId}", selectedNumberVar);
-                        showMessageSwapComplete(
-                            context, "Success", "Swap complete.");
-                      } else {
-                        showMessage(context, "Failed at # $selectedNumberVar",
-                            "Cannot swap to Washing/Drying/Folding. Choose other number");
-                      }
-                    },
-                    child: Text(
-                        "Click here to swap number #${jOQM.jobsId} to #$selectedNumberVar")),
-              ],
-            ),
-          );
-        }),
-      ),
-      actions: [
-        //cancel button
-        closeButtonVar(context),
-
-        //swap jobs id
-        //_swapJobsId("#$jobsId", _selectedNumber)
-      ],
-    ),
   );
 }

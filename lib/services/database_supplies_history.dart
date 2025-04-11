@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:laundry_firebase/models/suppliesmodelhist.dart';
+import 'package:laundry_firebase/variables/variables.dart';
 
 const String SUPPLIES_HIS_REF = "SuppliesHist";
 
@@ -19,7 +20,8 @@ class DatabaseSuppliesHist {
   }
 
   Stream<QuerySnapshot> getSuppliesHistory() {
-    return _suppliesHistRef.orderBy('LogDate', descending: true).snapshots();
+    //return _suppliesHistRef.orderBy('LogDate', descending: true).snapshots();
+    return _suppliesHistRef.snapshots();
   }
 
   Future<bool> addSuppliesHist(SuppliesModelHist sMH) async {
@@ -27,7 +29,8 @@ class DatabaseSuppliesHist {
     await _suppliesHistRef
         .add(sMH)
         .then((value) => {
-              print("Supplies Save done."),
+              print("Supplies History Save done."),
+              resetSHGlobalVar(),
               bSuccess = true,
             })
         .catchError((error) => {

@@ -9,6 +9,7 @@ import 'package:laundry_firebase/pages/loyalty_admin.dart';
 import 'package:laundry_firebase/pages/queue_mobile.dart';
 import 'package:laundry_firebase/pages/autocompletecustomer.dart';
 import 'package:laundry_firebase/services/database_jobsonqueue.dart';
+import 'package:laundry_firebase/variables/vairables_jobsonqueue.dart';
 import 'package:laundry_firebase/variables/variables.dart';
 
 class MyQueue extends StatefulWidget {
@@ -23,6 +24,7 @@ class MyQueue extends StatefulWidget {
 class _MyQueueState extends State<MyQueue> {
   late String _sEmpId;
   late bool bViewMoreOptionsQ = false;
+
   @override
   void initState() {
     super.initState();
@@ -47,16 +49,16 @@ class _MyQueueState extends State<MyQueue> {
             },
             child: const Icon(Icons.local_laundry_service_sharp),
           ),
-          // SizedBox(
-          //   height: 5,
-          // ),
-          // FloatingActionButton(
-          //   heroTag: "Supplies",
-          //   onPressed: () {
-          //     showSuppliesHist();
-          //   },
-          //   child: const Icon(Icons.g_mobiledata),
-          // ),
+          SizedBox(
+            height: 5,
+          ),
+          FloatingActionButton(
+            heroTag: "Supplies",
+            onPressed: () {
+              showSuppliesHist();
+            },
+            child: const Icon(Icons.g_mobiledata),
+          ),
         ],
       ),
     );
@@ -104,6 +106,7 @@ class _MyQueueState extends State<MyQueue> {
                       visExtraQ(context, setState),
                       visFoldQ(setState),
                       visMixQ(setState),
+                      visITFDWDQ(setState),
                       visNeedOn(setState),
                     ],
                   ),
@@ -1289,7 +1292,7 @@ class _MyQueueState extends State<MyQueue> {
   }
 
   Container conRemarksQ(Function setState) {
-    remarksControllerVar.text = jobsOnQueueModelGlobal.remarks;
+    //remarksControllerVar.text = jobsOnQueueModelGlobal.remarks;
     return Container(
       padding: EdgeInsets.all(1.0),
       decoration: decoAmber(),
@@ -1298,13 +1301,15 @@ class _MyQueueState extends State<MyQueue> {
         textAlign: TextAlign.start,
         controller: remarksControllerVar,
         decoration: InputDecoration(labelText: 'Remarks', hintText: 'Notes'),
-        validator: (val) {},
+        validator: (val) {
+          remarksControllerVar.text = val!;
+        },
       ),
     );
   }
 
   Container conCounterQ(Function setState, SuppliesModelHist sMH) {
-    counterControllerVar.text = "";
+    counterControllerVar.text = "0";
     return Container(
       padding: EdgeInsets.all(1.0),
       decoration: decoAmber(),
@@ -1330,31 +1335,91 @@ class _MyQueueState extends State<MyQueue> {
           //   validator: (val) {},
           // ),
           Row(
-            children: [Text("Count:"), Text('${sMH.counter}')],
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [Text("Count:"), Text('${sMH.currentCounter}')],
           ),
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              IconButton(
-                onPressed: () {
-                  setState(() {
-                    sMH.counter--;
-                  });
-                },
-                icon: const Icon(Icons.remove_circle_outlined),
-                color: Colors.blueAccent,
-              ),
-              IconButton(
-                onPressed: () {
-                  setState(() {
-                    sMH.counter++;
-                  });
-                },
-                icon: const Icon(Icons.add_circle),
-                color: Colors.blueAccent,
-              ),
+              conClipRRectAdd(setState, sMH, 1),
+              conClipRRectAdd(setState, sMH, 5),
+              conClipRRectAdd(setState, sMH, 10),
+              conClipRRectAdd(setState, sMH, 50),
+              conClipRRectAdd(setState, sMH, 100),
+              conClipRRectAdd(setState, sMH, 500),
+              conClipRRectAdd(setState, sMH, 1000),
             ],
           ),
+          Row(
+            children: [
+              conClipRRectSub(setState, sMH, 1),
+              conClipRRectSub(setState, sMH, 5),
+              conClipRRectSub(setState, sMH, 10),
+              conClipRRectSub(setState, sMH, 50),
+              conClipRRectSub(setState, sMH, 100),
+              conClipRRectSub(setState, sMH, 500),
+              conClipRRectSub(setState, sMH, 1000),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  ClipRRect conClipRRectSub(Function setState, SuppliesModelHist sMH, int i) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(10),
+      child: Stack(
+        children: <Widget>[
+          Positioned.fill(
+            child: Container(
+              decoration: const BoxDecoration(
+                  gradient: LinearGradient(colors: <Color>[
+                Color.fromARGB(255, 151, 26, 26),
+                Color.fromARGB(255, 233, 66, 54),
+              ])),
+            ),
+          ),
+          TextButton(
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.all(2),
+                textStyle: const TextStyle(fontSize: 20),
+              ),
+              onPressed: () {
+                setState(() {
+                  sMH.currentCounter = sMH.currentCounter - i;
+                });
+              },
+              child: Text("-$i")),
+        ],
+      ),
+    );
+  }
+
+  ClipRRect conClipRRectAdd(Function setState, SuppliesModelHist sMH, int i) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(10),
+      child: Stack(
+        children: <Widget>[
+          Positioned.fill(
+            child: Container(
+              decoration: const BoxDecoration(
+                  gradient: LinearGradient(colors: <Color>[
+                Color(0XFF1976D2),
+                Color(0XFF42A5F5),
+              ])),
+            ),
+          ),
+          TextButton(
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.all(2),
+                textStyle: const TextStyle(fontSize: 20),
+              ),
+              onPressed: () {
+                setState(() {
+                  sMH.currentCounter = sMH.currentCounter + i;
+                });
+              },
+              child: Text("+$i")),
         ],
       ),
     );
@@ -1429,6 +1494,32 @@ class _MyQueueState extends State<MyQueue> {
               },
             ),
             Text("Mix"),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Visibility visITFDWDQ(Function setState) {
+    return Visibility(
+      visible: bViewMoreOptionsQ,
+      child: Container(
+        alignment: Alignment.center,
+        padding: EdgeInsets.all(1.0),
+        decoration: decoLightBlue(),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text("CustPickup"),
+            Switch.adaptive(
+              value: jobsOnQueueModelGlobal.initTagForDeliveryWhenDone,
+              onChanged: (bool value) {
+                setState(() {
+                  jobsOnQueueModelGlobal.initTagForDeliveryWhenDone = value;
+                });
+              },
+            ),
+            Text("DelToCust"),
           ],
         ),
       ),
@@ -1527,6 +1618,7 @@ class _MyQueueState extends State<MyQueue> {
   void showSuppliesHist() {
     SuppliesModelHist sMH;
     sMH = suppliesModelHistGlobal;
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -1600,7 +1692,7 @@ class _MyQueueState extends State<MyQueue> {
                   },
                 );
 
-                sMH.docId = selectedSupVar.docId;
+                sMH.countId = 0;
                 sMH.itemId = selectedSupVar.itemId;
 
                 // suppliesModelHistGlobal = SuppliesModelHist(

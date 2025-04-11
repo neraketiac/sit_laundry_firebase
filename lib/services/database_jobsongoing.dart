@@ -4,6 +4,7 @@ import 'package:laundry_firebase/models/jobsonqueuemodel.dart';
 import 'package:laundry_firebase/models/otheritemmodel.dart';
 import 'package:laundry_firebase/services/database_other_items.dart';
 import 'package:laundry_firebase/services/navigator_key.dart';
+import 'package:laundry_firebase/variables/vairables_jobsonqueue.dart';
 import 'package:laundry_firebase/variables/variables.dart';
 
 const String JOBS_ON_GOING_REF = "JobsOnGoing";
@@ -72,6 +73,7 @@ class DatabaseJobsOnGoing {
                   paidD: jOQM.paidD,
                   forSorting: jOQM.forSorting,
                   riderPickup: jOQM.riderPickup,
+                  initTagForDeliveryWhenDone: jOQM.initTagForDeliveryWhenDone,
                   jobsId: jOQM.jobsId,
                   waiting: jOQM.waiting,
                   washing: jOQM.washing,
