@@ -719,6 +719,7 @@ class _MyQueueState extends State<MyQueue> {
                         listAddOnItemsGlobal.add(OtherItemModel(
                           docId: "",
                           itemId: menuFabWKL24mlDVal,
+                          itemUniqueId: menuFabWKL24mlDVal,
                           itemGroup: groupFab,
                           itemName: "WKL Fabcon 24ml",
                           itemPrice: 8,
@@ -748,6 +749,7 @@ class _MyQueueState extends State<MyQueue> {
                     listAddOnItemsGlobal.add(OtherItemModel(
                       docId: "",
                       itemId: menuOthXD,
+                      itemUniqueId: menuOthXD,
                       itemGroup: groupOth,
                       itemName: "Extra Dry",
                       itemPrice: 15,
@@ -780,6 +782,7 @@ class _MyQueueState extends State<MyQueue> {
                     listAddOnItemsGlobal.add(OtherItemModel(
                       docId: "",
                       itemId: menuOthXW,
+                      itemUniqueId: menuOthXW,
                       itemGroup: groupOth,
                       itemName: "Extra Wash",
                       itemPrice: 15,
@@ -809,6 +812,7 @@ class _MyQueueState extends State<MyQueue> {
                     listAddOnItemsGlobal.add(OtherItemModel(
                       docId: "",
                       itemId: menuOthXR,
+                      itemUniqueId: menuOthXR,
                       itemGroup: groupOth,
                       itemName: "Extra Rinse",
                       itemPrice: 15,
@@ -1334,9 +1338,15 @@ class _MyQueueState extends State<MyQueue> {
           //       InputDecoration(labelText: 'Counters', hintText: 'Counter'),
           //   validator: (val) {},
           // ),
+          SizedBox(
+            height: 20,
+          ),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: [Text("Count:"), Text('${sMH.currentCounter}')],
+            children: [Text("Amount: "), Text('${sMH.currentCounter}')],
+          ),
+          SizedBox(
+            height: 20,
           ),
           Row(
             children: [
@@ -1538,6 +1548,28 @@ class _MyQueueState extends State<MyQueue> {
         child: const Text("Cancel"));
   }
 
+  Widget cancelButtonSupp(BuildContext context, Function setState) {
+    return MaterialButton(
+        onPressed: () {
+          //pop box
+          Navigator.pop(context);
+        },
+        color: cButtons,
+        child: const Text("Cancel"));
+  }
+
+  Widget zeroButtonSupp(
+      BuildContext context, Function setState, SuppliesModelHist sMH) {
+    return MaterialButton(
+        onPressed: () {
+          setState(() {
+            sMH.currentCounter = 0;
+          });
+        },
+        color: cButtons,
+        child: const Text("0"));
+  }
+
   void showMessageDelAddOnsQ(
       BuildContext contextx, Function setStatex, String title, String message) {
     showDialog(
@@ -1616,6 +1648,7 @@ class _MyQueueState extends State<MyQueue> {
   }
 
   void showSuppliesHist() {
+    resetSHGlobalVar();
     SuppliesModelHist sMH;
     sMH = suppliesModelHistGlobal;
 
@@ -1639,6 +1672,7 @@ class _MyQueueState extends State<MyQueue> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
+                      conEnterCustomer(context, setState),
                       visAddOnSupplies(context, setState, sMH),
                       conCounterQ(setState, sMH),
                     ],
@@ -1647,8 +1681,10 @@ class _MyQueueState extends State<MyQueue> {
               ),
             ),
             actions: [
+              zeroButtonSupp(context, setState, sMH),
+
               //cancel button
-              cancelButtonQ(context, setState),
+              cancelButtonSupp(context, setState),
 
               createNewSuppVar(context, sMH),
 
@@ -1683,7 +1719,7 @@ class _MyQueueState extends State<MyQueue> {
                 return DropdownMenuItem<OtherItemModel>(
                     value: map,
                     child: Text(
-                        "${map.itemGroup}-${map.itemName}(${map.itemPrice}Php)"));
+                        "${map.itemGroup}-${map.itemName} ${(map.itemId == 422 ? "" : "(${map.itemPrice} PhP)")} ${map.itemUniqueId}"));
               }).toList(),
               onChanged: (val) {
                 setState(
@@ -1694,6 +1730,7 @@ class _MyQueueState extends State<MyQueue> {
 
                 sMH.countId = 0;
                 sMH.itemId = selectedSupVar.itemId;
+                sMH.itemUniqueId = selectedSupVar.itemUniqueId;
 
                 // suppliesModelHistGlobal = SuppliesModelHist(
                 //     docId: selectedSupVar.docId,

@@ -1,6 +1,7 @@
 class OtherItemModel {
   final String docId;
   final int itemId;
+  final int itemUniqueId;
   final String itemGroup;
   final String itemName;
   final int itemPrice;
@@ -10,6 +11,7 @@ class OtherItemModel {
   OtherItemModel({
     required this.docId,
     required this.itemId,
+    required this.itemUniqueId,
     required this.itemGroup,
     required this.itemName,
     required this.itemPrice,
@@ -19,8 +21,9 @@ class OtherItemModel {
 
   OtherItemModel.fromJson(Map<String, dynamic> json)
       : this(
-          docId: json['docId']! as String,
+          docId: json['DocId']! as String,
           itemId: json['ItemId']! as int,
+          itemUniqueId: json['ItemUniqueId']! as int,
           itemGroup: json['ItemGroup']! as String,
           itemName: json['ItemName']! as String,
           itemPrice: json['ItemPrice']! as int,
@@ -31,6 +34,7 @@ class OtherItemModel {
   OtherItemModel coyWith({
     String? docId,
     int? itemId,
+    int? itemUniqueId,
     String? itemGroup,
     String? itemName,
     int? itemPrice,
@@ -40,6 +44,7 @@ class OtherItemModel {
     return OtherItemModel(
       docId: docId ?? this.docId,
       itemId: itemId ?? this.itemId,
+      itemUniqueId: itemUniqueId ?? this.itemUniqueId,
       itemGroup: itemGroup ?? this.itemGroup,
       itemName: itemName ?? this.itemName,
       itemPrice: itemPrice ?? this.itemPrice,
@@ -49,12 +54,13 @@ class OtherItemModel {
   }
 
   Map<String, dynamic> toJson() => {
-        'docId': docId,
-        'itemId': itemId,
-        'itemGroup': itemGroup,
-        'itemName': itemName,
-        'itemPrice': itemPrice,
-        'stocksAlert': stocksAlert,
-        'stocksType': stocksType,
+        'DocId': docId,
+        'ItemId': itemId,
+        'ItemUniqueId': itemUniqueId,
+        'ItemGroup': itemGroup,
+        'ItemName': itemName,
+        'ItemPrice': itemPrice,
+        'StocksAlert': stocksAlert,
+        'StocksType': stocksType,
       };
 }

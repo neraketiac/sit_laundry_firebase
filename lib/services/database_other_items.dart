@@ -37,6 +37,7 @@ class DatabaseOtherItems {
               updateDocId(OtherItemModel(
                 docId: value.id,
                 itemId: oIM.itemId,
+                itemUniqueId: oIM.itemUniqueId,
                 itemGroup: oIM.itemGroup,
                 itemName: oIM.itemName,
                 itemPrice: oIM.itemPrice,

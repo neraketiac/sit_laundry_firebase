@@ -20,8 +20,8 @@ class DatabaseSuppliesHist {
   }
 
   Stream<QuerySnapshot> getSuppliesHistory() {
-    //return _suppliesHistRef.orderBy('LogDate', descending: true).snapshots();
-    return _suppliesHistRef.snapshots();
+    return _suppliesHistRef.orderBy('LogDate', descending: true).snapshots();
+    //return _suppliesHistRef.snapshots();
   }
 
   Future<bool> addSuppliesHist(SuppliesModelHist sMH) async {

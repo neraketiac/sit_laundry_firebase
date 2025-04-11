@@ -121,7 +121,13 @@ const int menuOthWash = 401,
     menuOthW8t9 = 418,
     menuOthW9t10 = 419,
     menuOthW10t11 = 420,
-    menuOthW11t12 = 421;
+    menuOthW11t12 = 421,
+    menuOthCashInOutFunds = 422;
+const int menuOthUniqIdCashIn = 4401,
+    menuOthUniqIdCashOut = 4402,
+    menuOthUniqIdFundsIn = 4403,
+    menuOthUniqIdFundsOut = 4404,
+    menuOthLaundryPayment = 4405;
 
 //queuestats
 Map<int, String> mapQueueStat = {};
@@ -235,6 +241,7 @@ void putEntries() {
   listDetItems.add(OtherItemModel(
       docId: "",
       itemId: menuDetBreezeDVal,
+      itemUniqueId: menuDetBreezeDVal,
       itemGroup: groupDet,
       itemName: "Breeze",
       itemPrice: 15,
@@ -243,6 +250,7 @@ void putEntries() {
   listDetItems.add(OtherItemModel(
     docId: "",
     itemId: menuDetArielDVal,
+    itemUniqueId: menuDetArielDVal,
     itemGroup: groupDet,
     itemName: "Ariel TP",
     itemPrice: 15,
@@ -252,6 +260,7 @@ void putEntries() {
   listDetItems.add(OtherItemModel(
     docId: "",
     itemId: menuDetTideDVal,
+    itemUniqueId: menuDetTideDVal,
     itemGroup: groupDet,
     itemName: "Tide",
     itemPrice: 15,
@@ -261,6 +270,7 @@ void putEntries() {
   listDetItems.add(OtherItemModel(
     docId: "",
     itemId: menuDetWingsBlueDVal,
+    itemUniqueId: menuDetWingsBlueDVal,
     itemGroup: groupDet,
     itemName: "Wings B",
     itemPrice: 15,
@@ -270,6 +280,7 @@ void putEntries() {
   listDetItems.add(OtherItemModel(
     docId: "",
     itemId: menuDetWingsRedDVal,
+    itemUniqueId: menuDetWingsRedDVal,
     itemGroup: groupDet,
     itemName: "Wings R",
     itemPrice: 8,
@@ -279,6 +290,7 @@ void putEntries() {
   listDetItems.add(OtherItemModel(
     docId: "",
     itemId: menuDetWKL,
+    itemUniqueId: menuDetWKL,
     itemGroup: groupDet,
     itemName: "WKL",
     itemPrice: 8,
@@ -288,6 +300,7 @@ void putEntries() {
   listDetItems.add(OtherItemModel(
     docId: "",
     itemId: menuDetWKL15,
+    itemUniqueId: menuDetWKL15,
     itemGroup: groupDet,
     itemName: "WKL15",
     itemPrice: 15,
@@ -297,6 +310,7 @@ void putEntries() {
   listDetItems.add(OtherItemModel(
     docId: "",
     itemId: menuDetSurfDVal,
+    itemUniqueId: menuDetSurfDVal,
     itemGroup: groupDet,
     itemName: "Surf",
     itemPrice: 10,
@@ -306,6 +320,7 @@ void putEntries() {
   listDetItems.add(OtherItemModel(
     docId: "",
     itemId: menuDetKlinDVal,
+    itemUniqueId: menuDetKlinDVal,
     itemGroup: groupDet,
     itemName: "Klin TP",
     itemPrice: 15,
@@ -316,6 +331,7 @@ void putEntries() {
   listFabItems.add(OtherItemModel(
     docId: "",
     itemId: menuFabSurf24mlDVal,
+    itemUniqueId: menuFabSurf24mlDVal,
     itemGroup: groupFab,
     itemName: "Surf 24",
     itemPrice: 8,
@@ -325,6 +341,7 @@ void putEntries() {
   listFabItems.add(OtherItemModel(
     docId: "",
     itemId: menuFabDowny24mlDVal,
+    itemUniqueId: menuFabDowny24mlDVal,
     itemGroup: groupFab,
     itemName: "Downy 24",
     itemPrice: 8,
@@ -334,6 +351,7 @@ void putEntries() {
   listFabItems.add(OtherItemModel(
     docId: "",
     itemId: menuFabDownyTripidDVal,
+    itemUniqueId: menuFabDownyTripidDVal,
     itemGroup: groupFab,
     itemName: "Downy 3P",
     itemPrice: 17,
@@ -343,6 +361,7 @@ void putEntries() {
   listFabItems.add(OtherItemModel(
     docId: "",
     itemId: menuFabDowny36mlDVal,
+    itemUniqueId: menuFabDowny36mlDVal,
     itemGroup: groupFab,
     itemName: "Downy 36",
     itemPrice: 10,
@@ -352,6 +371,7 @@ void putEntries() {
   listFabItems.add(OtherItemModel(
     docId: "",
     itemId: menuFabSurfTripidDVal,
+    itemUniqueId: menuFabSurfTripidDVal,
     itemGroup: groupFab,
     itemName: "Surf 3P",
     itemPrice: 17,
@@ -361,6 +381,7 @@ void putEntries() {
   listFabItems.add(OtherItemModel(
     docId: "",
     itemId: menuFabWKL24mlDVal,
+    itemUniqueId: menuFabWKL24mlDVal,
     itemGroup: groupFab,
     itemName: "WKL Fab24",
     itemPrice: 8,
@@ -370,6 +391,7 @@ void putEntries() {
   listFabItems.add(OtherItemModel(
     docId: "",
     itemId: menuFabWKL48mlDVal,
+    itemUniqueId: menuFabWKL48mlDVal,
     itemGroup: groupFab,
     itemName: "WKL Fab48",
     itemPrice: 15,
@@ -380,6 +402,7 @@ void putEntries() {
   listBleItems.add(OtherItemModel(
     docId: "",
     itemId: menuBleColorSafeDVal,
+    itemUniqueId: menuBleColorSafeDVal,
     itemGroup: groupBle,
     itemName: "Color Safe",
     itemPrice: 5,
@@ -390,6 +413,7 @@ void putEntries() {
   listOthItems.add(OtherItemModel(
     docId: "",
     itemId: menuOthWash,
+    itemUniqueId: menuOthWash,
     itemGroup: groupOth,
     itemName: "Wash",
     itemPrice: 49,
@@ -399,6 +423,7 @@ void putEntries() {
   listOthItems.add(OtherItemModel(
     docId: "",
     itemId: menuOthDry,
+    itemUniqueId: menuOthDry,
     itemGroup: groupOth,
     itemName: "Dry",
     itemPrice: 49,
@@ -408,6 +433,7 @@ void putEntries() {
   listOthItems.add(OtherItemModel(
     docId: "",
     itemId: menuOth155,
+    itemUniqueId: menuOth155,
     itemGroup: groupOth,
     itemName: "Reg155",
     itemPrice: 155,
@@ -417,6 +443,7 @@ void putEntries() {
   listOthItems.add(OtherItemModel(
     docId: "",
     itemId: menuOth125,
+    itemUniqueId: menuOth125,
     itemGroup: groupOth,
     itemName: "Reg125",
     itemPrice: 125,
@@ -427,6 +454,7 @@ void putEntries() {
   listOthItems.add(OtherItemModel(
     docId: "",
     itemId: menuOthDO,
+    itemUniqueId: menuOthDO,
     itemGroup: groupOth,
     itemName: "Drop Off",
     itemPrice: 10,
@@ -437,6 +465,7 @@ void putEntries() {
   listOthItems.add(OtherItemModel(
     docId: "",
     itemId: menuOthDOF,
+    itemUniqueId: menuOthDOF,
     itemGroup: groupOth,
     itemName: "Drop W/Fold",
     itemPrice: 30,
@@ -447,6 +476,7 @@ void putEntries() {
   listOthItems.add(OtherItemModel(
     docId: "",
     itemId: menuOth2W1DR,
+    itemUniqueId: menuOth2W1DR,
     itemGroup: groupOth,
     itemName: "2W 1D(R)",
     itemPrice: 195,
@@ -456,6 +486,7 @@ void putEntries() {
   listOthItems.add(OtherItemModel(
     docId: "",
     itemId: menuOth2W1DSS,
+    itemUniqueId: menuOth2W1DSS,
     itemGroup: groupOth,
     itemName: "2W 1D(SS)",
     itemPrice: 165,
@@ -466,6 +497,7 @@ void putEntries() {
   listOthItems.add(OtherItemModel(
     docId: "",
     itemId: menuOthXD,
+    itemUniqueId: menuOthXD,
     itemGroup: groupOth,
     itemName: "Extra Dry",
     itemPrice: 15,
@@ -475,6 +507,7 @@ void putEntries() {
   listOthItems.add(OtherItemModel(
     docId: "",
     itemId: menuOthXW,
+    itemUniqueId: menuOthXW,
     itemGroup: groupOth,
     itemName: "Extra Wash",
     itemPrice: 20,
@@ -484,6 +517,7 @@ void putEntries() {
   listOthItems.add(OtherItemModel(
     docId: "",
     itemId: menuOthXR,
+    itemUniqueId: menuOthXR,
     itemGroup: groupOth,
     itemName: "Extra Rinse",
     itemPrice: 20,
@@ -493,6 +527,7 @@ void putEntries() {
   listOthItems.add(OtherItemModel(
     docId: "",
     itemId: menuOthNF125,
+    itemUniqueId: menuOthNF125,
     itemGroup: groupOth,
     itemName: "NF125",
     itemPrice: -17,
@@ -502,6 +537,7 @@ void putEntries() {
   listOthItems.add(OtherItemModel(
     docId: "",
     itemId: menuOthNF165,
+    itemUniqueId: menuOthNF165,
     itemGroup: groupOth,
     itemName: "NF165",
     itemPrice: -8,
@@ -511,6 +547,7 @@ void putEntries() {
   listOthItems.add(OtherItemModel(
     docId: "",
     itemId: menuOthNF155,
+    itemUniqueId: menuOthNF155,
     itemGroup: groupOth,
     itemName: "NF155",
     itemPrice: -12,
@@ -520,6 +557,7 @@ void putEntries() {
   listOthItems.add(OtherItemModel(
     docId: "",
     itemId: menuOthNF195,
+    itemUniqueId: menuOthNF195,
     itemGroup: groupOth,
     itemName: "NF195",
     itemPrice: -3,
@@ -529,6 +567,7 @@ void putEntries() {
   listOthItems.add(OtherItemModel(
     docId: "",
     itemId: menuOthW8t9,
+    itemUniqueId: menuOthW8t9,
     itemGroup: groupOth,
     itemName: "Ex 8-9kg",
     itemPrice: 25,
@@ -600,8 +639,62 @@ void putEntries() {
   selectedFabVar = listFabItems[0];
   selectedBleVar = listBleItems[0];
   selectedOthVar = listOthItems[0];
-  selectedSupVar = listDetItems[0];
-  gselectedItemModel = listOthItems[1];
+
+  //cash out/cash in
+  listSuppItems.add(OtherItemModel(
+    docId: "",
+    itemId: menuOthCashInOutFunds,
+    itemUniqueId: menuOthUniqIdCashIn,
+    itemGroup: groupOth,
+    itemName: "Cash-In",
+    itemPrice: 0,
+    stocksAlert: 5,
+    stocksType: "php",
+  ));
+  listSuppItems.add(OtherItemModel(
+    docId: "",
+    itemId: menuOthCashInOutFunds,
+    itemUniqueId: menuOthUniqIdCashOut,
+    itemGroup: groupOth,
+    itemName: "Cash-Out",
+    itemPrice: 0,
+    stocksAlert: 5,
+    stocksType: "php",
+  ));
+  listSuppItems.add(OtherItemModel(
+    docId: "",
+    itemId: menuOthCashInOutFunds,
+    itemUniqueId: menuOthLaundryPayment,
+    itemGroup: groupOth,
+    itemName: "Laundry Payment",
+    itemPrice: 0,
+    stocksAlert: 5,
+    stocksType: "php",
+  ));
+  listSuppItems.add(OtherItemModel(
+    docId: "",
+    itemId: menuOthCashInOutFunds,
+    itemUniqueId: menuOthUniqIdFundsIn,
+    itemGroup: groupOth,
+    itemName: "Funds-In",
+    itemPrice: 0,
+    stocksAlert: 5,
+    stocksType: "php",
+  ));
+  listSuppItems.add(OtherItemModel(
+    docId: "",
+    itemId: menuOthCashInOutFunds,
+    itemUniqueId: menuOthUniqIdFundsOut,
+    itemGroup: groupOth,
+    itemName: "Funds-Out",
+    itemPrice: 0,
+    stocksAlert: 5,
+    stocksType: "php",
+  ));
+
+  selectedSupVar = listSuppItems[0];
+  gselectedItemModel = listSuppItems[0];
+
   listSuppItems.addAll(listDetItems);
   listSuppItems.addAll(listFabItems);
   listSuppItems.addAll(listBleItems);
@@ -781,10 +874,10 @@ String customerName(String customerId) {
   return thisCustomerName;
 }
 
-String getItemName(int itemId) {
+String getItemName(int itemId, int itemUniqueId) {
   String thisItemName = "no data";
   listSuppItems.forEach((thisData) {
-    if (thisData.itemId == itemId) {
+    if (thisData.itemId == itemId && thisData.itemUniqueId == itemUniqueId) {
       thisItemName =
           "${thisData.itemGroup} - ${thisData.itemName}(${thisData.stocksType})";
     }
@@ -946,14 +1039,15 @@ void resetAddOnsGlobalVar() {
 
 void resetSHGlobalVar() {
   suppliesModelHistGlobal = SuppliesModelHist(
-    docId: "",
-    countId: 0,
-    itemId: selectedSupVar.itemId,
-    currentCounter: 0,
-    currentStocks: 0,
-    logDate: Timestamp.now(),
-    empId: empIdGlobal,
-  );
+      docId: "",
+      countId: 0,
+      itemId: selectedSupVar.itemId,
+      itemUniqueId: selectedSupVar.itemUniqueId,
+      currentCounter: 0,
+      currentStocks: 0,
+      logDate: Timestamp.now(),
+      empId: empIdGlobal,
+      customerId: 1);
 }
 
 void updateSelectedVar(OtherItemModel selectedItemModel) {
@@ -1147,26 +1241,47 @@ Widget closeButton2popVar(BuildContext context) {
 Widget createNewSuppVar(BuildContext context, SuppliesModelHist sMH) {
   return MaterialButton(
     onPressed: () async {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Processing Data')),
-      );
+      sMH.customerId = sMH.customerId = autocompleteSelected.customerId;
 
-      if (await insertDataSuppliesHistVar(sMH)) {
+      if (sMH.customerId == 1) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Success')),
+          SnackBar(content: Text('Select Customer Name')),
         );
-        print("Sucess");
-        Navigator.pop(context);
+      } else if ((sMH.itemUniqueId == menuOthUniqIdCashIn ||
+              sMH.itemUniqueId == menuOthUniqIdFundsIn ||
+              sMH.itemUniqueId == menuOthLaundryPayment) &&
+          sMH.currentCounter <= 0) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text(
+                  'Cash In/Funds In/Laundry Payment should be positive number.')),
+        );
+      } else if ((sMH.itemUniqueId == menuOthUniqIdCashOut ||
+              sMH.itemUniqueId == menuOthUniqIdFundsOut) &&
+          sMH.currentCounter >= 0) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text('Cash Out/Funds Out should be negative number.')),
+        );
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Cannot Save')),
-        );
-        print("Failed");
+        if (await insertDataSuppliesHistVar(sMH)) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Success')),
+          );
+          print("Sucess");
+          Navigator.pop(context);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Cannot Save')),
+          );
+          print("Failed");
+        }
       }
+
       //pop box
     },
     color: cButtons,
-    child: const Text("Save Supplies"),
+    child: const Text("Save"),
   );
 }
 
@@ -1332,6 +1447,7 @@ Visibility visExtraOnQueueVar(BuildContext context, Function setState,
                           lOIM.add(OtherItemModel(
                             docId: "",
                             itemId: menuFabWKL24mlDVal,
+                            itemUniqueId: menuFabWKL24mlDVal,
                             itemGroup: groupFab,
                             itemName: "WKL Fabcon 24ml",
                             itemPrice: 8,
@@ -1358,6 +1474,7 @@ Visibility visExtraOnQueueVar(BuildContext context, Function setState,
                           lOIM.add(OtherItemModel(
                             docId: "",
                             itemId: menuOthXD,
+                            itemUniqueId: menuOthXD,
                             itemGroup: groupOth,
                             itemName: "Extra Dry",
                             itemPrice: 15,
@@ -1389,6 +1506,7 @@ Visibility visExtraOnQueueVar(BuildContext context, Function setState,
                           lOIM.add(OtherItemModel(
                             docId: "",
                             itemId: menuOthXW,
+                            itemUniqueId: menuOthXW,
                             itemGroup: groupOth,
                             itemName: "Extra Wash",
                             itemPrice: 15,
@@ -1415,6 +1533,7 @@ Visibility visExtraOnQueueVar(BuildContext context, Function setState,
                           lOIM.add(OtherItemModel(
                             docId: "",
                             itemId: menuOthXR,
+                            itemUniqueId: menuOthXR,
                             itemGroup: groupOth,
                             itemName: "Extra Rinse",
                             itemPrice: 15,
@@ -1464,6 +1583,7 @@ Visibility visExtraOnGoingVar(BuildContext context, Function setState,
                       lOIM.add(OtherItemModel(
                         docId: "",
                         itemId: menuOthXD,
+                        itemUniqueId: menuOthXD,
                         itemGroup: groupOth,
                         itemName: "Extra Dry",
                         itemPrice: 15,

@@ -7,13 +7,13 @@ import 'package:laundry_firebase/services/database_supplies_current.dart';
 import 'package:laundry_firebase/services/database_supplies_history.dart';
 import 'package:laundry_firebase/variables/variables.dart';
 
-Container conDisplaySuppliesHistoryVar(
+Container conDisplaySuppliesCurrentVar(
   BuildContext context,
   SuppliesModelHist sMH,
 ) {
   return Container(
     height: 20,
-    color: getCOlorSuppliesHistoryVar(sMH),
+    color: cWaiting,
     child: Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -27,7 +27,42 @@ Container conDisplaySuppliesHistoryVar(
                 height: 2,
               ),
               Text(
-                "  ${getItemName(sMH.itemId)} - (${sMH.currentCounter}/${sMH.currentStocks}) - ${convertTimeStampVar(sMH.logDate)}",
+                "  ${(sMH.itemId == menuOthCashInOutFunds ? "Funds" : getItemName(sMH.itemId, sMH.itemUniqueId))} - (${sMH.currentStocks}) - ${convertTimeStampVar(sMH.logDate)} (${sMH.empId})",
+                style: const TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.end,
+              ),
+            ],
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+Container conDisplaySuppliesHistoryVar(
+  BuildContext context,
+  SuppliesModelHist sMH,
+) {
+  return Container(
+    height: 20,
+    color: cNasaCustomerNa,
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Expanded(
+          child: Column(
+            mainAxisSize: MainAxisSize.max,
+            // mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                height: 2,
+              ),
+              Text(
+                "  ${getItemName(sMH.itemId, sMH.itemUniqueId)}{${customerName(sMH.customerId.toString())}} - (${sMH.currentCounter}) - ${convertTimeStampVar(sMH.logDate)} (${sMH.empId})",
                 style: const TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.bold,
@@ -49,5 +84,6 @@ Future<bool> insertDataSuppliesHistVar(SuppliesModelHist sMH) async {
   DatabaseSuppliesCurrent databaseSuppliesCurrent = DatabaseSuppliesCurrent();
 
   sMH.logDate = Timestamp.now();
+
   return await databaseSuppliesCurrent.addSuppliesCurr(sMH);
 }

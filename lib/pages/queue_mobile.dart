@@ -13,6 +13,7 @@ import 'package:laundry_firebase/services/database_jobsongoing.dart';
 import 'package:laundry_firebase/services/database_jobsonqueue.dart';
 import 'package:laundry_firebase/services/database_other_items_ongoing.dart';
 import 'package:laundry_firebase/services/database_other_items_onqueue.dart';
+import 'package:laundry_firebase/services/database_supplies_current.dart';
 import 'package:laundry_firebase/services/database_supplies_history.dart';
 import 'package:laundry_firebase/variables/vairables_jobsonqueue.dart';
 //import 'package:laundry_firebase/variables/item_count_helper.dart';
@@ -122,90 +123,104 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SingleChildScrollView(
-              scrollDirection: Axis.vertical,
-              child: Container(
-                width: 200,
-                color: Colors.blue,
-                padding: const EdgeInsets.all(8.0),
-                child: Column(children: <Widget>[
-                  const SizedBox(
-                    height: 1,
-                  ),
-                  _readDataJobsOnQueue(),
-                ]),
-              ),
-            ),
-            SingleChildScrollView(
-              scrollDirection: Axis.vertical,
-              child: Container(
-                width: 200,
-                color: Colors.blue,
-                padding: const EdgeInsets.all(8.0),
-                child: Column(children: <Widget>[
-                  const SizedBox(
-                    height: 1,
-                  ),
-                  _readDataJobsOnGoing(),
-                ]),
-              ),
-            ),
-            SingleChildScrollView(
-              scrollDirection: Axis.vertical,
-              child: Container(
-                width: 200,
-                color: Colors.blue,
-                padding: const EdgeInsets.all(8.0),
-                child: Column(children: <Widget>[
-                  const SizedBox(
-                    height: 1,
-                  ),
-                  _readDataJobsDoneFilter('D8_WaitCustomerPickup'),
-                ]),
-              ),
-            ),
-            SingleChildScrollView(
-              scrollDirection: Axis.vertical,
-              child: Container(
-                width: 200,
-                color: Colors.blue,
-                padding: const EdgeInsets.all(8.0),
-                child: Column(children: <Widget>[
-                  const SizedBox(
-                    height: 1,
-                  ),
-                  _readDataJobsDoneFilter('D9_WaitRiderDelivery'),
-                ]),
-              ),
-            ),
-            SingleChildScrollView(
-              scrollDirection: Axis.vertical,
-              child: Container(
-                width: 200,
-                color: Colors.blue,
-                padding: const EdgeInsets.all(8.0),
-                child: Column(children: <Widget>[
-                  const SizedBox(
-                    height: 1,
-                  ),
-                  _readDataJobsDoneFilter('E1_NasaCustomerNa'),
-                ]),
-              ),
-            ),
             // SingleChildScrollView(
             //   scrollDirection: Axis.vertical,
             //   child: Container(
-            //     width: 300,
+            //     width: 200,
             //     color: Colors.blue,
             //     padding: const EdgeInsets.all(8.0),
             //     child: Column(children: <Widget>[
             //       const SizedBox(
             //         height: 1,
             //       ),
-            //       _readDataSuppliesHistory(),
+            //       _readDataJobsOnQueue(),
             //     ]),
             //   ),
             // ),
+            // SingleChildScrollView(
+            //   scrollDirection: Axis.vertical,
+            //   child: Container(
+            //     width: 200,
+            //     color: Colors.blue,
+            //     padding: const EdgeInsets.all(8.0),
+            //     child: Column(children: <Widget>[
+            //       const SizedBox(
+            //         height: 1,
+            //       ),
+            //       _readDataJobsOnGoing(),
+            //     ]),
+            //   ),
+            // ),
+            // SingleChildScrollView(
+            //   scrollDirection: Axis.vertical,
+            //   child: Container(
+            //     width: 200,
+            //     color: Colors.blue,
+            //     padding: const EdgeInsets.all(8.0),
+            //     child: Column(children: <Widget>[
+            //       const SizedBox(
+            //         height: 1,
+            //       ),
+            //       _readDataJobsDoneFilter('D8_WaitCustomerPickup'),
+            //     ]),
+            //   ),
+            // ),
+            // SingleChildScrollView(
+            //   scrollDirection: Axis.vertical,
+            //   child: Container(
+            //     width: 200,
+            //     color: Colors.blue,
+            //     padding: const EdgeInsets.all(8.0),
+            //     child: Column(children: <Widget>[
+            //       const SizedBox(
+            //         height: 1,
+            //       ),
+            //       _readDataJobsDoneFilter('D9_WaitRiderDelivery'),
+            //     ]),
+            //   ),
+            // ),
+            // SingleChildScrollView(
+            //   scrollDirection: Axis.vertical,
+            //   child: Container(
+            //     width: 200,
+            //     color: Colors.blue,
+            //     padding: const EdgeInsets.all(8.0),
+            //     child: Column(children: <Widget>[
+            //       const SizedBox(
+            //         height: 1,
+            //       ),
+            //       _readDataJobsDoneFilter('E1_NasaCustomerNa'),
+            //     ]),
+            //   ),
+            // ),
+            SingleChildScrollView(
+              scrollDirection: Axis.vertical,
+              child: Container(
+                width: 500,
+                color: Colors.blue,
+                padding: const EdgeInsets.all(8.0),
+                child: Column(children: <Widget>[
+                  const SizedBox(
+                    height: 1,
+                  ),
+                  _readDataSuppliesCurrent(),
+                ]),
+              ),
+            ),
+            SingleChildScrollView(
+              scrollDirection: Axis.vertical,
+              child: Container(
+                width: 500,
+                color: Colors.blue,
+                padding: const EdgeInsets.all(8.0),
+                child: Column(children: <Widget>[
+                  const SizedBox(
+                    height: 1,
+                  ),
+                  _readDataSuppliesHistory(),
+                ]),
+              ),
+            ),
           ],
         ),
       ),
@@ -475,7 +490,72 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
     );
   }
 
-  //read Supplies History
+  //read Supplies Current
+  Widget _readDataSuppliesCurrent() {
+    DatabaseSuppliesCurrent databaseSuppliesCurrent = DatabaseSuppliesCurrent();
+    //DatabaseSuppliesHist databaseSuppliesHist = DatabaseSuppliesHist();
+    bool zebra = false;
+    //read
+    return StreamBuilder<QuerySnapshot>(
+      stream: databaseSuppliesCurrent.getSuppliesCurrent(),
+      builder: (context, snapshot) {
+        List listSMH = snapshot.data?.docs ?? [];
+        bHeader = true;
+        List<TableRow> rowDatas = [];
+        if (listSMH.isNotEmpty) {
+          //header
+          if (bHeader) {
+            const rowData = TableRow(
+                decoration:
+                    BoxDecoration(color: Color.fromARGB(255, 9, 194, 49)),
+                children: [
+                  Text(
+                    "Supplies Current",
+                    style: TextStyle(fontSize: 10),
+                  ),
+                ]);
+            rowDatas.add(rowData);
+            bHeader = false;
+          }
+
+          listSMH.forEach((sMHData) {
+            SuppliesModelHist sMH = sMHData.data();
+
+            final rowData = TableRow(
+                decoration:
+                    BoxDecoration(color: zebra ? Colors.black : Colors.black),
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(2.0),
+                    child: Center(
+                      child: GestureDetector(
+                        onTap: () {
+                          // showAlterJobsOnQueueVar(
+                          //     context,
+                          //     jOQMData.id.toString(),
+                          //     jOQM,
+                          //     lOIM,
+                          //     jOQMNoChange,
+                          //     lOIMNoChange);
+                        },
+                        child: conDisplaySuppliesCurrentVar(context, sMH),
+                      ),
+                    ),
+                  )
+                ]);
+
+            rowDatas.add(rowData);
+          });
+        }
+
+        return Table(
+          children: rowDatas,
+        );
+      },
+    );
+  }
+
+  //read Supplies Current
   Widget _readDataSuppliesHistory() {
     DatabaseSuppliesHist databaseSuppliesHist = DatabaseSuppliesHist();
     bool zebra = false;
@@ -569,13 +649,14 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
     users.get().then((QuerySnapshot snapshot) async {
       for (var doc in snapshot.docs) {
         OtherItemModel oIM = OtherItemModel(
-            docId: doc['docId'],
-            itemId: doc['itemId'],
-            itemGroup: doc['itemGroup'],
-            itemName: doc['itemName'],
-            itemPrice: doc['itemPrice'],
-            stocksAlert: doc['stocksAlert'],
-            stocksType: doc['stocksType']);
+            docId: doc['DocId'],
+            itemId: doc['ItemId'],
+            itemUniqueId: doc['ItemUniqueId'],
+            itemGroup: doc['ItemGroup'],
+            itemName: doc['ItemName'],
+            itemPrice: doc['ItemPrice'],
+            stocksAlert: doc['StocksAlert'],
+            stocksType: doc['StocksType']);
         print("asdf=" + oIM.itemName);
         lOIM.add(oIM);
       }

@@ -21,7 +21,7 @@ class DatabaseSuppliesCurrent {
   }
 
   Stream<QuerySnapshot> getSuppliesCurrent() {
-    return _suppliesCurrRef.snapshots();
+    return _suppliesCurrRef.orderBy('LogDate', descending: true).snapshots();
   }
 
   Future<SuppliesModelHist> computeCurrentStocks(SuppliesModelHist sMH) async {
