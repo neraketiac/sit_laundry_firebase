@@ -1,16 +1,14 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:laundry_firebase/models/customermodel.dart';
-import 'package:laundry_firebase/models/jobsonqueuemodel.dart';
 import 'package:laundry_firebase/models/otheritemmodel.dart';
 import 'package:laundry_firebase/models/suppliesmodelhist.dart';
-import 'package:laundry_firebase/pages/loyalty_admin.dart';
 import 'package:laundry_firebase/pages/queue_mobile.dart';
-import 'package:laundry_firebase/pages/autocompletecustomer.dart';
-import 'package:laundry_firebase/services/database_jobsonqueue.dart';
 import 'package:laundry_firebase/variables/vairables_jobsonqueue.dart';
 import 'package:laundry_firebase/variables/variables.dart';
+import 'package:laundry_firebase/variables/variables_det.dart';
+import 'package:laundry_firebase/variables/variables_fab.dart';
+import 'package:laundry_firebase/variables/variables_ble.dart';
+import 'package:laundry_firebase/variables/variables_oth.dart';
+import 'package:laundry_firebase/variables/variables_supplies.dart';
 
 class MyQueue extends StatefulWidget {
   final String empid;
@@ -42,16 +40,16 @@ class _MyQueueState extends State<MyQueue> {
       floatingActionButton: Column(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          FloatingActionButton(
-            heroTag: "JobsOnQueue",
-            onPressed: () {
-              showNewJobsForQueue();
-            },
-            child: const Icon(Icons.local_laundry_service_sharp),
-          ),
-          SizedBox(
-            height: 5,
-          ),
+          // FloatingActionButton(
+          //   heroTag: "JobsOnQueue",
+          //   onPressed: () {
+          //     showNewJobsForQueue();
+          //   },
+          //   child: const Icon(Icons.local_laundry_service_sharp),
+          // ),
+          // SizedBox(
+          //   height: 5,
+          // ),
           FloatingActionButton(
             heroTag: "Supplies",
             onPressed: () {
@@ -718,8 +716,8 @@ class _MyQueueState extends State<MyQueue> {
                       () {
                         listAddOnItemsGlobal.add(OtherItemModel(
                           docId: "",
-                          itemId: menuFabWKL24mlDVal,
-                          itemUniqueId: menuFabWKL24mlDVal,
+                          itemId: menuFabWKLDValPurpleDVal,
+                          itemUniqueId: menuFabWKLDValPurple48mlDVal,
                           itemGroup: groupFab,
                           itemName: "WKL Fabcon 24ml",
                           itemPrice: 8,
@@ -1312,7 +1310,8 @@ class _MyQueueState extends State<MyQueue> {
     );
   }
 
-  Container conCounterQ(Function setState, SuppliesModelHist sMH) {
+  Container conCounterQ(
+      BuildContext context, Function setState, SuppliesModelHist sMH) {
     counterControllerVar.text = "0";
     return Container(
       padding: EdgeInsets.all(1.0),
@@ -1343,39 +1342,65 @@ class _MyQueueState extends State<MyQueue> {
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: [Text("Amount: "), Text('${sMH.currentCounter}')],
+            children: [
+              Text("Amount: "),
+              Text(
+                  '${sMH.currentCounter} ${getItemNameStocksType(sMH.itemId, sMH.itemUniqueId)}')
+            ],
           ),
           SizedBox(
             height: 20,
           ),
           Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               conClipRRectAdd(setState, sMH, 1),
-              conClipRRectAdd(setState, sMH, 5),
-              conClipRRectAdd(setState, sMH, 10),
-              conClipRRectAdd(setState, sMH, 50),
-              conClipRRectAdd(setState, sMH, 100),
-              conClipRRectAdd(setState, sMH, 500),
-              conClipRRectAdd(setState, sMH, 1000),
+              conClipRRectAdd(setState, sMH, 2),
+              conClipRRectAdd(setState, sMH, 3),
             ],
           ),
           Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              conClipRRectSub(setState, sMH, 1),
-              conClipRRectSub(setState, sMH, 5),
-              conClipRRectSub(setState, sMH, 10),
-              conClipRRectSub(setState, sMH, 50),
-              conClipRRectSub(setState, sMH, 100),
-              conClipRRectSub(setState, sMH, 500),
-              conClipRRectSub(setState, sMH, 1000),
+              conClipRRectAdd(setState, sMH, 4),
+              conClipRRectAdd(setState, sMH, 5),
+              conClipRRectAdd(setState, sMH, 6),
             ],
           ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              conClipRRectAdd(setState, sMH, 7),
+              conClipRRectAdd(setState, sMH, 8),
+              conClipRRectAdd(setState, sMH, 9),
+            ],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              conClipRRectZero(setState, sMH, "0"),
+              conClipRRectAdd(setState, sMH, 0),
+              conClipRRectBlank(setState, sMH, "B"),
+            ],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              conClipRRectNegative(setState, sMH, "-"),
+              conClipRRectBlank(setState, sMH, "B"),
+              conClipRRectSave(context, setState, sMH, "save"),
+            ],
+          ),
+          SizedBox(
+            height: 10,
+          )
         ],
       ),
     );
   }
 
-  ClipRRect conClipRRectSub(Function setState, SuppliesModelHist sMH, int i) {
+  ClipRRect conClipRRectSave(BuildContext context, Function setState,
+      SuppliesModelHist sMH, String s) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(10),
       child: Stack(
@@ -1384,8 +1409,79 @@ class _MyQueueState extends State<MyQueue> {
             child: Container(
               decoration: const BoxDecoration(
                   gradient: LinearGradient(colors: <Color>[
-                Color.fromARGB(255, 151, 26, 26),
-                Color.fromARGB(255, 233, 66, 54),
+                Color.fromARGB(132, 151, 26, 26),
+                Color.fromARGB(120, 233, 66, 54),
+              ])),
+            ),
+          ),
+          TextButton(
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.all(2),
+                textStyle: const TextStyle(fontSize: 20),
+              ),
+              onPressed: () async {
+                sMH.customerId = autocompleteSelected.customerId;
+
+                if (sMH.customerId == 1 || !bCustomerName) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Select Customer Name')),
+                  );
+                } else if ((sMH.itemUniqueId == menuOthUniqIdCashIn ||
+                        sMH.itemUniqueId == menuOthUniqIdFundsIn ||
+                        sMH.itemUniqueId == menuOthLaundryPayment) &&
+                    sMH.currentCounter <= 0) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                        content: Text(
+                            'Cash In/Funds In/Laundry Payment should be positive number.')),
+                  );
+                } else if ((sMH.itemUniqueId == menuOthUniqIdCashOut ||
+                        sMH.itemUniqueId == menuOthUniqIdFundsOut) &&
+                    sMH.currentCounter >= 0) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                        content: Text(
+                            'Cash Out/Funds Out should be negative number.')),
+                  );
+                } else {
+                  showMessageSuppliseSave(
+                      context,
+                      setState,
+                      "Save?",
+                      "Save ${(getItemNameOnly(sMH.itemId, sMH.itemUniqueId))} (${sMH.currentCounter} ${getItemNameStocksType(sMH.itemId, sMH.itemUniqueId)})?",
+                      sMH);
+                  // if (await insertDataSuppliesHistVar(sMH)) {
+                  //   ScaffoldMessenger.of(context).showSnackBar(
+                  //     SnackBar(content: Text('Success')),
+                  //   );
+                  //   print("Sucess");
+                  //   Navigator.pop(context);
+                  // } else {
+                  //   ScaffoldMessenger.of(context).showSnackBar(
+                  //     SnackBar(content: Text('Cannot Save')),
+                  //   );
+                  //   print("Failed");
+                  // }
+                }
+              },
+              child: Text(s)),
+        ],
+      ),
+    );
+  }
+
+  ClipRRect conClipRRectZero(
+      Function setState, SuppliesModelHist sMH, String s) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(10),
+      child: Stack(
+        children: <Widget>[
+          Positioned.fill(
+            child: Container(
+              decoration: const BoxDecoration(
+                  gradient: LinearGradient(colors: <Color>[
+                Color.fromARGB(132, 151, 26, 26),
+                Color.fromARGB(120, 233, 66, 54),
               ])),
             ),
           ),
@@ -1396,10 +1492,72 @@ class _MyQueueState extends State<MyQueue> {
               ),
               onPressed: () {
                 setState(() {
-                  sMH.currentCounter = sMH.currentCounter - i;
+                  sMH.currentCounter = 0;
                 });
               },
-              child: Text("-$i")),
+              child: Text(s)),
+        ],
+      ),
+    );
+  }
+
+  ClipRRect conClipRRectBlank(
+      Function setState, SuppliesModelHist sMH, String s) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(10),
+      child: Stack(
+        children: <Widget>[
+          Positioned.fill(
+            child: Container(
+              decoration: const BoxDecoration(
+                  gradient: LinearGradient(colors: <Color>[
+                Color.fromARGB(0, 151, 26, 26),
+                Color.fromARGB(0, 233, 66, 54),
+              ])),
+            ),
+          ),
+          TextButton(
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.all(2),
+                textStyle: const TextStyle(fontSize: 20),
+              ),
+              onPressed: () {
+                setState(() {
+                  sMH.currentCounter = 0;
+                });
+              },
+              child: Text("")),
+        ],
+      ),
+    );
+  }
+
+  ClipRRect conClipRRectNegative(
+      Function setState, SuppliesModelHist sMH, String s) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(10),
+      child: Stack(
+        children: <Widget>[
+          Positioned.fill(
+            child: Container(
+              decoration: const BoxDecoration(
+                  gradient: LinearGradient(colors: <Color>[
+                Color.fromARGB(132, 151, 26, 26),
+                Color.fromARGB(120, 233, 66, 54),
+              ])),
+            ),
+          ),
+          TextButton(
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.all(2),
+                textStyle: const TextStyle(fontSize: 20),
+              ),
+              onPressed: () {
+                setState(() {
+                  sMH.currentCounter = sMH.currentCounter * -1;
+                });
+              },
+              child: Text(s)),
         ],
       ),
     );
@@ -1425,11 +1583,12 @@ class _MyQueueState extends State<MyQueue> {
                 textStyle: const TextStyle(fontSize: 20),
               ),
               onPressed: () {
+                String s = "${sMH.currentCounter}$i";
                 setState(() {
-                  sMH.currentCounter = sMH.currentCounter + i;
+                  sMH.currentCounter = int.parse(s);
                 });
               },
-              child: Text("+$i")),
+              child: Text("$i")),
         ],
       ),
     );
@@ -1548,7 +1707,8 @@ class _MyQueueState extends State<MyQueue> {
         child: const Text("Cancel"));
   }
 
-  Widget cancelButtonSupp(BuildContext context, Function setState) {
+  Widget cancelButtonSupp(
+      BuildContext context, Function setState, SuppliesModelHist sMH) {
     return MaterialButton(
         onPressed: () {
           //pop box
@@ -1648,6 +1808,7 @@ class _MyQueueState extends State<MyQueue> {
   }
 
   void showSuppliesHist() {
+    bCustomerName = false;
     resetSHGlobalVar();
     SuppliesModelHist sMH;
     sMH = suppliesModelHistGlobal;
@@ -1674,19 +1835,19 @@ class _MyQueueState extends State<MyQueue> {
                     children: [
                       conEnterCustomer(context, setState),
                       visAddOnSupplies(context, setState, sMH),
-                      conCounterQ(setState, sMH),
+                      conCounterQ(context, setState, sMH),
                     ],
                   ),
                 ),
               ),
             ),
             actions: [
-              zeroButtonSupp(context, setState, sMH),
+              // zeroButtonSupp(context, setState, sMH),
 
-              //cancel button
-              cancelButtonSupp(context, setState),
+              // //cancel button
+              // cancelButtonSupp(context, setState, sMH),
 
-              createNewSuppVar(context, sMH),
+              // createNewSuppVar(context, sMH),
 
               //save button
               //createNewJOQVar(context),
@@ -1704,6 +1865,7 @@ class _MyQueueState extends State<MyQueue> {
       child: Container(
         padding: EdgeInsets.all(1.0),
         child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             DropdownButton<OtherItemModel>(
               value: selectedSupVar,
@@ -1719,7 +1881,7 @@ class _MyQueueState extends State<MyQueue> {
                 return DropdownMenuItem<OtherItemModel>(
                     value: map,
                     child: Text(
-                        "${map.itemGroup}-${map.itemName} ${(map.itemId == 422 ? "" : "(${map.itemPrice} PhP)")} ${map.itemUniqueId}"));
+                        "${map.itemGroup}-${map.itemName} ${(map.itemId == 422 ? "" : "(${map.itemPrice} PhP)")}")); //422 donut display price for funds, cash out
               }).toList(),
               onChanged: (val) {
                 setState(
@@ -1743,6 +1905,44 @@ class _MyQueueState extends State<MyQueue> {
           ],
         ),
       ),
+    );
+  }
+
+  void showMessageSuppliseSave(BuildContext context, Function setState,
+      String title, String message, SuppliesModelHist sMH) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(builder: (context, setState) {
+          return AlertDialog(
+            title: Text(
+              title,
+              style: TextStyle(backgroundColor: Colors.amber[300]),
+            ),
+            content: SingleChildScrollView(
+              scrollDirection: Axis.vertical,
+              child: Container(
+                padding: EdgeInsets.all(8.0),
+                decoration: BoxDecoration(
+                    border: Border.all(color: Colors.blueAccent, width: 2.0)),
+                child: Form(
+                  //key: _formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(message),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            actions: [
+              cancelButtonVar(context),
+              createNewSuppVar(context, sMH),
+            ],
+          );
+        });
+      },
     );
   }
 }

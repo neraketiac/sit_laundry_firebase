@@ -11,16 +11,18 @@ import 'package:laundry_firebase/models/suppliesmodelhist.dart';
 import 'package:laundry_firebase/services/database_jobsdone.dart';
 import 'package:laundry_firebase/services/database_jobsongoing.dart';
 import 'package:laundry_firebase/services/database_jobsonqueue.dart';
-import 'package:laundry_firebase/services/database_other_items_ongoing.dart';
 import 'package:laundry_firebase/services/database_other_items_onqueue.dart';
 import 'package:laundry_firebase/services/database_supplies_current.dart';
 import 'package:laundry_firebase/services/database_supplies_history.dart';
 import 'package:laundry_firebase/variables/vairables_jobsonqueue.dart';
-//import 'package:laundry_firebase/variables/item_count_helper.dart';
 import 'package:laundry_firebase/variables/variables.dart';
 import 'package:laundry_firebase/variables/variables_jobsdone.dart';
 import 'package:laundry_firebase/variables/variables_jobsongoing.dart';
 import 'package:laundry_firebase/variables/variables_supplies.dart';
+import 'package:laundry_firebase/variables/variables_det.dart';
+import 'package:laundry_firebase/variables/variables_fab.dart';
+import 'package:laundry_firebase/variables/variables_ble.dart';
+import 'package:laundry_firebase/variables/variables_oth.dart';
 
 /*
 cd C:\Users\haali\Documents\GIT_SIT\sit_laundry_firebase
@@ -196,7 +198,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
             SingleChildScrollView(
               scrollDirection: Axis.vertical,
               child: Container(
-                width: 500,
+                width: 250,
                 color: Colors.blue,
                 padding: const EdgeInsets.all(8.0),
                 child: Column(children: <Widget>[

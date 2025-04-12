@@ -51,6 +51,7 @@ class AutoCompleteCustomer extends StatelessWidget {
       },
       onSelected: (CustomerModel selectedModel) {
         autocompleteSelected = selectedModel;
+        bCustomerName = true;
         debugPrint(
             'You just selected ${_displayStringForOption(selectedModel)}');
       },

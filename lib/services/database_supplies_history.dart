@@ -20,7 +20,10 @@ class DatabaseSuppliesHist {
   }
 
   Stream<QuerySnapshot> getSuppliesHistory() {
-    return _suppliesHistRef.orderBy('LogDate', descending: true).snapshots();
+    return _suppliesHistRef
+        .orderBy('LogDate', descending: true)
+        .limit(50)
+        .snapshots();
     //return _suppliesHistRef.snapshots();
   }
 

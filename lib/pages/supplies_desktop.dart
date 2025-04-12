@@ -2,6 +2,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:laundry_firebase/variables/variables.dart';
+import 'package:laundry_firebase/variables/variables_det.dart';
+import 'package:laundry_firebase/variables/variables_fab.dart';
+import 'package:laundry_firebase/variables/variables_ble.dart';
+import 'package:laundry_firebase/variables/variables_oth.dart';
 
 class MySuppliesDesktop extends StatefulWidget {
   const MySuppliesDesktop({super.key});
@@ -79,39 +83,44 @@ class _MySuppliesDesktopState extends State<MySuppliesDesktop> {
         ));
   }
 
- //read
+  //read
   Widget _readData(String streamName) {
     bool zebra = false;
     //read
     return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance.collection('ProductsUsed').orderBy('Date').snapshots(),
+      stream: FirebaseFirestore.instance
+          .collection('ProductsUsed')
+          .orderBy('Date')
+          .snapshots(),
       builder: (context, snapshot) {
         List<TableRow> rowDatas = [];
         if (snapshot.hasData) {
           //header
           if (bHeader) {
-            const rowData = TableRow(decoration: BoxDecoration(color: Colors.blueGrey), children: [
-              Text(
-                "Job #",
-                style: TextStyle(fontSize: 10),
-              ),
-              Text(
-                "Type",
-                style: TextStyle(fontSize: 10),
-              ),
-              Text(
-                "Item Name",
-                style: TextStyle(fontSize: 10),
-              ),
-              Text(
-                "Count",
-                style: TextStyle(fontSize: 10),
-              ),
-              Text(
-                "Date",
-                style: TextStyle(fontSize: 10),
-              )
-            ]);
+            const rowData = TableRow(
+                decoration: BoxDecoration(color: Colors.blueGrey),
+                children: [
+                  Text(
+                    "Job #",
+                    style: TextStyle(fontSize: 10),
+                  ),
+                  Text(
+                    "Type",
+                    style: TextStyle(fontSize: 10),
+                  ),
+                  Text(
+                    "Item Name",
+                    style: TextStyle(fontSize: 10),
+                  ),
+                  Text(
+                    "Count",
+                    style: TextStyle(fontSize: 10),
+                  ),
+                  Text(
+                    "Date",
+                    style: TextStyle(fontSize: 10),
+                  )
+                ]);
             rowDatas.add(rowData);
             bHeader = false;
           }
@@ -125,25 +134,32 @@ class _MySuppliesDesktopState extends State<MySuppliesDesktop> {
             } else {
               zebra = true;
             }
-            final rowData = TableRow(decoration: BoxDecoration(color: zebra ? Colors.grey : Colors.white), children: [
-              Text("#${buffRecord['jobid']}", style: const TextStyle(fontSize: 10)),
-              Text(
-                "${buffRecord['Type']}",
-                style: const TextStyle(fontSize: 10),
-              ),
-              Text(
-                mapBleNames[buffRecord['Id']] ?? mapFabNames[buffRecord['Id']] ?? mapDetNames[buffRecord['Id']] ?? mapOthNames[buffRecord['Id']]!,
-                style: const TextStyle(fontSize: 7),
-              ),
-              Text(
-                buffRecord['Count'].toString(),
-                style: const TextStyle(fontSize: 10),
-              ),
-              Text(
-                convertTimeStamp(buffRecord['Date']),
-                style: const TextStyle(fontSize: 7),
-              ),
-            ]);
+            final rowData = TableRow(
+                decoration:
+                    BoxDecoration(color: zebra ? Colors.grey : Colors.white),
+                children: [
+                  Text("#${buffRecord['jobid']}",
+                      style: const TextStyle(fontSize: 10)),
+                  Text(
+                    "${buffRecord['Type']}",
+                    style: const TextStyle(fontSize: 10),
+                  ),
+                  Text(
+                    mapBleNames[buffRecord['Id']] ??
+                        mapFabNames[buffRecord['Id']] ??
+                        mapDetNames[buffRecord['Id']] ??
+                        mapOthNames[buffRecord['Id']]!,
+                    style: const TextStyle(fontSize: 7),
+                  ),
+                  Text(
+                    buffRecord['Count'].toString(),
+                    style: const TextStyle(fontSize: 10),
+                  ),
+                  Text(
+                    convertTimeStamp(buffRecord['Date']),
+                    style: const TextStyle(fontSize: 7),
+                  ),
+                ]);
             rowDatas.add(rowData);
 
             //listRemaining.add(ProductsRemaining(buffRecord['Type'], buffRecord['Count']));

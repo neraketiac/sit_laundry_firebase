@@ -4,6 +4,10 @@ import 'package:laundry_firebase/pages/responsive_layout.dart';
 import 'package:laundry_firebase/pages/supplies_desktop.dart';
 import 'package:laundry_firebase/pages/supplies_mobile.dart';
 import 'package:laundry_firebase/variables/variables.dart';
+import 'package:laundry_firebase/variables/variables_det.dart';
+import 'package:laundry_firebase/variables/variables_fab.dart';
+import 'package:laundry_firebase/variables/variables_ble.dart';
+import 'package:laundry_firebase/variables/variables_oth.dart';
 
 class MyHome extends StatefulWidget {
   const MyHome({super.key});
@@ -165,8 +169,9 @@ class _MyHomeState extends State<MyHome> {
                       value: menuFabSurfTripidDVal,
                       label: mapFabNames[menuFabSurfTripidDVal].toString()),
                   DropdownMenuEntry(
-                      value: menuFabWKL24mlDVal,
-                      label: mapFabNames[menuFabWKL24mlDVal].toString()),
+                      value: menuFabWKLDValPurpleDVal,
+                      label:
+                          mapFabNames[menuFabWKLDValPurple24mlDVal].toString()),
                 ],
                 onSelected: (val) {
                   _initialFab = val!;

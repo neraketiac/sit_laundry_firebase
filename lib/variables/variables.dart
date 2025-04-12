@@ -10,20 +10,21 @@ import 'package:laundry_firebase/models/suppliesmodelhist.dart';
 import 'package:laundry_firebase/pages/autocompletecustomer.dart';
 import 'package:laundry_firebase/pages/loyalty_admin.dart';
 import 'package:laundry_firebase/pages/queue.dart';
-import 'package:laundry_firebase/services/database_jobsdone.dart';
-import 'package:laundry_firebase/services/database_jobsongoing.dart';
 import 'package:laundry_firebase/services/database_jobsonqueue.dart';
-import 'package:laundry_firebase/services/database_other_items_onqueue.dart';
 import 'package:laundry_firebase/services/database_other_items.dart';
-import 'package:laundry_firebase/services/database_supplies_history.dart';
 import 'package:laundry_firebase/variables/vairables_jobsonqueue.dart';
+import 'package:laundry_firebase/variables/variables_ble.dart';
+import 'package:laundry_firebase/variables/variables_det.dart';
+import 'package:laundry_firebase/variables/variables_fab.dart';
 import 'package:laundry_firebase/variables/variables_jobsdone.dart';
 import 'package:laundry_firebase/variables/variables_jobsongoing.dart';
+import 'package:laundry_firebase/variables/variables_oth.dart';
 import 'package:laundry_firebase/variables/variables_supplies.dart';
 
 late bool bHaveInternet = false;
 bool showDet = false, showFab = false, showBle = false, showOth = false;
 bool bDelAddOnsVar = true;
+bool bCustomerName = false;
 
 late JobsOnQueueModel jobsOnQueueModelGlobal;
 late SuppliesModelHist suppliesModelHistGlobal;
@@ -33,29 +34,9 @@ late String selectedNumberVar = "1";
 //general
 const int menuDetDVal = 1, menuFabDVal = 2, menuBleDVal = 3, menuOthDVal = 4;
 
-//new start
-//det
-List<OtherItemModel> listDetItems = [];
-List<OtherItemModel> listFabItems = [];
-List<OtherItemModel> listBleItems = [];
-List<OtherItemModel> listOthItems = [];
 List<OtherItemModel> listAddOnItemsGlobal = [];
-
-List<OtherItemModel> listSuppItems = [];
-// const int suppIdDetWKL = 11001,
-//     suppIdDetAriel = 11002,
-//     suppIdFabGreenSof = 12001,
-//     suppIdFabPurpleSof = 12002,
-//     suppIdFabPinkSof = 12003,
-//     suppIdSmallPlastic = 13001,
-//     suppIdMediumPlastic = 13002,
-//     suppIdLargePlastic = 13003,
-//     suppIdXLPlastic = 13004;
-
 late OtherItemModel gselectedItemModel;
-
 List<CustomerModel> customerOptionsFromVariable = [];
-
 CustomerModel autocompleteSelected = CustomerModel(
     customerId: 1,
     name: '1',
@@ -63,7 +44,6 @@ CustomerModel autocompleteSelected = CustomerModel(
     contact: '1',
     remarks: '1',
     loyaltyCount: 1);
-
 const String groupDet = "Det",
     groupFab = "Fab",
     groupBle = "Ble",
@@ -71,64 +51,6 @@ const String groupDet = "Det",
 //new end
 
 int autoNumber = 0;
-
-//det
-Map<int, String> mapDetNames = {};
-Map<int, int> mapDetPrice = {};
-const int menuDetBreezeDVal = 103,
-    menuDetArielDVal = 101,
-    menuDetTideDVal = 104,
-    menuDetWingsBlueDVal = 105,
-    menuDetWingsRedDVal = 107,
-    menuDetWKL = 106,
-    menuDetSurfDVal = 102,
-    menuDetKlinDVal = 108,
-    menuDetWKL15 = 109;
-
-//fab
-Map<int, String> mapFabNames = {};
-const int menuFabSurf24mlDVal = 201,
-    menuFabDowny24mlDVal = 202,
-    menuFabDownyTripidDVal = 203,
-    menuFabDowny36mlDVal = 204,
-    menuFabSurfTripidDVal = 205,
-    menuFabWKL24mlDVal = 206,
-    menuFabWKL48mlDVal = 207;
-
-//bleach
-Map<int, String> mapBleNames = {};
-const int menuBleOriginalDVal = 302, menuBleColorSafeDVal = 301;
-
-//others
-Map<int, String> mapOthNames = {};
-const int menuOthWash = 401,
-    menuOth2W1DR = 402,
-    menuOth2W1DSS = 403,
-    menuOthDry = 404,
-    menuOth195 = 405,
-    menuOth165 = 406,
-    menuOthXD = 407,
-    menuOthXW = 408,
-    menuOthXR = 409,
-    menuOth155 = 410,
-    menuOth125 = 411,
-    menuOthDO = 412,
-    menuOthDOF = 413,
-    menuOthNF155 = 414,
-    menuOthNF195 = 415,
-    menuOthNF125 = 416,
-    menuOthNF165 = 417,
-    menuOthW8t9 = 418,
-    menuOthW9t10 = 419,
-    menuOthW10t11 = 420,
-    menuOthW11t12 = 421,
-    menuOthCashInOutFunds = 422;
-const int menuOthUniqIdCashIn = 4401,
-    menuOthUniqIdCashOut = 4402,
-    menuOthUniqIdFundsIn = 4403,
-    menuOthUniqIdFundsOut = 4404,
-    menuOthLaundryPayment = 4405;
-
 //queuestats
 Map<int, String> mapQueueStat = {};
 const int forSorting = 501,
@@ -237,385 +159,10 @@ void putEntries() {
   listOthItems.clear();
   listSuppItems.clear();
 
-  //detItems
-  listDetItems.add(OtherItemModel(
-      docId: "",
-      itemId: menuDetBreezeDVal,
-      itemUniqueId: menuDetBreezeDVal,
-      itemGroup: groupDet,
-      itemName: "Breeze",
-      itemPrice: 15,
-      stocksAlert: 5,
-      stocksType: "pcs"));
-  listDetItems.add(OtherItemModel(
-    docId: "",
-    itemId: menuDetArielDVal,
-    itemUniqueId: menuDetArielDVal,
-    itemGroup: groupDet,
-    itemName: "Ariel TP",
-    itemPrice: 15,
-    stocksAlert: 5,
-    stocksType: "pcs",
-  ));
-  listDetItems.add(OtherItemModel(
-    docId: "",
-    itemId: menuDetTideDVal,
-    itemUniqueId: menuDetTideDVal,
-    itemGroup: groupDet,
-    itemName: "Tide",
-    itemPrice: 15,
-    stocksAlert: 5,
-    stocksType: "pcs",
-  ));
-  listDetItems.add(OtherItemModel(
-    docId: "",
-    itemId: menuDetWingsBlueDVal,
-    itemUniqueId: menuDetWingsBlueDVal,
-    itemGroup: groupDet,
-    itemName: "Wings B",
-    itemPrice: 15,
-    stocksAlert: 5,
-    stocksType: "pcs",
-  ));
-  listDetItems.add(OtherItemModel(
-    docId: "",
-    itemId: menuDetWingsRedDVal,
-    itemUniqueId: menuDetWingsRedDVal,
-    itemGroup: groupDet,
-    itemName: "Wings R",
-    itemPrice: 8,
-    stocksAlert: 5,
-    stocksType: "pcs",
-  ));
-  listDetItems.add(OtherItemModel(
-    docId: "",
-    itemId: menuDetWKL,
-    itemUniqueId: menuDetWKL,
-    itemGroup: groupDet,
-    itemName: "WKL",
-    itemPrice: 8,
-    stocksAlert: 5,
-    stocksType: "pcs",
-  ));
-  listDetItems.add(OtherItemModel(
-    docId: "",
-    itemId: menuDetWKL15,
-    itemUniqueId: menuDetWKL15,
-    itemGroup: groupDet,
-    itemName: "WKL15",
-    itemPrice: 15,
-    stocksAlert: 5,
-    stocksType: "pcs",
-  ));
-  listDetItems.add(OtherItemModel(
-    docId: "",
-    itemId: menuDetSurfDVal,
-    itemUniqueId: menuDetSurfDVal,
-    itemGroup: groupDet,
-    itemName: "Surf",
-    itemPrice: 10,
-    stocksAlert: 5,
-    stocksType: "pcs",
-  ));
-  listDetItems.add(OtherItemModel(
-    docId: "",
-    itemId: menuDetKlinDVal,
-    itemUniqueId: menuDetKlinDVal,
-    itemGroup: groupDet,
-    itemName: "Klin TP",
-    itemPrice: 15,
-    stocksAlert: 5,
-    stocksType: "pcs",
-  ));
-  //fab items
-  listFabItems.add(OtherItemModel(
-    docId: "",
-    itemId: menuFabSurf24mlDVal,
-    itemUniqueId: menuFabSurf24mlDVal,
-    itemGroup: groupFab,
-    itemName: "Surf 24",
-    itemPrice: 8,
-    stocksAlert: 5,
-    stocksType: "pcs",
-  ));
-  listFabItems.add(OtherItemModel(
-    docId: "",
-    itemId: menuFabDowny24mlDVal,
-    itemUniqueId: menuFabDowny24mlDVal,
-    itemGroup: groupFab,
-    itemName: "Downy 24",
-    itemPrice: 8,
-    stocksAlert: 5,
-    stocksType: "pcs",
-  ));
-  listFabItems.add(OtherItemModel(
-    docId: "",
-    itemId: menuFabDownyTripidDVal,
-    itemUniqueId: menuFabDownyTripidDVal,
-    itemGroup: groupFab,
-    itemName: "Downy 3P",
-    itemPrice: 17,
-    stocksAlert: 5,
-    stocksType: "pcs",
-  ));
-  listFabItems.add(OtherItemModel(
-    docId: "",
-    itemId: menuFabDowny36mlDVal,
-    itemUniqueId: menuFabDowny36mlDVal,
-    itemGroup: groupFab,
-    itemName: "Downy 36",
-    itemPrice: 10,
-    stocksAlert: 5,
-    stocksType: "pcs",
-  ));
-  listFabItems.add(OtherItemModel(
-    docId: "",
-    itemId: menuFabSurfTripidDVal,
-    itemUniqueId: menuFabSurfTripidDVal,
-    itemGroup: groupFab,
-    itemName: "Surf 3P",
-    itemPrice: 17,
-    stocksAlert: 5,
-    stocksType: "pcs",
-  ));
-  listFabItems.add(OtherItemModel(
-    docId: "",
-    itemId: menuFabWKL24mlDVal,
-    itemUniqueId: menuFabWKL24mlDVal,
-    itemGroup: groupFab,
-    itemName: "WKL Fab24",
-    itemPrice: 8,
-    stocksAlert: 5,
-    stocksType: "bottle",
-  ));
-  listFabItems.add(OtherItemModel(
-    docId: "",
-    itemId: menuFabWKL48mlDVal,
-    itemUniqueId: menuFabWKL48mlDVal,
-    itemGroup: groupFab,
-    itemName: "WKL Fab48",
-    itemPrice: 15,
-    stocksAlert: 5,
-    stocksType: "bottle",
-  ));
-  //bel items
-  listBleItems.add(OtherItemModel(
-    docId: "",
-    itemId: menuBleColorSafeDVal,
-    itemUniqueId: menuBleColorSafeDVal,
-    itemGroup: groupBle,
-    itemName: "Color Safe",
-    itemPrice: 5,
-    stocksAlert: 5,
-    stocksType: "pcs",
-  ));
-  //oth items
-  listOthItems.add(OtherItemModel(
-    docId: "",
-    itemId: menuOthWash,
-    itemUniqueId: menuOthWash,
-    itemGroup: groupOth,
-    itemName: "Wash",
-    itemPrice: 49,
-    stocksAlert: 5,
-    stocksType: "pcs",
-  ));
-  listOthItems.add(OtherItemModel(
-    docId: "",
-    itemId: menuOthDry,
-    itemUniqueId: menuOthDry,
-    itemGroup: groupOth,
-    itemName: "Dry",
-    itemPrice: 49,
-    stocksAlert: 5,
-    stocksType: "pcs",
-  ));
-  listOthItems.add(OtherItemModel(
-    docId: "",
-    itemId: menuOth155,
-    itemUniqueId: menuOth155,
-    itemGroup: groupOth,
-    itemName: "Reg155",
-    itemPrice: 155,
-    stocksAlert: 5,
-    stocksType: "pcs",
-  ));
-  listOthItems.add(OtherItemModel(
-    docId: "",
-    itemId: menuOth125,
-    itemUniqueId: menuOth125,
-    itemGroup: groupOth,
-    itemName: "Reg125",
-    itemPrice: 125,
-    stocksAlert: 5,
-    stocksType: "pcs",
-  ));
-
-  listOthItems.add(OtherItemModel(
-    docId: "",
-    itemId: menuOthDO,
-    itemUniqueId: menuOthDO,
-    itemGroup: groupOth,
-    itemName: "Drop Off",
-    itemPrice: 10,
-    stocksAlert: 1,
-    stocksType: "pcs",
-  ));
-
-  listOthItems.add(OtherItemModel(
-    docId: "",
-    itemId: menuOthDOF,
-    itemUniqueId: menuOthDOF,
-    itemGroup: groupOth,
-    itemName: "Drop W/Fold",
-    itemPrice: 30,
-    stocksAlert: 1,
-    stocksType: "pcs",
-  ));
-
-  listOthItems.add(OtherItemModel(
-    docId: "",
-    itemId: menuOth2W1DR,
-    itemUniqueId: menuOth2W1DR,
-    itemGroup: groupOth,
-    itemName: "2W 1D(R)",
-    itemPrice: 195,
-    stocksAlert: 5,
-    stocksType: "pcs",
-  ));
-  listOthItems.add(OtherItemModel(
-    docId: "",
-    itemId: menuOth2W1DSS,
-    itemUniqueId: menuOth2W1DSS,
-    itemGroup: groupOth,
-    itemName: "2W 1D(SS)",
-    itemPrice: 165,
-    stocksAlert: 5,
-    stocksType: "pcs",
-  ));
-
-  listOthItems.add(OtherItemModel(
-    docId: "",
-    itemId: menuOthXD,
-    itemUniqueId: menuOthXD,
-    itemGroup: groupOth,
-    itemName: "Extra Dry",
-    itemPrice: 15,
-    stocksAlert: 5,
-    stocksType: "pcs",
-  ));
-  listOthItems.add(OtherItemModel(
-    docId: "",
-    itemId: menuOthXW,
-    itemUniqueId: menuOthXW,
-    itemGroup: groupOth,
-    itemName: "Extra Wash",
-    itemPrice: 20,
-    stocksAlert: 5,
-    stocksType: "pcs",
-  ));
-  listOthItems.add(OtherItemModel(
-    docId: "",
-    itemId: menuOthXR,
-    itemUniqueId: menuOthXR,
-    itemGroup: groupOth,
-    itemName: "Extra Rinse",
-    itemPrice: 20,
-    stocksAlert: 5,
-    stocksType: "pcs",
-  ));
-  listOthItems.add(OtherItemModel(
-    docId: "",
-    itemId: menuOthNF125,
-    itemUniqueId: menuOthNF125,
-    itemGroup: groupOth,
-    itemName: "NF125",
-    itemPrice: -17,
-    stocksAlert: 5,
-    stocksType: "pcs",
-  ));
-  listOthItems.add(OtherItemModel(
-    docId: "",
-    itemId: menuOthNF165,
-    itemUniqueId: menuOthNF165,
-    itemGroup: groupOth,
-    itemName: "NF165",
-    itemPrice: -8,
-    stocksAlert: 5,
-    stocksType: "pcs",
-  ));
-  listOthItems.add(OtherItemModel(
-    docId: "",
-    itemId: menuOthNF155,
-    itemUniqueId: menuOthNF155,
-    itemGroup: groupOth,
-    itemName: "NF155",
-    itemPrice: -12,
-    stocksAlert: 5,
-    stocksType: "pcs",
-  ));
-  listOthItems.add(OtherItemModel(
-    docId: "",
-    itemId: menuOthNF195,
-    itemUniqueId: menuOthNF195,
-    itemGroup: groupOth,
-    itemName: "NF195",
-    itemPrice: -3,
-    stocksAlert: 5,
-    stocksType: "pcs",
-  ));
-  listOthItems.add(OtherItemModel(
-    docId: "",
-    itemId: menuOthW8t9,
-    itemUniqueId: menuOthW8t9,
-    itemGroup: groupOth,
-    itemName: "Ex 8-9kg",
-    itemPrice: 25,
-    stocksAlert: 5,
-    stocksType: "pcs",
-  ));
-
-  //det names
-  mapDetNames.addEntries({menuDetBreezeDVal: "Breeze"}.entries);
-  mapDetNames.addEntries({menuDetArielDVal: "Ariel TP"}.entries);
-  mapDetNames.addEntries({menuDetTideDVal: "Tide"}.entries);
-  mapDetNames.addEntries({menuDetWingsBlueDVal: "Wings B"}.entries);
-  mapDetNames.addEntries({menuDetWingsRedDVal: "Wings R"}.entries);
-  mapDetNames.addEntries({menuDetWKL: "WKL"}.entries);
-  mapDetNames.addEntries({menuDetWKL15: "WKL15"}.entries);
-  mapDetNames.addEntries({menuDetSurfDVal: "Surf"}.entries);
-  mapDetNames.addEntries({menuDetKlinDVal: "Klin TP"}.entries);
-
-  //det price
-  mapDetPrice.addEntries({menuDetBreezeDVal: 15}.entries);
-  mapDetPrice.addEntries({menuDetArielDVal: 15}.entries);
-  mapDetPrice.addEntries({menuDetTideDVal: 15}.entries);
-  mapDetPrice.addEntries({menuDetWingsBlueDVal: 8}.entries);
-  mapDetPrice.addEntries({menuDetWingsRedDVal: 8}.entries);
-  mapDetPrice.addEntries({menuDetWKL: 8}.entries);
-  mapDetPrice.addEntries({menuDetWKL15: 15}.entries);
-  mapDetPrice.addEntries({menuDetSurfDVal: 10}.entries);
-  mapDetPrice.addEntries({menuDetKlinDVal: 15}.entries);
-
-  //fab names
-  mapFabNames.addEntries({menuFabSurf24mlDVal: "Surf 24(P8)"}.entries);
-  mapFabNames.addEntries({menuFabDowny24mlDVal: "Downy 24(P8)"}.entries);
-  mapFabNames.addEntries({menuFabDownyTripidDVal: "Downy 3P(P17)"}.entries);
-  mapFabNames.addEntries({menuFabDowny36mlDVal: "Downy 36(P10)"}.entries);
-  mapFabNames.addEntries({menuFabSurfTripidDVal: "Surf 3P(P17)"}.entries);
-  mapFabNames.addEntries({menuFabWKL24mlDVal: "WKL Fab 24(P8)"}.entries);
-  mapFabNames.addEntries({menuFabWKL48mlDVal: "WKL Fab 48(P15)"}.entries);
-
-  //det names
-  mapBleNames.addEntries({menuBleOriginalDVal: "Bleach OR(P5)"}.entries);
-  mapBleNames.addEntries({menuBleColorSafeDVal: "Color S(P5)"}.entries);
-
-  //oth names
-  mapOthNames.addEntries({menuOthWash: "Wash"}.entries);
-  mapOthNames.addEntries({menuOthDry: "Dry"}.entries);
-  mapOthNames.addEntries({menuOthXD: "Extra Dry"}.entries);
-  mapOthNames.addEntries({menuOthXW: "Extra Wash"}.entries);
-  mapOthNames.addEntries({menuOthXR: "Extra Rinse"}.entries);
+  addListDetItems();
+  addListFabItems();
+  addListBleItems();
+  addListOthItems();
 
   //queueStat
   mapQueueStat.addEntries({forSorting: "ForSorting"}.entries);
@@ -640,57 +187,7 @@ void putEntries() {
   selectedBleVar = listBleItems[0];
   selectedOthVar = listOthItems[0];
 
-  //cash out/cash in
-  listSuppItems.add(OtherItemModel(
-    docId: "",
-    itemId: menuOthCashInOutFunds,
-    itemUniqueId: menuOthUniqIdCashIn,
-    itemGroup: groupOth,
-    itemName: "Cash-In",
-    itemPrice: 0,
-    stocksAlert: 5,
-    stocksType: "php",
-  ));
-  listSuppItems.add(OtherItemModel(
-    docId: "",
-    itemId: menuOthCashInOutFunds,
-    itemUniqueId: menuOthUniqIdCashOut,
-    itemGroup: groupOth,
-    itemName: "Cash-Out",
-    itemPrice: 0,
-    stocksAlert: 5,
-    stocksType: "php",
-  ));
-  listSuppItems.add(OtherItemModel(
-    docId: "",
-    itemId: menuOthCashInOutFunds,
-    itemUniqueId: menuOthLaundryPayment,
-    itemGroup: groupOth,
-    itemName: "Laundry Payment",
-    itemPrice: 0,
-    stocksAlert: 5,
-    stocksType: "php",
-  ));
-  listSuppItems.add(OtherItemModel(
-    docId: "",
-    itemId: menuOthCashInOutFunds,
-    itemUniqueId: menuOthUniqIdFundsIn,
-    itemGroup: groupOth,
-    itemName: "Funds-In",
-    itemPrice: 0,
-    stocksAlert: 5,
-    stocksType: "php",
-  ));
-  listSuppItems.add(OtherItemModel(
-    docId: "",
-    itemId: menuOthCashInOutFunds,
-    itemUniqueId: menuOthUniqIdFundsOut,
-    itemGroup: groupOth,
-    itemName: "Funds-Out",
-    itemPrice: 0,
-    stocksAlert: 5,
-    stocksType: "php",
-  ));
+  addListSuppItems();
 
   selectedSupVar = listSuppItems[0];
   gselectedItemModel = listSuppItems[0];
@@ -884,6 +381,39 @@ String getItemName(int itemId, int itemUniqueId) {
   });
 
   return thisItemName;
+}
+
+String getItemNameOnly(int itemId, int itemUniqueId) {
+  String thisItemName = "no data";
+  listSuppItems.forEach((thisData) {
+    if (thisData.itemId == itemId && thisData.itemUniqueId == itemUniqueId) {
+      thisItemName = "${thisData.itemGroup} ${thisData.itemName}";
+    }
+  });
+
+  return thisItemName;
+}
+
+String getItemNameStocksType(int itemId, int itemUniqueId) {
+  String thisItemName = "no data";
+  listSuppItems.forEach((thisData) {
+    if (thisData.itemId == itemId && thisData.itemUniqueId == itemUniqueId) {
+      thisItemName = thisData.stocksType;
+    }
+  });
+
+  return thisItemName;
+}
+
+int getItemNameStocksAlert(int itemId, int itemUniqueId) {
+  int thisReturn = 0;
+  listSuppItems.forEach((thisData) {
+    if (thisData.itemId == itemId && thisData.itemUniqueId == itemUniqueId) {
+      thisReturn = thisData.stocksAlert;
+    }
+  });
+
+  return thisReturn;
 }
 
 JobsOnQueueModel resetPaymentQueueBool(JobsOnQueueModel jOQM) {
@@ -1241,9 +771,9 @@ Widget closeButton2popVar(BuildContext context) {
 Widget createNewSuppVar(BuildContext context, SuppliesModelHist sMH) {
   return MaterialButton(
     onPressed: () async {
-      sMH.customerId = sMH.customerId = autocompleteSelected.customerId;
+      sMH.customerId = autocompleteSelected.customerId;
 
-      if (sMH.customerId == 1) {
+      if (sMH.customerId == 1 || !bCustomerName) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Select Customer Name')),
         );
@@ -1269,6 +799,7 @@ Widget createNewSuppVar(BuildContext context, SuppliesModelHist sMH) {
             SnackBar(content: Text('Success')),
           );
           print("Sucess");
+          Navigator.pop(context);
           Navigator.pop(context);
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -1446,8 +977,8 @@ Visibility visExtraOnQueueVar(BuildContext context, Function setState,
                         () {
                           lOIM.add(OtherItemModel(
                             docId: "",
-                            itemId: menuFabWKL24mlDVal,
-                            itemUniqueId: menuFabWKL24mlDVal,
+                            itemId: menuFabWKLDValPurpleDVal,
+                            itemUniqueId: menuFabWKLDValPurple24mlDVal,
                             itemGroup: groupFab,
                             itemName: "WKL Fabcon 24ml",
                             itemPrice: 8,
