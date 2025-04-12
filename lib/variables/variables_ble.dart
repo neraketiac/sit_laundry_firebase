@@ -16,8 +16,8 @@ void addListBleItems() {
     itemGroup: groupBle,
     itemName: "Color Safe",
     itemPrice: 5,
-    stocksAlert: 5,
-    stocksType: "bottle",
+    stocksAlert: 2,
+    stocksType: "btl",
   ));
 
   //ble names

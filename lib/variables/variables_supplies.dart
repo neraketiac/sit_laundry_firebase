@@ -10,6 +10,33 @@ import 'package:laundry_firebase/variables/variables_fab.dart';
 import 'package:laundry_firebase/variables/variables_oth.dart';
 
 List<OtherItemModel> listSuppItems = [];
+const int menuOthCashInOutFunds = 422,
+    menuOthPlasticSmall = 423,
+    menuOthPlasticMedium = 424,
+    menuOthPlasticLarge = 425,
+    menuOthPlasticXLarge = 426;
+
+//Supplies Colors
+final Color cGeneric = Color.fromRGBO(92, 91, 91, 1);
+final Color cCashIn = Color.fromRGBO(170, 170, 170, 1);
+final Color cCashOut = Color.fromRGBO(182, 93, 93, 1);
+
+Color getCOlorSuppliesHistoryVar(SuppliesModelHist sMH) {
+  if (sMH.itemId == menuOthCashInOutFunds &&
+      (sMH.itemUniqueId == menuOthUniqIdCashIn ||
+          sMH.itemUniqueId == menuOthUniqIdFundsIn)) {
+    return cCashIn;
+  } else if (sMH.itemId == menuOthCashInOutFunds &&
+      (sMH.itemUniqueId == menuOthUniqIdCashOut ||
+          sMH.itemUniqueId == menuOthUniqIdFundsOut)) {
+    return cCashOut;
+  } else if (sMH.itemId == menuOthCashInOutFunds &&
+      sMH.itemUniqueId == menuOthLaundryPayment) {
+    return cRiderPickup;
+  }
+
+  return cGeneric;
+}
 
 Container conDisplaySuppliesCurrentVar(
   BuildContext context,
@@ -91,7 +118,8 @@ Container conDisplaySuppliesHistoryVar(
 ) {
   return Container(
     height: 20,
-    color: cNasaCustomerNa,
+    color: getCOlorSuppliesHistoryVar(
+        sMH), //(sMH.itemId == menuOthCashInOutFunds ? cWaiting : cNasaCustomerNa),
     child: Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -105,7 +133,7 @@ Container conDisplaySuppliesHistoryVar(
                 height: 2,
               ),
               Text(
-                "  ${convertTimeStampVar(sMH.logDate)} ${getItemName(sMH.itemId, sMH.itemUniqueId)}{${customerName(sMH.customerId.toString())}} - (${sMH.currentCounter}/${sMH.currentStocks}) - (${sMH.empId})",
+                "  ${convertTimeStampVar(sMH.logDate)} ${getItemNameOnly(sMH.itemId, sMH.itemUniqueId)} (${sMH.currentCounter}/${sMH.currentStocks}) by:{${customerName(sMH.customerId.toString())}} log:{${sMH.empId}}",
                 style: const TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.bold,
@@ -182,5 +210,46 @@ void addListSuppItems() {
     itemPrice: 0,
     stocksAlert: 1000,
     stocksType: "php",
+  ));
+  //plastic
+  listSuppItems.add(OtherItemModel(
+    docId: "",
+    itemId: menuOthPlasticSmall,
+    itemUniqueId: menuOthPlasticSmall,
+    itemGroup: groupOth,
+    itemName: "Plastic(S)",
+    itemPrice: 0,
+    stocksAlert: 3,
+    stocksType: "roll",
+  ));
+  listSuppItems.add(OtherItemModel(
+    docId: "",
+    itemId: menuOthPlasticMedium,
+    itemUniqueId: menuOthPlasticMedium,
+    itemGroup: groupOth,
+    itemName: "Plastic(M)",
+    itemPrice: 0,
+    stocksAlert: 3,
+    stocksType: "roll",
+  ));
+  listSuppItems.add(OtherItemModel(
+    docId: "",
+    itemId: menuOthPlasticLarge,
+    itemUniqueId: menuOthPlasticLarge,
+    itemGroup: groupOth,
+    itemName: "Plastic(L)",
+    itemPrice: 0,
+    stocksAlert: 3,
+    stocksType: "roll",
+  ));
+  listSuppItems.add(OtherItemModel(
+    docId: "",
+    itemId: menuOthPlasticXLarge,
+    itemUniqueId: menuOthPlasticXLarge,
+    itemGroup: groupOth,
+    itemName: "Plastic(XL)",
+    itemPrice: 0,
+    stocksAlert: 3,
+    stocksType: "roll",
   ));
 }

@@ -276,7 +276,6 @@ final Color cButtons = Color.fromRGBO(134, 218, 252, 0.733);
 //JobsOnQueue Colors
 final Color cRiderPickup = Color.fromRGBO(62, 255, 45, 1); //rider
 final Color cForSorting = Color.fromRGBO(170, 170, 170, 1);
-
 //JobsOnGoing Colors
 final Color cWaiting = Color.fromRGBO(170, 170, 170, 1);
 final Color cWashing =
@@ -285,7 +284,6 @@ final Color cDrying =
     Color.fromRGBO(91, 255, 244, 1); //same washing, drying, folding
 final Color cFolding =
     Color.fromRGBO(171, 255, 244, 1); //same washing, drying, folding
-
 //JobsDone Colors
 final Color cWaitCustomerPickup = Color.fromRGBO(170, 170, 170, 1);
 final Color cWaitRiderDelivery = Color.fromRGBO(62, 255, 45, 1); //rider
@@ -2223,17 +2221,6 @@ Color getCOlorStatusVar(JobsOnQueueModel jOQM) {
     return cRiderOnDelivery;
   }
   ;
-}
-
-//Display Queue Tables
-Color getCOlorSuppliesHistoryVar(SuppliesModelHist sMH) {
-  return cWaiting;
-  // if (sMH.currentStocks <= sMH.stocksAlert) {
-  //   return cRiderPickup;
-  // } else {
-  //   return cWaiting;
-  // }
-  // ;
 }
 
 bool isItToday(Timestamp timestamp) {

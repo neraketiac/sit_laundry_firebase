@@ -39,10 +39,10 @@ class DatabaseSuppliesCurrent {
       sMH.docId = doc['DocId'];
       break;
     }
-    print(
-        "currentstocks=${sMH.currentStocks} -- currentcounter${sMH.currentCounter} -- countid${sMH.countId}");
-    sMH.currentStocks = sMH.currentStocks + sMH.currentCounter;
-    print("currentstocks=${sMH.currentStocks}");
+    // print(
+    //     "currentstocks=${sMH.currentStocks} -- currentcounter${sMH.currentCounter} -- countid${sMH.countId}");
+    // sMH.currentStocks = sMH.currentStocks + sMH.currentCounter;
+    // print("currentstocks=${sMH.currentStocks}");
 
     return sMH;
   }
@@ -51,7 +51,11 @@ class DatabaseSuppliesCurrent {
     sMH = await computeCurrentStocks(sMH);
     sMH.empId = empIdGlobal;
 
+    //save hist first to display the current stocks before adding the currentcounter
     DatabaseSuppliesHist databaseSuppliesHist = DatabaseSuppliesHist();
+    await databaseSuppliesHist.addSuppliesHist(sMH);
+
+    sMH.currentStocks = sMH.currentStocks + sMH.currentCounter;
 
     bool bSuccess = false;
     print("Doc id before=${sMH.docId}");
@@ -59,7 +63,7 @@ class DatabaseSuppliesCurrent {
     if (sMH.docId.isNotEmpty) {
       print("Is not empty");
       await updateDocId(sMH);
-      await databaseSuppliesHist.addSuppliesHist(sMH);
+      // await databaseSuppliesHist.addSuppliesHist(sMH);
       bSuccess = true;
     } else {
       print("Is empty");
@@ -68,18 +72,10 @@ class DatabaseSuppliesCurrent {
           .then((value) => {
                 sMH.docId = value.id,
                 print("docID${value.id}"),
-                // updateDocId(SuppliesModelHist(
-                //     docId: value.id,
-                //     countId: sMH.countId,
-                //     itemId: sMH.itemId,
-                //     currentCounter: sMH.currentCounter,
-                //     currentStocks: sMH.currentStocks,
-                //     logDate: sMH.logDate)),
-
                 updateDocId(sMH),
                 print("Supplies Current Save done."),
 
-                databaseSuppliesHist.addSuppliesHist(sMH),
+                // databaseSuppliesHist.addSuppliesHist(sMH),
                 bSuccess = true,
               })
           .catchError((error) => {

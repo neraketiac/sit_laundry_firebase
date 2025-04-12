@@ -1345,7 +1345,11 @@ class _MyQueueState extends State<MyQueue> {
             children: [
               Text("Amount: "),
               Text(
-                  '${sMH.currentCounter} ${getItemNameStocksType(sMH.itemId, sMH.itemUniqueId)}')
+                  '${sMH.currentCounter} ${getItemNameStocksType(sMH.itemId, sMH.itemUniqueId)}',
+                  style: TextStyle(
+                      backgroundColor: (sMH.currentCounter < 0
+                          ? Color.fromARGB(125, 244, 67, 54)
+                          : const Color.fromARGB(0, 255, 193, 7))))
             ],
           ),
           SizedBox(
@@ -1378,7 +1382,7 @@ class _MyQueueState extends State<MyQueue> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              conClipRRectZero(setState, sMH, "0"),
+              conClipRRectNegative(setState, sMH, "-"),
               conClipRRectAdd(setState, sMH, 0),
               conClipRRectBlank(setState, sMH, "B"),
             ],
@@ -1386,7 +1390,7 @@ class _MyQueueState extends State<MyQueue> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              conClipRRectNegative(setState, sMH, "-"),
+              conClipRRectZero(setState, sMH, "c"),
               conClipRRectBlank(setState, sMH, "B"),
               conClipRRectSave(context, setState, sMH, "save"),
             ],
@@ -1881,7 +1885,7 @@ class _MyQueueState extends State<MyQueue> {
                 return DropdownMenuItem<OtherItemModel>(
                     value: map,
                     child: Text(
-                        "${map.itemGroup}-${map.itemName} ${(map.itemId == 422 ? "" : "(${map.itemPrice} PhP)")}")); //422 donut display price for funds, cash out
+                        "${map.itemGroup}-${map.itemName} ${(map.itemPrice <= 0 ? "" : "(${map.itemPrice} PhP)")}")); //422 donut display price for funds, cash out
               }).toList(),
               onChanged: (val) {
                 setState(
