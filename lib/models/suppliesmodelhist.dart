@@ -10,6 +10,7 @@ class SuppliesModelHist {
   Timestamp logDate;
   String empId;
   int customerId;
+  String remarks;
 
   SuppliesModelHist({
     required this.docId,
@@ -21,6 +22,7 @@ class SuppliesModelHist {
     required this.logDate,
     required this.empId,
     required this.customerId,
+    required this.remarks,
   });
 
   SuppliesModelHist.fromJson(Map<String, dynamic> json)
@@ -34,6 +36,7 @@ class SuppliesModelHist {
           logDate: json['LogDate']! as Timestamp,
           empId: json['EmpId']! as String,
           customerId: json['CustomerId']! as int,
+          remarks: json['Remarks']! as String,
         );
 
   SuppliesModelHist coyWith({
@@ -46,6 +49,7 @@ class SuppliesModelHist {
     Timestamp? logDate,
     String? empId,
     int? customerId,
+    String? remarks,
   }) {
     return SuppliesModelHist(
       docId: docId ?? this.docId,
@@ -57,6 +61,7 @@ class SuppliesModelHist {
       logDate: logDate ?? this.logDate,
       empId: empId ?? this.empId,
       customerId: customerId ?? this.customerId,
+      remarks: remarks ?? this.remarks,
     );
   }
 
@@ -70,5 +75,6 @@ class SuppliesModelHist {
         'LogDate': logDate,
         'EmpId': empId,
         'CustomerId': customerId,
+        'Remarks': remarks,
       };
 }

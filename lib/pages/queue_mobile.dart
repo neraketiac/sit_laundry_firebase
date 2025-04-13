@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import 'package:laundry_firebase/models/jobsonqueuemodel.dart';
 import 'package:laundry_firebase/models/otheritemmodel.dart';
 import 'package:laundry_firebase/models/suppliesmodelhist.dart';
+import 'package:laundry_firebase/pages/autocompletecustomer.dart';
 import 'package:laundry_firebase/services/database_jobsdone.dart';
 import 'package:laundry_firebase/services/database_jobsongoing.dart';
 import 'package:laundry_firebase/services/database_jobsonqueue.dart';
@@ -212,7 +213,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
             SingleChildScrollView(
               scrollDirection: Axis.vertical,
               child: Container(
-                width: 500,
+                width: 600,
                 color: Colors.blue,
                 padding: const EdgeInsets.all(8.0),
                 child: Column(children: <Widget>[
@@ -563,7 +564,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
     bool zebra = false;
     //read
     return StreamBuilder<QuerySnapshot>(
-      stream: databaseSuppliesHist.getSuppliesHistory(),
+      stream: databaseSuppliesHist.getSuppliesHistory(bTest),
       builder: (context, snapshot) {
         List listSMH = snapshot.data?.docs ?? [];
         bHeader = true;
@@ -571,16 +572,38 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
         if (listSMH.isNotEmpty) {
           //header
           if (bHeader) {
-            const rowData = TableRow(
+            var rowData = TableRow(
                 decoration:
-                    BoxDecoration(color: Color.fromARGB(255, 9, 194, 49)),
+                    const BoxDecoration(color: Color.fromARGB(255, 9, 194, 49)),
                 children: [
-                  Text(
+                  // AutoCompleteCustomer(),
+                  const Text(
                     "Supplies History",
                     style: TextStyle(fontSize: 10),
                   ),
+                  // Checkbox(
+                  //     value: bTest,
+                  //     onChanged: (val) {
+                  //       setState(() {
+                  //         bTest = val!;
+                  //       });
+                  //     }),
                 ]);
             rowDatas.add(rowData);
+
+            // var rowData2 = TableRow(
+            //     decoration:
+            //         const BoxDecoration(color: Color.fromARGB(255, 9, 194, 49)),
+            //     children: [
+            //       Checkbox(
+            //           value: bTest,
+            //           onChanged: (val) {
+            //             setState(() {
+            //               bTest = val!;
+            //             });
+            //           }),
+            //     ]);
+            // rowDatas.add(rowData2);
             bHeader = false;
           }
 

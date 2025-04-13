@@ -1352,6 +1352,7 @@ class _MyQueueState extends State<MyQueue> {
                           : const Color.fromARGB(0, 255, 193, 7))))
             ],
           ),
+
           SizedBox(
             height: 20,
           ),
@@ -1430,43 +1431,73 @@ class _MyQueueState extends State<MyQueue> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('Select Customer Name')),
                   );
-                } else if ((sMH.itemUniqueId == menuOthUniqIdCashIn ||
-                        sMH.itemUniqueId == menuOthUniqIdFundsIn ||
-                        sMH.itemUniqueId == menuOthLaundryPayment) &&
-                    sMH.currentCounter <= 0) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                        content: Text(
-                            'Cash In/Funds In/Laundry Payment should be positive number.')),
-                  );
-                } else if ((sMH.itemUniqueId == menuOthUniqIdCashOut ||
-                        sMH.itemUniqueId == menuOthUniqIdFundsOut) &&
-                    sMH.currentCounter >= 0) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                        content: Text(
-                            'Cash Out/Funds Out should be negative number.')),
-                  );
                 } else {
+                  if ((sMH.itemUniqueId == menuOthUniqIdCashIn ||
+                          sMH.itemUniqueId == menuOthUniqIdFundsIn ||
+                          sMH.itemUniqueId == menuOthLaundryPayment ||
+                          sMH.itemUniqueId == menuOthUniqIdFee) &&
+                      sMH.currentCounter < 0) {
+                    setState(() {
+                      sMH.currentCounter = sMH.currentCounter * -1;
+                    });
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                          content:
+                              Text('Auto-correct: should be positive number.')),
+                    );
+                  } else if ((sMH.itemUniqueId == menuOthUniqIdCashOut ||
+                          sMH.itemUniqueId == menuOthUniqIdFundsOut) &&
+                      sMH.currentCounter > 0) {
+                    setState(() {
+                      sMH.currentCounter = sMH.currentCounter * -1;
+                    });
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                          content:
+                              Text('Auto-correct: should be negative number.')),
+                    );
+                  }
+
                   showMessageSuppliseSave(
                       context,
                       setState,
                       "Save?",
                       "Save ${(getItemNameOnly(sMH.itemId, sMH.itemUniqueId))} (${sMH.currentCounter} ${getItemNameStocksType(sMH.itemId, sMH.itemUniqueId)})?",
                       sMH);
-                  // if (await insertDataSuppliesHistVar(sMH)) {
-                  //   ScaffoldMessenger.of(context).showSnackBar(
-                  //     SnackBar(content: Text('Success')),
-                  //   );
-                  //   print("Sucess");
-                  //   Navigator.pop(context);
-                  // } else {
-                  //   ScaffoldMessenger.of(context).showSnackBar(
-                  //     SnackBar(content: Text('Cannot Save')),
-                  //   );
-                  //   print("Failed");
-                  // }
                 }
+
+                // if (sMH.customerId == 1 || !bCustomerName) {
+                //   ScaffoldMessenger.of(context).showSnackBar(
+                //     SnackBar(content: Text('Select Customer Name')),
+                //   );
+                // } else if ((sMH.itemUniqueId == menuOthUniqIdCashIn ||
+                //         sMH.itemUniqueId == menuOthUniqIdFundsIn ||
+                //         sMH.itemUniqueId == menuOthLaundryPayment) &&
+                //     sMH.currentCounter < 0) {
+                //   sMH.currentCounter = sMH.currentCounter * -1;
+                //   ScaffoldMessenger.of(context).showSnackBar(
+                //     SnackBar(
+                //         content: Text(
+                //             'Cash In/Funds In/Laundry Payment should be positive number.')),
+                //   );
+                // } else if ((sMH.itemUniqueId == menuOthUniqIdCashOut ||
+                //         sMH.itemUniqueId == menuOthUniqIdFundsOut) &&
+                //     sMH.currentCounter > 0) {
+                //   sMH.currentCounter = sMH.currentCounter * -1;
+                //   ScaffoldMessenger.of(context).showSnackBar(
+                //     SnackBar(
+                //         content: Text(
+                //             'Cash Out/Funds Out should be negative number.')),
+                //   );
+                // } else {
+                //   showMessageSuppliseSave(
+                //       context,
+                //       setState,
+                //       "Save?",
+                //       "Save ${(getItemNameOnly(sMH.itemId, sMH.itemUniqueId))} (${sMH.currentCounter} ${getItemNameStocksType(sMH.itemId, sMH.itemUniqueId)})?",
+                //       sMH);
+                // }
               },
               child: Text(s)),
         ],
@@ -1839,6 +1870,7 @@ class _MyQueueState extends State<MyQueue> {
                     children: [
                       conEnterCustomer(context, setState),
                       visAddOnSupplies(context, setState, sMH),
+                      conRemarksSuppliesVar(setState),
                       conCounterQ(context, setState, sMH),
                     ],
                   ),

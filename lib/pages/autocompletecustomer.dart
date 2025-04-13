@@ -1,8 +1,5 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:laundry_firebase/models/customermodel.dart';
-import 'package:laundry_firebase/models/loyaltymodel.dart';
-import 'package:laundry_firebase/services/database_loyalty.dart';
 import 'package:laundry_firebase/variables/variables.dart';
 
 class AutoCompleteCustomer extends StatelessWidget {

@@ -25,6 +25,7 @@ late bool bHaveInternet = false;
 bool showDet = false, showFab = false, showBle = false, showOth = false;
 bool bDelAddOnsVar = true;
 bool bCustomerName = false;
+bool bTest = false;
 
 late JobsOnQueueModel jobsOnQueueModelGlobal;
 late SuppliesModelHist suppliesModelHistGlobal;
@@ -144,6 +145,7 @@ late bool allowDecimal = false;
 bool bUnpaidVar = true, bPaidCashVar = false, bPaidGCashVar = false;
 // bool bMixVar = true, bFoldVar = true;
 TextEditingController remarksControllerVar = TextEditingController();
+TextEditingController remarksSuppliesVar = TextEditingController();
 TextEditingController counterControllerVar = TextEditingController();
 DateTime dNeedOnVar = DateTime.now().add(Duration(minutes: 210));
 // Timestamp tNeedOnVar = Timestamp.now();
@@ -575,7 +577,8 @@ void resetSHGlobalVar() {
       currentStocks: 0,
       logDate: Timestamp.now(),
       empId: empIdGlobal,
-      customerId: 1);
+      customerId: 1,
+      remarks: "");
 }
 
 void updateSelectedVar(OtherItemModel selectedItemModel) {
@@ -770,6 +773,7 @@ Widget createNewSuppVar(BuildContext context, SuppliesModelHist sMH) {
   return MaterialButton(
     onPressed: () async {
       sMH.customerId = autocompleteSelected.customerId;
+      sMH.remarks = remarksSuppliesVar.text;
 
       if (sMH.customerId == 1 || !bCustomerName) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -2621,4 +2625,14 @@ Widget deleteButtonAddOnVar(
     color: cButtons,
     child: const Text("Delete"),
   );
+}
+
+void addField(String docId) {
+  // _suppliesCurrRef --if reuse, will not work
+  var collectionRef = FirebaseFirestore.instance;
+  collectionRef
+      .collection('SuppliesCurr')
+      .doc("0YPLe3dqWAdwhw1R4ntI")
+      .set({'remarks2': ""}, SetOptions(merge: true)).then((value) {});
+  // print("currentstocks=${sMH.currentStocks}");
 }

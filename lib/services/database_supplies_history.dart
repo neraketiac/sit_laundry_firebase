@@ -19,11 +19,21 @@ class DatabaseSuppliesHist {
             toFirestore: (sMH, _) => sMH.toJson());
   }
 
-  Stream<QuerySnapshot> getSuppliesHistory() {
-    return _suppliesHistRef
-        .orderBy('LogDate', descending: true)
-        .limit(50)
-        .snapshots();
+  Stream<QuerySnapshot> getSuppliesHistory(bool bSel) {
+    if (!bSel) {
+      return _suppliesHistRef
+          .orderBy('LogDate', descending: true)
+          .limit(50)
+          .snapshots();
+    } else {
+      print(autocompleteSelected.customerId);
+      return _suppliesHistRef
+          .where('CustomerId', isEqualTo: autocompleteSelected.customerId)
+          //.where('CustomerId', isEqualTo: 2420)
+          .orderBy('LogDate', descending: true)
+          .snapshots();
+    }
+
     //return _suppliesHistRef.snapshots();
   }
 
