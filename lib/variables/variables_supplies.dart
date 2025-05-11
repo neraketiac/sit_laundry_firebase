@@ -369,7 +369,7 @@ Future<bool> insertDataSuppliesHistVar(SuppliesModelHist sMH) async {
     if (bNagbigayFee) {
       sMH.remarks =
           "${sMH.remarks} CI=${sMH.currentCounter} Fee=$iFee"; // 210, CI=200 Fee=10
-      sMH.currentCounter = sMH.currentCounter + iFee;
+      //sMH.currentCounter = sMH.currentCounter + iFee;
     } else {
       sMH.remarks =
           "${sMH.remarks} CI=${sMH.currentCounter - iFee} Fee=$iFee"; // 200, CI=190 Fee=10
@@ -377,7 +377,7 @@ Future<bool> insertDataSuppliesHistVar(SuppliesModelHist sMH) async {
   } else if (ifMenuUniqueIsCashOut(sMH)) {
     // negative currentCounter
     var iFee = getFee(sMH.currentCounter);
-    sMH.currentCounter = sMH.currentCounter + iFee;
+    //sMH.currentCounter = sMH.currentCounter + iFee;
     sMH.remarks =
         "${sMH.remarks} CO=${sMH.currentCounter} Fee=$iFee"; //-200, CO=-190 Fee=10
   }
