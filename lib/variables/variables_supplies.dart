@@ -19,7 +19,9 @@ const int menuOthCashInOutFunds = 422,
     menuOthLPG50Kilos = 428,
     menuOthUniqIdFundsEOD = 429,
     menuOthUniqIdFee = 430,
-    menuOthUniqIdLoad = 431;
+    menuOthUniqIdLoad = 431,
+    menuOthExpense = 432,
+    menuOthLPaymentGCash = 433;
 
 //Supplies Colors
 final Color cStocks = Color.fromRGBO(255, 251, 43, 0.452);
@@ -111,6 +113,26 @@ void addListSuppItems() {
     stocksAlert: 1000,
     stocksType: "php",
   ));
+  listSuppItems.add(OtherItemModel(
+    docId: "",
+    itemId: menuOthLPaymentGCash,
+    itemUniqueId: menuOthLPaymentGCash,
+    itemGroup: groupOth,
+    itemName: "LPayment Gcash",
+    itemPrice: 0,
+    stocksAlert: 1000,
+    stocksType: "php",
+  ));
+  listSuppItems.add(OtherItemModel(
+    docId: "",
+    itemId: menuOthExpense,
+    itemUniqueId: menuOthExpense,
+    itemGroup: groupOth,
+    itemName: "Laundry Expense",
+    itemPrice: 0,
+    stocksAlert: -5000,
+    stocksType: "php",
+  ));
   //plastic
   listSuppItems.add(OtherItemModel(
     docId: "",
@@ -177,19 +199,21 @@ void addListSuppItems() {
 
 Color getCOlorSuppliesHistoryVar(SuppliesModelHist sMH) {
   if (sMH.itemId == menuOthCashInOutFunds) {
-    if (sMH.itemUniqueId == menuOthUniqIdCashIn) {
+    if (ifMenuUniqueIsCashIn(sMH)) {
       return cCashIn;
-    } else if (sMH.itemUniqueId == menuOthUniqIdCashOut) {
+    } else if (ifMenuUniqueIsCashOut(sMH)) {
       return cCashOut;
-    } else if (sMH.itemUniqueId == menuOthLaundryPayment) {
+    } else if (ifMenuUniqueIsLaundryPayment(sMH)) {
+      return cRiderPickup;
+    } else if (ifMenuUniqueIsLPaymentGCash(sMH)) {
       return cRiderPickup;
     } else if (sMH.itemUniqueId == menuOthUniqIdFundsEOD) {
       return cFundsEOD;
-    } else if (sMH.itemUniqueId == menuOthUniqIdFundsIn) {
+    } else if (ifMenuUniqueIsFundsIn(sMH)) {
       return cCashIn;
-    } else if (sMH.itemUniqueId == menuOthUniqIdFundsOut) {
+    } else if (ifMenuUniqueIsFundsOut(sMH)) {
       return cCashOut;
-    } else if (sMH.itemUniqueId == menuOthUniqIdFee) {
+    } else if (ifMenuUniqueIsFee(sMH)) {
       return cCashFee;
     }
   }
@@ -255,7 +279,7 @@ Container conDisplaySuppliesCurrentVar(
                     ),
                   ),
                   Text(
-                    "${sMH.currentStocks}  ",
+                    "${value.format(sMH.currentStocks)}  ",
                     style: const TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
@@ -300,7 +324,8 @@ Container conDisplaySuppliesHistoryVar(
                   Text(getItemNameOnly(sMH.itemId, sMH.itemUniqueId),
                       style: const TextStyle(
                           fontSize: 10, fontWeight: FontWeight.bold)),
-                  Text(" (${sMH.currentCounter}/${sMH.currentStocks}) ",
+                  Text(
+                      " (${value.format(sMH.currentCounter)}/${value.format(sMH.currentStocks)}) ",
                       style: const TextStyle(fontSize: 11)),
                   Text("by:{${customerName(sMH.customerId.toString())}} ",
                       style: const TextStyle(
@@ -333,14 +358,72 @@ Container conDisplaySuppliesHistoryVar(
 }
 
 //insert new Supplies
-// void insertDataSuppliesHistVar() {
 Future<bool> insertDataSuppliesHistVar(SuppliesModelHist sMH) async {
   // DatabaseSuppliesHist databaseSuppliesHist = DatabaseSuppliesHist();
   DatabaseSuppliesCurrent databaseSuppliesCurrent = DatabaseSuppliesCurrent();
 
   sMH.logDate = Timestamp.now();
+  //one record only, just show remarks the details
+  if (ifMenuUniqueIsCashIn(sMH)) {
+    var iFee = getFee(sMH.currentCounter);
+    if (bNagbigayFee) {
+      sMH.remarks =
+          "${sMH.remarks} CI=${sMH.currentCounter} Fee=$iFee"; // 210, CI=200 Fee=10
+      sMH.currentCounter = sMH.currentCounter + iFee;
+    } else {
+      sMH.remarks =
+          "${sMH.remarks} CI=${sMH.currentCounter - iFee} Fee=$iFee"; // 200, CI=190 Fee=10
+    }
+  } else if (ifMenuUniqueIsCashOut(sMH)) {
+    // negative currentCounter
+    var iFee = getFee(sMH.currentCounter);
+    sMH.currentCounter = sMH.currentCounter + iFee;
+    sMH.remarks =
+        "${sMH.remarks} CO=${sMH.currentCounter} Fee=$iFee"; //-200, CO=-190 Fee=10
+  }
 
   return await databaseSuppliesCurrent.addSuppliesCurr(sMH);
+  //double entry start
+  /*
+  if (sMH.itemUniqueId == menuOthUniqIdCashIn) {
+    var iFee = getFee(sMH.currentCounter);
+    if (bNagbigayFee) {
+      await databaseSuppliesCurrent.addSuppliesCurr(sMH);
+    } else {
+      sMH.currentCounter = sMH.currentCounter - iFee;
+      await databaseSuppliesCurrent.addSuppliesCurr(sMH);
+    }
+    sMH.currentCounter = iFee;
+    sMH.itemUniqueId = menuOthUniqIdFee;
+    return await databaseSuppliesCurrent.addSuppliesCurr(sMH);
+  } else {
+    return await databaseSuppliesCurrent.addSuppliesCurr(sMH);
+  }
+  */
+  //double entry end
+}
+
+int getFee(int price) {
+  var iPrice = (price < 0 ? (price * -1) : price);
+
+  if (iPrice <= 1000) {
+    if (iPrice <= 750) {
+      if (iPrice <= 500) {
+        if (iPrice <= 100) {
+          return 5;
+        }
+        return 10;
+      }
+      return 15;
+    }
+    return 20;
+  } else {
+    if (iPrice % 500 == 0) {
+      return ((iPrice ~/ 500) * 10);
+    } else {
+      return (((iPrice ~/ 500) + 1) * 10);
+    }
+  }
 }
 
 Container conRemarksSuppliesVar(Function setState) {

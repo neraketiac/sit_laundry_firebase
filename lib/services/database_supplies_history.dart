@@ -20,17 +20,21 @@ class DatabaseSuppliesHist {
   }
 
   Stream<QuerySnapshot> getSuppliesHistory(bool bSel) {
+    ///int? accCode = mapEmpAccess[empIdGlobal];
     if (!bSel) {
       return _suppliesHistRef
+
+          ///.where('AccessCode', isLessThan: accCode)
           .orderBy('LogDate', descending: true)
-          .limit(50)
+          .limit(100)
           .snapshots();
     } else {
-      print(autocompleteSelected.customerId);
       return _suppliesHistRef
-          .where('CustomerId', isEqualTo: autocompleteSelected.customerId)
-          //.where('CustomerId', isEqualTo: 2420)
+
+          ///.where('AccessCode', isLessThan: accCode)
+          .orderBy('ItemId')
           .orderBy('LogDate', descending: true)
+          //.limit(50)
           .snapshots();
     }
 

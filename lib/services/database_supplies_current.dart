@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:laundry_firebase/models/suppliesmodelhist.dart';
 import 'package:laundry_firebase/services/database_supplies_history.dart';
 import 'package:laundry_firebase/variables/variables.dart';
+import 'package:laundry_firebase/variables/variables_supplies.dart';
 
 const String SUPPLIES_CURR_REF = "SuppliesCurr";
 
@@ -50,6 +51,16 @@ class DatabaseSuppliesCurrent {
   Future<bool> addSuppliesCurr(SuppliesModelHist sMH) async {
     sMH = await computeCurrentStocks(sMH);
     sMH.empId = empIdGlobal;
+
+    // if (sMH.itemUniqueId == menuOthUniqIdFundsEOD) {
+    //   if (sMH.currentCounter < sMH.currentStocks) {
+    //     sMH.currentCounter = sMH.currentCounter - sMH.currentStocks;
+    //   } else if (sMH.currentCounter > sMH.currentStocks) {
+    //     sMH.currentCounter = sMH.currentStocks - sMH.currentCounter;
+    //   } else {
+    //     sMH.currentCounter = 0;
+    //   }
+    // }
 
     //save hist first to display the current stocks before adding the currentcounter
     DatabaseSuppliesHist databaseSuppliesHist = DatabaseSuppliesHist();

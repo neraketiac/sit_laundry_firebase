@@ -20,17 +20,23 @@ import 'package:laundry_firebase/variables/variables_jobsdone.dart';
 import 'package:laundry_firebase/variables/variables_jobsongoing.dart';
 import 'package:laundry_firebase/variables/variables_oth.dart';
 import 'package:laundry_firebase/variables/variables_supplies.dart';
+import 'package:week_of_year/week_of_year.dart';
 
 late bool bHaveInternet = false;
 bool showDet = false, showFab = false, showBle = false, showOth = false;
 bool bDelAddOnsVar = true;
 bool bCustomerName = false;
-bool bTest = false;
+//bool bTest = false;
+bool bGcashFee = false;
+bool bNagbigayFee = true;
+final value = new NumberFormat("##,##0", "en_US");
 
 late JobsOnQueueModel jobsOnQueueModelGlobal;
 late SuppliesModelHist suppliesModelHistGlobal;
 late String empIdGlobal = "";
 late String selectedNumberVar = "1";
+int iAmountDisplay = 0, iAmountFinal = 0;
+String allClear = "c";
 
 //general
 const int menuDetDVal = 1, menuFabDVal = 2, menuBleDVal = 3, menuOthDVal = 4;
@@ -228,12 +234,24 @@ String getRegexStringVar() =>
 
 Map<String, String> mapEmpId = {
   '05#50': 'Jeng',
-  '08#08': 'Abi',
-  '13#13': 'Ket',
-  '16#16': 'DonP',
   '90#90': 'Rowel',
+  '08#08': 'Abi',
+  '28#28': 'Let',
   '20#20': 'Seiji',
   '80#80': 'Ken',
+  '13#13': 'Ket',
+  '16#16': 'DonP',
+};
+
+Map<String, int> mapEmpAccess = {
+  'Jeng': 151,
+  'Rowel': 152,
+  'Abi': 153,
+  'Let': 111,
+  'Seiji': 155,
+  'Ken': 156,
+  'Ket': 777,
+  'DonP': 777,
 };
 
 String autoPriceDisplay(int price, bool bRegularSabon) {
@@ -567,7 +585,73 @@ void resetAddOnsGlobalVar() {
   listAddOnItemsGlobal.clear();
 }
 
+bool ifMenuUniqueIsCashIn(SuppliesModelHist sMH) {
+  if (sMH.itemUniqueId == menuOthUniqIdCashIn) {
+    return true;
+  }
+  return false;
+}
+
+bool ifMenuUniqueIsFundsIn(SuppliesModelHist sMH) {
+  if (sMH.itemUniqueId == menuOthUniqIdFundsIn) {
+    return true;
+  }
+  return false;
+}
+
+bool ifMenuUniqueIsFee(SuppliesModelHist sMH) {
+  if (sMH.itemUniqueId == menuOthUniqIdFee) {
+    return true;
+  }
+  return false;
+}
+
+bool ifMenuUniqueIsLaundryPayment(SuppliesModelHist sMH) {
+  if (sMH.itemUniqueId == menuOthLaundryPayment) {
+    return true;
+  }
+  return false;
+}
+
+bool ifMenuUniqueIsLoad(SuppliesModelHist sMH) {
+  if (sMH.itemUniqueId == menuOthUniqIdLoad) {
+    return true;
+  }
+  return false;
+}
+
+bool ifMenuUniqueIsCashOut(SuppliesModelHist sMH) {
+  if (sMH.itemUniqueId == menuOthUniqIdCashOut) {
+    return true;
+  }
+  return false;
+}
+
+bool ifMenuUniqueIsLPaymentGCash(SuppliesModelHist sMH) {
+  if (sMH.itemUniqueId == menuOthLPaymentGCash) {
+    return true;
+  }
+  return false;
+}
+
+bool ifMenuUniqueIsExpense(SuppliesModelHist sMH) {
+  if (sMH.itemUniqueId == menuOthExpense) {
+    return true;
+  }
+  return false;
+}
+
+bool ifMenuUniqueIsFundsOut(SuppliesModelHist sMH) {
+  if (sMH.itemUniqueId == menuOthUniqIdFundsOut) {
+    return true;
+  }
+  return false;
+}
+
 void resetSHGlobalVar() {
+  bNagbigayFee = true;
+  bGcashFee = false;
+  remarksSuppliesVar.text = "";
   suppliesModelHistGlobal = SuppliesModelHist(
       docId: "",
       countId: 0,
@@ -779,17 +863,19 @@ Widget createNewSuppVar(BuildContext context, SuppliesModelHist sMH) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Select Customer Name')),
         );
-      } else if ((sMH.itemUniqueId == menuOthUniqIdCashIn ||
-              sMH.itemUniqueId == menuOthUniqIdFundsIn ||
-              sMH.itemUniqueId == menuOthLaundryPayment) &&
+      } else if ((ifMenuUniqueIsCashIn(sMH) ||
+              ifMenuUniqueIsFundsIn(sMH) ||
+              ifMenuUniqueIsLaundryPayment(sMH) ||
+              ifMenuUniqueIsLPaymentGCash(sMH)) &&
           sMH.currentCounter <= 0) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
               content: Text(
                   'Cash In/Funds In/Laundry Payment should be positive number.')),
         );
-      } else if ((sMH.itemUniqueId == menuOthUniqIdCashOut ||
-              sMH.itemUniqueId == menuOthUniqIdFundsOut) &&
+      } else if ((ifMenuUniqueIsCashOut(sMH) ||
+              ifMenuUniqueIsFundsOut(sMH) ||
+              ifMenuUniqueIsExpense(sMH)) &&
           sMH.currentCounter >= 0) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -2627,12 +2713,19 @@ Widget deleteButtonAddOnVar(
   );
 }
 
-void addField(String docId) {
+void addField(String colRef, SuppliesModelHist sMH) {
   // _suppliesCurrRef --if reuse, will not work
+
+  // var weekNum2 = Timestamp.now();
+  var weekNum =
+      DateTime.fromMicrosecondsSinceEpoch(sMH.logDate.microsecondsSinceEpoch);
+
+  //print("week of year=${weekNum.weekOfYear}");
+
   var collectionRef = FirebaseFirestore.instance;
   collectionRef
-      .collection('SuppliesCurr')
-      .doc("0YPLe3dqWAdwhw1R4ntI")
-      .set({'remarks2': ""}, SetOptions(merge: true)).then((value) {});
+      .collection(colRef)
+      .doc(sMH.docId)
+      .set({'WeekOfYear': weekNum}, SetOptions(merge: true)).then((value) {});
   // print("currentstocks=${sMH.currentStocks}");
 }

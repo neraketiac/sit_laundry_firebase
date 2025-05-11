@@ -14,7 +14,8 @@ const int menuDetBreezeDVal = 103,
     menuDetWKL = 106,
     menuDetSurfDVal = 102,
     menuDetKlinDVal = 108,
-    menuDetWKL15 = 109;
+    menuDetWKL15 = 109,
+    menuDetAriel3P = 110;
 
 void addListDetItems() {
   //detItems
@@ -32,7 +33,7 @@ void addListDetItems() {
     itemId: menuDetArielDVal,
     itemUniqueId: menuDetArielDVal,
     itemGroup: groupDet,
-    itemName: "Ariel TP",
+    itemName: "Ariel",
     itemPrice: 15,
     stocksAlert: 5,
     stocksType: "pcs",
@@ -89,6 +90,16 @@ void addListDetItems() {
   ));
   listDetItems.add(OtherItemModel(
     docId: "",
+    itemId: menuDetWKL,
+    itemUniqueId: menuDetAriel3P,
+    itemGroup: groupDet,
+    itemName: "Ariel 3P",
+    itemPrice: 18,
+    stocksAlert: 5,
+    stocksType: "pcs",
+  ));
+  listDetItems.add(OtherItemModel(
+    docId: "",
     itemId: menuDetSurfDVal,
     itemUniqueId: menuDetSurfDVal,
     itemGroup: groupDet,
@@ -102,7 +113,7 @@ void addListDetItems() {
     itemId: menuDetKlinDVal,
     itemUniqueId: menuDetKlinDVal,
     itemGroup: groupDet,
-    itemName: "Klin TP",
+    itemName: "Klin",
     itemPrice: 15,
     stocksAlert: 5,
     stocksType: "pcs",
@@ -110,14 +121,14 @@ void addListDetItems() {
 
   //det names
   mapDetNames.addEntries({menuDetBreezeDVal: "Breeze"}.entries);
-  mapDetNames.addEntries({menuDetArielDVal: "Ariel TP"}.entries);
+  mapDetNames.addEntries({menuDetArielDVal: "Ariel"}.entries);
   mapDetNames.addEntries({menuDetTideDVal: "Tide"}.entries);
   mapDetNames.addEntries({menuDetWingsBlueDVal: "Wings B"}.entries);
   mapDetNames.addEntries({menuDetWingsRedDVal: "Wings R"}.entries);
   mapDetNames.addEntries({menuDetWKL: "WKL"}.entries);
   mapDetNames.addEntries({menuDetWKL15: "WKL15"}.entries);
   mapDetNames.addEntries({menuDetSurfDVal: "Surf"}.entries);
-  mapDetNames.addEntries({menuDetKlinDVal: "Klin TP"}.entries);
+  mapDetNames.addEntries({menuDetKlinDVal: "Klin"}.entries);
 
   //det price
   mapDetPrice.addEntries({menuDetBreezeDVal: 15}.entries);

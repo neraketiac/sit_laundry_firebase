@@ -40,7 +40,7 @@ void addListFabItems() {
     itemId: menuFabDowny24mlDVal,
     itemUniqueId: menuFabDowny24mlDVal,
     itemGroup: groupFab,
-    itemName: "Downy 24",
+    itemName: "Downy 24/26",
     itemPrice: 8,
     stocksAlert: 5,
     stocksType: "pcs",

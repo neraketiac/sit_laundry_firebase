@@ -24,6 +24,7 @@ import 'package:laundry_firebase/variables/variables_det.dart';
 import 'package:laundry_firebase/variables/variables_fab.dart';
 import 'package:laundry_firebase/variables/variables_ble.dart';
 import 'package:laundry_firebase/variables/variables_oth.dart';
+import 'package:week_of_year/week_of_year.dart';
 
 /*
 cd C:\Users\haali\Documents\GIT_SIT\sit_laundry_firebase
@@ -224,6 +225,20 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                 ]),
               ),
             ),
+            // SingleChildScrollView(
+            //   scrollDirection: Axis.vertical,
+            //   child: Container(
+            //     width: 600,
+            //     color: Colors.blue,
+            //     padding: const EdgeInsets.all(8.0),
+            //     child: Column(children: <Widget>[
+            //       const SizedBox(
+            //         height: 1,
+            //       ),
+            //       _readDataSuppliesHistoryAll(),
+            //     ]),
+            //   ),
+            // ),
           ],
         ),
       ),
@@ -524,6 +539,8 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
           listSMH.forEach((sMHData) {
             SuppliesModelHist sMH = sMHData.data();
 
+            //addField("SuppliesCurr", sMH.docId);
+
             final rowData = TableRow(
                 decoration:
                     BoxDecoration(color: zebra ? Colors.black : Colors.black),
@@ -558,13 +575,13 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
     );
   }
 
-  //read Supplies Current
+  //read Supplies History
   Widget _readDataSuppliesHistory() {
     DatabaseSuppliesHist databaseSuppliesHist = DatabaseSuppliesHist();
     bool zebra = false;
     //read
     return StreamBuilder<QuerySnapshot>(
-      stream: databaseSuppliesHist.getSuppliesHistory(bTest),
+      stream: databaseSuppliesHist.getSuppliesHistory(false),
       builder: (context, snapshot) {
         List listSMH = snapshot.data?.docs ?? [];
         bHeader = true;
@@ -610,6 +627,8 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
           listSMH.forEach((sMHData) {
             SuppliesModelHist sMH = sMHData.data();
 
+            ///addField("SuppliesHist", sMH.docId);
+
             final rowData = TableRow(
                 decoration:
                     BoxDecoration(color: zebra ? Colors.black : Colors.black),
@@ -635,6 +654,122 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
 
             rowDatas.add(rowData);
           });
+        }
+
+        return Table(
+          children: rowDatas,
+        );
+      },
+    );
+  }
+
+  //read Supplies History All
+  Widget _readDataSuppliesHistoryAll() {
+    DatabaseSuppliesHist databaseSuppliesHist = DatabaseSuppliesHist();
+    bool zebra = false;
+    //read
+    return StreamBuilder<QuerySnapshot>(
+      stream: databaseSuppliesHist.getSuppliesHistory(true),
+      builder: (context, snapshot) {
+        List listSMH = snapshot.data?.docs ?? [];
+        bHeader = true;
+        List<TableRow> rowDatas = [];
+        if (listSMH.isNotEmpty) {
+          //header
+          if (bHeader) {
+            var rowData = TableRow(
+                decoration:
+                    const BoxDecoration(color: Color.fromARGB(255, 9, 194, 49)),
+                children: [
+                  // AutoCompleteCustomer(),
+                  const Text(
+                    "Supplies Summary",
+                    style: TextStyle(fontSize: 10),
+                  ),
+                ]);
+            rowDatas.add(rowData);
+            bHeader = false;
+          }
+          var weekNum2 = Timestamp.now();
+          var weekNum = DateTime.fromMicrosecondsSinceEpoch(
+              weekNum2.microsecondsSinceEpoch);
+
+          print("week of year=${weekNum.weekOfYear} ${weekNum.ordinalDate}");
+
+          SuppliesModelHist sMHTemp = SuppliesModelHist(
+              docId: '0',
+              countId: 0,
+              itemId: 0,
+              itemUniqueId: 0,
+              currentCounter: 0,
+              currentStocks: 0,
+              logDate: Timestamp.now(),
+              empId: empIdGlobal,
+              customerId: 0,
+              remarks: '');
+          listSMH.forEach((sMHData) {
+            SuppliesModelHist sMH = sMHData.data();
+
+//            addField("SuppliesHist", sMH);
+
+            if (sMH.itemUniqueId == 4405) {
+              if (sMH.itemId == sMHTemp.itemId) {
+                sMHTemp.currentCounter =
+                    sMHTemp.currentCounter + sMH.currentCounter;
+                sMHTemp.logDate = Timestamp.now();
+              } else {
+                //display temp before changing
+                if (sMHTemp.itemId != 0) {
+                  final rowData = TableRow(
+                      decoration: BoxDecoration(
+                          color: zebra ? Colors.black : Colors.black),
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(2.0),
+                          child: Center(
+                            child: GestureDetector(
+                              onTap: () {},
+                              child: conDisplaySuppliesHistoryVar(
+                                  context, sMHTemp),
+                            ),
+                          ),
+                        )
+                      ]);
+
+                  rowDatas.add(rowData);
+                }
+
+                sMHTemp = SuppliesModelHist(
+                    docId: sMH.docId,
+                    countId: sMH.countId,
+                    itemId: sMH.itemId,
+                    itemUniqueId: sMH.itemUniqueId,
+                    currentCounter: sMH.currentCounter,
+                    currentStocks: sMH.currentStocks,
+                    logDate: sMH.logDate,
+                    empId: sMH.empId,
+                    customerId: sMH.customerId,
+                    remarks: sMH.remarks);
+              }
+            }
+          });
+
+          final rowDatax = TableRow(
+              decoration:
+                  BoxDecoration(color: zebra ? Colors.black : Colors.black),
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(2.0),
+                  child: Center(
+                    child: GestureDetector(
+                      onTap: () {},
+                      child: conDisplaySuppliesHistoryVar(context, sMHTemp),
+                    ),
+                  ),
+                )
+              ]);
+
+          rowDatas.add(rowDatax);
         }
 
         return Table(

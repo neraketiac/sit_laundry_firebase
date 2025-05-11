@@ -1343,16 +1343,69 @@ class _MyQueueState extends State<MyQueue> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text("Amount: "),
+              Text("Final: ", style: TextStyle(fontSize: 10)),
               Text(
-                  '${sMH.currentCounter} ${getItemNameStocksType(sMH.itemId, sMH.itemUniqueId)}',
+                  '${value.format(sMH.currentCounter)} ${getItemNameStocksType(sMH.itemId, sMH.itemUniqueId)}',
                   style: TextStyle(
                       backgroundColor: (sMH.currentCounter < 0
                           ? Color.fromARGB(125, 244, 67, 54)
-                          : const Color.fromARGB(0, 255, 193, 7))))
+                          : const Color.fromARGB(0, 255, 193, 7)),
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold)),
             ],
           ),
 
+          SizedBox(
+            height: 10,
+          ),
+          Visibility(
+            visible: bGcashFee,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  "Sample:",
+                  style: TextStyle(fontSize: 8),
+                ),
+                Text(
+                  "${value.format(iAmountDisplay)} ",
+                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                ),
+                Text("Fee ", style: TextStyle(fontSize: 8)),
+                Text(
+                  value.format(getFee(iAmountFinal)),
+                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+          ),
+          Visibility(
+            visible: bGcashFee,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  "Nagbigay ng fee?",
+                  style: TextStyle(fontSize: 9),
+                ),
+                Checkbox(
+                    value: bNagbigayFee,
+                    onChanged: ((val) {
+                      bNagbigayFee = val!;
+                      if (bNagbigayFee) {
+                        iAmountDisplay = iAmountFinal;
+                      } else {
+                        iAmountDisplay = iAmountFinal - getFee(iAmountFinal);
+                      }
+
+                      setState(() {
+                        bNagbigayFee;
+                        iAmountDisplay;
+                      });
+                    })),
+              ],
+            ),
+          ),
           SizedBox(
             height: 20,
           ),
@@ -1391,7 +1444,7 @@ class _MyQueueState extends State<MyQueue> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              conClipRRectZero(setState, sMH, "c"),
+              conClipRRectZero(setState, sMH),
               conClipRRectBlank(setState, sMH, "B"),
               conClipRRectSave(context, setState, sMH, "save"),
             ],
@@ -1432,10 +1485,10 @@ class _MyQueueState extends State<MyQueue> {
                     SnackBar(content: Text('Select Customer Name')),
                   );
                 } else {
-                  if ((sMH.itemUniqueId == menuOthUniqIdCashIn ||
-                          sMH.itemUniqueId == menuOthUniqIdFundsIn ||
-                          sMH.itemUniqueId == menuOthLaundryPayment ||
-                          sMH.itemUniqueId == menuOthUniqIdFee) &&
+                  if ((ifMenuUniqueIsCashIn(sMH) ||
+                          ifMenuUniqueIsFundsIn(sMH) ||
+                          ifMenuUniqueIsLaundryPayment(sMH) ||
+                          ifMenuUniqueIsFee(sMH)) &&
                       sMH.currentCounter < 0) {
                     setState(() {
                       sMH.currentCounter = sMH.currentCounter * -1;
@@ -1446,8 +1499,9 @@ class _MyQueueState extends State<MyQueue> {
                           content:
                               Text('Auto-correct: should be positive number.')),
                     );
-                  } else if ((sMH.itemUniqueId == menuOthUniqIdCashOut ||
-                          sMH.itemUniqueId == menuOthUniqIdFundsOut) &&
+                  } else if ((ifMenuUniqueIsCashOut(sMH) ||
+                          ifMenuUniqueIsFundsOut(sMH) ||
+                          ifMenuUniqueIsExpense(sMH)) &&
                       sMH.currentCounter > 0) {
                     setState(() {
                       sMH.currentCounter = sMH.currentCounter * -1;
@@ -1459,12 +1513,49 @@ class _MyQueueState extends State<MyQueue> {
                     );
                   }
 
+                  // if (ifMenuUniqueIsCashIn(sMH) || ifMenuUniqueIsCashOut(sMH)) {
+                  //   var iFee = getFee(iAmountDisplay);
+                  //   if (bNagbigayFee) {
+                  //     showMessageSuppliseSave(
+                  //         context,
+                  //         setState,
+                  //         "Confirm Save",
+                  //         "Save ${(getItemNameOnly(sMH.itemId, sMH.itemUniqueId))} ${sMH.currentCounter} \n ${(getItemNameOnly(sMH.itemId, menuOthUniqIdFee))} $iFee?",
+                  //         sMH);
+                  //   } else {
+                  //     if (ifMenuUniqueIsCashIn(sMH)) {
+                  //       showMessageSuppliseSave(
+                  //           context,
+                  //           setState,
+                  //           "Confirm Save",
+                  //           "Save ${(getItemNameOnly(sMH.itemId, sMH.itemUniqueId))} ${sMH.currentCounter - iFee} \n ${(getItemNameOnly(sMH.itemId, menuOthUniqIdFee))} $iFee?",
+                  //           sMH);
+                  //     } else {
+                  //       showMessageSuppliseSave(
+                  //           context,
+                  //           setState,
+                  //           "Confirm Save",
+                  //           "Save ${(getItemNameOnly(sMH.itemId, sMH.itemUniqueId))} ${sMH.currentCounter + iFee} \n ${(getItemNameOnly(sMH.itemId, menuOthUniqIdFee))} $iFee?",
+                  //           sMH);
+                  //     }
+                  //   }
+                  // } else {
+                  // if (sMH.itemUniqueId == menuOthUniqIdFundsEOD) {
+                  //   showMessageSuppliseSave(
+                  //       context,
+                  //       setState,
+                  //       "Confirm Save",
+                  //       "Your current funds is ${sMH.currentCounter}, system will compute your short/excess?",
+                  //       sMH);
+                  // } else {
                   showMessageSuppliseSave(
                       context,
                       setState,
-                      "Save?",
+                      "Confirm Save",
                       "Save ${(getItemNameOnly(sMH.itemId, sMH.itemUniqueId))} (${sMH.currentCounter} ${getItemNameStocksType(sMH.itemId, sMH.itemUniqueId)})?",
                       sMH);
+                  // }
+                  ///}
                 }
 
                 // if (sMH.customerId == 1 || !bCustomerName) {
@@ -1505,8 +1596,7 @@ class _MyQueueState extends State<MyQueue> {
     );
   }
 
-  ClipRRect conClipRRectZero(
-      Function setState, SuppliesModelHist sMH, String s) {
+  ClipRRect conClipRRectZero(Function setState, SuppliesModelHist sMH) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(10),
       child: Stack(
@@ -1528,9 +1618,12 @@ class _MyQueueState extends State<MyQueue> {
               onPressed: () {
                 setState(() {
                   sMH.currentCounter = 0;
+                  iAmountFinal = 0;
+                  iAmountDisplay = 0;
+                  bNagbigayFee = true;
                 });
               },
-              child: Text(s)),
+              child: Text(allClear)),
         ],
       ),
     );
@@ -1556,11 +1649,7 @@ class _MyQueueState extends State<MyQueue> {
                 padding: const EdgeInsets.all(2),
                 textStyle: const TextStyle(fontSize: 20),
               ),
-              onPressed: () {
-                setState(() {
-                  sMH.currentCounter = 0;
-                });
-              },
+              onPressed: () {},
               child: Text("")),
         ],
       ),
@@ -1589,6 +1678,7 @@ class _MyQueueState extends State<MyQueue> {
               ),
               onPressed: () {
                 setState(() {
+                  //iAmountDisplay = iAmountDisplay * -1;
                   sMH.currentCounter = sMH.currentCounter * -1;
                 });
               },
@@ -1620,7 +1710,10 @@ class _MyQueueState extends State<MyQueue> {
               onPressed: () {
                 String s = "${sMH.currentCounter}$i";
                 setState(() {
+                  iAmountFinal = int.parse(s);
+                  iAmountDisplay = int.parse(s);
                   sMH.currentCounter = int.parse(s);
+                  bNagbigayFee = true;
                 });
               },
               child: Text("$i")),
@@ -1900,43 +1993,55 @@ class _MyQueueState extends State<MyQueue> {
       visible: true,
       child: Container(
         padding: EdgeInsets.all(1.0),
-        child: Row(
+        child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            DropdownButton<OtherItemModel>(
-              value: selectedSupVar,
-              icon: Icon(Icons.arrow_downward),
-              iconSize: 24,
-              elevation: 16,
-              style: TextStyle(color: Colors.purple[700]),
-              underline: Container(
-                height: 2,
-                color: Colors.purple[700],
-              ),
-              items: listSuppItems.map((OtherItemModel map) {
-                return DropdownMenuItem<OtherItemModel>(
-                    value: map,
-                    child: Text(
-                        "${map.itemGroup}-${map.itemName} ${(map.itemPrice <= 0 ? "" : "(${map.itemPrice} PhP)")}")); //422 donut display price for funds, cash out
-              }).toList(),
-              onChanged: (val) {
-                setState(
-                  () {
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                DropdownButton<OtherItemModel>(
+                  value: selectedSupVar,
+                  icon: Icon(Icons.arrow_downward),
+                  iconSize: 24,
+                  elevation: 16,
+                  style: TextStyle(color: Colors.purple[700]),
+                  underline: Container(
+                    height: 2,
+                    color: Colors.purple[700],
+                  ),
+                  items: listSuppItems.map((OtherItemModel map) {
+                    return DropdownMenuItem<OtherItemModel>(
+                        value: map,
+                        child: Text(
+                            "${map.itemGroup}-${map.itemName} ${(map.itemPrice <= 0 ? "" : "(${map.itemPrice} PhP)")}")); //422 donut display price for funds, cash out
+                  }).toList(),
+                  onChanged: (val) {
+                    bGcashFee = false;
                     selectedSupVar = val!;
+                    if (val?.itemUniqueId == menuOthUniqIdCashIn ||
+                        val?.itemUniqueId == menuOthUniqIdCashOut) {
+                      bGcashFee = true;
+                    }
+                    setState(
+                      () {
+                        selectedSupVar;
+                        bGcashFee;
+                      },
+                    );
+
+                    sMH.countId = 0;
+                    sMH.itemId = selectedSupVar.itemId;
+                    sMH.itemUniqueId = selectedSupVar.itemUniqueId;
+
+                    // suppliesModelHistGlobal = SuppliesModelHist(
+                    //     docId: selectedSupVar.docId,
+                    //     itemId: selectedSupVar.itemId,
+                    //     counter: int.parse(counterControllerVar.text),
+                    //     currentStocks: 50,
+                    //     logDate: Timestamp.now());
                   },
-                );
-
-                sMH.countId = 0;
-                sMH.itemId = selectedSupVar.itemId;
-                sMH.itemUniqueId = selectedSupVar.itemUniqueId;
-
-                // suppliesModelHistGlobal = SuppliesModelHist(
-                //     docId: selectedSupVar.docId,
-                //     itemId: selectedSupVar.itemId,
-                //     counter: int.parse(counterControllerVar.text),
-                //     currentStocks: 50,
-                //     logDate: Timestamp.now());
-              },
+                ),
+              ],
             ),
           ],
         ),
