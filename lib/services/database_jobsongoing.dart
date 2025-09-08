@@ -37,7 +37,8 @@ class DatabaseJobsOnGoing {
     _jobsOnGoingRef
         .add(jOQM)
         .then((value) => {
-              print("Insert Done.${jOQM.customerId}"),
+              print(
+                  "addJobsOnGoing Insert Done.${jOQM.customerId} ${jOQM.jobsId}"),
               deleteJOQVar(jOQM.docId, lAOI),
               updateDocId(JobsOnQueueModel(
                   docId: value.id,

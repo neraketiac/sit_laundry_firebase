@@ -43,6 +43,8 @@ class _MyQueueState extends State<MyQueue> {
           FloatingActionButton(
             heroTag: "JobsOnQueue",
             onPressed: () {
+              remarksControllerVar.text =
+                  ""; //fix when click with remarks then new, fix to remove remarks
               showNewJobsForQueue();
             },
             child: const Icon(Icons.local_laundry_service_sharp),

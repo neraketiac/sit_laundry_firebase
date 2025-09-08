@@ -346,14 +346,17 @@ Future<void> finalNumberAutoVarV2() async {
       .collection('JobsOnGoing')
       .orderBy('D30_JobsId', descending: true);
   var queryAuto = await colAuto.get();
+  print("update 1 autonumber=$autoNumber");
   for (var doc in queryAuto.docs) {
     if (doc['D30_JobsId'] == 99) {
       await doc.reference.update({
         'D30_JobsId': autoNumber,
       });
+      print("update 2 autonumber=$autoNumber");
     }
     break;
   }
+  print("update 3 autonumber=$autoNumber");
 }
 
 Future<int> getNumberAutoVarV2() async {
@@ -394,6 +397,7 @@ Future<int> getNumberAutoVarV2() async {
       }
     }
   }
+  print("return 99");
   return 99;
 }
 

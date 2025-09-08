@@ -408,13 +408,13 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
           });
 
           for (int i = 0; i < finListNumbering.length; i++) {
-            print("i=$i ${finListNumbering[i]}");
+            ///print("i=$i ${finListNumbering[i]}");
             lasListNumbering
                 .removeWhere((val) => val.startsWith(finListNumbering[i]));
           }
 
-          print(finListNumbering);
-          print(lasListNumbering);
+          ///print(finListNumbering);
+          ///print(lasListNumbering);
         }
 
         return Table(
@@ -3179,9 +3179,9 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
 
         if (_giFinalVacantJobsId <= 25) {
           //insertDataJobsOnGoing();
-          showAutoOnGoingDialog(context, "Move to on-going?");
+          showAutoOnGoingDialog(context, "xMove to on-going?");
         } else {
-          messageResultQueueMobile(context, "On Going is full");
+          messageResultQueueMobile(context, "xOn Going is full");
         }
       },
       color: cButtons,
@@ -3195,7 +3195,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
         //pop box
         Navigator.pop(context);
 
-        showAutoDoneDialog(context, "Move to JobsDone?");
+        showAutoDoneDialog(context, "xMove to JobsDone?");
 
         //insertDataJobsDone();
       },
@@ -3236,7 +3236,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
         })
         .then((value) => {
               _deleteDataQueueMobile(),
-              messageResult(context, "Move to ongoing.$_gsCustomer"),
+              messageResult(context, "xMove to ongoing.$_gsCustomer"),
             })
         // ignore: invalid_return_type_for_catch_error
         .catchError((error) => messageResult(context, "Failed : $error"));
@@ -3277,7 +3277,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
         })
         .then((value) => {
               _deleteDataOnGoingMobile(),
-              messageResult(context, "Move to Jobs Done.$_gsCustomer"),
+              messageResult(context, "xMove to Jobs Done.$_gsCustomer"),
             })
         // ignore: invalid_return_type_for_catch_error
         .catchError((error) => messageResult(context, "Failed : $error"));

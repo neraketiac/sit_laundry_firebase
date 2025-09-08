@@ -299,16 +299,26 @@ Widget moveToJOGVar(BuildContext context, String docId, JobsOnQueueModel jOQM,
           jOQM.paymentLaundryGenerated = true;
         }
 
+        print("jOQM 1= ${jOQM.jobsId}");
+
         insertDataJobsOnGoingVar(jOQM, lOIM);
+
+        print("jOQM 2= ${jOQM.jobsId}");
         //get the next number
         autoNumber = await getNumberAutoVarV2();
+
+        print("jOQM 3= ${jOQM.jobsId}");
         //update the 99 jobsid
         finalNumberAutoVarV2();
+
+        print("jOQM 4= ${jOQM.jobsId}");
         showMessage(context, "Move to OnGoing", "Added to #$autoNumber");
+
+        print("jOQM 5= ${jOQM.jobsId}");
       }
     },
     color: cButtons,
-    child: const Text("Move To OnGoing"),
+    child: const Text("Move To OnGoing??"),
   );
 }
 
