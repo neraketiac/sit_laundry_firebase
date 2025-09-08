@@ -26,6 +26,8 @@ late bool bHaveInternet = false;
 bool showDet = false, showFab = false, showBle = false, showOth = false;
 bool bDelAddOnsVar = true;
 bool bCustomerName = false;
+//bool bAutoLaundry = false;
+//bool bInsertDataSuppliesHist = false;
 //bool bTest = false;
 bool bGcashFee = false;
 bool bNagbigayFee = true;
@@ -33,6 +35,8 @@ final value = new NumberFormat("##,##0", "en_US");
 
 late JobsOnQueueModel jobsOnQueueModelGlobal;
 late SuppliesModelHist suppliesModelHistGlobal;
+late SuppliesModelHist sMHGLaundryPayment;
+late SuppliesModelHist sMHGLaundryPaymentGCash;
 late String empIdGlobal = "";
 late String selectedNumberVar = "1";
 int iAmountDisplay = 0, iAmountFinal = 0;
@@ -233,7 +237,7 @@ String getRegexStringVar() =>
 //var mapEmpId = {"0550", "Jeng", "0808", "Abi", "0413", "Ket", "0316", "DonP"};
 
 Map<String, String> mapEmpId = {
-  '05#50': 'Jeng',
+  '05#05': 'Jeng',
   '90#90': 'Rowel',
   '08#08': 'Abi',
   '28#28': 'Let',
@@ -244,14 +248,32 @@ Map<String, String> mapEmpId = {
 };
 
 Map<String, int> mapEmpAccess = {
-  'Jeng': 151,
-  'Rowel': 152,
-  'Abi': 153,
-  'Let': 111,
-  'Seiji': 155,
-  'Ken': 156,
-  'Ket': 777,
-  'DonP': 777,
+  'Jeng': 20001, //jeng salary
+  'Rowel': 20002,
+  'Abi': 20003,
+  'Let': 20004,
+  'Seiji': 20005,
+  'Ken': 20006,
+  'DonP': 10001, //gcash account
+  'Ket': 10001,
+  'DonP': 10002,
+  'Ket': 10002,
+};
+//1 enabled
+//0 or others disabled cannot view queue_mobile_dart
+Map<String, int> mapEmpAccessv2 = {
+  'Jeng20001': 1, //jeng salary
+  'Rowel20002': 1,
+  'Abi20003': 1,
+  'Let20004': 1,
+  'Seiji20005': 1,
+  'Ken20006': 1,
+  'DonP10001': 1, //gcash account
+  'DonP10002': 1,
+  'DonP10003': 1,
+  'Ket10011': 1,
+  'Ket10012': 1,
+  'Ket10013': 1,
 };
 
 String autoPriceDisplay(int price, bool bRegularSabon) {
@@ -564,6 +586,7 @@ void resetJOQMGlobalVar() {
       paidgcash: false,
       paidgcashverified: false,
       paymentReceivedBy: "",
+      paymentLaundryGenerated: false,
       dateO: Timestamp.fromDate(DateTime(2000)),
       paidD: Timestamp.fromDate(DateTime(2000)),
       jobsId: 99,
@@ -628,7 +651,7 @@ bool ifMenuUniqueIsCashOut(SuppliesModelHist sMH) {
 }
 
 bool ifMenuUniqueIsLPaymentGCash(SuppliesModelHist sMH) {
-  if (sMH.itemUniqueId == menuOthLPaymentGCash) {
+  if (sMH.itemUniqueId == menuOthPaymentGCash) {
     return true;
   }
   return false;
@@ -657,6 +680,30 @@ void resetSHGlobalVar() {
       countId: 0,
       itemId: selectedSupVar.itemId,
       itemUniqueId: selectedSupVar.itemUniqueId,
+      currentCounter: 0,
+      currentStocks: 0,
+      logDate: Timestamp.now(),
+      empId: empIdGlobal,
+      customerId: 1,
+      remarks: "");
+
+  sMHGLaundryPayment = SuppliesModelHist(
+      docId: "",
+      countId: 0,
+      itemId: menuOthCashInOutFunds,
+      itemUniqueId: menuOthLaundryPayment,
+      currentCounter: 0,
+      currentStocks: 0,
+      logDate: Timestamp.now(),
+      empId: empIdGlobal,
+      customerId: 1,
+      remarks: "");
+
+  sMHGLaundryPaymentGCash = SuppliesModelHist(
+      docId: "",
+      countId: 0,
+      itemId: menuOthPaymentGCash,
+      itemUniqueId: menuOthPaymentGCash,
       currentCounter: 0,
       currentStocks: 0,
       logDate: Timestamp.now(),
@@ -856,8 +903,11 @@ Widget closeButton2popVar(BuildContext context) {
 Widget createNewSuppVar(BuildContext context, SuppliesModelHist sMH) {
   return MaterialButton(
     onPressed: () async {
+      //bInsertDataSuppliesHist = false;
+      //if (!bAutoLaundry) {
       sMH.customerId = autocompleteSelected.customerId;
       sMH.remarks = remarksSuppliesVar.text;
+      //}
 
       if (sMH.customerId == 1 || !bCustomerName) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -886,6 +936,7 @@ Widget createNewSuppVar(BuildContext context, SuppliesModelHist sMH) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Success')),
           );
+          //bInsertDataSuppliesHist = true;
           print("Sucess");
           Navigator.pop(context);
           Navigator.pop(context);
@@ -902,6 +953,36 @@ Widget createNewSuppVar(BuildContext context, SuppliesModelHist sMH) {
     color: cButtons,
     child: const Text("Save"),
   );
+}
+
+Future<void> insertDataSuppliesHistoryVarLaundry(
+    BuildContext context, JobsOnQueueModel jOQM) async {
+  SuppliesModelHist sMH;
+  if (jOQM.paidgcash) {
+    sMH = sMHGLaundryPaymentGCash;
+  } else {
+    sMH = sMHGLaundryPayment;
+  }
+
+  sMH.customerId = jOQM.customerId;
+  sMH.currentCounter = jOQM.initialPrice + jOQM.initialOthersPrice;
+
+  jOQM.remarks = "${jOQM.remarks} Paid=${sMH.currentCounter}";
+
+  if (await insertDataSuppliesHistVar(sMH)) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Success')),
+    );
+    //bInsertDataSuppliesHist = true;
+    print("Sucess");
+    Navigator.pop(context);
+    Navigator.pop(context);
+  } else {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Cannot Save')),
+    );
+    print("Failed");
+  }
 }
 
 Widget readAddedDataVar(List<OtherItemModel> listAddedOthers) {
@@ -1078,6 +1159,8 @@ Visibility visExtraOnQueueVar(BuildContext context, Function setState,
                           jOQM.initialOthersPrice =
                               jOQM.initialOthersPrice + 15;
 
+                          jOQM.remarks = "${jOQM.remarks} +Fab";
+
                           showMessage(context, "Extras", "Add Fab added.");
                         },
                       );
@@ -1104,6 +1187,7 @@ Visibility visExtraOnQueueVar(BuildContext context, Function setState,
 
                           jOQM.initialOthersPrice =
                               jOQM.initialOthersPrice + 15;
+                          jOQM.remarks = "${jOQM.remarks} +XD";
 
                           showMessage(context, "Extras", "Extra Dry added.");
                         },
@@ -1136,6 +1220,7 @@ Visibility visExtraOnQueueVar(BuildContext context, Function setState,
 
                           jOQM.initialOthersPrice =
                               jOQM.initialOthersPrice + 15;
+                          jOQM.remarks = "${jOQM.remarks} +XW";
 
                           showMessage(context, "Extras", "Extra Wash added.");
                         },
@@ -1163,6 +1248,7 @@ Visibility visExtraOnQueueVar(BuildContext context, Function setState,
 
                           jOQM.initialOthersPrice =
                               jOQM.initialOthersPrice + 15;
+                          jOQM.remarks = "${jOQM.remarks} +XR";
 
                           showMessage(context, "Extras", "Extra Rinse added.");
                         },
@@ -1212,6 +1298,7 @@ Visibility visExtraOnGoingVar(BuildContext context, Function setState,
                       bViewAddOnDtlOnGoing = true;
 
                       jOQM.initialOthersPrice = jOQM.initialOthersPrice + 15;
+                      jOQM.remarks = "${jOQM.remarks} +XD";
 
                       showMessage(context, "Extras", "Extra Dry added.");
                     },
@@ -2000,7 +2087,8 @@ Container conBagVar(
   );
 }
 
-Container conPaymentVar(Function setState, JobsOnQueueModel jOQM) {
+Container conPaymentVar(
+    BuildContext context, Function setState, JobsOnQueueModel jOQM) {
   return Container(
     decoration: decoAmber(),
     child: Row(
@@ -2015,14 +2103,18 @@ Container conPaymentVar(Function setState, JobsOnQueueModel jOQM) {
             Checkbox(
                 value: jOQM.unpaid,
                 onChanged: (val) {
-                  resetPaymentQueueBool(jOQM);
-                  if (val!) {
-                    setState(
-                      () {
-                        jOQM.unpaid = val;
-                        jOQM.paidD = Timestamp.fromDate(DateTime(2000));
-                      },
-                    );
+                  if (jOQM.paidcash || jOQM.paidgcash) {
+                    showMessage(context, "Stop", "Cannot set to unpaid.");
+                  } else {
+                    resetPaymentQueueBool(jOQM);
+                    if (val!) {
+                      setState(
+                        () {
+                          jOQM.unpaid = val;
+                          jOQM.paidD = Timestamp.fromDate(DateTime(2000));
+                        },
+                      );
+                    }
                   }
                 })
           ],
@@ -2036,14 +2128,36 @@ Container conPaymentVar(Function setState, JobsOnQueueModel jOQM) {
             Checkbox(
                 value: jOQM.paidcash,
                 onChanged: (val) {
-                  resetPaymentQueueBool(jOQM);
-                  if (val!) {
-                    setState(
-                      () {
-                        jOQM.paidcash = val;
-                        jOQM.paidD = Timestamp.now();
-                      },
-                    );
+                  if (jOQM.paymentLaundryGenerated) {
+                    showMessage(context, "Stop",
+                        "Transaction already generated, cannot unchange.");
+                  } else {
+                    resetPaymentQueueBool(jOQM);
+                    if (val!) {
+                      // SuppliesModelHist sMH;
+                      // sMH = sMHGLaundryPayment;
+                      // sMH.customerId = jOQM.customerId;
+                      // sMH.currentCounter =
+                      //     jOQM.initialPrice + jOQM.initialOthersPrice;
+                      // bCustomerName = true;
+                      // bAutoLaundry = true;
+
+                      setState(
+                        () {
+                          jOQM.paidcash = val;
+                          jOQM.paidD = Timestamp.now();
+                          // createNewSuppVar(context, sMH); //plan b
+                        },
+                      );
+                      //showMessage(context, title, message);
+
+                      // showMessageSuppliseSaveJobs(
+                      //     context,
+                      //     setState,
+                      //     "Save Laundry Payment",
+                      //     "Save ${(getItemNameOnly(sMH.itemId, sMH.itemUniqueId))} (${sMH.currentCounter} ${getItemNameStocksType(sMH.itemId, sMH.itemUniqueId)})?",
+                      //     sMH);
+                    }
                   }
                 })
           ],
@@ -2057,14 +2171,19 @@ Container conPaymentVar(Function setState, JobsOnQueueModel jOQM) {
             Checkbox(
                 value: jOQM.paidgcash,
                 onChanged: (val) {
-                  resetPaymentQueueBool(jOQM);
-                  if (val!) {
-                    setState(
-                      () {
-                        jOQM.paidgcash = val;
-                        jOQM.paidD = Timestamp.now();
-                      },
-                    );
+                  if (jOQM.paymentLaundryGenerated) {
+                    showMessage(context, "Stop",
+                        "Transaction already generated, cannot unchange.");
+                  } else {
+                    resetPaymentQueueBool(jOQM);
+                    if (val!) {
+                      setState(
+                        () {
+                          jOQM.paidgcash = val;
+                          jOQM.paidD = Timestamp.now();
+                        },
+                      );
+                    }
                   }
                 })
           ],
@@ -2289,9 +2408,7 @@ Visibility visNeedOn(Function setState) {
 //Display Queue Tables
 Color getCOlorStatusVar(JobsOnQueueModel jOQM) {
 //JobsOnQueue Colors
-  if (jOQM.riderPickup) {
-    return cRiderPickup;
-  } else if (jOQM.forSorting) {
+  if (jOQM.forSorting) {
     return cForSorting;
   } else if (jOQM.waiting) {
     return cWaiting;
@@ -2307,6 +2424,8 @@ Color getCOlorStatusVar(JobsOnQueueModel jOQM) {
     return cWaitRiderDelivery;
   } else if (jOQM.nasaCustomerNa) {
     return cNasaCustomerNa;
+  } else if (jOQM.riderPickup) {
+    return cRiderPickup;
   } else {
     return cRiderOnDelivery;
   }
@@ -2326,6 +2445,18 @@ bool isItTomorrow(Timestamp timestamp) {
     return true;
   }
   return false;
+}
+
+bool hasAccessInUniqueIdDisplay(SuppliesModelHist sMH) {
+  if (sMH.itemUniqueId >= 10000) {
+    if (mapEmpAccessv2[empIdGlobal + sMH.itemUniqueId.toString()] == 1) {
+      return true;
+    } else {
+      return false;
+    }
+  } else {
+    return true;
+  }
 }
 
 String convertTimeStampVar(Timestamp timestamp) {
@@ -2515,15 +2646,13 @@ Container conDisplayVar(
                                 ? "Folding"
                                 : (jOQM.forSorting
                                     ? "For Sorting"
-                                    : (jOQM.riderPickup
-                                        ? "Rider Pickup"
-                                        : (jOQM.waitCustomerPickup
-                                            ? "Wait Customer"
-                                            : (jOQM.waitRiderDelivery
-                                                ? "Deliver to Customer"
-                                                : (jOQM.nasaCustomerNa
-                                                    ? "Nasa Customer Na"
-                                                    : "N/A"))))))))),
+                                    : (jOQM.waitCustomerPickup
+                                        ? "Wait Customer"
+                                        : (jOQM.waitRiderDelivery
+                                            ? "Deliver to Customer"
+                                            : (jOQM.nasaCustomerNa
+                                                ? "Nasa Customer Na"
+                                                : "N/A")))))))),
                 style: const TextStyle(fontSize: 9),
               ),
               Text(
@@ -2728,4 +2857,42 @@ void addField(String colRef, SuppliesModelHist sMH) {
       .doc(sMH.docId)
       .set({'WeekOfYear': weekNum}, SetOptions(merge: true)).then((value) {});
   // print("currentstocks=${sMH.currentStocks}");
+}
+
+void showMessageSuppliseSaveJobs(BuildContext context, Function setState,
+    String title, String message, SuppliesModelHist sMH) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return StatefulBuilder(builder: (context, setState) {
+        return AlertDialog(
+          title: Text(
+            title,
+            style: TextStyle(backgroundColor: Colors.amber[300]),
+          ),
+          content: SingleChildScrollView(
+            scrollDirection: Axis.vertical,
+            child: Container(
+              padding: EdgeInsets.all(8.0),
+              decoration: BoxDecoration(
+                  border: Border.all(color: Colors.blueAccent, width: 2.0)),
+              child: Form(
+                //key: _formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(message),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          actions: [
+            cancelButtonVar(context),
+            createNewSuppVar(context, sMH),
+          ],
+        );
+      });
+    },
+  );
 }

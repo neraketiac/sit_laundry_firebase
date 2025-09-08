@@ -8,11 +8,11 @@ import 'package:intl/intl.dart';
 import 'package:laundry_firebase/models/jobsonqueuemodel.dart';
 import 'package:laundry_firebase/models/otheritemmodel.dart';
 import 'package:laundry_firebase/models/suppliesmodelhist.dart';
-import 'package:laundry_firebase/pages/autocompletecustomer.dart';
+//import 'package:laundry_firebase/pages/autocompletecustomer.dart';
 import 'package:laundry_firebase/services/database_jobsdone.dart';
 import 'package:laundry_firebase/services/database_jobsongoing.dart';
 import 'package:laundry_firebase/services/database_jobsonqueue.dart';
-import 'package:laundry_firebase/services/database_other_items_onqueue.dart';
+//import 'package:laundry_firebase/services/database_other_items_onqueue.dart';
 import 'package:laundry_firebase/services/database_supplies_current.dart';
 import 'package:laundry_firebase/services/database_supplies_history.dart';
 import 'package:laundry_firebase/variables/vairables_jobsonqueue.dart';
@@ -127,76 +127,76 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // SingleChildScrollView(
-            //   scrollDirection: Axis.vertical,
-            //   child: Container(
-            //     width: 200,
-            //     color: Colors.blue,
-            //     padding: const EdgeInsets.all(8.0),
-            //     child: Column(children: <Widget>[
-            //       const SizedBox(
-            //         height: 1,
-            //       ),
-            //       _readDataJobsOnQueue(),
-            //     ]),
-            //   ),
-            // ),
-            // SingleChildScrollView(
-            //   scrollDirection: Axis.vertical,
-            //   child: Container(
-            //     width: 200,
-            //     color: Colors.blue,
-            //     padding: const EdgeInsets.all(8.0),
-            //     child: Column(children: <Widget>[
-            //       const SizedBox(
-            //         height: 1,
-            //       ),
-            //       _readDataJobsOnGoing(),
-            //     ]),
-            //   ),
-            // ),
-            // SingleChildScrollView(
-            //   scrollDirection: Axis.vertical,
-            //   child: Container(
-            //     width: 200,
-            //     color: Colors.blue,
-            //     padding: const EdgeInsets.all(8.0),
-            //     child: Column(children: <Widget>[
-            //       const SizedBox(
-            //         height: 1,
-            //       ),
-            //       _readDataJobsDoneFilter('D8_WaitCustomerPickup'),
-            //     ]),
-            //   ),
-            // ),
-            // SingleChildScrollView(
-            //   scrollDirection: Axis.vertical,
-            //   child: Container(
-            //     width: 200,
-            //     color: Colors.blue,
-            //     padding: const EdgeInsets.all(8.0),
-            //     child: Column(children: <Widget>[
-            //       const SizedBox(
-            //         height: 1,
-            //       ),
-            //       _readDataJobsDoneFilter('D9_WaitRiderDelivery'),
-            //     ]),
-            //   ),
-            // ),
-            // SingleChildScrollView(
-            //   scrollDirection: Axis.vertical,
-            //   child: Container(
-            //     width: 200,
-            //     color: Colors.blue,
-            //     padding: const EdgeInsets.all(8.0),
-            //     child: Column(children: <Widget>[
-            //       const SizedBox(
-            //         height: 1,
-            //       ),
-            //       _readDataJobsDoneFilter('E1_NasaCustomerNa'),
-            //     ]),
-            //   ),
-            // ),
+            SingleChildScrollView(
+              scrollDirection: Axis.vertical,
+              child: Container(
+                width: 200,
+                color: Colors.blue,
+                padding: const EdgeInsets.all(8.0),
+                child: Column(children: <Widget>[
+                  const SizedBox(
+                    height: 1,
+                  ),
+                  _readDataJobsOnQueue(),
+                ]),
+              ),
+            ),
+            SingleChildScrollView(
+              scrollDirection: Axis.vertical,
+              child: Container(
+                width: 200,
+                color: Colors.blue,
+                padding: const EdgeInsets.all(8.0),
+                child: Column(children: <Widget>[
+                  const SizedBox(
+                    height: 1,
+                  ),
+                  _readDataJobsOnGoing(),
+                ]),
+              ),
+            ),
+            SingleChildScrollView(
+              scrollDirection: Axis.vertical,
+              child: Container(
+                width: 200,
+                color: Colors.blue,
+                padding: const EdgeInsets.all(8.0),
+                child: Column(children: <Widget>[
+                  const SizedBox(
+                    height: 1,
+                  ),
+                  _readDataJobsDoneFilter('D8_WaitCustomerPickup'),
+                ]),
+              ),
+            ),
+            SingleChildScrollView(
+              scrollDirection: Axis.vertical,
+              child: Container(
+                width: 200,
+                color: Colors.blue,
+                padding: const EdgeInsets.all(8.0),
+                child: Column(children: <Widget>[
+                  const SizedBox(
+                    height: 1,
+                  ),
+                  _readDataJobsDoneFilter('D9_WaitRiderDelivery'),
+                ]),
+              ),
+            ),
+            SingleChildScrollView(
+              scrollDirection: Axis.vertical,
+              child: Container(
+                width: 200,
+                color: Colors.blue,
+                padding: const EdgeInsets.all(8.0),
+                child: Column(children: <Widget>[
+                  const SizedBox(
+                    height: 1,
+                  ),
+                  _readDataJobsDoneFilter('E1_NasaCustomerNa'),
+                ]),
+              ),
+            ),
             SingleChildScrollView(
               scrollDirection: Axis.vertical,
               child: Container(
@@ -248,7 +248,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
   //read JobsOnQueue
   Widget _readDataJobsOnQueue() {
     DatabaseJobsOnQueue databaseJobsOnQueue = DatabaseJobsOnQueue();
-    bool zebra = false;
+    //bool zebra = false;
     //read
     return StreamBuilder<QuerySnapshot>(
       stream: databaseJobsOnQueue.getJobsOnQueue(),
@@ -277,8 +277,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
             JobsOnQueueModel jOQMNoChange = jOQMData.data();
             List<OtherItemModel> lOIM;
             List<OtherItemModel> lOIMNoChange;
-            DatabaseOtherItemsOnQueue dbOIOQ =
-                DatabaseOtherItemsOnQueue(jOQMData.id);
+            //DatabaseOtherItemsOnQueue dbOIOQ = DatabaseOtherItemsOnQueue(jOQMData.id);
             //_readOtherItems(jOQMData.id);
             lOIM =
                 _readAllOtherItemModel(jOQMData.id.toString(), 'JobsOnQueue');
@@ -286,7 +285,8 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                 _readAllOtherItemModel(jOQMData.id.toString(), 'JobsOnQueue');
             final rowData = TableRow(
                 decoration:
-                    BoxDecoration(color: zebra ? Colors.black : Colors.black),
+                    //BoxDecoration(color: zebra ? Colors.white : Colors.black),
+                    BoxDecoration(color: Colors.black),
                 children: [
                   Padding(
                     padding: const EdgeInsets.all(2.0),
@@ -321,7 +321,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
   //read JobsOnGoing
   Widget _readDataJobsOnGoing() {
     DatabaseJobsOnGoing databaseJobsOnGoing = DatabaseJobsOnGoing();
-    bool zebra = false;
+    //bool zebra = false;
     int iDisplayArrow = 0;
     //read
     return StreamBuilder<QuerySnapshot>(
@@ -380,7 +380,8 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                 _readAllOtherItemModel(jOQMData.id.toString(), 'JobsOnGoing');
             final rowData = TableRow(
                 decoration:
-                    BoxDecoration(color: zebra ? Colors.black : Colors.black),
+                    //BoxDecoration(color: zebra ? Colors.black : Colors.black),
+                    BoxDecoration(color: Colors.black),
                 children: [
                   Padding(
                     padding: const EdgeInsets.all(2.0),
@@ -426,7 +427,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
   //read JobsOnGoing
   Widget _readDataJobsDoneFilter(String columnFilter) {
     DatabaseJobsDone databaseJobsDone = DatabaseJobsDone();
-    bool zebra = false;
+    //bool zebra = false;
     //read
     return StreamBuilder<QuerySnapshot>(
       stream: databaseJobsDone.getJobsDoneFilter(columnFilter),
@@ -474,7 +475,8 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                   _readAllOtherItemModel(jOQMData.id.toString(), 'JobsDone');
               final rowData = TableRow(
                   decoration:
-                      BoxDecoration(color: zebra ? Colors.black : Colors.black),
+                      //BoxDecoration(color: zebra ? Colors.black : Colors.black),
+                      BoxDecoration(color: Colors.black),
                   children: [
                     Padding(
                       padding: const EdgeInsets.all(2.0),
@@ -512,7 +514,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
   Widget _readDataSuppliesCurrent() {
     DatabaseSuppliesCurrent databaseSuppliesCurrent = DatabaseSuppliesCurrent();
     //DatabaseSuppliesHist databaseSuppliesHist = DatabaseSuppliesHist();
-    bool zebra = false;
+    //bool zebra = false;
     //read
     return StreamBuilder<QuerySnapshot>(
       stream: databaseSuppliesCurrent.getSuppliesCurrent(),
@@ -538,33 +540,35 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
 
           listSMH.forEach((sMHData) {
             SuppliesModelHist sMH = sMHData.data();
+            if (hasAccessInUniqueIdDisplay(sMH)) {
+              //addField("SuppliesCurr", sMH.docId);
 
-            //addField("SuppliesCurr", sMH.docId);
-
-            final rowData = TableRow(
-                decoration:
-                    BoxDecoration(color: zebra ? Colors.black : Colors.black),
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(2.0),
-                    child: Center(
-                      child: GestureDetector(
-                        onTap: () {
-                          // showAlterJobsOnQueueVar(
-                          //     context,
-                          //     jOQMData.id.toString(),
-                          //     jOQM,
-                          //     lOIM,
-                          //     jOQMNoChange,
-                          //     lOIMNoChange);
-                        },
-                        child: conDisplaySuppliesCurrentVar(context, sMH),
+              final rowData = TableRow(
+                  decoration:
+                      //BoxDecoration(color: zebra ? Colors.black : Colors.black),
+                      BoxDecoration(color: Colors.black),
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(2.0),
+                      child: Center(
+                        child: GestureDetector(
+                          onTap: () {
+                            // showAlterJobsOnQueueVar(
+                            //     context,
+                            //     jOQMData.id.toString(),
+                            //     jOQM,
+                            //     lOIM,
+                            //     jOQMNoChange,
+                            //     lOIMNoChange);
+                          },
+                          child: conDisplaySuppliesCurrentVar(context, sMH),
+                        ),
                       ),
-                    ),
-                  )
-                ]);
+                    )
+                  ]);
 
-            rowDatas.add(rowData);
+              rowDatas.add(rowData);
+            }
           });
         }
 
@@ -578,7 +582,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
   //read Supplies History
   Widget _readDataSuppliesHistory() {
     DatabaseSuppliesHist databaseSuppliesHist = DatabaseSuppliesHist();
-    bool zebra = false;
+    //bool zebra = false;
     //read
     return StreamBuilder<QuerySnapshot>(
       stream: databaseSuppliesHist.getSuppliesHistory(false),
@@ -626,33 +630,35 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
 
           listSMH.forEach((sMHData) {
             SuppliesModelHist sMH = sMHData.data();
+            if (hasAccessInUniqueIdDisplay(sMH)) {
+              ///addField("SuppliesHist", sMH.docId);
 
-            ///addField("SuppliesHist", sMH.docId);
-
-            final rowData = TableRow(
-                decoration:
-                    BoxDecoration(color: zebra ? Colors.black : Colors.black),
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(2.0),
-                    child: Center(
-                      child: GestureDetector(
-                        onTap: () {
-                          // showAlterJobsOnQueueVar(
-                          //     context,
-                          //     jOQMData.id.toString(),
-                          //     jOQM,
-                          //     lOIM,
-                          //     jOQMNoChange,
-                          //     lOIMNoChange);
-                        },
-                        child: conDisplaySuppliesHistoryVar(context, sMH),
+              final rowData = TableRow(
+                  decoration:
+                      //BoxDecoration(color: zebra ? Colors.black : Colors.black),
+                      BoxDecoration(color: Colors.black),
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(2.0),
+                      child: Center(
+                        child: GestureDetector(
+                          onTap: () {
+                            // showAlterJobsOnQueueVar(
+                            //     context,
+                            //     jOQMData.id.toString(),
+                            //     jOQM,
+                            //     lOIM,
+                            //     jOQMNoChange,
+                            //     lOIMNoChange);
+                          },
+                          child: conDisplaySuppliesHistoryVar(context, sMH),
+                        ),
                       ),
-                    ),
-                  )
-                ]);
+                    )
+                  ]);
 
-            rowDatas.add(rowData);
+              rowDatas.add(rowData);
+            }
           });
         }
 
@@ -666,7 +672,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
   //read Supplies History All
   Widget _readDataSuppliesHistoryAll() {
     DatabaseSuppliesHist databaseSuppliesHist = DatabaseSuppliesHist();
-    bool zebra = false;
+    //bool zebra = false;
     //read
     return StreamBuilder<QuerySnapshot>(
       stream: databaseSuppliesHist.getSuppliesHistory(true),
@@ -722,7 +728,8 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                 if (sMHTemp.itemId != 0) {
                   final rowData = TableRow(
                       decoration: BoxDecoration(
-                          color: zebra ? Colors.black : Colors.black),
+                          //color: zebra ? Colors.black : Colors.black),
+                          color: Colors.black),
                       children: [
                         Padding(
                           padding: const EdgeInsets.all(2.0),
@@ -756,7 +763,8 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
 
           final rowDatax = TableRow(
               decoration:
-                  BoxDecoration(color: zebra ? Colors.black : Colors.black),
+                  //BoxDecoration(color: zebra ? Colors.black : Colors.black),
+                  BoxDecoration(color: Colors.black),
               children: [
                 Padding(
                   padding: const EdgeInsets.all(2.0),
@@ -780,27 +788,27 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
   }
 
   //read OtherItems
-  Future<void> _readOtherItems(String id) async {
-    //String _readOtherItems(String id) {
-    late String asdf = "";
-    CollectionReference users = FirebaseFirestore.instance
-        .collection('JobsOnQueue')
-        .doc(id)
-        .collection('OtherItems');
+  // Future<void> _readOtherItems(String id) async {
+  //   //String _readOtherItems(String id) {
+  //   late String asdf = "";
+  //   CollectionReference users = FirebaseFirestore.instance
+  //       .collection('JobsOnQueue')
+  //       .doc(id)
+  //       .collection('OtherItems');
 
-    users.get().then((QuerySnapshot snapshot) {
-      for (var doc in snapshot.docs) {
-        asdf = asdf + doc['itemName'];
-      }
-      print("asdf=" + asdf);
-    }).catchError((error) => print("Failed to fetch users: $error"));
-  }
+  //   users.get().then((QuerySnapshot snapshot) {
+  //     for (var doc in snapshot.docs) {
+  //       asdf = asdf + doc['itemName'];
+  //     }
+  //     print("asdf=" + asdf);
+  //   }).catchError((error) => print("Failed to fetch users: $error"));
+  // }
 
   List<OtherItemModel> _readAllOtherItemModel(
       String id, String sMainCollection) {
     List<OtherItemModel> lOIM = [];
 
-    late String asdf = "";
+    //late String asdf = "";
     CollectionReference users = FirebaseFirestore.instance
         .collection(sMainCollection)
         .doc(id)
@@ -826,16 +834,16 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
     return lOIM;
   }
 
-  Future<List<OtherItemModel>> _readOtherItemsList(String id) async {
-    List<OtherItemModel> listOIM = [];
-    DatabaseOtherItemsOnQueue dbOIOQ = DatabaseOtherItemsOnQueue(id);
+  // Future<List<OtherItemModel>> _readOtherItemsList(String id) async {
+  //   List<OtherItemModel> listOIM = [];
+  //   //DatabaseOtherItemsOnQueue dbOIOQ = DatabaseOtherItemsOnQueue(id);
 
-    //List listJOQM = snapshot.data?.docs ?? [];
+  //   //List listJOQM = snapshot.data?.docs ?? [];
 
-    Stream stream = dbOIOQ.getOtherItems();
+  //   //Stream stream = dbOIOQ.getOtherItems();
 
-    return listOIM;
-  }
+  //   return listOIM;
+  // }
 
   //read JobsDone Wala sa Customer
   Widget _readDataJobsDoneOld(String streamName, BuildContext context) {
@@ -1441,7 +1449,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text("Sort"),
+                          Text("Sortx"),
                           Switch.adaptive(
                             value: _bRiderPickup,
                             onChanged: (bool value) {
@@ -1450,7 +1458,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                               });
                             },
                           ),
-                          Text("RiderPickup"),
+                          Text("RiderPickupx"),
                         ],
                       ),
                     ),
@@ -1515,7 +1523,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                     //     DropdownMenuEntry(
                     //         value: "ForSorting", label: "ForSorting"),
                     //     DropdownMenuEntry(
-                    //         value: "RiderPickup", label: "RiderPickup"),
+                    //         value: "RiderPickupx", label: "RiderPickupx"),
                     //   ],
                     //   onSelected: (val) {
                     //     _gsQueueStat = val!;
@@ -1594,7 +1602,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text("Sort"),
+                          Text("Sortx"),
                           Switch.adaptive(
                             value: _bRiderPickup,
                             onChanged: (bool value) {
@@ -1603,7 +1611,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                               });
                             },
                           ),
-                          Text("RiderPickup"),
+                          Text("RiderPickupx"),
                         ],
                       ),
                     ),
@@ -3710,31 +3718,30 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
     ;
   }
 
-  Color _getCOlorStatusJson(JobsOnQueueModel jobsOnQueueModel) {
-//JobsOnQueue Colors
-    if (jobsOnQueueModel.riderPickup) {
-      return cRiderPickup;
-    } else if (jobsOnQueueModel.forSorting) {
-      return cForSorting;
-    } else if (jobsOnQueueModel.waiting) {
-      return cWaiting;
-    } else if (jobsOnQueueModel.washing) {
-      return cWashing;
-    } else if (jobsOnQueueModel.drying) {
-      return cDrying;
-    } else if (jobsOnQueueModel.folding) {
-      return cFolding;
-    } else if (jobsOnQueueModel.waitCustomerPickup) {
-      return cWaitCustomerPickup;
-    } else if (jobsOnQueueModel.waitRiderDelivery) {
-      return cWaitRiderDelivery;
-    } else if (jobsOnQueueModel.nasaCustomerNa) {
-      return cNasaCustomerNa;
-    } else {
-      return cRiderOnDelivery;
-    }
-    ;
-  }
+  // Color _getCOlorStatusJson(JobsOnQueueModel jobsOnQueueModel) {
+  //   if (jobsOnQueueModel.forSorting) {
+  //     return cForSorting;
+  //   } else if (jobsOnQueueModel.riderPickup) {
+  //     return cRiderPickup;
+  //   } else if (jobsOnQueueModel.waiting) {
+  //     return cWaiting;
+  //   } else if (jobsOnQueueModel.washing) {
+  //     return cWashing;
+  //   } else if (jobsOnQueueModel.drying) {
+  //     return cDrying;
+  //   } else if (jobsOnQueueModel.folding) {
+  //     return cFolding;
+  //   } else if (jobsOnQueueModel.waitCustomerPickup) {
+  //     return cWaitCustomerPickup;
+  //   } else if (jobsOnQueueModel.waitRiderDelivery) {
+  //     return cWaitRiderDelivery;
+  //   } else if (jobsOnQueueModel.nasaCustomerNa) {
+  //     return cNasaCustomerNa;
+  //   } else {
+  //     return cRiderOnDelivery;
+  //   }
+  //   ;
+  // }
 
   String _PriceDisplay(int price) {
     int x = 0, y = 0, z = 0;
@@ -3825,7 +3832,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text("Sort"),
+                          Text("Sortx"),
                           Switch.adaptive(
                             value: bRiderPickupEditAll,
                             onChanged: (bool value) {
@@ -3840,7 +3847,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                               });
                             },
                           ),
-                          Text("RiderPickup"),
+                          Text("RiderPickupx"),
                         ],
                       ),
                     ),
@@ -5318,7 +5325,7 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
           _updateDataQueueMobileEditAll(docId, jobsOnQueueModelEditAll);
 
           // print(
-          //     "Anu status $docId ${jobsOnQueueModelEditAll.queueStat}${bRiderPickupEditAll ? "Riderpickup" : "ForSorting"}");
+          //     "Anu status $docId ${jobsOnQueueModelEditAll.queueStat}${bRiderPickupEditAll ? "Riderpickupx" : "ForSortingx"}");
         }
       },
       color: cButtons,

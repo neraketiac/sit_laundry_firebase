@@ -28,10 +28,18 @@ class DatabaseJobsDone {
   }
 
   Stream<QuerySnapshot> getJobsDoneFilter(String columnTrue) {
-    return _jobsDoneRef
-        .where(columnTrue, isEqualTo: true)
-        .orderBy('D7_DateD', descending: false)
-        .snapshots();
+    if (columnTrue == "E1_NasaCustomerNa") {
+      return _jobsDoneRef
+          .where('C6_Unpaid', isEqualTo: true)
+          .where(columnTrue, isEqualTo: true)
+          .orderBy('D7_DateD', descending: true)
+          .snapshots();
+    } else {
+      return _jobsDoneRef
+          .where(columnTrue, isEqualTo: true)
+          .orderBy('D7_DateD', descending: false)
+          .snapshots();
+    }
   }
 
   Stream<QuerySnapshot> getJobsDoneForCustomerPickup() {
@@ -95,6 +103,7 @@ class DatabaseJobsDone {
                   paidgcash: jOQM.paidgcash,
                   paidgcashverified: jOQM.paidgcashverified,
                   paymentReceivedBy: jOQM.paymentReceivedBy,
+                  paymentLaundryGenerated: jOQM.paymentLaundryGenerated,
                   dateO: jOQM.dateO,
                   paidD: jOQM.paidD,
                   forSorting: jOQM.forSorting,

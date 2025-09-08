@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:laundry_firebase/models/suppliesmodelhist.dart';
 import 'package:laundry_firebase/variables/variables.dart';
+import 'package:laundry_firebase/variables/variables_oth.dart';
+import 'package:laundry_firebase/variables/variables_supplies.dart';
 
 const String SUPPLIES_HIS_REF = "SuppliesHist";
 
@@ -46,6 +48,7 @@ class DatabaseSuppliesHist {
     await _suppliesHistRef
         .add(sMH)
         .then((value) => {
+              //add977GCashSuppliesHist(sMH),
               print("Supplies History Save done."),
               resetSHGlobalVar(),
               bSuccess = true,
@@ -55,5 +58,32 @@ class DatabaseSuppliesHist {
               bSuccess = false,
             });
     return bSuccess;
+  }
+
+  Future<void> add977GCashSuppliesHist(SuppliesModelHist sMH) async {
+    if (sMH.itemUniqueId == menuOthUniqIdCashIn) {
+      SuppliesModelHist sMH977Gcash = new SuppliesModelHist(
+          docId: sMH.docId,
+          countId: sMH.countId,
+          itemId: menuOth977GCash,
+          itemUniqueId: menuOth977GCashOut,
+          currentCounter: -1 *
+              (sMH.currentCounter), //cash in to customer, cash out to sender
+          currentStocks: sMH.currentStocks,
+          logDate: Timestamp.now(),
+          empId: empIdGlobal,
+          customerId: 0,
+          remarks: "auto insert");
+
+      await _suppliesHistRef
+          .add(sMH977Gcash)
+          .then((value) => {
+                print("Supplies History Save done 977Gcash."),
+                resetSHGlobalVar(),
+              })
+          .catchError((error) => {
+                print("Failed : $error ${sMH977Gcash.itemId}"),
+              });
+    }
   }
 }

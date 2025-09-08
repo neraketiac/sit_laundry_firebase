@@ -47,7 +47,7 @@ void showAlterJobsOnQueueVar(
                     conTotalPriceVar(setState, jOQM),
                     conBasketVar(setState, jOQM, decoAmber()),
                     conBagVar(setState, jOQM, decoAmber()),
-                    conPaymentVar(setState, jOQM),
+                    conPaymentVar(context, setState, jOQM),
                     conRemarksVar(setState, jOQM),
                     conMoreOptions(setState),
                     visAddOnVar(context, setState, jOQM, lOIM, "JobsOnQueue",
@@ -203,6 +203,15 @@ Widget updateButtonJOQVar(BuildContext context, String docId,
 
       //pop box
       Navigator.pop(context);
+
+      //insert SuppliesHist
+      //another checking paidgenerated is not true
+      if ((jOQM.paidcash || jOQM.paidgcash) && !jOQM.paymentLaundryGenerated) {
+        insertDataSuppliesHistoryVarLaundry(context, jOQM);
+        jOQM.paymentLaundryGenerated = true;
+      }
+
+      //update jobsOnQueue
       updateJOQMVar(docId, jOQM, lOIM);
 
       //listAddOnItemsGlobal.clear();
@@ -229,21 +238,31 @@ Container conQueueStatVar(Function setState, JobsOnQueueModel jOQM) {
     child: Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Text("Sort"),
+        Text("RiderPickup"),
         Switch.adaptive(
-          value: jOQM.riderPickup,
+          // value: jOQM.riderPickup,
+          // onChanged: (bool value) {
+          //   setState(() {
+          //     jOQM.riderPickup = value;
+          //     if (jOQM.riderPickup) {
+          //       jOQM.forSorting = false;
+          //     } else {
+          //       jOQM.forSorting = true;
+          //     }
+          //   });
+          // },
+          value: jOQM.forSorting,
           onChanged: (bool value) {
             setState(() {
-              jOQM.riderPickup = value;
-              if (jOQM.riderPickup) {
-                jOQM.forSorting = false;
+              jOQM.forSorting = value;
+              if (jOQM.forSorting) {
               } else {
-                jOQM.forSorting = true;
+                jOQM.riderPickup = true;
               }
             });
           },
         ),
-        Text("RiderPickup"),
+        Text("Sort"),
       ],
     ),
   );
@@ -268,9 +287,18 @@ Widget moveToJOGVar(BuildContext context, String docId, JobsOnQueueModel jOQM,
         //pop box
         Navigator.pop(context);
 
-        jOQM.riderPickup = false;
+        //jOQM.riderPickup = false;
         jOQM.forSorting = false;
         jOQM.waiting = true;
+
+        //insert SuppliesHist
+        //another checking paidgenerated is not true
+        if ((jOQM.paidcash || jOQM.paidgcash) &&
+            !jOQM.paymentLaundryGenerated) {
+          insertDataSuppliesHistoryVarLaundry(context, jOQM);
+          jOQM.paymentLaundryGenerated = true;
+        }
+
         insertDataJobsOnGoingVar(jOQM, lOIM);
         //get the next number
         autoNumber = await getNumberAutoVarV2();
@@ -317,6 +345,16 @@ Widget createNewJOQVar(BuildContext context) {
         jobsOnQueueModelGlobal.remarks = remarksControllerVar.text;
         jobsOnQueueModelGlobal.needOn = Timestamp.fromDate(dNeedOnVar);
 
+        //insert SuppliesHist
+        //another checking paidgenerated is not true
+        if ((jobsOnQueueModelGlobal.paidcash ||
+                jobsOnQueueModelGlobal.paidgcash) &&
+            !jobsOnQueueModelGlobal.paymentLaundryGenerated) {
+          insertDataSuppliesHistoryVarLaundry(context, jobsOnQueueModelGlobal);
+          jobsOnQueueModelGlobal.paymentLaundryGenerated = true;
+        }
+
+        //insert jobsOnQueueVar
         insertDataJobsOnQueueVar(jobsOnQueueModelGlobal);
       }
     },

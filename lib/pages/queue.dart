@@ -40,16 +40,16 @@ class _MyQueueState extends State<MyQueue> {
       floatingActionButton: Column(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          // FloatingActionButton(
-          //   heroTag: "JobsOnQueue",
-          //   onPressed: () {
-          //     showNewJobsForQueue();
-          //   },
-          //   child: const Icon(Icons.local_laundry_service_sharp),
-          // ),
-          // SizedBox(
-          //   height: 5,
-          // ),
+          FloatingActionButton(
+            heroTag: "JobsOnQueue",
+            onPressed: () {
+              showNewJobsForQueue();
+            },
+            child: const Icon(Icons.local_laundry_service_sharp),
+          ),
+          SizedBox(
+            height: 5,
+          ),
           FloatingActionButton(
             heroTag: "Supplies",
             onPressed: () {
@@ -132,21 +132,30 @@ class _MyQueueState extends State<MyQueue> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text("Sort"),
+          Text("RiderPickup"),
           Switch.adaptive(
-            value: jobsOnQueueModelGlobal.riderPickup,
+            // value: jobsOnQueueModelGlobal.riderPickup,
+            // onChanged: (bool value) {
+            //   setState(() {
+            //     jobsOnQueueModelGlobal.riderPickup = value;
+            //     if (jobsOnQueueModelGlobal.riderPickup) {
+            //       jobsOnQueueModelGlobal.forSorting = false;
+            //     } else {
+            //       jobsOnQueueModelGlobal.forSorting = true;
+            //     }
+            //   });
+            value: jobsOnQueueModelGlobal.forSorting,
             onChanged: (bool value) {
               setState(() {
-                jobsOnQueueModelGlobal.riderPickup = value;
-                if (jobsOnQueueModelGlobal.riderPickup) {
-                  jobsOnQueueModelGlobal.forSorting = false;
+                jobsOnQueueModelGlobal.forSorting = value;
+                if (jobsOnQueueModelGlobal.forSorting) {
                 } else {
-                  jobsOnQueueModelGlobal.forSorting = true;
+                  jobsOnQueueModelGlobal.riderPickup = true;
                 }
               });
             },
           ),
-          Text("RiderPickup"),
+          Text("Sort"),
         ],
       ),
     );
@@ -1937,6 +1946,8 @@ class _MyQueueState extends State<MyQueue> {
 
   void showSuppliesHist() {
     bCustomerName = false;
+    //bAutoLaundry = false;
+    //bInsertDataSuppliesHist = false;
     resetSHGlobalVar();
     SuppliesModelHist sMH;
     sMH = suppliesModelHistGlobal;

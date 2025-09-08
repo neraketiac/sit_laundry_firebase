@@ -57,7 +57,7 @@ void showAlterJobsOnGoingVar(
                     Visibility(
                         visible: bViewMoreOptions,
                         child: conBagVar(setState, jOQM, decoLightBlue())),
-                    conPaymentVar(setState, jOQM),
+                    conPaymentVar(context, setState, jOQM),
                     conRemarksVar(setState, jOQM),
                     conMoreOptions(setState),
                     visAddOnVar(context, setState, jOQM, lOIM, "JobsOnGoing",
@@ -234,6 +234,15 @@ Widget updateButtonJOGVar(
 
       //pop box
       Navigator.pop(context);
+
+      //insert SuppliesHist
+      //another checking paidgenerated is not true
+      if ((jOQM.paidcash || jOQM.paidgcash) && !jOQM.paymentLaundryGenerated) {
+        insertDataSuppliesHistoryVarLaundry(context, jOQM);
+        jOQM.paymentLaundryGenerated = true;
+      }
+
+      //update JOG
       updateJOGMVar(docId, jOQM, lOIM);
       if (lOIM.isNotEmpty) {
         bViewMoreOptions = true;
@@ -559,7 +568,7 @@ Widget moveToJDVar(BuildContext context, String docId, JobsOnQueueModel jOQM,
       //pop box
       Navigator.pop(context);
 
-      jOQM.riderPickup = false;
+      //jOQM.riderPickup = false;
       jOQM.forSorting = false;
       jOQM.waiting = false;
       jOQM.washing = false;
@@ -567,10 +576,18 @@ Widget moveToJDVar(BuildContext context, String docId, JobsOnQueueModel jOQM,
       jOQM.folding = false;
       jOQM.waitCustomerPickup = false;
       jOQM.waitRiderDelivery = false;
-      if (jOQM.initTagForDeliveryWhenDone) {
+      //if (jOQM.initTagForDeliveryWhenDone) {
+      if (jOQM.riderPickup) {
         jOQM.waitRiderDelivery = true;
       } else {
         jOQM.waitCustomerPickup = true;
+      }
+
+      //insert SuppliesHist
+      //another checking paidgenerated is not true
+      if ((jOQM.paidcash || jOQM.paidgcash) && !jOQM.paymentLaundryGenerated) {
+        insertDataSuppliesHistoryVarLaundry(context, jOQM);
+        jOQM.paymentLaundryGenerated = true;
       }
 
       insertDataJobsDoneVar(jOQM, lOIM);

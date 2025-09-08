@@ -55,7 +55,7 @@ void showAlterJobsDoneVar(
                     Visibility(
                         visible: bViewMoreOptions,
                         child: conBagVar(setState, jOQM, decoLightBlue())),
-                    conPaymentVar(setState, jOQM),
+                    conPaymentVar(context, setState, jOQM),
                     Visibility(
                         visible: (jOQM.paidgcash ? true : false),
                         child: conGCashVerified(setState, jOQM)),
@@ -120,6 +120,14 @@ Widget updateButtonJDVar(
 
       //pop box
       Navigator.pop(context);
+      //insert SuppliesHist
+      //another checking paidgenerated is not true
+      if ((jOQM.paidcash || jOQM.paidgcash) && !jOQM.paymentLaundryGenerated) {
+        insertDataSuppliesHistoryVarLaundry(context, jOQM);
+        jOQM.paymentLaundryGenerated = true;
+      }
+
+      //update JD
       updateJDMVar(docId, jOQM, lOIM);
       if (lOIM.isNotEmpty) {
         bViewMoreOptions = true;

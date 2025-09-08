@@ -66,6 +66,7 @@ class DatabaseJobsOnQueue {
                   paidgcash: jOQM.paidgcash,
                   paidgcashverified: jOQM.paidgcashverified,
                   paymentReceivedBy: jOQM.paymentReceivedBy,
+                  paymentLaundryGenerated: jOQM.paymentLaundryGenerated,
                   dateO: jOQM.dateO,
                   paidD: jOQM.paidD,
                   forSorting: jOQM.forSorting,

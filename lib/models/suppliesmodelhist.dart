@@ -4,7 +4,7 @@ class SuppliesModelHist {
   String docId;
   int countId;
   int itemId;
-  int itemUniqueId;
+  int itemUniqueId; //if itemUniqueId below 10,000 then no security is needed, if equal or above, need to check if has access, cannot view in table
   int currentCounter; // -1 or +1 or -2 or +2, indicates to subtract or add in stocksCount
   int currentStocks; // ex. 50 if -1 counter, 49 currentStocks
   Timestamp logDate;

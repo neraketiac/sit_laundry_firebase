@@ -30,6 +30,7 @@ class JobsOnQueueModel {
   bool paidgcash;
   bool paidgcashverified;
   String paymentReceivedBy;
+  bool paymentLaundryGenerated;
   Timestamp dateO;
   Timestamp paidD;
   bool forSorting;
@@ -79,6 +80,7 @@ class JobsOnQueueModel {
     required this.paidgcash,
     required this.paidgcashverified,
     required this.paymentReceivedBy,
+    required this.paymentLaundryGenerated,
     required this.dateO,
     required this.paidD,
     required this.forSorting,
@@ -129,6 +131,7 @@ class JobsOnQueueModel {
     bool? paidgcash,
     bool? paidgcashverified,
     String? paymentReceivedBy,
+    bool? paymentLaundryGenerated,
     Timestamp? dateO,
     Timestamp? paidD,
     bool? forSorting,
@@ -178,6 +181,8 @@ class JobsOnQueueModel {
       paidgcash: paidgcash ?? this.paidgcash,
       paidgcashverified: paidgcashverified ?? this.paidgcashverified,
       paymentReceivedBy: paymentReceivedBy ?? this.paymentReceivedBy,
+      paymentLaundryGenerated:
+          paymentLaundryGenerated ?? this.paymentLaundryGenerated,
       dateO: dateO ?? this.dateO,
       paidD: paidD ?? this.paidD,
       forSorting: forSorting ?? this.forSorting,
@@ -235,6 +240,8 @@ class JobsOnQueueModel {
             paidgcash: json['C8_PaidGCash']! as bool,
             paidgcashverified: json['C81_PaidGCashVerified']! as bool,
             paymentReceivedBy: json['C9_PaymentReceivedBy']! as String,
+            paymentLaundryGenerated:
+                json['C91_PaymentLaundryGenerated']! as bool,
             dateO: json['D1_DateO']! as Timestamp,
             paidD: json['D2_PaidD']! as Timestamp,
             jobsId: json['D30_JobsId'] as int,
@@ -284,6 +291,7 @@ class JobsOnQueueModel {
         'C8_PaidGCash': paidgcash,
         'C81_PaidGCashVerified': paidgcashverified,
         'C9_PaymentReceivedBy': paymentReceivedBy,
+        'C91_PaymentLaundryGenerated': paymentLaundryGenerated,
         'D1_DateO': dateO,
         'D2_PaidD': paidD,
         'D30_JobsId': jobsId,
