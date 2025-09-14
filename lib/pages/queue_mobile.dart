@@ -106,7 +106,8 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
 
     empIdGlobal = widget.empidClass;
 
-    putEntries();
+    //putEntries();
+    addListSuppItemsAccesOnly();
 
     bDelAddOnsVar = true;
 
@@ -542,7 +543,8 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
 
           listSMH.forEach((sMHData) {
             SuppliesModelHist sMH = sMHData.data();
-            if (hasAccessInUniqueIdDisplay(sMH)) {
+            if (displayInSummary(sMH)) {
+              //if (hasAccessInUniqueIdDisplay(sMH)) {
               //addField("SuppliesCurr", sMH.docId);
 
               final rowData = TableRow(
@@ -632,7 +634,8 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
 
           listSMH.forEach((sMHData) {
             SuppliesModelHist sMH = sMHData.data();
-            if (hasAccessInUniqueIdDisplay(sMH)) {
+            //if (hasAccessInUniqueIdDisplay(sMH)) {
+            if (displayInHistory(sMH)) {
               ///addField("SuppliesHist", sMH.docId);
 
               final rowData = TableRow(

@@ -225,9 +225,11 @@ class _EnterLoyaltyCodeState extends State<EnterLoyaltyCode> {
   Future<void> _singleReadData(String s) async {
     // checkInternet(context);
     // if (bHaveInternet) {
-    //putEntries(); // try to put in other class, because right now, still no empid global
+    putEntries(); // try to put in other class, because right now, still no empid global
+    //anyone using empid global, cannot call here, because right now, it is still empty
     //to comment putEntries;
-    resetJOQMGlobalVar();
+    //resetJOQMGlobalVar();
+    //fetchUsers();
     //to comment putEntries end;
     if (s == "16") {
       _allCards(context);

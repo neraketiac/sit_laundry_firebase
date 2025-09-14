@@ -10,6 +10,7 @@ import 'package:laundry_firebase/variables/variables_fab.dart';
 import 'package:laundry_firebase/variables/variables_oth.dart';
 
 List<OtherItemModel> listSuppItems = [];
+List<OtherItemModel> listSuppItemsAll = [];
 const int menuOthCashInOutFunds = 422,
     menuOthPlasticSmall = 423,
     menuOthPlasticMedium = 424,
@@ -21,7 +22,6 @@ const int menuOthCashInOutFunds = 422,
     menuOthUniqIdFee = 430,
     menuOthUniqIdLoad = 431,
     menuOthExpense = 432,
-    menuOthPaymentGCash = 433,
     //specialaccess
     menuOth977GCash = 10001,
     menuOth977GCashIn = 10002,
@@ -30,7 +30,8 @@ const int menuOthCashInOutFunds = 422,
     menuOth152GCashIn = 10012,
     menuOth152GCashOut = 10013,
     menuOthLPDonP = 10014,
-    menuOthLPDonPCash = 10015;
+    menuOthLPDonPCash = 10015,
+    menuOthLaundryPaymentGCash = 10016;
 
 //Supplies Colors
 final Color cStocks = Color.fromRGBO(255, 251, 43, 0.452);
@@ -122,16 +123,7 @@ void addListSuppItems() {
     stocksAlert: 1000,
     stocksType: "php",
   ));
-  listSuppItems.add(OtherItemModel(
-    docId: "",
-    itemId: menuOthPaymentGCash,
-    itemUniqueId: menuOthPaymentGCash,
-    itemGroup: groupOth,
-    itemName: "LPayment Gcash",
-    itemPrice: 0,
-    stocksAlert: 1000,
-    stocksType: "php",
-  ));
+
   listSuppItems.add(OtherItemModel(
     docId: "",
     itemId: menuOthExpense,
@@ -204,9 +196,90 @@ void addListSuppItems() {
     stocksAlert: 1,
     stocksType: "tank",
   ));
-  //GCash
-  print("empIdGlobal$empIdGlobal");
-  if (hasAccessInUniqueIdAddList(menuOth977GCashIn)) {
+
+  listSuppItemsAll.addAll(listSuppItems);
+  //addListSuppItemsAccesOnly();
+  addListSuppItemsAll();
+}
+
+void addListSuppItemsAll() {
+  listSuppItemsAll.add(OtherItemModel(
+    docId: "",
+    itemId: menuOthLaundryPaymentGCash,
+    itemUniqueId: menuOthLaundryPaymentGCash,
+    itemGroup: groupOth,
+    itemName: "Laundry Payment(G)",
+    itemPrice: 0,
+    stocksAlert: 1000,
+    stocksType: "php",
+  ));
+
+  listSuppItemsAll.add(OtherItemModel(
+    docId: "",
+    itemId: menuOth977GCash,
+    itemUniqueId: menuOth977GCashIn,
+    itemGroup: groupOth,
+    itemName: "977CashIn",
+    itemPrice: 0,
+    stocksAlert: 1000,
+    stocksType: "php",
+  ));
+  listSuppItemsAll.add(OtherItemModel(
+    docId: "",
+    itemId: menuOth977GCash,
+    itemUniqueId: menuOth977GCashOut,
+    itemGroup: groupOth,
+    itemName: "977CashOut",
+    itemPrice: 0,
+    stocksAlert: 1000,
+    stocksType: "php",
+  ));
+  listSuppItemsAll.add(OtherItemModel(
+    docId: "",
+    itemId: menuOth152GCash,
+    itemUniqueId: menuOth152GCashOut,
+    itemGroup: groupOth,
+    itemName: "152CashIn",
+    itemPrice: 0,
+    stocksAlert: 1000,
+    stocksType: "php",
+  ));
+  listSuppItemsAll.add(OtherItemModel(
+    docId: "",
+    itemId: menuOth152GCash,
+    itemUniqueId: menuOth152GCashOut,
+    itemGroup: groupOth,
+    itemName: "152CashOut",
+    itemPrice: 0,
+    stocksAlert: 1000,
+    stocksType: "php",
+  ));
+  listSuppItemsAll.add(OtherItemModel(
+    docId: "",
+    itemId: menuOthLPDonP,
+    itemUniqueId: menuOthLPDonPCash,
+    itemGroup: groupOth,
+    itemName: "DonP Cash",
+    itemPrice: 0,
+    stocksAlert: 1000,
+    stocksType: "php",
+  ));
+}
+
+void addListSuppItemsAccesOnly() {
+  if (displayInList(menuOth977GCashIn)) {
+    listSuppItems.add(OtherItemModel(
+      docId: "",
+      itemId: menuOthLaundryPaymentGCash,
+      itemUniqueId: menuOthLaundryPaymentGCash,
+      itemGroup: groupOth,
+      itemName: "Laundry Payment(G)",
+      itemPrice: 0,
+      stocksAlert: 1000,
+      stocksType: "php",
+    ));
+  }
+  if (displayInList(menuOth977GCashIn)) {
     listSuppItems.add(OtherItemModel(
       docId: "",
       itemId: menuOth977GCash,
@@ -218,7 +291,7 @@ void addListSuppItems() {
       stocksType: "php",
     ));
   }
-  if (hasAccessInUniqueIdAddList(menuOth977GCashOut)) {
+  if (displayInList(menuOth977GCashOut)) {
     listSuppItems.add(OtherItemModel(
       docId: "",
       itemId: menuOth977GCash,
@@ -230,7 +303,7 @@ void addListSuppItems() {
       stocksType: "php",
     ));
   }
-  if (hasAccessInUniqueIdAddList(menuOth152GCashOut)) {
+  if (displayInList(menuOth152GCashOut)) {
     listSuppItems.add(OtherItemModel(
       docId: "",
       itemId: menuOth152GCash,
@@ -242,7 +315,7 @@ void addListSuppItems() {
       stocksType: "php",
     ));
   }
-  if (hasAccessInUniqueIdAddList(menuOth152GCashOut)) {
+  if (displayInList(menuOth152GCashOut)) {
     listSuppItems.add(OtherItemModel(
       docId: "",
       itemId: menuOth152GCash,
@@ -254,13 +327,13 @@ void addListSuppItems() {
       stocksType: "php",
     ));
   }
-  if (hasAccessInUniqueIdAddList(menuOthLPDonPCash)) {
+  if (displayInList(menuOthLPDonPCash)) {
     listSuppItems.add(OtherItemModel(
       docId: "",
       itemId: menuOthLPDonP,
       itemUniqueId: menuOthLPDonPCash,
       itemGroup: groupOth,
-      itemName: "152CashOut",
+      itemName: "DonP Cash",
       itemPrice: 0,
       stocksAlert: 1000,
       stocksType: "php",
@@ -394,7 +467,7 @@ Container conDisplaySuppliesHistoryVar(
                       style: const TextStyle(
                         fontSize: 10,
                       )),
-                  Text(getItemNameOnly(sMH.itemId, sMH.itemUniqueId),
+                  Text(getItemNameOnlyTest(sMH.itemId, sMH.itemUniqueId),
                       style: const TextStyle(
                           fontSize: 10, fontWeight: FontWeight.bold)),
                   Text(

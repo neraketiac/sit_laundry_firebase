@@ -162,7 +162,7 @@ DateTime dNeedOnVar = DateTime.now().add(Duration(minutes: 210));
 // Timestamp tNeedOnVar = Timestamp.now();
 
 void putEntries() {
-  //resetJOQMGlobalVar();
+  resetJOQMGlobalVar();
   resetAddOnsGlobalVar();
   fetchUsers();
   refillJobsList();
@@ -171,6 +171,7 @@ void putEntries() {
   listBleItems.clear();
   listOthItems.clear();
   listSuppItems.clear();
+  listSuppItemsAll.clear();
 
   addListDetItems();
   addListFabItems();
@@ -206,8 +207,66 @@ void putEntries() {
   gselectedItemModel = listSuppItems[0];
 
   listSuppItems.addAll(listDetItems);
+  listSuppItemsAll.addAll(listDetItems);
   listSuppItems.addAll(listFabItems);
+  listSuppItemsAll.addAll(listFabItems);
   listSuppItems.addAll(listBleItems);
+  listSuppItemsAll.addAll(listBleItems);
+
+  resetSHGlobalVar();
+}
+
+void putEntriesWhileEmpIsNull() {
+  resetJOQMGlobalVar();
+  resetAddOnsGlobalVar();
+  fetchUsers();
+  refillJobsList();
+  listDetItems.clear();
+  listFabItems.clear();
+  listBleItems.clear();
+  listOthItems.clear();
+  listSuppItems.clear();
+  listSuppItemsAll.clear();
+
+  addListDetItems();
+  addListFabItems();
+  addListBleItems();
+  addListOthItems();
+
+  //queueStat
+  mapQueueStat.addEntries({forSorting: "ForSorting"}.entries);
+  mapQueueStat.addEntries({riderPickup: "RiderPickup"}.entries);
+  mapQueueStat.addEntries({waitingStat: "Waiting"}.entries);
+  mapQueueStat.addEntries({washingStat: "Washing"}.entries);
+  mapQueueStat.addEntries({dryingStat: "Drying"}.entries);
+  mapQueueStat.addEntries({foldingStat: "Folding"}.entries);
+  mapQueueStat.addEntries({waitCustomerPickup: "WaitCustomerPickup"}.entries);
+  mapQueueStat.addEntries({waitRiderDelivery: "WaitRiderDelivery"}.entries);
+  mapQueueStat.addEntries({nasaCustomerNa: "NasaCustomerNa"}.entries);
+
+  // //paymentStat
+  // mapPaymentStat.addEntries({unpaid: "Unpaid"}.entries);
+  // mapPaymentStat.addEntries({paidCash: "PaidCash"}.entries);
+  // mapPaymentStat.addEntries({paidGCash: "PaidGCash"}.entries);
+  // mapPaymentStat.addEntries({waitGCash: "WaitGCash"}.entries);
+
+  //dropdown first value
+  selectedDetVar = listDetItems[0];
+  selectedFabVar = listFabItems[0];
+  selectedBleVar = listBleItems[0];
+  selectedOthVar = listOthItems[0];
+
+  addListSuppItems();
+
+  selectedSupVar = listSuppItems[0];
+  gselectedItemModel = listSuppItems[0];
+
+  listSuppItems.addAll(listDetItems);
+  listSuppItemsAll.addAll(listDetItems);
+  listSuppItems.addAll(listFabItems);
+  listSuppItemsAll.addAll(listFabItems);
+  listSuppItems.addAll(listBleItems);
+  listSuppItemsAll.addAll(listBleItems);
 
   resetSHGlobalVar();
 }
@@ -262,20 +321,70 @@ Map<String, String> mapEmpId = {
 // };
 //1 enabled
 //0 or others disabled cannot view queue_mobile_dart
-Map<String, int> mapEmpAccessv2 = {
-  // 'Jeng20001': 1, //jeng salary
-  // 'Rowel20002': 1,
-  // 'Abi20003': 1,
-  // 'Let20004': 1,
-  // 'Seiji20005': 1,
-  // 'Ken20006': 1,
-  'DonP$menuOth977GCash': 1, //gcash account
+// Map<String, int> mapEmpAccessv2 = {
+//   // 'Jeng20001': 1, //jeng salary
+//   // 'Rowel20002': 1,
+//   // 'Abi20003': 1,
+//   // 'Let20004': 1,
+//   // 'Seiji20005': 1,
+//   // 'Ken20006': 1,
+//   'DonP$menuOth977GCash': 1, //gcash account
+//   'DonP$menuOth977GCashIn': 1,
+//   'DonP$menuOth977GCashOut': 1,
+//   'Ket$menuOth152GCash': 1,
+//   'Ket$menuOth152GCashIn': 1,
+//   'Ket$menuOth152GCashOut': 1,
+//   'DonP$menuOthLPDonPCash': 1,
+// };
+
+/*
+  '05#05': 'Jeng',
+  '90#90': 'Rowel',
+  '08#08': 'Abi',
+  '28#28': 'Let',
+  '20#20': 'Seiji',
+  '80#80': 'Ken',
+*/
+
+Map<String, int> mapDisplayInSummary = {
   'DonP$menuOth977GCashIn': 1,
   'DonP$menuOth977GCashOut': 1,
-  'Ket$menuOth152GCash': 1,
+  'DonP$menuOthLPDonPCash': 1,
+  'DonP$menuOthLaundryPaymentGCash': 1,
   'Ket$menuOth152GCashIn': 1,
   'Ket$menuOth152GCashOut': 1,
+  'Ket$menuOthLaundryPaymentGCash': 1,
+};
+
+//history and list should be the same for now
+Map<String, int> mapDisplayInHistory = {
+  'DonP$menuOth977GCashIn': 1,
+  'DonP$menuOth977GCashOut': 1,
   'DonP$menuOthLPDonPCash': 1,
+  'DonP$menuOthLaundryPaymentGCash': 1,
+  'Ket$menuOth152GCashIn': 1,
+  'Ket$menuOth152GCashOut': 1,
+  'Ket$menuOthLaundryPaymentGCash': 1,
+  'Jeng$menuOthLaundryPaymentGCash': 1,
+  'Rowel$menuOthLaundryPaymentGCash': 1,
+  'Abi$menuOthLaundryPaymentGCash': 1,
+  'Seiji$menuOthLaundryPaymentGCash': 1,
+  'Ken$menuOthLaundryPaymentGCash': 1,
+};
+
+Map<String, int> mapDisplayInList = {
+  'DonP$menuOth977GCashIn': 1,
+  'DonP$menuOth977GCashOut': 1,
+  'DonP$menuOthLPDonPCash': 1,
+  'DonP$menuOthLaundryPaymentGCash': 1,
+  'Ket$menuOth152GCashIn': 1,
+  'Ket$menuOth152GCashOut': 1,
+  'Ket$menuOthLaundryPaymentGCash': 1,
+  'Jeng$menuOthLaundryPaymentGCash': 1,
+  'Rowel$menuOthLaundryPaymentGCash': 1,
+  'Abi$menuOthLaundryPaymentGCash': 1,
+  'Seiji$menuOthLaundryPaymentGCash': 1,
+  'Ken$menuOthLaundryPaymentGCash': 1,
 };
 
 String autoPriceDisplay(int price, bool bRegularSabon) {
@@ -415,7 +524,7 @@ String customerName(String customerId) {
 
 String getItemName(int itemId, int itemUniqueId) {
   String thisItemName = "no data";
-  listSuppItems.forEach((thisData) {
+  listSuppItemsAll.forEach((thisData) {
     if (thisData.itemId == itemId && thisData.itemUniqueId == itemUniqueId) {
       thisItemName =
           "${thisData.itemGroup} - ${thisData.itemName}(${thisData.stocksType})";
@@ -427,18 +536,30 @@ String getItemName(int itemId, int itemUniqueId) {
 
 String getItemNameOnly(int itemId, int itemUniqueId) {
   String thisItemName = "no data";
-  listSuppItems.forEach((thisData) {
+  for (var thisData in listSuppItemsAll) {
     if (thisData.itemId == itemId && thisData.itemUniqueId == itemUniqueId) {
       thisItemName = "${thisData.itemGroup} ${thisData.itemName}";
+      exit;
     }
-  });
+  }
+  return thisItemName;
+}
 
+String getItemNameOnlyTest(int itemId, int itemUniqueId) {
+  String thisItemName = "no data";
+  print("itemid=$itemId unique=$itemUniqueId");
+  for (var thisData in listSuppItemsAll) {
+    if (thisData.itemId == itemId && thisData.itemUniqueId == itemUniqueId) {
+      thisItemName = "${thisData.itemGroup} ${thisData.itemName}";
+      exit;
+    }
+  }
   return thisItemName;
 }
 
 String getItemNameStocksType(int itemId, int itemUniqueId) {
   String thisItemName = "no data";
-  listSuppItems.forEach((thisData) {
+  listSuppItemsAll.forEach((thisData) {
     if (thisData.itemId == itemId && thisData.itemUniqueId == itemUniqueId) {
       thisItemName = thisData.stocksType;
     }
@@ -449,7 +570,7 @@ String getItemNameStocksType(int itemId, int itemUniqueId) {
 
 int getItemNameStocksAlert(int itemId, int itemUniqueId) {
   int thisReturn = 0;
-  listSuppItems.forEach((thisData) {
+  listSuppItemsAll.forEach((thisData) {
     if (thisData.itemId == itemId && thisData.itemUniqueId == itemUniqueId) {
       thisReturn = thisData.stocksAlert;
     }
@@ -653,7 +774,14 @@ bool ifMenuUniqueIsCashOut(SuppliesModelHist sMH) {
 }
 
 bool ifMenuUniqueIsLPaymentGCash(SuppliesModelHist sMH) {
-  if (sMH.itemUniqueId == menuOthPaymentGCash) {
+  if (sMH.itemUniqueId == menuOthLaundryPaymentGCash) {
+    return true;
+  }
+  return false;
+}
+
+bool ifMenuUniqueIsLPDonPCash(SuppliesModelHist sMH) {
+  if (sMH.itemUniqueId == menuOthLPDonPCash) {
     return true;
   }
   return false;
@@ -716,8 +844,8 @@ void resetSHGlobalVar() {
   sMHGLaundryPaymentGCash = SuppliesModelHist(
       docId: "",
       countId: 0,
-      itemId: menuOthPaymentGCash,
-      itemUniqueId: menuOthPaymentGCash,
+      itemId: menuOthLaundryPaymentGCash,
+      itemUniqueId: menuOthLaundryPaymentGCash,
       currentCounter: 0,
       currentStocks: 0,
       logDate: Timestamp.now(),
@@ -929,8 +1057,10 @@ Widget createNewSuppVar(BuildContext context, SuppliesModelHist sMH) {
         );
       } else if ((ifMenuUniqueIsCashIn(sMH) ||
               ifMenuUniqueIsFundsIn(sMH) ||
-              ifMenuUniqueIsLaundryPayment(sMH) ||
-              ifMenuUniqueIsLPaymentGCash(sMH)) &&
+              ifMenuUniqueIsLaundryPayment(sMH)
+          //ifMenuUniqueIsLPaymentGCash(sMH) ||
+          //ifMenuUniqueIsLPDonPCash(sMH)
+          ) &&
           sMH.currentCounter <= 0) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -2465,9 +2595,9 @@ bool isItTomorrow(Timestamp timestamp) {
   return false;
 }
 
-bool hasAccessInUniqueIdDisplay(SuppliesModelHist sMH) {
+bool displayInSummary(SuppliesModelHist sMH) {
   if (sMH.itemUniqueId >= 10000) {
-    if (mapEmpAccessv2[empIdGlobal + sMH.itemUniqueId.toString()] == 1) {
+    if (mapDisplayInSummary[empIdGlobal + sMH.itemUniqueId.toString()] == 1) {
       return true;
     } else {
       return false;
@@ -2477,9 +2607,45 @@ bool hasAccessInUniqueIdDisplay(SuppliesModelHist sMH) {
   }
 }
 
-bool hasAccessInUniqueIdAddList(int itemUniqueId) {
+bool displayInHistory(SuppliesModelHist sMH) {
+  if (sMH.itemUniqueId >= 10000) {
+    if (mapDisplayInHistory[empIdGlobal + sMH.itemUniqueId.toString()] == 1) {
+      return true;
+    } else {
+      return false;
+    }
+  } else {
+    return true;
+  }
+}
+
+// bool hasAccessInUniqueIdDisplay(SuppliesModelHist sMH) {
+//   if (sMH.itemUniqueId >= 10000) {
+//     if (mapEmpAccessv2[empIdGlobal + sMH.itemUniqueId.toString()] == 1) {
+//       return true;
+//     } else {
+//       return false;
+//     }
+//   } else {
+//     return true;
+//   }
+// }
+
+// bool hasAccessInUniqueIdAddList(int itemUniqueId) {
+//   if (itemUniqueId >= 10000) {
+//     if (mapEmpAccessv2[empIdGlobal + itemUniqueId.toString()] == 1) {
+//       return true;
+//     } else {
+//       return false;
+//     }
+//   } else {
+//     return true;
+//   }
+// }
+
+bool displayInList(int itemUniqueId) {
   if (itemUniqueId >= 10000) {
-    if (mapEmpAccessv2[empIdGlobal + itemUniqueId.toString()] == 1) {
+    if (mapDisplayInList[empIdGlobal + itemUniqueId.toString()] == 1) {
       return true;
     } else {
       return false;
