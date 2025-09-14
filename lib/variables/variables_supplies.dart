@@ -28,7 +28,9 @@ const int menuOthCashInOutFunds = 422,
     menuOth977GCashOut = 10003,
     menuOth152GCash = 10011,
     menuOth152GCashIn = 10012,
-    menuOth152GCashOut = 10013;
+    menuOth152GCashOut = 10013,
+    menuOthLPDonP = 10014,
+    menuOthLPDonPCash = 10015;
 
 //Supplies Colors
 final Color cStocks = Color.fromRGBO(255, 251, 43, 0.452);
@@ -199,50 +201,71 @@ void addListSuppItems() {
     itemGroup: groupOth,
     itemName: "LPG(11)",
     itemPrice: 0,
-    stocksAlert: 0,
+    stocksAlert: 1,
     stocksType: "tank",
   ));
   //GCash
-  listSuppItems.add(OtherItemModel(
-    docId: "",
-    itemId: menuOth977GCash,
-    itemUniqueId: menuOth977GCashIn,
-    itemGroup: groupOth,
-    itemName: "977CashIn",
-    itemPrice: 0,
-    stocksAlert: 1000,
-    stocksType: "php",
-  ));
-  listSuppItems.add(OtherItemModel(
-    docId: "",
-    itemId: menuOth977GCash,
-    itemUniqueId: menuOth977GCashOut,
-    itemGroup: groupOth,
-    itemName: "977CashOut",
-    itemPrice: 0,
-    stocksAlert: 1000,
-    stocksType: "php",
-  ));
-  listSuppItems.add(OtherItemModel(
-    docId: "",
-    itemId: menuOth152GCash,
-    itemUniqueId: menuOth152GCashOut,
-    itemGroup: groupOth,
-    itemName: "152CashIn",
-    itemPrice: 0,
-    stocksAlert: 1000,
-    stocksType: "php",
-  ));
-  listSuppItems.add(OtherItemModel(
-    docId: "",
-    itemId: menuOth152GCash,
-    itemUniqueId: menuOth152GCashOut,
-    itemGroup: groupOth,
-    itemName: "152CashOut",
-    itemPrice: 0,
-    stocksAlert: 1000,
-    stocksType: "php",
-  ));
+  print("empIdGlobal$empIdGlobal");
+  if (hasAccessInUniqueIdAddList(menuOth977GCashIn)) {
+    listSuppItems.add(OtherItemModel(
+      docId: "",
+      itemId: menuOth977GCash,
+      itemUniqueId: menuOth977GCashIn,
+      itemGroup: groupOth,
+      itemName: "977CashIn",
+      itemPrice: 0,
+      stocksAlert: 1000,
+      stocksType: "php",
+    ));
+  }
+  if (hasAccessInUniqueIdAddList(menuOth977GCashOut)) {
+    listSuppItems.add(OtherItemModel(
+      docId: "",
+      itemId: menuOth977GCash,
+      itemUniqueId: menuOth977GCashOut,
+      itemGroup: groupOth,
+      itemName: "977CashOut",
+      itemPrice: 0,
+      stocksAlert: 1000,
+      stocksType: "php",
+    ));
+  }
+  if (hasAccessInUniqueIdAddList(menuOth152GCashOut)) {
+    listSuppItems.add(OtherItemModel(
+      docId: "",
+      itemId: menuOth152GCash,
+      itemUniqueId: menuOth152GCashOut,
+      itemGroup: groupOth,
+      itemName: "152CashIn",
+      itemPrice: 0,
+      stocksAlert: 1000,
+      stocksType: "php",
+    ));
+  }
+  if (hasAccessInUniqueIdAddList(menuOth152GCashOut)) {
+    listSuppItems.add(OtherItemModel(
+      docId: "",
+      itemId: menuOth152GCash,
+      itemUniqueId: menuOth152GCashOut,
+      itemGroup: groupOth,
+      itemName: "152CashOut",
+      itemPrice: 0,
+      stocksAlert: 1000,
+      stocksType: "php",
+    ));
+  }
+  if (hasAccessInUniqueIdAddList(menuOthLPDonPCash)) {
+    listSuppItems.add(OtherItemModel(
+      docId: "",
+      itemId: menuOthLPDonP,
+      itemUniqueId: menuOthLPDonPCash,
+      itemGroup: groupOth,
+      itemName: "152CashOut",
+      itemPrice: 0,
+      stocksAlert: 1000,
+      stocksType: "php",
+    ));
+  }
 }
 
 Color getCOlorSuppliesHistoryVar(SuppliesModelHist sMH) {

@@ -36,6 +36,7 @@ final value = new NumberFormat("##,##0", "en_US");
 late JobsOnQueueModel jobsOnQueueModelGlobal;
 late SuppliesModelHist suppliesModelHistGlobal;
 late SuppliesModelHist sMHGLaundryPayment;
+late SuppliesModelHist sMHGLaundryPaymentDonP;
 late SuppliesModelHist sMHGLaundryPaymentGCash;
 late String empIdGlobal = "";
 late String selectedNumberVar = "1";
@@ -161,7 +162,7 @@ DateTime dNeedOnVar = DateTime.now().add(Duration(minutes: 210));
 // Timestamp tNeedOnVar = Timestamp.now();
 
 void putEntries() {
-  resetJOQMGlobalVar();
+  //resetJOQMGlobalVar();
   resetAddOnsGlobalVar();
   fetchUsers();
   refillJobsList();
@@ -247,33 +248,34 @@ Map<String, String> mapEmpId = {
   '16#16': 'DonP',
 };
 
-Map<String, int> mapEmpAccess = {
-  'Jeng': 20001, //jeng salary
-  'Rowel': 20002,
-  'Abi': 20003,
-  'Let': 20004,
-  'Seiji': 20005,
-  'Ken': 20006,
-  'DonP': 10001, //gcash account
-  'Ket': 10001,
-  'DonP': 10002,
-  'Ket': 10002,
-};
+// Map<String, int> mapEmpAccess = {
+//   'Jeng': 20001, //jeng salary
+//   'Rowel': 20002,
+//   'Abi': 20003,
+//   'Let': 20004,
+//   'Seiji': 20005,
+//   'Ken': 20006,
+//   'DonP': 10001, //gcash account
+//   'Ket': 10001,
+//   'DonP': 10002,
+//   'Ket': 10002,
+// };
 //1 enabled
 //0 or others disabled cannot view queue_mobile_dart
 Map<String, int> mapEmpAccessv2 = {
-  'Jeng20001': 1, //jeng salary
-  'Rowel20002': 1,
-  'Abi20003': 1,
-  'Let20004': 1,
-  'Seiji20005': 1,
-  'Ken20006': 1,
-  'DonP10001': 1, //gcash account
-  'DonP10002': 1,
-  'DonP10003': 1,
-  'Ket10011': 1,
-  'Ket10012': 1,
-  'Ket10013': 1,
+  // 'Jeng20001': 1, //jeng salary
+  // 'Rowel20002': 1,
+  // 'Abi20003': 1,
+  // 'Let20004': 1,
+  // 'Seiji20005': 1,
+  // 'Ken20006': 1,
+  'DonP$menuOth977GCash': 1, //gcash account
+  'DonP$menuOth977GCashIn': 1,
+  'DonP$menuOth977GCashOut': 1,
+  'Ket$menuOth152GCash': 1,
+  'Ket$menuOth152GCashIn': 1,
+  'Ket$menuOth152GCashOut': 1,
+  'DonP$menuOthLPDonPCash': 1,
 };
 
 String autoPriceDisplay(int price, bool bRegularSabon) {
@@ -699,6 +701,18 @@ void resetSHGlobalVar() {
       customerId: 1,
       remarks: "");
 
+  sMHGLaundryPaymentDonP = SuppliesModelHist(
+      docId: "",
+      countId: 0,
+      itemId: menuOthLPDonP,
+      itemUniqueId: menuOthLPDonPCash,
+      currentCounter: 0,
+      currentStocks: 0,
+      logDate: Timestamp.now(),
+      empId: empIdGlobal,
+      customerId: 1,
+      remarks: "");
+
   sMHGLaundryPaymentGCash = SuppliesModelHist(
       docId: "",
       countId: 0,
@@ -961,7 +975,11 @@ Future<void> insertDataSuppliesHistoryVarLaundry(
   if (jOQM.paidgcash) {
     sMH = sMHGLaundryPaymentGCash;
   } else {
-    sMH = sMHGLaundryPayment;
+    if (empIdGlobal == "DonP") {
+      sMH = sMHGLaundryPaymentDonP;
+    } else {
+      sMH = sMHGLaundryPayment;
+    }
   }
 
   sMH.customerId = jOQM.customerId;
@@ -2450,6 +2468,18 @@ bool isItTomorrow(Timestamp timestamp) {
 bool hasAccessInUniqueIdDisplay(SuppliesModelHist sMH) {
   if (sMH.itemUniqueId >= 10000) {
     if (mapEmpAccessv2[empIdGlobal + sMH.itemUniqueId.toString()] == 1) {
+      return true;
+    } else {
+      return false;
+    }
+  } else {
+    return true;
+  }
+}
+
+bool hasAccessInUniqueIdAddList(int itemUniqueId) {
+  if (itemUniqueId >= 10000) {
+    if (mapEmpAccessv2[empIdGlobal + itemUniqueId.toString()] == 1) {
       return true;
     } else {
       return false;

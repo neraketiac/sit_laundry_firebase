@@ -303,18 +303,18 @@ Widget moveToJOGVar(BuildContext context, String docId, JobsOnQueueModel jOQM,
 
         insertDataJobsOnGoingVar(jOQM, lOIM);
 
-        print("jOQM 2= ${jOQM.jobsId}");
+        print("jOQM 2= ${jOQM.jobsId} autoNumber= $autoNumber");
         //get the next number
         autoNumber = await getNumberAutoVarV2();
 
-        print("jOQM 3= ${jOQM.jobsId}");
+        print("jOQM 3= ${jOQM.jobsId} autoNumber= $autoNumber");
         //update the 99 jobsid
         finalNumberAutoVarV2();
 
-        print("jOQM 4= ${jOQM.jobsId}");
+        print("jOQM 4= ${jOQM.jobsId} autoNumber= $autoNumber");
         showMessage(context, "Move to OnGoing", "Added to #$autoNumber");
 
-        print("jOQM 5= ${jOQM.jobsId}");
+        print("jOQM 5= ${jOQM.jobsId} autoNumber= $autoNumber");
       }
     },
     color: cButtons,

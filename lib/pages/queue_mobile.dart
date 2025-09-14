@@ -106,6 +106,8 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
 
     empIdGlobal = widget.empidClass;
 
+    putEntries();
+
     bDelAddOnsVar = true;
 
     //putEntries();
