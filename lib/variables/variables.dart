@@ -20,7 +20,6 @@ import 'package:laundry_firebase/variables/variables_jobsdone.dart';
 import 'package:laundry_firebase/variables/variables_jobsongoing.dart';
 import 'package:laundry_firebase/variables/variables_oth.dart';
 import 'package:laundry_firebase/variables/variables_supplies.dart';
-import 'package:week_of_year/week_of_year.dart';
 
 late bool bHaveInternet = false;
 bool showDet = false, showFab = false, showBle = false, showOth = false;
