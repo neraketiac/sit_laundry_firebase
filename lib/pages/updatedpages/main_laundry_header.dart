@@ -41,7 +41,7 @@ class _MyQueueState extends State<MyQueue> {
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
           FloatingActionButton(
-            heroTag: "JobsOnQueue",
+            heroTag: "JobsOnQueuex",
             onPressed: () {
               remarksControllerVar.text =
                   ""; //fix when click with remarks then new, fix to remove remarks
@@ -65,14 +65,6 @@ class _MyQueueState extends State<MyQueue> {
   }
 
   void showNewJobsForQueue() {
-    // setState(
-    //   () {
-    //     resetJOQMGlobalVar();
-    //     resetAddOnsGlobalVar();
-    //     bViewMoreOptionsQ = false;
-    //   },
-    // );
-
     showDialog(
       context: context,
       builder: (BuildContext context) {
