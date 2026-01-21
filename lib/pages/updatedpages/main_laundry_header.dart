@@ -30,16 +30,18 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
   TextEditingController customerNumberVar = TextEditingController();
   TextEditingController customerAmountVar = TextEditingController();
 
+  int _selectedFundCode = menuOthUniqIdCashIn;
   final List<int> fundTypeCodes1stLayer = [
     menuOthUniqIdCashIn,
     menuOthUniqIdCashOut,
-    menuOthLaundryPayment
   ];
-  int _selectedFundCode = menuOthUniqIdCashIn;
   final List<int> fundTypeCodes2ndLayer = [
     menuOthUniqIdFundsIn,
     menuOthUniqIdFundsOut,
-    menuOthUniqIdLoad
+  ];
+  final List<int> fundTypeCodes3rdLayer = [
+    menuOthUniqIdLoad,
+    menuOthLaundryPayment
   ];
 
   @override
@@ -179,13 +181,12 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
               children: const [
                 Text('Cash In'),
                 Text('Cash Out'),
-                Text('LaundPay'),
               ],
             ),
 
             const SizedBox(height: 8),
 
-            // 🔹 BOTTOM ROW
+            // 🔹 SECOND ROW
             ToggleButtons(
               isSelected: List.generate(
                 fundTypeCodes2ndLayer.length,
@@ -211,6 +212,36 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
               children: const [
                 Text('Funds In'),
                 Text('Funds Out'),
+              ],
+            ),
+
+            const SizedBox(height: 8),
+
+            // 🔹 THIRD ROW
+            ToggleButtons(
+              isSelected: List.generate(
+                fundTypeCodes3rdLayer.length,
+                (i) => _selectedFundCode == fundTypeCodes3rdLayer[i],
+              ),
+              onPressed: (index) {
+                setState(() {
+                  _selectedFundCode = fundTypeCodes3rdLayer[index];
+                  SuppliesHistRepository.instance
+                      .setItemId(menuOthCashInOutFunds);
+                  SuppliesHistRepository.instance
+                      .setItemUniqueId(_selectedFundCode);
+                });
+              },
+              borderRadius: BorderRadius.circular(8),
+              selectedColor: Colors.white,
+              fillColor: Colors.blue,
+              color: Colors.black,
+              constraints: const BoxConstraints(
+                minWidth: 110,
+                minHeight: 40,
+              ),
+              children: const [
+                Text('PayLaundry'),
                 Text('Load'),
               ],
             ),
@@ -361,5 +392,4 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
     DatabaseSuppliesCurrent databaseSuppliesCurrent = DatabaseSuppliesCurrent();
     return await databaseSuppliesCurrent.addSuppliesCurr(sMH);
   }
-
 }
