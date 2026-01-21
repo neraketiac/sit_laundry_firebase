@@ -40,8 +40,8 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
     menuOthUniqIdFundsOut,
   ];
   final List<int> fundTypeCodes3rdLayer = [
+    menuOthLaundryPayment,
     menuOthUniqIdLoad,
-    menuOthLaundryPayment
   ];
 
   @override
