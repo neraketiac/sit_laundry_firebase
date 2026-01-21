@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 import 'package:laundry_firebase/models/suppliesmodelhist.dart';
 import 'package:laundry_firebase/variables/variables.dart';
 import 'package:laundry_firebase/variables/variables_oth.dart';
@@ -45,19 +46,28 @@ class DatabaseSuppliesHist {
 
   Future<bool> addSuppliesHist(SuppliesModelHist sMH) async {
     bool bSuccess = false;
+    debugPrint('watata1');
     await _suppliesHistRef
         .add(sMH)
         .then((value) => {
+          debugPrint('watata2'),
               //add977GCashSuppliesHist(sMH),
               print("Supplies History Save done."),
-              resetSHGlobalVar(),
+              //resetSHGlobalVar(),
               bSuccess = true,
             })
         .catchError((error) => {
+          debugPrint('watata3'),
               print("Failed : $error ${sMH.itemId}"),
               bSuccess = false,
             });
     return bSuccess;
+  }
+
+  Future<bool> addSuppliesHistx(SuppliesModelHist sMH) async {
+    debugPrint('watataeeeeeeee');
+    
+    return true;
   }
 
   Future<void> add977GCashSuppliesHist(SuppliesModelHist sMH) async {
@@ -67,12 +77,14 @@ class DatabaseSuppliesHist {
           countId: sMH.countId,
           itemId: menuOth977GCash,
           itemUniqueId: menuOth977GCashOut,
+          itemName: '977 GCash Out',
           currentCounter: -1 *
               (sMH.currentCounter), //cash in to customer, cash out to sender
           currentStocks: sMH.currentStocks,
           logDate: Timestamp.now(),
           empId: empIdGlobal,
           customerId: 0,
+          customerName: '',
           remarks: "auto insert");
 
       await _suppliesHistRef

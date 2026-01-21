@@ -157,7 +157,9 @@ bool bUnpaidVar = true, bPaidCashVar = false, bPaidGCashVar = false;
 TextEditingController remarksControllerVar = TextEditingController();
 TextEditingController remarksSuppliesVar = TextEditingController();
 TextEditingController counterControllerVar = TextEditingController();
+
 DateTime dNeedOnVar = DateTime.now().add(Duration(minutes: 210));
+
 // Timestamp tNeedOnVar = Timestamp.now();
 
 void putEntries() {
@@ -216,9 +218,9 @@ void putEntries() {
 }
 
 void putEntriesWhileEmpIsNull() {
-  resetJOQMGlobalVar();
-  resetAddOnsGlobalVar();
-  fetchUsers();
+  // resetJOQMGlobalVar();
+  // resetAddOnsGlobalVar();
+  // fetchUsers();
   refillJobsList();
   listDetItems.clear();
   listFabItems.clear();
@@ -267,7 +269,7 @@ void putEntriesWhileEmpIsNull() {
   listSuppItems.addAll(listBleItems);
   listSuppItemsAll.addAll(listBleItems);
 
-  resetSHGlobalVar();
+  // resetSHGlobalVar(); change by repository
 }
 
 Future<void> checkInternet(BuildContext context) async {
@@ -510,6 +512,8 @@ Future<void> fetchUsers() {
   }).catchError((error) => print("Failed to fetch users: $error"));
 }
 
+
+
 String customerName(String customerId) {
   String thisCustomerName = "err pls relogin";
   customerOptionsFromVariable.forEach((thisData) {
@@ -537,7 +541,7 @@ String getItemNameOnly(int itemId, int itemUniqueId) {
   String thisItemName = "no data";
   for (var thisData in listSuppItemsAll) {
     if (thisData.itemId == itemId && thisData.itemUniqueId == itemUniqueId) {
-      thisItemName = "${thisData.itemGroup} ${thisData.itemName}";
+      thisItemName = thisData.itemName;
       exit;
     }
   }
@@ -684,6 +688,7 @@ void resetJOQMGlobalVar() {
       createdBy: "",
       currentEmpId: "",
       customerId: 0,
+      customerName: "",
       perKilo: true,
       initialKilo: 8,
       initialLoad: 1,
@@ -809,11 +814,13 @@ void resetSHGlobalVar() {
       countId: 0,
       itemId: selectedSupVar.itemId,
       itemUniqueId: selectedSupVar.itemUniqueId,
+      itemName: selectedSupVar.itemName,
       currentCounter: 0,
       currentStocks: 0,
       logDate: Timestamp.now(),
       empId: empIdGlobal,
       customerId: 1,
+      customerName: '',
       remarks: "");
 
   sMHGLaundryPayment = SuppliesModelHist(
@@ -821,11 +828,13 @@ void resetSHGlobalVar() {
       countId: 0,
       itemId: menuOthCashInOutFunds,
       itemUniqueId: menuOthLaundryPayment,
+      itemName: 'Laundry Payment',
       currentCounter: 0,
       currentStocks: 0,
       logDate: Timestamp.now(),
       empId: empIdGlobal,
       customerId: 1,
+      customerName: '',
       remarks: "");
 
   sMHGLaundryPaymentDonP = SuppliesModelHist(
@@ -833,11 +842,13 @@ void resetSHGlobalVar() {
       countId: 0,
       itemId: menuOthLPDonP,
       itemUniqueId: menuOthLPDonPCash,
+      itemName: 'Laundry Payment DonP Cash',
       currentCounter: 0,
       currentStocks: 0,
       logDate: Timestamp.now(),
       empId: empIdGlobal,
       customerId: 1,
+      customerName: '',
       remarks: "");
 
   sMHGLaundryPaymentGCash = SuppliesModelHist(
@@ -845,11 +856,13 @@ void resetSHGlobalVar() {
       countId: 0,
       itemId: menuOthLaundryPaymentGCash,
       itemUniqueId: menuOthLaundryPaymentGCash,
+      itemName: 'Laundry Payment GCash',
       currentCounter: 0,
       currentStocks: 0,
       logDate: Timestamp.now(),
       empId: empIdGlobal,
       customerId: 1,
+      customerName: '',
       remarks: "");
 }
 

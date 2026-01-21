@@ -67,6 +67,7 @@ class DatabaseSuppliesCurrent {
     DatabaseSuppliesHist databaseSuppliesHist = DatabaseSuppliesHist();
     await databaseSuppliesHist.addSuppliesHist(sMH);
 
+    //to be used in Supplies Current
     sMH.currentStocks = sMH.currentStocks + sMH.currentCounter;
 
     bool bSuccess = false;
@@ -110,12 +111,14 @@ class DatabaseSuppliesCurrent {
           countId: 0,
           itemId: menuOth977GCash,
           itemUniqueId: menuOth977GCashOut,
+          itemName: '977 GCash Out',
           currentCounter: -1 *
               (sMH.currentCounter), //cash in to customer, cash out to sender
           currentStocks: 0,
           logDate: Timestamp.now(),
           empId: empIdGlobal,
           customerId: 0,
+          customerName: '',
           remarks: "auto insert");
 
       sMH977Gcash = await computeCurrentStocks(sMH977Gcash);

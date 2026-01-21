@@ -6,6 +6,7 @@ class JobsOnQueueModel {
   String createdBy;
   String currentEmpId;
   int customerId;
+  String customerName;
   bool perKilo;
   int initialKilo;
   int initialLoad;
@@ -56,6 +57,7 @@ class JobsOnQueueModel {
     required this.createdBy,
     required this.currentEmpId,
     required this.customerId,
+    required this.customerName,
     required this.perKilo,
     required this.initialKilo,
     required this.initialLoad,
@@ -107,6 +109,7 @@ class JobsOnQueueModel {
     String? createdBy,
     String? currentEmpId,
     int? customerId,
+    String? customerName,
     bool? perKilo,
     int? initialKilo,
     int? initialLoad,
@@ -157,6 +160,7 @@ class JobsOnQueueModel {
       createdBy: createdBy ?? this.createdBy,
       currentEmpId: currentEmpId ?? this.currentEmpId,
       customerId: customerId ?? this.customerId,
+      customerName: customerName ?? this.customerName,
       perKilo: perKilo ?? this.perKilo,
       initialKilo: initialKilo ?? this.initialKilo,
       initialLoad: initialLoad ?? this.initialLoad,
@@ -216,6 +220,7 @@ class JobsOnQueueModel {
             createdBy: json['A4_CreatedBy']! as String,
             currentEmpId: json['A41_CurrentEmpId']! as String,
             customerId: json['A5_CustomerId']! as int,
+            customerName: json['A50_CustomerName']! as String,
             perKilo: json['A51_PerKilo']! as bool,
             initialKilo: json['A6_InitialKilo']! as int,
             initialLoad: json['A7_InitialLoad']! as int,
@@ -267,6 +272,7 @@ class JobsOnQueueModel {
         'A4_CreatedBy': createdBy,
         'A41_CurrentEmpId': currentEmpId,
         'A5_CustomerId': customerId,
+        'A50_CustomerName': customerName,
         'A51_PerKilo': perKilo,
         'A6_InitialKilo': initialKilo,
         'A7_InitialLoad': initialLoad,

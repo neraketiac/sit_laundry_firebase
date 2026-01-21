@@ -712,11 +712,13 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
               countId: 0,
               itemId: 0,
               itemUniqueId: 0,
+              itemName: '',
               currentCounter: 0,
               currentStocks: 0,
               logDate: Timestamp.now(),
               empId: empIdGlobal,
               customerId: 0,
+              customerName: '',
               remarks: '');
           listSMH.forEach((sMHData) {
             SuppliesModelHist sMH = sMHData.data();
@@ -756,11 +758,13 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
                     countId: sMH.countId,
                     itemId: sMH.itemId,
                     itemUniqueId: sMH.itemUniqueId,
+                    itemName: sMH.itemName,
                     currentCounter: sMH.currentCounter,
                     currentStocks: sMH.currentStocks,
                     logDate: sMH.logDate,
                     empId: sMH.empId,
                     customerId: sMH.customerId,
+                    customerName: sMH.customerName,
                     remarks: sMH.remarks);
               }
             }

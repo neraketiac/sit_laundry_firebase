@@ -46,6 +46,7 @@ class DatabaseJobsOnGoing {
                   createdBy: jOQM.createdBy,
                   currentEmpId: jOQM.currentEmpId,
                   customerId: jOQM.customerId,
+                  customerName: jOQM.customerName,
                   perKilo: jOQM.perKilo,
                   initialKilo: jOQM.initialKilo,
                   initialLoad: jOQM.initialLoad,

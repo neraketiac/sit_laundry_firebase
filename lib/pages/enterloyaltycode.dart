@@ -2,13 +2,15 @@ import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:laundry_firebase/models/customermodel.dart';
 import 'package:laundry_firebase/pages/home.dart';
 import 'package:laundry_firebase/pages/loyalty_admin.dart';
 import 'package:laundry_firebase/pages/loyalty_single.dart';
 import 'package:laundry_firebase/pages/menu/menu_constants.dart';
 import 'package:laundry_firebase/pages/menu/menu_main.dart';
-import 'package:laundry_firebase/pages/queue.dart';
 import 'package:laundry_firebase/pages/save_text.dart';
+import 'package:laundry_firebase/pages/updatedpages/main_laundry_header.dart';
+import 'package:laundry_firebase/variables/updatedvariables/customer_repository.dart';
 import 'package:laundry_firebase/variables/variables.dart';
 
 class EnterLoyaltyCode extends StatefulWidget {
@@ -21,6 +23,13 @@ class EnterLoyaltyCode extends StatefulWidget {
 class _EnterLoyaltyCodeState extends State<EnterLoyaltyCode> {
   String streamName = "0";
   late TextEditingController memberController = TextEditingController();
+  final List<CustomerModel> customers = [];
+  
+  @override
+  void initState() {
+    super.initState();
+  CustomerRepository.instance.loadOnce();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -199,7 +208,8 @@ class _EnterLoyaltyCodeState extends State<EnterLoyaltyCode> {
 
   void _queuePage(BuildContext context, String empid) {
     Navigator.of(context)
-        .push(MaterialPageRoute(builder: (context) => MyQueue(empid)));
+        // .push(MaterialPageRoute(builder: (context) => MyQueue(empid)));
+        .push(MaterialPageRoute(builder: (context) => MyMainLaundryHeader(empid)));
   }
 
   void _singleCard(BuildContext context) {
@@ -223,14 +233,14 @@ class _EnterLoyaltyCodeState extends State<EnterLoyaltyCode> {
   }
 
   Future<void> _singleReadData(String s) async {
-    // checkInternet(context);
-    // if (bHaveInternet) {
-    putEntries(); // try to put in other class, because right now, still no empid global
-    //anyone using empid global, cannot call here, because right now, it is still empty
-    //to comment putEntries;
-    //resetJOQMGlobalVar();
-    //fetchUsers();
-    //to comment putEntries end;
+    // // checkInternet(context);
+    // // if (bHaveInternet) {
+    // putEntries(); // try to put in other class, because right now, still no empid global
+    // //anyone using empid global, cannot call here, because right now, it is still empty
+    // //to comment putEntries;
+    // //resetJOQMGlobalVar();
+    // //fetchUsers();
+    // //to comment putEntries end;
     if (s == "16") {
       _allCards(context);
     } else if (s == "456") {
@@ -248,7 +258,7 @@ class _EnterLoyaltyCodeState extends State<EnterLoyaltyCode> {
         _singleCard(context);
       } else {
         if (mapEmpId[s]!.isNotEmpty) {
-          // ignore: use_build_context_synchronously
+          // ignore: use_build_context_synchronously    
           _queuePage(context, mapEmpId[s]!);
         } else {
           memberController.clear();
