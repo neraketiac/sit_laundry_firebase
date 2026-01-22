@@ -62,6 +62,10 @@ class SuppliesHistRepository {
     suppliesModelHist!.currentCounter = currentCounter;
   } 
 
+  void setEmpId(String empId) {
+    suppliesModelHist!.empId = empId;
+  }
+
   void setCustomerId(int customerId) {
     suppliesModelHist!.customerId = customerId;
   }

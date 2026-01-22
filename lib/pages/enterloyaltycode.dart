@@ -24,11 +24,11 @@ class _EnterLoyaltyCodeState extends State<EnterLoyaltyCode> {
   String streamName = "0";
   late TextEditingController memberController = TextEditingController();
   final List<CustomerModel> customers = [];
-  
+
   @override
   void initState() {
     super.initState();
-  CustomerRepository.instance.loadOnce();
+    CustomerRepository.instance.loadOnce();
   }
 
   @override
@@ -209,7 +209,8 @@ class _EnterLoyaltyCodeState extends State<EnterLoyaltyCode> {
   void _queuePage(BuildContext context, String empid) {
     Navigator.of(context)
         // .push(MaterialPageRoute(builder: (context) => MyQueue(empid)));
-        .push(MaterialPageRoute(builder: (context) => MyMainLaundryHeader(empid)));
+        .push(MaterialPageRoute(
+            builder: (context) => MyMainLaundryHeader(empid)));
   }
 
   void _singleCard(BuildContext context) {
@@ -257,8 +258,9 @@ class _EnterLoyaltyCodeState extends State<EnterLoyaltyCode> {
         // ignore: use_build_context_synchronously
         _singleCard(context);
       } else {
+        
         if (mapEmpId[s]!.isNotEmpty) {
-          // ignore: use_build_context_synchronously    
+          // ignore: use_build_context_synchronously
           _queuePage(context, mapEmpId[s]!);
         } else {
           memberController.clear();

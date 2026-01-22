@@ -46,28 +46,19 @@ class DatabaseSuppliesHist {
 
   Future<bool> addSuppliesHist(SuppliesModelHist sMH) async {
     bool bSuccess = false;
-    debugPrint('watata1');
     await _suppliesHistRef
         .add(sMH)
         .then((value) => {
-          debugPrint('watata2'),
               //add977GCashSuppliesHist(sMH),
               print("Supplies History Save done."),
               //resetSHGlobalVar(),
               bSuccess = true,
             })
         .catchError((error) => {
-          debugPrint('watata3'),
               print("Failed : $error ${sMH.itemId}"),
               bSuccess = false,
             });
     return bSuccess;
-  }
-
-  Future<bool> addSuppliesHistx(SuppliesModelHist sMH) async {
-    debugPrint('watataeeeeeeee');
-    
-    return true;
   }
 
   Future<void> add977GCashSuppliesHist(SuppliesModelHist sMH) async {

@@ -297,15 +297,28 @@ String getRegexStringVar() =>
 
 //var mapEmpId = {"0550", "Jeng", "0808", "Abi", "0413", "Ket", "0316", "DonP"};
 
-Map<String, String> mapEmpId = {
-  '05#05': 'Jeng',
-  '90#90': 'Rowel',
-  '08#08': 'Abi',
-  '28#28': 'Let',
+const Map<String, String> nameMap = {
+  'jeng': 'Jeng',
+  'lorie': 'Lorie',
+  'abby': 'Abby',
+  'ket': 'Ket',
+  'analyn': 'Analyn',
+  'seiji': 'Seiji',
+  'donf': 'DonF',
+};
+
+const Map<String, String> mapEmpId = {
+  '15#15': 'Jeng',
+  '12#12': 'Abi',
+  '19#19': 'Lorie',
   '20#20': 'Seiji',
-  '80#80': 'Ken',
+  '31#31': 'Analyn',
   '13#13': 'Ket',
   '16#16': 'DonP',
+};
+
+final Map<String, String> empNameToId = {
+  for (var e in mapEmpId.entries) e.value: e.key
 };
 
 // Map<String, int> mapEmpAccess = {
@@ -511,8 +524,6 @@ Future<void> fetchUsers() {
     }
   }).catchError((error) => print("Failed to fetch users: $error"));
 }
-
-
 
 String customerName(String customerId) {
   String thisCustomerName = "err pls relogin";
@@ -772,6 +783,13 @@ bool ifMenuUniqueIsLoad(SuppliesModelHist sMH) {
 
 bool ifMenuUniqueIsCashOut(SuppliesModelHist sMH) {
   if (sMH.itemUniqueId == menuOthUniqIdCashOut) {
+    return true;
+  }
+  return false;
+}
+
+bool ifMenuUniqueIsEOD(SuppliesModelHist sMH) {
+  if (sMH.itemUniqueId == menuOthUniqIdFundsEOD) {
     return true;
   }
   return false;

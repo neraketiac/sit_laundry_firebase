@@ -51,6 +51,17 @@ class DatabaseSuppliesCurrent {
 
   Future<bool> addSuppliesCurr(SuppliesModelHist sMH) async {
     sMH = await computeCurrentStocks(sMH);
+    //for EOD
+    if (ifMenuUniqueIsEOD(  sMH)) {
+      if (sMH.currentCounter < sMH.currentStocks) {
+        sMH.currentCounter = -1 * (sMH.currentStocks - sMH.currentCounter);
+      } else if (sMH.currentCounter > sMH.currentStocks) {
+        sMH.currentCounter = (sMH.currentCounter - sMH.currentStocks);
+      } else {
+        sMH.currentCounter = 0;
+      }
+    }
+    // //for EOD
     sMH.empId = empIdGlobal;
 
     // if (sMH.itemUniqueId == menuOthUniqIdFundsEOD) {
