@@ -1,7 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:laundry_firebase/models/employeemodel.dart';
 import 'package:laundry_firebase/models/suppliesmodelhist.dart';
+import 'package:laundry_firebase/services/database_employee_current.dart';
+import 'package:laundry_firebase/services/database_employee_hist.dart';
 import 'package:laundry_firebase/services/database_supplies_current.dart';
 import 'package:laundry_firebase/services/database_supplies_history.dart';
 import 'package:laundry_firebase/variables/variables.dart';
@@ -28,13 +31,14 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
     putEntries(); // only to use getItemNameOnly()
   }
 
+  //########################### MAIN ###############################
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.deepPurple[100],
       appBar: AppBar(
         title: Text(
-            "${convertTimeStampVar(Timestamp.now()).substring(0, 12).trim()}. Hello $empIdGlobal"),
+            "${DateFormat('MMM dd, yyyy').format(Timestamp.now().toDate())}. Hello $empIdGlobal"),
         toolbarHeight: 25,
       ),
       body: SingleChildScrollView(
@@ -72,14 +76,96 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                 ]),
               ),
             ),
+            SingleChildScrollView(
+              scrollDirection: Axis.vertical,
+              child: Container(
+                width: 600,
+                color: Colors.blue,
+                padding: const EdgeInsets.all(8.0),
+                child: Column(children: <Widget>[
+                  const SizedBox(
+                    height: 1,
+                  ),
+                  _readDataEmployeeCurr(),
+                  _readDataEmployeeHist(),
+                ]),
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 
-  //read Supplies Current
+  //########################### Supplies Current ###############################
   Widget _readDataSuppliesCurrent() {
+    Container conDisplaySuppliesCurr(
+      BuildContext context,
+      SuppliesModelHist sMH,
+    ) {
+      return Container(
+        height: 22,
+        color: (sMH.currentStocks <=
+                getItemNameStocksAlert(sMH.itemId, sMH.itemUniqueId)
+            ? cRiderPickup
+            : cWaiting),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Expanded(
+              child: Column(
+                children: [
+                  SizedBox(
+                    height: 2,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        (sMH.itemId == menuOth977GCash
+                            ? " 997Gcash "
+                            : (sMH.itemId == menuFabWKLDValPinkDVal
+                                ? "  Fab WKL(Pnk)"
+                                : (sMH.itemId == menuFabWKLDValGreenDVal
+                                    ? "  Fab WKL(Grn)"
+                                    : (sMH.itemId == menuDetWKL
+                                        ? "  Det WKL"
+                                        : (sMH.itemId ==
+                                                menuFabWKLDValPurpleDVal
+                                            ? "  Fab WKL(Ppl)"
+                                            : (sMH.itemId ==
+                                                    menuOthCashInOutFunds
+                                                ? "  Funds"
+                                                : "  ${getItemNameOnly(sMH.itemId, sMH.itemUniqueId)}")))))),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        "(${getItemNameStocksType(sMH.itemId, sMH.itemUniqueId)})",
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        "₱ ${value.format(sMH.currentStocks)}  ",
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     DatabaseSuppliesCurrent databaseSuppliesCurrent = DatabaseSuppliesCurrent();
     //read
     return StreamBuilder<QuerySnapshot>(
@@ -104,26 +190,24 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
             bHeader = false;
           }
 
-          listSMH.forEach((sMHData) {
+          for (var sMHData in listSMH) {
             SuppliesModelHist sMH = sMHData.data();
-            if (displayInSummary(sMH)) {
-              final rowData = TableRow(
-                  decoration: BoxDecoration(color: Colors.black),
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(2.0),
-                      child: Center(
-                        child: GestureDetector(
-                          onTap: () {},
-                          child: _conDisplaySuppliesCurrent(context, sMH),
-                        ),
+            final rowData = TableRow(
+                decoration: BoxDecoration(color: Colors.black),
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(2.0),
+                    child: Center(
+                      child: GestureDetector(
+                        onTap: () {},
+                        child: conDisplaySuppliesCurr(context, sMH),
                       ),
-                    )
-                  ]);
+                    ),
+                  )
+                ]);
 
-              rowDatas.add(rowData);
-            }
-          });
+            rowDatas.add(rowData);
+          }
         }
 
         return Table(
@@ -133,8 +217,80 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
     );
   }
 
-  //read Supplies History
+  //########################### Supplies History ###############################
   Widget _readDataSuppliesHistory() {
+    Container conDisplaySuppliesHist(
+      BuildContext context,
+      SuppliesModelHist sMH,
+    ) {
+      return Container(
+        height: 20,
+        color: getCOlorSuppliesHistoryVar(sMH),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Expanded(
+              child: Column(
+                mainAxisSize: MainAxisSize.max,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(
+                    height: 2,
+                  ),
+                  Row(
+                    children: [
+                      SizedBox(
+                        width: 2,
+                      ),
+                      Text(
+                          DateFormat('MMM dd, yyyy')
+                              .format(sMH.logDate.toDate()),
+                          style: const TextStyle(
+                            fontSize: 10,
+                          )),
+                      SizedBox(
+                        width: 2,
+                      ),
+                      Text(sMH.itemName,
+                          style: const TextStyle(
+                              fontSize: 10, fontWeight: FontWeight.bold)),
+                      SizedBox(
+                        width: 2,
+                      ),
+                      Text(
+                          " ( ₱${value.format(sMH.currentCounter)} / ₱${value.format(sMH.currentStocks)} ) ",
+                          style: const TextStyle(fontSize: 11)),
+                      SizedBox(
+                        width: 2,
+                      ),
+                      Text("by:{${sMH.customerName}} ",
+                          style: const TextStyle(
+                            fontSize: 10,
+                          )),
+                      SizedBox(
+                        width: 2,
+                      ),
+                      Text("log:{${sMH.empId}}",
+                          style: const TextStyle(
+                            fontSize: 10,
+                          )),
+                      SizedBox(
+                        width: 2,
+                      ),
+                      Text(":${sMH.remarks}",
+                          style: const TextStyle(
+                            fontSize: 10,
+                          )),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     DatabaseSuppliesHist databaseSuppliesHist = DatabaseSuppliesHist();
     //read
     return StreamBuilder<QuerySnapshot>(
@@ -163,23 +319,22 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
 
           for (var sMHData in listSMH) {
             SuppliesModelHist sMH = sMHData.data();
-            if (displayInHistory(sMH)) {
-              final rowData = TableRow(
-                  decoration: BoxDecoration(color: Colors.black),
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(2.0),
-                      child: Center(
-                        child: GestureDetector(
-                          onTap: () {},
-                          child: _conDisplaySuppliesHistory(context, sMH),
-                        ),
+            final rowData = TableRow(
+                decoration: BoxDecoration(color: Colors.black),
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(2.0),
+                    child: Center(
+                      child: GestureDetector(
+                        onTap: () {},
+                        child: conDisplaySuppliesHist(context, sMH),
                       ),
-                    )
-                  ]);
+                    ),
+                  )
+                ]);
 
-              rowDatas.add(rowData);
-            }
+            rowDatas.add(rowData);
+            
           }
         }
 
@@ -190,143 +345,236 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
     );
   }
 
-  Container _conDisplaySuppliesCurrent(
-    BuildContext context,
-    SuppliesModelHist sMH,
-  ) {
-    return Container(
-      height: 22,
-      color: (sMH.currentStocks <=
-              getItemNameStocksAlert(sMH.itemId, sMH.itemUniqueId)
-          ? cRiderPickup
-          : cWaiting),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Expanded(
-            child: Column(
-              children: [
-                SizedBox(
-                  height: 2,
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      (sMH.itemId == menuOth977GCash
-                          ? " 997Gcash "
-                          : (sMH.itemId == menuFabWKLDValPinkDVal
-                              ? "  Fab WKL(Pnk)"
-                              : (sMH.itemId == menuFabWKLDValGreenDVal
-                                  ? "  Fab WKL(Grn)"
-                                  : (sMH.itemId == menuDetWKL
-                                      ? "  Det WKL"
-                                      : (sMH.itemId == menuFabWKLDValPurpleDVal
-                                          ? "  Fab WKL(Ppl)"
-                                          : (sMH.itemId == menuOthCashInOutFunds
-                                              ? "  Funds"
-                                              : "  ${getItemNameOnly(sMH.itemId, sMH.itemUniqueId)}")))))),
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
+  //########################### Employee ###############################
+  Widget _readDataEmployeeCurr() {
+    Container conDisplayEmployeeCurr(
+      BuildContext context,
+      EmployeeModel eM,
+    ) {
+      return Container(
+        height: 22,
+        color: Colors.yellow,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Expanded(
+              child: Column(
+                children: [
+                  SizedBox(
+                    height: 2,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        eM.empName,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
-                    Text(
-                      "(${getItemNameStocksType(sMH.itemId, sMH.itemUniqueId)})",
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
+                      Text(
+                        " ",
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
-                    Text(
-                      "₱ ${value.format(sMH.currentStocks)}  ",
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
+                      Text(
+                        "₱ ${value.format(eM.currentStocks)}  ",
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              ],
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
-      ),
+          ],
+        ),
+      );
+    }
+
+    DatabaseEmployeeCurrent databaseEmployeeCurrent = DatabaseEmployeeCurrent();
+    //read
+    return StreamBuilder<QuerySnapshot>(
+      stream: databaseEmployeeCurrent.get(),
+      builder: (context, snapshot) {
+        List listEM = snapshot.data?.docs ?? [];
+        bHeader = true;
+        List<TableRow> rowDatas = [];
+        if (listEM.isNotEmpty) {
+          //header
+          if (bHeader) {
+            const rowData = TableRow(
+                decoration:
+                    BoxDecoration(color: Color.fromARGB(255, 9, 194, 49)),
+                children: [
+                  Text(
+                    "Current Budget",
+                    style: TextStyle(fontSize: 10),
+                  ),
+                ]);
+            rowDatas.add(rowData);
+            bHeader = false;
+          }
+
+          for (var eMData in listEM) {
+            EmployeeModel eM = eMData.data();
+            final rowData = TableRow(
+                decoration: BoxDecoration(color: Colors.black),
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(2.0),
+                    child: Center(
+                      child: GestureDetector(
+                        onTap: () {},
+                        child: conDisplayEmployeeCurr(context, eM),
+                      ),
+                    ),
+                  )
+                ]);
+
+            rowDatas.add(rowData);
+          }
+        }
+
+        return Table(
+          children: rowDatas,
+        );
+      },
     );
   }
 
-  Container _conDisplaySuppliesHistory(
-    BuildContext context,
-    SuppliesModelHist sMH,
-  ) {
-    return Container(
-      height: 20,
-      color: getCOlorSuppliesHistoryVar(sMH),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Expanded(
-            child: Column(
-              mainAxisSize: MainAxisSize.max,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(
-                  height: 2,
-                ),
-                Row(
-                  children: [
-                    SizedBox(
-                      width: 2,
-                    ),
-                    // Text(" ${convertTimeStampVar(sMH.logDate)} ",
-                    //     style: const TextStyle(
-                    //       fontSize: 10,
-                    //     )),
-                    Text(
-                        DateFormat('MMM dd, yyyy').format(sMH.logDate.toDate()),
-                        style: const TextStyle(
-                          fontSize: 10,
-                        )),
-                    SizedBox(
-                      width: 2,
-                    ),
-                    Text(sMH.itemName,
-                        style: const TextStyle(
-                            fontSize: 10, fontWeight: FontWeight.bold)),
-                    SizedBox(
-                      width: 2,
-                    ),
-                    Text(
-                        " ( ₱${value.format(sMH.currentCounter)} / ₱${value.format(sMH.currentStocks)} ) ",
-                        style: const TextStyle(fontSize: 11)),
-                    SizedBox(
-                      width: 2,
-                    ),
-                    Text("by:{${sMH.customerName}} ",
-                        style: const TextStyle(
-                          fontSize: 10,
-                        )),
-                    SizedBox(
-                      width: 2,
-                    ),
-                    Text("log:{${sMH.empId}}",
-                        style: const TextStyle(
-                          fontSize: 10,
-                        )),
-                    SizedBox(
-                      width: 2,
-                    ),
-                    Text(":${sMH.remarks}",
-                        style: const TextStyle(
-                          fontSize: 10,
-                        )),
-                  ],
-                ),
-              ],
+  //########################### Supplies History ###############################
+  Widget _readDataEmployeeHist() {
+    Container conDisplayEmployeeHist(
+      BuildContext context,
+      EmployeeModel eM,
+    ) {
+      return Container(
+        height: 20,
+        color: Colors.orange,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Expanded(
+              child: Column(
+                mainAxisSize: MainAxisSize.max,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(
+                    height: 2,
+                  ),
+                  Row(
+                    children: [
+                      SizedBox(
+                        width: 2,
+                      ),
+                      Text(
+                          DateFormat('MMM dd, yyyy')
+                              .format(eM.logDate.toDate()),
+                          style: const TextStyle(
+                            fontSize: 10,
+                          )),
+                      SizedBox(
+                        width: 2,
+                      ),
+                      Text(eM.empName,
+                          style: const TextStyle(
+                              fontSize: 10, fontWeight: FontWeight.bold)),
+                      SizedBox(
+                        width: 2,
+                      ),
+                      Text(
+                          " ( ₱${value.format(eM.currentCounter)} / ₱${value.format(eM.currentStocks)} ) ",
+                          style: const TextStyle(fontSize: 11)),
+                      SizedBox(
+                        width: 2,
+                      ),
+                      Text("by:{${eM.empName}} ",
+                          style: const TextStyle(
+                            fontSize: 10,
+                          )),
+                      SizedBox(
+                        width: 2,
+                      ),
+                      Text("log:{${eM.logBy}}",
+                          style: const TextStyle(
+                            fontSize: 10,
+                          )),
+                      SizedBox(
+                        width: 2,
+                      ),
+                      Text(":${eM.remarks}",
+                          style: const TextStyle(
+                            fontSize: 10,
+                          )),
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
-      ),
+          ],
+        ),
+      );
+    }
+
+    DatabaseEmployeeHist databaseEmployeeHist = DatabaseEmployeeHist();
+    //read
+    return StreamBuilder<QuerySnapshot>(
+      stream: databaseEmployeeHist.getEmployeeHistory(),
+      builder: (context, snapshot) {
+        List listEM = snapshot.data?.docs ?? [];
+        bHeader = true;
+        List<TableRow> rowDatas = [];
+        if (listEM.isNotEmpty) {
+          //header
+          if (bHeader) {
+            var rowData = TableRow(
+                decoration:
+                    const BoxDecoration(color: Color.fromARGB(255, 9, 194, 49)),
+                children: [
+                  // AutoCompleteCustomer(),
+                  const Text(
+                    "History",
+                    style: TextStyle(fontSize: 10),
+                  ),
+                ]);
+            rowDatas.add(rowData);
+
+            bHeader = false;
+          }
+
+          for (var eMData in listEM) {
+            EmployeeModel eM = eMData.data();
+            final rowData = TableRow(
+                decoration: BoxDecoration(color: Colors.black),
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(2.0),
+                    child: Center(
+                      child: GestureDetector(
+                        onTap: () {},
+                        child: conDisplayEmployeeHist(context, eM),
+                      ),
+                    ),
+                  )
+                ]);
+
+            rowDatas.add(rowData);
+            
+          }
+        }
+
+        return Table(
+          children: rowDatas,
+        );
+      },
     );
   }
+
+
 }

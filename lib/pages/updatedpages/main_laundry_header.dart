@@ -2,8 +2,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'package:laundry_firebase/models/employeemodel.dart';
 import 'package:laundry_firebase/models/suppliesmodelhist.dart';
 import 'package:laundry_firebase/pages/updatedpages/main_laundry_body.dart';
+import 'package:laundry_firebase/services/database_employee_current.dart';
+import 'package:laundry_firebase/services/database_supplies_current.dart';
 import 'package:laundry_firebase/variables/updatedvariables/jobsonqueue_repository.dart';
 import 'package:laundry_firebase/variables/updatedvariables/supplies_hist_repository.dart';
 import 'package:laundry_firebase/variables/variables.dart';
@@ -81,32 +84,32 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
           // SizedBox(
           //   height: 5,
           // ),
-          // FloatingActionButton(
-          //   heroTag: "Enter New Record...",
-          //   onPressed: () {
-          //     _showEnterNewRecord();
-          //   },
-          //   child: const Text(
-          //     "₱",
-          //     style: TextStyle(
-          //       fontSize: 26,
-          //       fontWeight: FontWeight.bold,
-          //     ),
-          //   ),
-          // ),
-          // FloatingActionButton(
-          //   heroTag: "Out",
-          //   onPressed: () {
-          //     _showEndOfDay();
-          //   },
-          //   child: const Icon(Icons.timer_off_outlined),
-          // ),
+          FloatingActionButton(
+            heroTag: "Enter New Record...",
+            onPressed: () {
+              _showEnterNewRecord();
+            },
+            child: const Text(
+              "₱",
+              style: TextStyle(
+                fontSize: 26,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          FloatingActionButton(
+            heroTag: "Out",
+            onPressed: () {
+              _showEndOfDay();
+            },
+            child: const Icon(Icons.timer_off_outlined),
+          ),
         ],
       ),
     );
   }
 
-//floating button new record
+//floating button new record  ###########################################################
   void _showEnterNewRecord() {
     final FocusNode nameFocusNode = FocusNode();
 
@@ -409,7 +412,7 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
     );
   }
 
-//floating button done jobs
+//floating button done jobs  ###########################################################
   void _showEndOfDay() {
     void resetAllQty() {
       _qtyMap.updateAll((key, value) => 0);
@@ -599,7 +602,7 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
     );
   }
 
-  //shared methods
+  //SHARED METHODS ###########################################################
 
   int get _grandTotal {
     int total = 0;
@@ -607,41 +610,6 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
       total += denom * qty;
     });
     return total;
-  }
-
-  //insert new Supplies
-  Future<bool> _processTypeOfPay(SuppliesModelHist sMH) async {
-    if (ifMenuUniqueIsCashOut(sMH) || ifMenuUniqueIsFundsOut(sMH)) {
-      sMH.currentCounter = sMH.currentCounter * -1;
-    }
-
-    // if (nameMap[sMH.customerName.toLowerCase()] != null && sMH.itemUniqueId == menuOthUniqIdFundsOut) {
-    //   final tempEmpId = empNameToId[sMH.customerName];
-    //   DatabaseEmployeeCurrent databaseEmployeeCurrent =
-    //       DatabaseEmployeeCurrent();
-    //   if (await databaseEmployeeCurrent.addEmployeeCurr(EmployeeModel(
-    //     empId: tempEmpId!,
-    //     docId: "",
-    //     countId: 0,
-    //     currentCounter: sMH.currentCounter,
-    //     currentStocks: 0,
-    //     logDate: sMH.logDate,
-    //     empName: sMH.customerName,
-    //     remarks: '',
-    //   ))) {
-    //     debugPrint("Employee Current updated...");
-    //   } else {
-    //     debugPrint("Employee Current failed to update...");
-    //   }
-    // }
-
-    //this will insert to Supplies History first then Supplies Current
-    //if exists in Supplies Current, it will update
-    //if not exists, it will add new record in Supplies Current
-    // debugPrint(sMH.empId.toString() + '===' + sMH.itemUniqueId.toString() + '---' + empIdGlobal);
-    // DatabaseSuppliesCurrent databaseSuppliesCurrent = DatabaseSuppliesCurrent();
-    // return await databaseSuppliesCurrent.addSuppliesCurr(sMH);
-    return false;
   }
 
   Future<void> _insertToFB() async {
@@ -673,4 +641,42 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
     }
   }
 
+  //insert new Supplies
+  Future<bool> _processTypeOfPay(SuppliesModelHist sMH) async {
+    if (ifMenuUniqueIsCashOut(sMH) || ifMenuUniqueIsFundsOut(sMH)) {
+      sMH.currentCounter = sMH.currentCounter * -1;
+    }
+
+    // ##### insert to Employee Current if Funds Out and name exists in nameMap ######
+    if (nameMap[sMH.customerName.toLowerCase()] != null &&
+        (sMH.itemUniqueId == menuOthUniqIdFundsOut ||
+            sMH.itemUniqueId == menuOthUniqIdFundsIn)) {
+      final tempEmpId = empNameToId[sMH.customerName];
+      DatabaseEmployeeCurrent databaseEmployeeCurrent =
+          DatabaseEmployeeCurrent();
+      if (await databaseEmployeeCurrent.addEmployeeCurr(EmployeeModel(
+        empId: tempEmpId!,
+        docId: "",
+        countId: 0,
+        currentCounter: sMH.currentCounter,
+        currentStocks: 0,
+        logDate: sMH.logDate,
+        logBy: empIdGlobal,
+        empName: sMH.customerName,
+        remarks: '',
+      ))) {
+        debugPrint("Employee Current updated...");
+      } else {
+        debugPrint("Employee Current failed to update...");
+      }
+    }
+
+    //this will insert to Supplies History first then Supplies Current
+    //if exists in Supplies Current, it will update
+    //if not exists, it will add new record in Supplies Current
+    // debugPrint(sMH.empId.toString() + '===' + sMH.itemUniqueId.toString() + '---' + empIdGlobal);
+    DatabaseSuppliesCurrent databaseSuppliesCurrent = DatabaseSuppliesCurrent();
+    return await databaseSuppliesCurrent.addSuppliesCurr(sMH);
+    // return false;
+  }
 }

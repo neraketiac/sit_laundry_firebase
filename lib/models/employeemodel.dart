@@ -9,6 +9,7 @@ class EmployeeModel {
   int currentCounter;
   int currentStocks;
   Timestamp logDate;  //* last transaction date
+  String logBy; //different name who log records
   String remarks;
 
   EmployeeModel({
@@ -19,19 +20,21 @@ class EmployeeModel {
     required this.currentCounter,
     required this.currentStocks,
     required this.logDate,
+    required this.logBy,
     required this.remarks,
   });
 
   EmployeeModel.fromJson(Map<String, dynamic> json)
       : this(
-          docId: json['docId']! as String,
-          countId: json['countId']! as int,
-          empId: json['empId']! as String,
-          empName: json['empName']! as String,
-          currentCounter: json['currentCounter']! as int,
-          currentStocks: json['currentStocks']! as int,
-          logDate: json['logDate']! as Timestamp,
-          remarks: json['remarks']! as String,
+          docId: json['DocId']! as String,
+          countId: json['CountId']! as int,
+          empId: json['EmpId']! as String,
+          empName: json['EmpName']! as String,
+          currentCounter: json['CurrentCounter']! as int,
+          currentStocks: json['CurrentStocks']! as int,
+          logDate: json['LogDate']! as Timestamp,
+          logBy: json['LogBy']! as String,
+          remarks: json['Remarks']! as String,
         );
 
   EmployeeModel coyWith({
@@ -42,6 +45,7 @@ class EmployeeModel {
     int? currentCounter,
     int? currentStocks,
     Timestamp? logDate,
+    String? logBy,
     String? remarks,
   }) {
     return EmployeeModel(
@@ -52,18 +56,20 @@ class EmployeeModel {
       currentCounter: currentCounter ?? this.currentCounter,
       currentStocks: currentStocks ?? this.currentStocks,
       logDate: logDate ?? this.logDate,
+      logBy: logBy ?? this.logBy,
       remarks: remarks ?? this.remarks,
     );
   }
 
   Map<String, dynamic> toJson() => {
-        'docId': docId,
-        'countId': countId,
-        'empId': empId,
-        'empName': empName,
-        'currentCounter': currentCounter,
-        'currentStocks': currentStocks,
-        'logDate': logDate,
-        'remarks': remarks,
+        'DocId': docId,
+        'CountId': countId,
+        'EmpId': empId,
+        'EmpName': empName,
+        'CurrentCounter': currentCounter,
+        'CurrentStocks': currentStocks,
+        'LogDate': logDate,
+        'LogBy': logBy,
+        'Remarks': remarks,
       };
 }

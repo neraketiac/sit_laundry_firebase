@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:laundry_firebase/models/employeemodel.dart';
+import 'package:laundry_firebase/variables/variables.dart';
 
 const String EMPLOYEE_HIST_REF = "EmployeeHist";
 
@@ -9,32 +10,27 @@ class DatabaseEmployeeHist {
   late final CollectionReference _employeeHistRef;
 
   DatabaseEmployeeHist() {
-    _employeeHistRef = _firestore
-        .collection(EMPLOYEE_HIST_REF)
-        .withConverter<EmployeeModel>(
+    _employeeHistRef =
+        _firestore.collection(EMPLOYEE_HIST_REF).withConverter<EmployeeModel>(
             fromFirestore: (snapshots, _) => EmployeeModel.fromJson(
                   snapshots.data()!,
                 ),
             toFirestore: (eM, _) => eM.toJson());
   }
 
-  Stream<QuerySnapshot> getEmployeeHistory(bool bSel) {
-    if (!bSel) {
+  Stream<QuerySnapshot> getEmployeeHistory() {
+    if (empIdGlobal == 'Ket' || empIdGlobal == 'DonF') {
+      return _employeeHistRef.orderBy('LogDate', descending: true).limit(100).snapshots();
+    } else {
       return _employeeHistRef
+          .where('EmpId', isEqualTo: empNameToId[empIdGlobal])
           .orderBy('LogDate', descending: true)
           .limit(100)
           .snapshots();
-    } else {
-      return _employeeHistRef
-
-          .orderBy('ItemId')
-          .orderBy('LogDate', descending: true)
-          .snapshots();
     }
-
   }
 
-    Future<bool> addEmployeeHist(EmployeeModel eM) async {
+  Future<bool> addEmployeeHist(EmployeeModel eM) async {
     bool bSuccess = false;
     await _employeeHistRef
         .add(eM)

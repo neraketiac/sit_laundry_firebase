@@ -1,7 +1,9 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:laundry_firebase/models/employeemodel.dart';
 import 'package:laundry_firebase/services/database_employee_hist.dart';
+import 'package:laundry_firebase/variables/variables.dart';
 
 const String EMPLOYEE_CURR_REF = "EmployeeCurr";
 
@@ -20,7 +22,13 @@ class DatabaseEmployeeCurrent {
   }
 
   Stream<QuerySnapshot> get() {
-    return _employeeCurrRef.orderBy('LogDate', descending: true).snapshots();
+    if (empIdGlobal == 'Ket' || empIdGlobal == 'DonF'){
+      return _employeeCurrRef.orderBy('LogDate', descending: true).snapshots();
+    } else {
+      return _employeeCurrRef
+      .where( 'EmpId', isEqualTo: empNameToId[empIdGlobal])
+      .orderBy('LogDate', descending: true).snapshots();
+    }
   }
 
   Future<bool> addEmployeeCurr(EmployeeModel eM) async {
@@ -45,7 +53,7 @@ class DatabaseEmployeeCurrent {
           .add(eM)
           .then((value) => {
                 eM.docId = value.id,
-                print("docID${value.id}"),
+                print("DocID${value.id}"),
                 _updateDocId(eM),
                 print("Supplies Current Save done...."),
                 bSuccess = true,
@@ -75,9 +83,10 @@ class DatabaseEmployeeCurrent {
   }
 
   Future<EmployeeModel> _computeCurrentStocks(EmployeeModel eM) async {
+    debugPrint("Compute Current Stocks for ${eM.empId}");
     var collectionRef = FirebaseFirestore.instance
         .collection('EmployeeCurr')
-        .where('empName', isEqualTo: eM.empId);
+        .where('EmpId', isEqualTo: eM.empId);      
     var querySnapshots = await collectionRef.get();
     for (var doc in querySnapshots.docs) {
       eM.currentStocks = doc['CurrentStocks'];
