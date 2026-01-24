@@ -2,8 +2,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'package:laundry_firebase/models/customermodel.dart';
 import 'package:laundry_firebase/models/employeemodel.dart';
 import 'package:laundry_firebase/models/suppliesmodelhist.dart';
+import 'package:laundry_firebase/pages/autocompletecustomer.dart';
 import 'package:laundry_firebase/pages/updatedpages/main_laundry_body.dart';
 import 'package:laundry_firebase/services/database_employee_current.dart';
 import 'package:laundry_firebase/services/database_supplies_current.dart';
@@ -24,8 +26,10 @@ class MyMainLaundryHeader extends StatefulWidget {
 
 class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
   late String _sEmpId;
+
+  late bool isGcashCredit = false;
   static const double _fieldIndentWidth = 40;
-  TextEditingController customerNameVar = TextEditingController();
+  //TextEditingController customerNameVar = TextEditingController();
   TextEditingController customerNumberVar = TextEditingController();
   TextEditingController customerAmountVar = TextEditingController();
 
@@ -58,7 +62,11 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
 
     _sEmpId = widget.empid;
     empIdGlobal = _sEmpId;
-
+    if (empIdGlobal == 'Ket' || empIdGlobal == 'DonF') {
+      isAdmin = true;
+    } else {
+      isAdmin = false;
+    }
     JobsOnQueueRepository.instance.loadOnce();
     JobsOnQueueRepository.instance.setCreatedBy(_sEmpId);
     JobsOnQueueRepository.instance.currentEmpId(_sEmpId);
@@ -84,6 +92,7 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
           // SizedBox(
           //   height: 5,
           // ),
+
           FloatingActionButton(
             heroTag: "Enter New Record...",
             onPressed: () {
@@ -97,35 +106,570 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
               ),
             ),
           ),
+
           FloatingActionButton(
+            backgroundColor: cFundsEODShaded,
+            hoverColor: cFundsEOD,
             heroTag: "Out",
             onPressed: () {
               _showEndOfDay();
             },
             child: const Icon(Icons.timer_off_outlined),
           ),
+
+          FloatingActionButton(
+            backgroundColor: Colors.lightBlue.shade100,
+            hoverColor: Colors.lightBlue,
+            onPressed: () {
+              _showGcashCredit();
+            },
+            child: const Icon(Icons.g_mobiledata),
+          ),
+          Visibility(
+            visible: (isAdmin ? true : allowPayment),
+            child: FloatingActionButton(
+              backgroundColor: Colors.yellowAccent.shade100,
+              hoverColor: Colors.yellowAccent,
+              heroTag: "Admin",
+              onPressed: () {
+                _showSalary();
+              },
+              child: const Icon(Icons.add_moderator_outlined),
+            ),
+          ),
         ],
       ),
     );
   }
 
-//floating button new record  ###########################################################
-  void _showEnterNewRecord() {
-    final FocusNode nameFocusNode = FocusNode();
+//floating salary  ###########################################################
+  void _showSalary() {
+    _selectedFundCode = menuOthSalaryPayment;
+    // final FocusNode nameFocusNode = FocusNode();
 
-    void normalizeName() {
-      final text = customerNameVar.text.trim().toLowerCase();
+    // void normalizeName() {
+    //   final text = customerNameVar.text.trim().toLowerCase();
 
-      if (nameMap.containsKey(text)) {
-        customerNameVar.text = nameMap[text]!;
-      }
+    //   if (nameMap.containsKey(text)) {
+    //     customerNameVar.text = nameMap[text]!;
+    //   }
+    // }
+
+    // nameFocusNode.addListener(() {
+    //   if (!nameFocusNode.hasFocus) {
+    //     normalizeName();
+    //   }
+    // });
+
+    Visibility fundTypeToggle(Function setState) {
+      return Visibility(
+        visible: true,
+        child: Container(
+          alignment: Alignment.center,
+          padding: const EdgeInsets.all(6.0),
+          decoration: decoLightBlue(),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // 🔹 TOP ROW
+              ToggleButtons(
+                isSelected: List.generate(
+                  1,
+                  (i) => _selectedFundCode == menuOthSalaryPayment,
+                ),
+                onPressed: (index) {
+                  setState(() {
+                    _selectedFundCode = menuOthSalaryPayment;
+                    SuppliesHistRepository.instance
+                        .setItemId(menuOthCashInOutFunds);
+                    SuppliesHistRepository.instance
+                        .setItemUniqueId(_selectedFundCode);
+                  });
+                },
+                borderRadius: BorderRadius.circular(8),
+                selectedColor: Colors.black,
+                fillColor: Colors.yellowAccent,
+                color: Colors.black,
+                constraints: const BoxConstraints(
+                  minWidth: 110,
+                  minHeight: 40,
+                ),
+                children: const [
+                  Text('Salary Payment'),
+                ],
+              ),
+
+              const SizedBox(height: 8),
+              //
+            ],
+          ),
+        ),
+      );
     }
 
-    nameFocusNode.addListener(() {
-      if (!nameFocusNode.hasFocus) {
-        normalizeName();
-      }
-    });
+    Visibility customerAmount(Function setState) {
+      return Visibility(
+        visible: true,
+        child: Container(
+          padding: const EdgeInsets.all(1.0),
+          decoration: decoAmber(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Label (not indented)
+              const Padding(
+                padding: EdgeInsets.only(left: 4, bottom: 4),
+                child: Text(
+                  'Amount',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+
+              // Amount field
+              TextFormField(
+                controller: customerAmountVar,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(
+                    RegExp(r'\d+(\.\d{0,2})?'),
+                  ),
+                ],
+                decoration: InputDecoration(
+                  hintText: '0.00',
+                  border: const OutlineInputBorder(),
+                  prefixIcon: SizedBox(
+                    width: _fieldIndentWidth,
+                    child: const Center(
+                      child: Text(
+                        '₱',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    Visibility customerName(Function setState) {
+      return Visibility(
+        visible: true,
+        child: Container(
+          padding: const EdgeInsets.all(1.0),
+          decoration: decoAmber(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // 🔹 Label + Checkbox on same row
+              Padding(
+                padding: const EdgeInsets.only(left: 4, bottom: 4),
+                child: Row(
+                  children: [
+                    const Text(
+                      'Name',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // 🔹 Input Field (disabled if employee is checked)
+              // TextFormField(
+              //   controller: customerNameVar,
+              //   focusNode: nameFocusNode,
+              //   textCapitalization: TextCapitalization.words,
+              //   decoration: const InputDecoration(
+              //     hintText: 'Enter Name',
+              //     prefixIcon: SizedBox(width: _fieldIndentWidth),
+              //     border: OutlineInputBorder(),
+              //   ),
+              // ),
+              AutoCompleteCustomer(),
+              SizedBox(
+                height: 5,
+              ),
+              MaterialButton(
+                color: cButtons,
+                onPressed: () {
+                  allCardsVar(context);
+                },
+                child: Text("New Account"),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    Future<void> saveButtonProcessCash() async {
+      SuppliesHistRepository.instance.setItemName(
+          getItemNameOnly(menuOthCashInOutFunds, _selectedFundCode));
+      SuppliesHistRepository.instance.setItemUniqueId(_selectedFundCode);
+      SuppliesHistRepository.instance.setRemarks(remarksSuppliesVar.text);
+      SuppliesHistRepository.instance.setCurrentCounter(
+          int.parse(customerAmountVar.text.replaceAll(',', '')));
+      await _insertToFB();
+    }
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(builder: (context, setState) {
+          return AlertDialog(
+            backgroundColor: Colors.yellowAccent,
+            title: Text(
+              "Salary of Employee",
+              textAlign: TextAlign.center,
+              style: TextStyle(backgroundColor: Colors.yellowAccent),
+            ),
+            content: SingleChildScrollView(
+              scrollDirection: Axis.vertical,
+              child: Container(
+                padding: EdgeInsets.all(8.0),
+                decoration: BoxDecoration(
+                    border: Border.all(color: Colors.blueAccent, width: 2.0)),
+                child: Form(
+                  //key: _formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      fundTypeToggle(setState),
+                      customerAmount(setState),
+                      customerName(setState),
+                      conRemarksSuppliesVar(setState),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            // 👇 Bottom buttons
+            actionsAlignment: MainAxisAlignment.end,
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context); // close popup
+                },
+                child: const Text('Cancel'),
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  if (empNameToId.containsKey(autocompleteSelected.name)) {
+                    isGcashCredit = true;
+                    await saveButtonProcessCash();
+                    Navigator.pop(context);
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                          content: Text(
+                              'Name must be an employee for Salary Payment.')),
+                    );
+                  }
+                },
+                child: const Text('Save'),
+              ),
+            ],
+          );
+        });
+      },
+    );
+  }
+
+//floating gcash credit  ###########################################################
+  void _showGcashCredit() {
+    _selectedFundCode = menuOthUniqIdCashIn;
+    // final FocusNode nameFocusNode = FocusNode();
+
+    // void normalizeName() {
+    //   final text = customerNameVar.text.trim().toLowerCase();
+
+    //   if (nameMap.containsKey(text)) {
+    //     customerNameVar.text = nameMap[text]!;
+    //   }
+    // }
+
+    // nameFocusNode.addListener(() {
+    //   if (!nameFocusNode.hasFocus) {
+    //     normalizeName();
+    //   }
+    // });
+
+    Visibility fundTypeToggle(Function setState) {
+      return Visibility(
+        visible: true,
+        child: Container(
+          alignment: Alignment.center,
+          padding: const EdgeInsets.all(6.0),
+          decoration: decoLightBlue(),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // 🔹 TOP ROW
+              ToggleButtons(
+                isSelected: List.generate(
+                  1,
+                  (i) => _selectedFundCode == fundTypeCodes1stLayer[i],
+                ),
+                onPressed: (index) {
+                  setState(() {
+                    _selectedFundCode = fundTypeCodes1stLayer[index];
+                    SuppliesHistRepository.instance
+                        .setItemId(menuOthCashInOutFunds);
+                    SuppliesHistRepository.instance
+                        .setItemUniqueId(_selectedFundCode);
+                  });
+                },
+                borderRadius: BorderRadius.circular(8),
+                selectedColor: Colors.white,
+                fillColor: Colors.blue,
+                color: Colors.black,
+                constraints: const BoxConstraints(
+                  minWidth: 110,
+                  minHeight: 40,
+                ),
+                children: const [
+                  Text('Gcash Credit'),
+                ],
+              ),
+
+              const SizedBox(height: 8),
+              //
+            ],
+          ),
+        ),
+      );
+    }
+
+    Visibility customerAmount(Function setState) {
+      return Visibility(
+        visible: true,
+        child: Container(
+          padding: const EdgeInsets.all(1.0),
+          decoration: decoAmber(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Label (not indented)
+              const Padding(
+                padding: EdgeInsets.only(left: 4, bottom: 4),
+                child: Text(
+                  'Amount',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+
+              // Amount field
+              TextFormField(
+                controller: customerAmountVar,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(
+                    RegExp(r'\d+(\.\d{0,2})?'),
+                  ),
+                ],
+                decoration: InputDecoration(
+                  hintText: '0.00',
+                  border: const OutlineInputBorder(),
+                  prefixIcon: SizedBox(
+                    width: _fieldIndentWidth,
+                    child: const Center(
+                      child: Text(
+                        '₱',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    Visibility customerName(Function setState) {
+      return Visibility(
+        visible: true,
+        child: Container(
+          padding: const EdgeInsets.all(1.0),
+          decoration: decoAmber(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // 🔹 Label + Checkbox on same row
+              Padding(
+                padding: const EdgeInsets.only(left: 4, bottom: 4),
+                child: Row(
+                  children: [
+                    const Text(
+                      'Name',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // 🔹 Input Field (disabled if employee is checked)
+              // TextFormField(
+              //   controller: customerNameVar,
+              //   focusNode: nameFocusNode,
+              //   textCapitalization: TextCapitalization.words,
+              //   decoration: const InputDecoration(
+              //     hintText: 'Enter Name',
+              //     prefixIcon: SizedBox(width: _fieldIndentWidth),
+              //     border: OutlineInputBorder(),
+              //   ),
+              // ),
+              AutoCompleteCustomer(),
+              SizedBox(
+                height: 5,
+              ),
+              MaterialButton(
+                color: cButtons,
+                onPressed: () {
+                  allCardsVar(context);
+                },
+                child: Text("New Account"),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    Future<void> saveButtonProcessCash() async {
+      SuppliesHistRepository.instance.setItemName(
+          getItemNameOnly(menuOthCashInOutFunds, _selectedFundCode));
+      SuppliesHistRepository.instance.setItemUniqueId(_selectedFundCode);
+      SuppliesHistRepository.instance.setRemarks(remarksSuppliesVar.text);
+      SuppliesHistRepository.instance.setCurrentCounter(
+          int.parse(customerAmountVar.text.replaceAll(',', '')));
+      await _insertToFB();
+    }
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(builder: (context, setState) {
+          return AlertDialog(
+            backgroundColor: Colors.lightBlue,
+            title: Text.rich(
+  TextSpan(
+    children: [
+      TextSpan(
+        text: "Employee Credit\n",
+        style: TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      TextSpan(
+        text: "to be deducted ",
+        style: TextStyle(
+          fontSize: 10, // 👈 smaller
+        ),
+      ),
+      TextSpan(
+        text: "to your balance",
+        style: TextStyle(
+          fontSize: 10, // 👈 smaller
+        ),
+      ),
+    ],
+  ),
+  textAlign: TextAlign.center,
+),
+            content: SingleChildScrollView(
+              scrollDirection: Axis.vertical,
+              child: Container(
+                padding: EdgeInsets.all(8.0),
+                decoration: BoxDecoration(
+                    border: Border.all(color: Colors.blueAccent, width: 2.0)),
+                child: Form(
+                  //key: _formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      fundTypeToggle(setState),
+                      customerAmount(setState),
+                      customerName(setState),
+                      conRemarksSuppliesVar(setState),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            // 👇 Bottom buttons
+            actionsAlignment: MainAxisAlignment.end,
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context); // close popup
+                },
+                child: const Text('Cancel'),
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  if (empNameToId.containsKey(autocompleteSelected.name)) {
+                    isGcashCredit = true;
+                    await saveButtonProcessCash();
+                    Navigator.pop(context);
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                          content: Text(
+                              'Customer name must be an employee for Gcash Credit.')),
+                    );
+                  }
+                },
+                child: const Text('Save'),
+              ),
+            ],
+          );
+        });
+      },
+    );
+  }
+
+//floating button new record  ###########################################################
+  void _showEnterNewRecord() {
+    // final FocusNode nameFocusNode = FocusNode();
+
+    // void normalizeName() {
+    //   final text = customerNameVar.text.trim().toLowerCase();
+
+    //   if (nameMap.containsKey(text)) {
+    //     customerNameVar.text = nameMap[text]!;
+    //   }
+    // }
+
+    // nameFocusNode.addListener(() {
+    //   if (!nameFocusNode.hasFocus) {
+    //     normalizeName();
+    //   }
+    // });
 
     Visibility fundTypeToggle(Function setState) {
       return Visibility(
@@ -294,7 +838,7 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
           padding: const EdgeInsets.all(1.0),
           decoration: decoAmber(),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               // 🔹 Label + Checkbox on same row
               Padding(
@@ -313,15 +857,26 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
               ),
 
               // 🔹 Input Field (disabled if employee is checked)
-              TextFormField(
-                controller: customerNameVar,
-                focusNode: nameFocusNode,
-                textCapitalization: TextCapitalization.words,
-                decoration: const InputDecoration(
-                  hintText: 'Enter Name',
-                  prefixIcon: SizedBox(width: _fieldIndentWidth),
-                  border: OutlineInputBorder(),
-                ),
+              // TextFormField(
+              //   controller: customerNameVar,
+              //   focusNode: nameFocusNode,
+              //   textCapitalization: TextCapitalization.words,
+              //   decoration: const InputDecoration(
+              //     hintText: 'Enter Name',
+              //     prefixIcon: SizedBox(width: _fieldIndentWidth),
+              //     border: OutlineInputBorder(),
+              //   ),
+              // ),
+              AutoCompleteCustomer(),
+              SizedBox(
+                height: 5,
+              ),
+              MaterialButton(
+                color: cButtons,
+                onPressed: () {
+                  allCardsVar(context);
+                },
+                child: Text("New Account"),
               ),
             ],
           ),
@@ -345,10 +900,8 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
         return StatefulBuilder(builder: (context, setState) {
           return AlertDialog(
             title: Text(
-              // "Funds In/Out ${DateTime.now().toString().substring(5, 13)}",
-              "Funds In/Out \n ${DateFormat('MMM dd, yyyy h:mm a').format(DateTime.now())}",
+              "Cash Funds",
               textAlign: TextAlign.center,
-              style: TextStyle(backgroundColor: Colors.amber[300]),
             ),
             content: SingleChildScrollView(
               scrollDirection: Axis.vertical,
@@ -381,24 +934,27 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
               ),
               ElevatedButton(
                 onPressed: () async {
-                  if (customerAmountVar.text.isEmpty &&
-                      remarksSuppliesVar.text.isEmpty &&
-                      ifMenuUniqueIsFundsOut(
-                          SuppliesHistRepository.instance.suppliesModelHist!)) {
+                  if (customerAmountVar.text.isEmpty ||
+                      int.parse(customerAmountVar.text) <= 0) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Please enter amount.')),
+                    );
+                  } else if (ifMenuUniqueIsFundsOut(
+                          SuppliesHistRepository.instance.suppliesModelHist!) &&
+                      remarksSuppliesVar.text.isEmpty) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                           content: Text('Remarks is required for Funds Out.')),
                     );
-                  }
-                  // else if (customerNameVar.text.toLowerCase() !=
-                  //     empIdGlobal.toLowerCase()) {
-                  //   ScaffoldMessenger.of(context).showSnackBar(
-                  //     const SnackBar(
-                  //         content:
-                  //             Text('You can only funds out to your account')),
-                  //   );
-                  // }
-                  else {
+                  } else if (ifMenuUniqueIsFundsOut(
+                          SuppliesHistRepository.instance.suppliesModelHist!) &&
+                      !empNameToId.containsKey(autocompleteSelected.name)) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                          content:
+                              Text('Name must be an employee for Funds Out.')),
+                    );
+                  } else {
                     await saveButtonProcessCash();
                     Navigator.pop(context);
                   }
@@ -551,10 +1107,11 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
       builder: (BuildContext context) {
         return StatefulBuilder(builder: (context, setState) {
           return AlertDialog(
+            backgroundColor: cFundsEOD,
             title: Text(
-              "Counting Bills \n ${DateFormat('MMM dd, yyyy h:mm a').format(DateTime.now())}",
+              "Counting Bills",
               textAlign: TextAlign.center,
-              style: TextStyle(backgroundColor: Colors.amber[300]),
+              style: TextStyle(backgroundColor: cFundsEOD),
             ),
             content: SingleChildScrollView(
               scrollDirection: Axis.vertical,
@@ -618,7 +1175,8 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
 
     SuppliesHistRepository.instance.setItemId(menuOthCashInOutFunds);
     SuppliesHistRepository.instance.setCustomerId(123); //dummy
-    SuppliesHistRepository.instance.setCustomerName(customerNameVar.text);
+    //SuppliesHistRepository.instance.setCustomerName(customerNameVar.text);
+    //SuppliesHistRepository.instance.setCustomerName(autocompleteSelected.name);
     SuppliesHistRepository.instance
         .setLogDate(Timestamp.fromDate(DateTime.now()));
 
@@ -629,8 +1187,15 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
       );
       print("Sucess");
       SuppliesHistRepository.instance.reset();
+      autocompleteSelected = CustomerModel(
+          customerId: 0,
+          name: '',
+          address: '',
+          contact: '',
+          remarks: '',
+          loyaltyCount: 0);
       customerAmountVar.text = "";
-      customerNameVar.text = "";
+      // customerNameVar.text = "";
       remarksSuppliesVar.text = "";
       _selectedFundCode = menuOthUniqIdCashIn;
     } else {
@@ -643,38 +1208,78 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
 
   //insert new Supplies
   Future<bool> _processTypeOfPay(SuppliesModelHist sMH) async {
-    if (ifMenuUniqueIsCashOut(sMH) || ifMenuUniqueIsFundsOut(sMH)) {
+    //if cashout or funds out, make current counter negative
+    if (ifMenuUniqueIsCashOut(sMH) ||
+        ifMenuUniqueIsFundsOut(sMH) ||
+        (isGcashCredit && sMH.itemUniqueId == menuOthUniqIdCashIn)) {
       sMH.currentCounter = sMH.currentCounter * -1;
     }
 
     // ##### insert to Employee Current if Funds Out and name exists in nameMap ######
-    if (nameMap[sMH.customerName.toLowerCase()] != null &&
-        (sMH.itemUniqueId == menuOthUniqIdFundsOut ||
-            sMH.itemUniqueId == menuOthUniqIdFundsIn)) {
-      final tempEmpId = empNameToId[sMH.customerName];
-      DatabaseEmployeeCurrent databaseEmployeeCurrent =
-          DatabaseEmployeeCurrent();
-      if (await databaseEmployeeCurrent.addEmployeeCurr(EmployeeModel(
-        empId: tempEmpId!,
-        docId: "",
-        countId: 0,
-        currentCounter: sMH.currentCounter,
-        currentStocks: 0,
-        logDate: sMH.logDate,
-        logBy: empIdGlobal,
-        empName: sMH.customerName,
-        remarks: '',
-      ))) {
-        debugPrint("Employee Current updated...");
-      } else {
-        debugPrint("Employee Current failed to update...");
+    // checking
+    // 1. name exists in nameMap
+    //    * itemUniqueId is Funds Out
+    //    * exclude Ket and DonF employee record for admin
+    //    * isGcashCredit and itemUniqueId is Cash In
+    //    * isAdmin and itemUniqueId is Salary Payment
+    if (sMH.customerName != "") {
+      if (nameMap[sMH.customerName.toLowerCase()] !=
+                  null //check if employee exists
+              &&
+              (sMH.itemUniqueId == menuOthUniqIdFundsOut || //funds out employee
+                  (isGcashCredit &&
+                      sMH.itemUniqueId == menuOthUniqIdCashIn) //gcash credit
+                  ||
+                  (( isAdmin || allowPayment ) &&
+                      sMH.itemUniqueId ==
+                          menuOthSalaryPayment) //salary payment access by admin only
+              ) &&
+              (sMH.customerName != 'Ket' &&
+                  sMH.customerName !=
+                      'DonF') //exclude employee record for admin
+          ) {
+        //############### start insert to Employee Current #################
+        //get empId from nameMap
+        final tempEmpId = empNameToId[sMH.customerName];
+
+        DatabaseEmployeeCurrent databaseEmployeeCurrent =
+            DatabaseEmployeeCurrent();
+
+        //insert to Employee Current
+        if (await databaseEmployeeCurrent.addEmployeeCurr(EmployeeModel(
+          empId: tempEmpId!,
+          docId: "",
+          countId: 0,
+          currentCounter: sMH.currentCounter,
+          currentStocks: 0,
+          logDate: sMH.logDate,
+          logBy: empIdGlobal,
+          empName: sMH.customerName,
+          remarks: '${sMH.itemName} ${sMH.remarks}',
+        ))) {
+          debugPrint("Employee Current updated...");
+          //prevent generating another record in Supplies Current
+          if (isGcashCredit ||
+              (( isAdmin || allowPayment) && sMH.itemUniqueId == menuOthSalaryPayment)) {
+            isGcashCredit = false;
+            return true;
+          }
+        } else {
+          debugPrint("Employee Current failed to update...");
+          //prevent generating another record in Supplies Current
+          if (isGcashCredit ||
+              (( isAdmin || allowPayment) && sMH.itemUniqueId == menuOthSalaryPayment)) {
+            isGcashCredit = false;
+            return false;
+          }
+        }
+        //############### end insert to Employee Current #################
       }
     }
 
     //this will insert to Supplies History first then Supplies Current
     //if exists in Supplies Current, it will update
     //if not exists, it will add new record in Supplies Current
-    // debugPrint(sMH.empId.toString() + '===' + sMH.itemUniqueId.toString() + '---' + empIdGlobal);
     DatabaseSuppliesCurrent databaseSuppliesCurrent = DatabaseSuppliesCurrent();
     return await databaseSuppliesCurrent.addSuppliesCurr(sMH);
     // return false;

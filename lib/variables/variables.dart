@@ -31,6 +31,8 @@ bool bCustomerName = false;
 bool bGcashFee = false;
 bool bNagbigayFee = true;
 final value = new NumberFormat("##,##0", "en_US");
+late bool isAdmin = false;
+const bool allowPayment = true;
 
 late JobsOnQueueModel jobsOnQueueModelGlobal;
 late SuppliesModelHist suppliesModelHistGlobal;
@@ -49,12 +51,12 @@ List<OtherItemModel> listAddOnItemsGlobal = [];
 late OtherItemModel gselectedItemModel;
 List<CustomerModel> customerOptionsFromVariable = [];
 CustomerModel autocompleteSelected = CustomerModel(
-    customerId: 1,
-    name: '1',
-    address: '1',
-    contact: '1',
-    remarks: '1',
-    loyaltyCount: 1);
+    customerId: 0,
+    name: '',
+    address: '',
+    contact: '',
+    remarks: '',
+    loyaltyCount: 0);
 const String groupDet = "Det",
     groupFab = "Fab",
     groupBle = "Ble",
@@ -328,9 +330,9 @@ final Map<String, String> empNameToId = {
 //   'Let': 20004,
 //   'Seiji': 20005,
 //   'Ken': 20006,
-//   'DonP': 10001, //gcash account
+//   'DonF': 10001, //gcash account
 //   'Ket': 10001,
-//   'DonP': 10002,
+//   'DonF': 10002,
 //   'Ket': 10002,
 // };
 //1 enabled

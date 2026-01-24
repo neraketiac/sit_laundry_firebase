@@ -10,6 +10,7 @@ import 'package:laundry_firebase/services/database_supplies_history.dart';
 import 'package:laundry_firebase/variables/variables.dart';
 import 'package:laundry_firebase/variables/variables_det.dart';
 import 'package:laundry_firebase/variables/variables_fab.dart';
+import 'package:laundry_firebase/variables/variables_oth.dart';
 import 'package:laundry_firebase/variables/variables_supplies.dart';
 
 class MyMainLaundryBody extends StatefulWidget {
@@ -243,7 +244,7 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                         width: 2,
                       ),
                       Text(
-                          DateFormat('MMM dd, yyyy')
+                          DateFormat('MM/dd/yy hh:mm:ss a')
                               .format(sMH.logDate.toDate()),
                           style: const TextStyle(
                             fontSize: 10,
@@ -263,10 +264,18 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                       SizedBox(
                         width: 2,
                       ),
-                      Text("by:{${sMH.customerName}} ",
+                      Text(
+                          ifMenuUniqueIsCashIn(sMH)
+                              ? 'to:'
+                              : ifMenuUniqueIsFundsIn(sMH)
+                                  ? 'to:'
+                                  : 'by:',
                           style: const TextStyle(
                             fontSize: 10,
                           )),
+                      Text(sMH.customerName,
+                          style: const TextStyle(
+                              fontSize: 10, fontWeight: FontWeight.bold)),
                       SizedBox(
                         width: 2,
                       ),
@@ -334,7 +343,6 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                 ]);
 
             rowDatas.add(rowData);
-            
           }
         }
 
@@ -367,17 +375,20 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        eM.empName,
+                        " ${eM.empName}",
                         style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      Text(
-                        " ",
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
+                      Visibility(
+                        visible: (isAdmin ? true : false),
+                        child: Text(
+                          eM.empId,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                       Text(
@@ -413,7 +424,7 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                     BoxDecoration(color: Color.fromARGB(255, 9, 194, 49)),
                 children: [
                   Text(
-                    "Current Budget",
+                    "Current Balance",
                     style: TextStyle(fontSize: 10),
                   ),
                 ]);
@@ -448,7 +459,7 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
     );
   }
 
-  //########################### Supplies History ###############################
+  //########################### Employee History ###############################
   Widget _readDataEmployeeHist() {
     Container conDisplayEmployeeHist(
       BuildContext context,
@@ -474,7 +485,7 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                         width: 2,
                       ),
                       Text(
-                          DateFormat('MMM dd, yyyy')
+                          DateFormat('MM/dd/yy hh:mm:ss a')
                               .format(eM.logDate.toDate()),
                           style: const TextStyle(
                             fontSize: 10,
@@ -482,7 +493,7 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                       SizedBox(
                         width: 2,
                       ),
-                      Text(eM.empName,
+                      Text(": ${eM.remarks}",
                           style: const TextStyle(
                               fontSize: 10, fontWeight: FontWeight.bold)),
                       SizedBox(
@@ -494,10 +505,14 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                       SizedBox(
                         width: 2,
                       ),
-                      Text("by:{${eM.empName}} ",
+                      Text(
+                          "${(eM.remarks.contains('Cash-In') ? 'to:' : 'by:')}",
                           style: const TextStyle(
                             fontSize: 10,
                           )),
+                      Text(eM.empName,
+                          style: const TextStyle(
+                              fontSize: 10, fontWeight: FontWeight.bold)),
                       SizedBox(
                         width: 2,
                       ),
@@ -508,10 +523,6 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                       SizedBox(
                         width: 2,
                       ),
-                      Text(":${eM.remarks}",
-                          style: const TextStyle(
-                            fontSize: 10,
-                          )),
                     ],
                   ),
                 ],
@@ -565,7 +576,6 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                 ]);
 
             rowDatas.add(rowData);
-            
           }
         }
 
@@ -575,6 +585,4 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
       },
     );
   }
-
-
 }

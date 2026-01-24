@@ -2,7 +2,6 @@ import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:laundry_firebase/models/customermodel.dart';
 import 'package:laundry_firebase/pages/home.dart';
 import 'package:laundry_firebase/pages/loyalty_admin.dart';
 import 'package:laundry_firebase/pages/loyalty_single.dart';
@@ -23,8 +22,7 @@ class EnterLoyaltyCode extends StatefulWidget {
 class _EnterLoyaltyCodeState extends State<EnterLoyaltyCode> {
   String streamName = "0";
   late TextEditingController memberController = TextEditingController();
-  final List<CustomerModel> customers = [];
-
+  
   @override
   void initState() {
     super.initState();

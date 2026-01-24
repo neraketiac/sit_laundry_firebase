@@ -30,7 +30,8 @@ const int menuOthUniqIdCashIn = 4401,
     menuOthUniqIdCashOut = 4402,
     menuOthUniqIdFundsIn = 4403,
     menuOthUniqIdFundsOut = 4404,
-    menuOthLaundryPayment = 4405;
+    menuOthLaundryPayment = 4405,
+    menuOthSalaryPayment = 4406;
 
 void addListOthItems() {
   //oth items

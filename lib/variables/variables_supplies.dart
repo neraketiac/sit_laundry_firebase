@@ -39,8 +39,20 @@ final Color cCashOut = Color.fromRGBO(170, 170, 170, 1);
 final Color cCashIn = Color.fromRGBO(120, 120, 120, 1);
 final Color cCashFee = Color.fromRGBO(120, 120, 120, 1);
 final Color cFundsEOD = Color.fromRGBO(255, 92, 233, 1);
+final Color cFundsEODShaded = Color.fromRGBO(255, 92, 233, 0.3);
 
 void addListSuppItems() {
+  //salary payment
+  listSuppItems.add(OtherItemModel(
+    docId: "",
+    itemId: menuOthCashInOutFunds,
+    itemUniqueId: menuOthSalaryPayment,
+    itemGroup: groupOth,
+    itemName: "Salary Payment",
+    itemPrice: 0,
+    stocksAlert: 0,
+    stocksType: "php",
+  ));
   //cash out/cash in
   listSuppItems.add(OtherItemModel(
     docId: "",
