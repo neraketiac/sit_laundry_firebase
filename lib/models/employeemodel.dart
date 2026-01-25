@@ -10,6 +10,7 @@ class EmployeeModel {
   int currentStocks;
   int itemId;
   int itemUniqueId;
+  String itemName;
   Timestamp logDate; //* last transaction date
   String logBy; //different name who log records
   String remarks;
@@ -23,6 +24,7 @@ class EmployeeModel {
     required this.currentStocks,
     required this.itemId,
     required this.itemUniqueId,
+    required this.itemName,
     required this.logDate,
     required this.logBy,
     required this.remarks,
@@ -38,6 +40,7 @@ class EmployeeModel {
           currentStocks: json['CurrentStocks']! as int,
           itemId: json['ItemId']! as int,
           itemUniqueId: json['ItemUniqueId']! as int,
+          itemName: json['ItemName']! as String,
           logDate: json['LogDate']! as Timestamp,
           logBy: json['LogBy']! as String,
           remarks: json['Remarks']! as String,
@@ -52,6 +55,7 @@ class EmployeeModel {
     int? currentStocks,
     int? itemId,
     int? itemUniqueId,
+    String? itemName,
     Timestamp? logDate,
     String? logBy,
     String? remarks,
@@ -65,6 +69,7 @@ class EmployeeModel {
       currentStocks: currentStocks ?? this.currentStocks,
       itemId: itemId ?? this.itemId,
       itemUniqueId: itemUniqueId ?? this.itemUniqueId,
+      itemName: itemName ?? this.itemName,
       logDate: logDate ?? this.logDate,
       logBy: logBy ?? this.logBy,
       remarks: remarks ?? this.remarks,
@@ -80,6 +85,7 @@ class EmployeeModel {
         'CurrentStocks': currentStocks,
         'ItemId': itemId,
         'ItemUniqueId': itemUniqueId,
+        'ItemName': itemName,
         'LogDate': logDate,
         'LogBy': logBy,
         'Remarks': remarks,

@@ -39,9 +39,10 @@ firebase init hosting
   public (yes)
   rewrite index (yes)
   github (no)
+open file firebase.json change public to build/web
 firebase deploy
 
-open file firebase.json change public to build/web
+
 */
 
 class MyQueueMobile extends StatefulWidget {

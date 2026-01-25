@@ -24,7 +24,7 @@ class AutoCompleteCustomer extends StatelessWidget {
           controller: textEditingController,
           focusNode: focusNode,
           decoration: InputDecoration(
-            labelText: 'Customer/Employee Name',
+            labelText: 'Enter Name',
             labelStyle: TextStyle(
               fontSize: 12,
               color: Colors.grey[700],

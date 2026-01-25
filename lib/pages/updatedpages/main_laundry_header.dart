@@ -42,21 +42,25 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
     for (final d in [1000, 500, 200, 100, 50, 20, 10, 5, 1]) d: 0,
   };
 
-  int _selectedFundCode = menuOthUniqIdCashIn;
+  int _selectedFundCode = menuOthLaundryPayment;
   final List<int> fundTypeCodes1stLayer = [
+    menuOthLaundryPayment,
     menuOthUniqIdCashIn,
-    menuOthUniqIdCashOut,
   ];
   final List<int> fundTypeCodes2ndLayer = [
+    menuOthUniqIdLoad,
+    menuOthUniqIdCashOut,
+  ];
+  final List<int> fundTypeCodes3rdLayer = [
     menuOthUniqIdFundsIn,
     menuOthUniqIdFundsOut,
   ];
-  final List<int> fundTypeCodes3rdLayer = [
-    menuOthLaundryPayment,
-    menuOthUniqIdLoad,
-  ];
   final List<int> fundTypeCodes4thLayer = [
     menuOthSalaryPayment,
+  ];
+  final List<int> fundTypeCodesEmployeeLayer = [
+    menuOthSalaryPayment,
+    menuOthUniqIdCashIn
   ];
 
   @override
@@ -97,6 +101,8 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
           // ),
 
           FloatingActionButton(
+            backgroundColor: Colors.lightBlue.shade100,
+            hoverColor: Colors.lightBlue,
             heroTag: "Enter New Record...",
             onPressed: () {
               _showEnterNewRecord();
@@ -111,7 +117,7 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
           ),
 
           FloatingActionButton(
-            backgroundColor: cFundsEODShaded,
+            backgroundColor: cFundsEOD,
             hoverColor: cFundsEOD,
             heroTag: "Out",
             onPressed: () {
@@ -119,20 +125,11 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
             },
             child: const Icon(Icons.timer_off_outlined),
           ),
-
-          FloatingActionButton(
-            backgroundColor: Colors.lightBlue.shade100,
-            hoverColor: Colors.lightBlue,
-            onPressed: () {
-              _showGcashCredit();
-            },
-            child: const Icon(Icons.g_mobiledata),
-          ),
           Visibility(
             visible: (isAdmin ? true : allowPayment),
             child: FloatingActionButton(
-              backgroundColor: Colors.yellowAccent.shade100,
-              hoverColor: Colors.yellowAccent,
+              backgroundColor: cSalaryIn,
+              hoverColor: cSalaryIn,
               heroTag: "Admin",
               onPressed: () {
                 _showSalary();
@@ -147,26 +144,28 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
 
 //floating button new record  ###########################################################
   void _showEnterNewRecord() {
-    // debugPrint('${_selectedFundCode}watata$menuOthSalaryPayment');
     if (_selectedFundCode == menuOthSalaryPayment) {
-      //   debugPrint('wetete');
-      _selectedFundCode = menuOthUniqIdCashIn;
+      _selectedFundCode = menuOthLaundryPayment;
     }
-    // final FocusNode nameFocusNode = FocusNode();
 
-    // void normalizeName() {
-    //   final text = customerNameVar.text.trim().toLowerCase();
-
-    //   if (nameMap.containsKey(text)) {
-    //     customerNameVar.text = nameMap[text]!;
-    //   }
-    // }
-
-    // nameFocusNode.addListener(() {
-    //   if (!nameFocusNode.hasFocus) {
-    //     normalizeName();
-    //   }
-    // });
+    String fundTypeCaptionMulti() {
+      switch (_selectedFundCode) {
+        case menuOthLaundryPayment:
+          return 'Para sa customer\nbayad sa pina-laundry.\n(+)funds';
+        case menuOthUniqIdCashIn:
+          return 'Para sa customer\nbayad sa pa-cash-in.\n(+)funds';
+        case menuOthUniqIdLoad:
+          return 'Para sa customer\nbayad sa pina-load.\n(+)funds';
+        case menuOthUniqIdCashOut:
+          return 'Para sa customer\nna nagpa-cash-out.\n(-)funds';
+        case menuOthUniqIdFundsIn:
+          return 'Para saten kung\nmagdadagdag ka sa funds.\n(+)funds';
+        case menuOthUniqIdFundsOut:
+          return 'Para saten kung\nmagbabawas ka sa funds.\n(-)funds';
+        default:
+          return '';
+      }
+    }
 
     Visibility fundTypeToggle(Function setState) {
       return Visibility(
@@ -202,8 +201,8 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
                   minHeight: 40,
                 ),
                 children: const [
-                  Text('Cash In'),
-                  Text('Cash Out'),
+                  Text('LPayment'),
+                  Text('Cash in'),
                 ],
               ),
 
@@ -233,8 +232,8 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
                   minHeight: 40,
                 ),
                 children: const [
-                  Text('Funds In'),
-                  Text('Funds Out'),
+                  Text('Load'),
+                  Text('Cash Out'),
                 ],
               ),
 
@@ -264,9 +263,20 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
                   minHeight: 40,
                 ),
                 children: const [
-                  Text('PayLaundry'),
-                  Text('Load'),
+                  Text('Funds In'),
+                  Text('Funds Out'),
                 ],
+              ),
+              const SizedBox(height: 6),
+
+              // 🔹 CAPTION
+              Text(
+                fundTypeCaptionMulti(),
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: Colors.black54,
+                ),
               ),
             ],
           ),
@@ -391,6 +401,7 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
       builder: (BuildContext context) {
         return StatefulBuilder(builder: (context, setState) {
           return AlertDialog(
+            backgroundColor: Colors.lightBlue,
             title: Text(
               "Cash Funds",
               textAlign: TextAlign.center,
@@ -460,272 +471,6 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
     );
   }
 
-//floating gcash credit  ###########################################################
-  void _showGcashCredit() {
-    _selectedFundCode = menuOthUniqIdCashIn;
-    // final FocusNode nameFocusNode = FocusNode();
-
-    // void normalizeName() {
-    //   final text = customerNameVar.text.trim().toLowerCase();
-
-    //   if (nameMap.containsKey(text)) {
-    //     customerNameVar.text = nameMap[text]!;
-    //   }
-    // }
-
-    // nameFocusNode.addListener(() {
-    //   if (!nameFocusNode.hasFocus) {
-    //     normalizeName();
-    //   }
-    // });
-
-    Visibility fundTypeToggle(Function setState) {
-      return Visibility(
-        visible: true,
-        child: Container(
-          alignment: Alignment.center,
-          padding: const EdgeInsets.all(6.0),
-          decoration: decoLightBlue(),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // 🔹 TOP ROW
-              ToggleButtons(
-                isSelected: List.generate(
-                  1,
-                  (i) => _selectedFundCode == fundTypeCodes1stLayer[i],
-                ),
-                onPressed: (index) {
-                  setState(() {
-                    _selectedFundCode = fundTypeCodes1stLayer[index];
-                    SuppliesHistRepository.instance
-                        .setItemId(menuOthCashInOutFunds);
-                    SuppliesHistRepository.instance
-                        .setItemUniqueId(_selectedFundCode);
-                  });
-                },
-                borderRadius: BorderRadius.circular(8),
-                selectedColor: Colors.white,
-                fillColor: Colors.blue,
-                color: Colors.black,
-                constraints: const BoxConstraints(
-                  minWidth: 110,
-                  minHeight: 40,
-                ),
-                children: const [
-                  Text('Gcash Credit'),
-                ],
-              ),
-
-              const SizedBox(height: 8),
-              //
-            ],
-          ),
-        ),
-      );
-    }
-
-    Visibility customerAmount(Function setState) {
-      return Visibility(
-        visible: true,
-        child: Container(
-          padding: const EdgeInsets.all(1.0),
-          decoration: decoAmber(),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Label (not indented)
-              const Padding(
-                padding: EdgeInsets.only(left: 4, bottom: 4),
-                child: Text(
-                  'Amount',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-
-              // Amount field
-              TextFormField(
-                controller: customerAmountVar,
-                keyboardType:
-                    const TextInputType.numberWithOptions(decimal: true),
-                inputFormatters: [
-                  FilteringTextInputFormatter.allow(
-                    RegExp(r'\d+(\.\d{0,2})?'),
-                  ),
-                ],
-                decoration: InputDecoration(
-                  hintText: '0.00',
-                  border: const OutlineInputBorder(),
-                  prefixIcon: SizedBox(
-                    width: _fieldIndentWidth,
-                    child: const Center(
-                      child: Text(
-                        '₱',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    Visibility customerName(Function setState) {
-      return Visibility(
-        visible: true,
-        child: Container(
-          padding: const EdgeInsets.all(1.0),
-          decoration: decoAmber(),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              // 🔹 Label + Checkbox on same row
-              Padding(
-                padding: const EdgeInsets.only(left: 4, bottom: 4),
-                child: Row(
-                  children: [
-                    const Text(
-                      'Name',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // 🔹 Input Field (disabled if employee is checked)
-              // TextFormField(
-              //   controller: customerNameVar,
-              //   focusNode: nameFocusNode,
-              //   textCapitalization: TextCapitalization.words,
-              //   decoration: const InputDecoration(
-              //     hintText: 'Enter Name',
-              //     prefixIcon: SizedBox(width: _fieldIndentWidth),
-              //     border: OutlineInputBorder(),
-              //   ),
-              // ),
-              AutoCompleteCustomer(),
-              // SizedBox(
-              //   height: 5,
-              // ),
-              // MaterialButton(
-              //   color: cButtons,
-              //   onPressed: () {
-              //     allCardsVar(context);
-              //   },
-              //   child: Text("New Account"),
-              // ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    Future<void> saveButtonProcessCash() async {
-      SuppliesHistRepository.instance.setItemName(
-          getItemNameOnly(menuOthCashInOutFunds, _selectedFundCode));
-      SuppliesHistRepository.instance.setItemUniqueId(_selectedFundCode);
-      SuppliesHistRepository.instance.setRemarks(remarksSuppliesVar.text);
-      SuppliesHistRepository.instance.setCurrentCounter(
-          int.parse(customerAmountVar.text.replaceAll(',', '')));
-      await _insertToFB();
-    }
-
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return StatefulBuilder(builder: (context, setState) {
-          return AlertDialog(
-            backgroundColor: Colors.lightBlue,
-            title: Text.rich(
-              TextSpan(
-                children: [
-                  TextSpan(
-                    text: "Employee Credit\n",
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  TextSpan(
-                    text: "to be deducted ",
-                    style: TextStyle(
-                      fontSize: 10, // 👈 smaller
-                    ),
-                  ),
-                  TextSpan(
-                    text: "to your balance",
-                    style: TextStyle(
-                      fontSize: 10, // 👈 smaller
-                    ),
-                  ),
-                ],
-              ),
-              textAlign: TextAlign.center,
-            ),
-            content: SingleChildScrollView(
-              scrollDirection: Axis.vertical,
-              child: Container(
-                padding: EdgeInsets.all(8.0),
-                decoration: BoxDecoration(
-                    border: Border.all(color: Colors.blueAccent, width: 2.0)),
-                child: Form(
-                  //key: _formKey,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // fundTypeToggle(setState),
-                      customerAmount(setState),
-                      customerName(setState),
-                      conRemarksSuppliesVar(setState),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            // 👇 Bottom buttons
-            actionsAlignment: MainAxisAlignment.end,
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.pop(context); // close popup
-                },
-                child: const Text('Cancel'),
-              ),
-              ElevatedButton(
-                onPressed: () async {
-                  if (empNameToId.containsKey(autocompleteSelected.name)) {
-                    isGcashCredit = true;
-                    await saveButtonProcessCash();
-                    Navigator.pop(context);
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content: Text(
-                              'Customer name must be an employee for Gcash Credit.')),
-                    );
-                  }
-                },
-                child: const Text('Save'),
-              ),
-            ],
-          );
-        });
-      },
-    );
-  }
-
 //floating button done jobs  ###########################################################
   void _showEndOfDay() {
     void resetAllQty() {
@@ -733,7 +478,7 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
     }
 
     Visibility countBills(Function setState) {
-      Widget _denominationRow(int denom, Function setState) {
+      Widget denominationRow(int denom, Function setState) {
         final qty = _qtyMap[denom]!;
 
         return Row(
@@ -806,7 +551,7 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
               ..._denominations.map(
                 (d) => Padding(
                   padding: const EdgeInsets.symmetric(vertical: 0),
-                  child: _denominationRow(d, setState),
+                  child: denominationRow(d, setState),
                 ),
               ),
 
@@ -855,7 +600,7 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
         _qtyMap.forEach((denom, qty) {
           if (qty > 0) {
             //parts.add('₱$denom=$qty');
-            parts.add('₱${formatDenom(denom)}');
+            parts.add('${formatDenom(denom)}*$qty');
           }
         });
 
@@ -877,10 +622,31 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
         return StatefulBuilder(builder: (context, setState) {
           return AlertDialog(
             backgroundColor: cFundsEOD,
-            title: Text(
-              "Counting Bills",
+            title: Text.rich(
+              TextSpan(
+                children: [
+                  TextSpan(
+                    text: "Funds Maintenance\n",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  TextSpan(
+                    text: "Fund Check every\n",
+                    style: TextStyle(
+                      fontSize: 10, // 👈 smaller
+                    ),
+                  ),
+                  TextSpan(
+                    text: "9am / 12nn / 7pm",
+                    style: TextStyle(
+                      fontSize: 10, // 👈 smaller
+                    ),
+                  ),
+                ],
+              ),
               textAlign: TextAlign.center,
-              style: TextStyle(backgroundColor: cFundsEOD),
             ),
             content: SingleChildScrollView(
               scrollDirection: Axis.vertical,
@@ -931,6 +697,70 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
 //floating salary  ###########################################################
   void _showSalary() {
     _selectedFundCode = menuOthSalaryPayment;
+
+    String fundTypeCaption() {
+      if (_selectedFundCode == fundTypeCodesEmployeeLayer[0]) {
+        return '(+) Para madagdagan ang amount \n ng iyong Current Balance.';
+      } else if (_selectedFundCode == fundTypeCodesEmployeeLayer[1]) {
+        return '(-) Bawasan ang balance\nisend sa iyong Gcash\nhindi kukuha sa Cash Funds.';
+      }
+      return '';
+    }
+
+    Visibility fundTypeToggle(Function setState) {
+      return Visibility(
+        visible: true,
+        child: Container(
+          alignment: Alignment.center,
+          padding: const EdgeInsets.all(6.0),
+          decoration: decoLightBlue(),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ToggleButtons(
+                isSelected: List.generate(
+                  fundTypeCodesEmployeeLayer.length,
+                  (i) => _selectedFundCode == fundTypeCodesEmployeeLayer[i],
+                ),
+                onPressed: (index) {
+                  setState(() {
+                    _selectedFundCode = fundTypeCodesEmployeeLayer[index];
+                    SuppliesHistRepository.instance
+                        .setItemId(menuOthCashInOutFunds);
+                    SuppliesHistRepository.instance
+                        .setItemUniqueId(_selectedFundCode);
+                  });
+                },
+                borderRadius: BorderRadius.circular(8),
+                selectedColor: Colors.white,
+                fillColor: Colors.blue,
+                color: Colors.black,
+                constraints: const BoxConstraints(
+                  minWidth: 110,
+                  minHeight: 40,
+                ),
+                children: const [
+                  Text('Add Salary'),
+                  Text('Gcash Credit'),
+                ],
+              ),
+
+              const SizedBox(height: 6),
+
+              // 🔹 CAPTION
+              Text(
+                fundTypeCaption(),
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: Colors.black54,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
 
     Visibility customerAmount(Function setState) {
       return Visibility(
@@ -997,17 +827,9 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
             children: [
               // 🔹 Label + Checkbox on same row
               Padding(
-                padding: const EdgeInsets.only(left: 4, bottom: 4),
+                padding: const EdgeInsets.only(left: 2, bottom: 1),
                 child: Row(
-                  children: [
-                    const Text(
-                      'Name',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
+                  children: [],
                 ),
               ),
 
@@ -1033,11 +855,26 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
       builder: (BuildContext context) {
         return StatefulBuilder(builder: (context, setState) {
           return AlertDialog(
-            backgroundColor: Colors.yellowAccent,
-            title: Text(
-              "Salary of Employee",
+            backgroundColor: cSalaryIn,
+            title: Text.rich(
+              TextSpan(
+                children: [
+                  TextSpan(
+                    text: "Employee Maintenance\n",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  TextSpan(
+                    text: "To add/sub to your current balance.",
+                    style: TextStyle(
+                      fontSize: 10, // 👈 smaller
+                    ),
+                  ),
+                ],
+              ),
               textAlign: TextAlign.center,
-              style: TextStyle(backgroundColor: Colors.yellowAccent),
             ),
             content: SingleChildScrollView(
               scrollDirection: Axis.vertical,
@@ -1050,6 +887,7 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
+                      fundTypeToggle(setState),
                       customerAmount(setState),
                       customerName(setState),
                       conRemarksSuppliesVar(setState),
@@ -1185,10 +1023,11 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
           currentStocks: 0,
           itemId: sMH.itemId,
           itemUniqueId: sMH.itemUniqueId,
+          itemName: sMH.itemName,
           logDate: sMH.logDate,
           logBy: empIdGlobal,
           empName: sMH.customerName,
-          remarks: '${sMH.itemName} ${sMH.remarks}',
+          remarks: sMH.remarks,
         ))) {
           debugPrint("Employee Current updated...");
           //prevent generating another record in Supplies Current

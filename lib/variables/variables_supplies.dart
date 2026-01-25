@@ -42,9 +42,10 @@ final Color cCashIn = Color.fromRGBO(120, 120, 120, 1);
 final Color cCashFee = Color.fromRGBO(120, 120, 120, 1);
 final Color cFundsEOD = Color.fromRGBO(62, 255, 45, 1);
 final Color cFundsEOD2 = Color.fromRGBO(255, 92, 233, 1);
-final Color cFundsEODShaded = Color.fromRGBO(255, 92, 233, 0.3);
+final Color cFundsEODShaded = Color.fromRGBO(255, 92, 233, 0.7);
 final Color cMoneyIn = Color.fromRGBO(177, 177, 177, 1);
 final Color cMoneyOut = Color.fromRGBO(113, 113, 113, 1);
+final Color cSalaryCurrent = Colors.yellow;
 final Color cSalaryIn = Color.fromRGBO(209, 99, 30, 1);
 final Color cSalaryOut = Color.fromRGBO(255, 151, 86, 1);
 

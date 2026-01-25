@@ -259,12 +259,7 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                         SizedBox(
                           width: 2,
                         ),
-                        Text(
-                            ifMenuUniqueIsCashIn(sMH)
-                                ? 'to:'
-                                : ifMenuUniqueIsFundsIn(sMH)
-                                    ? 'to:'
-                                    : 'by:',
+                        Text(ifMenuUniqueIsCashIn(sMH) ? 'to:' : 'by:',
                             style: const TextStyle(
                               fontSize: 10,
                             )),
@@ -287,7 +282,7 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                         SizedBox(
                           width: 2,
                         ),
-                        Text(":${sMH.remarks}",
+                        Text((sMH.remarks.isEmpty ? '' : ":${sMH.remarks}"),
                             style: const TextStyle(
                               fontSize: 10,
                             )),
@@ -349,7 +344,7 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                         SizedBox(
                           width: 2,
                         ),
-                        Text(":${sMH.remarks}",
+                        Text((sMH.remarks.isEmpty ? '' : ":${sMH.remarks}"),
                             style: const TextStyle(
                               fontSize: 10,
                             )),
@@ -429,7 +424,7 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
     ) {
       return Container(
         height: 22,
-        color: Colors.yellow,
+        color: cSalaryCurrent,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -561,16 +556,16 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                       SizedBox(
                         width: 2,
                       ),
-                      Text(": ${eM.remarks}",
+                      Text(eM.itemName,
                           style: const TextStyle(
                               fontSize: 10, fontWeight: FontWeight.bold)),
                       SizedBox(
                         width: 2,
                       ),
                       Text(
-                          (eM.remarks.contains('Cash-In')
+                          (ifMenuUniqueIsCashInEmp(eM)
                               ? 'to:'
-                              : (eM.remarks.contains('Salary')
+                              : (ifMenuUniqueIsSalaryPayEmp(eM)
                                   ? 'to:'
                                   : 'by:')),
                           style: const TextStyle(
@@ -589,6 +584,13 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                         width: 2,
                       ),
                       Text("log:${eM.logBy}",
+                          style: const TextStyle(
+                            fontSize: 10,
+                          )),
+                      SizedBox(
+                        width: 2,
+                      ),
+                      Text((eM.remarks.isEmpty ? '' : ":${eM.remarks}"),
                           style: const TextStyle(
                             fontSize: 10,
                           )),
