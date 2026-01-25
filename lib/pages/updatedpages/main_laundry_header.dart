@@ -42,7 +42,7 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
     for (final d in [1000, 500, 200, 100, 50, 20, 10, 5, 1]) d: 0,
   };
 
-  int _selectedFundCode = menuOthLaundryPayment;
+  int? _selectedFundCode; // = menuOthLaundryPayment;
   final List<int> fundTypeCodes1stLayer = [
     menuOthLaundryPayment,
     menuOthUniqIdLoad,
@@ -144,9 +144,9 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
 
 //floating button new record  ###########################################################
   void _showEnterNewRecord() {
-    if (_selectedFundCode == menuOthSalaryPayment) {
-      _selectedFundCode = menuOthLaundryPayment;
-    }
+    // if (_selectedFundCode == menuOthSalaryPayment) {
+    //   _selectedFundCode = menuOthLaundryPayment;
+    // }
 
     String fundTypeCaptionMulti() {
       switch (_selectedFundCode) {
@@ -206,7 +206,7 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
                     SuppliesHistRepository.instance
                         .setItemId(menuOthCashInOutFunds);
                     SuppliesHistRepository.instance
-                        .setItemUniqueId(_selectedFundCode);
+                        .setItemUniqueId(_selectedFundCode!);
                   });
                 },
                 borderRadius: BorderRadius.circular(8),
@@ -238,7 +238,7 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
                     SuppliesHistRepository.instance
                         .setItemId(menuOthCashInOutFunds);
                     SuppliesHistRepository.instance
-                        .setItemUniqueId(_selectedFundCode);
+                        .setItemUniqueId(_selectedFundCode!);
                   });
                 },
                 borderRadius: BorderRadius.circular(8),
@@ -270,7 +270,7 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
                     SuppliesHistRepository.instance
                         .setItemId(menuOthCashInOutFunds);
                     SuppliesHistRepository.instance
-                        .setItemUniqueId(_selectedFundCode);
+                        .setItemUniqueId(_selectedFundCode!);
                   });
                 },
                 borderRadius: BorderRadius.circular(8),
@@ -407,8 +407,8 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
 
     Future<void> saveButtonProcessCash() async {
       SuppliesHistRepository.instance.setItemName(
-          getItemNameOnly(menuOthCashInOutFunds, _selectedFundCode));
-      SuppliesHistRepository.instance.setItemUniqueId(_selectedFundCode);
+          getItemNameOnly(menuOthCashInOutFunds, _selectedFundCode!));
+      SuppliesHistRepository.instance.setItemUniqueId(_selectedFundCode!);
       SuppliesHistRepository.instance.setRemarks(remarksSuppliesVar.text);
       SuppliesHistRepository.instance.setCurrentCounter(
           int.parse(customerAmountVar.text.replaceAll(',', '')));
@@ -447,9 +447,9 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      fundTypeToggle(setState),
-                      customerAmount(setState),
                       customerName(setState),
+                      customerAmount(setState),
+                      fundTypeToggle(setState),
                       conRemarksSuppliesVar(setState),
                     ],
                   ),
@@ -488,6 +488,11 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                           content: Text('Name must be a staff for Funds Out.')),
+                    );
+                  } else if (_selectedFundCode == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                          content: Text('Please select transaction type.')),
                     );
                   } else {
                     await saveButtonProcessCash();
@@ -602,8 +607,11 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
 
               // 🔹 TOTAL
               Row(
-                mainAxisAlignment: MainAxisAlignment.end,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
+                  Text(
+                      'Current Funds:\n₱ ${pesoFormat.format(alwaysTheLatestFunds)}',
+                      style: TextStyle(fontSize: 8)),
                   const Text(
                     'TOTAL: ',
                     style: TextStyle(
@@ -618,6 +626,27 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
+                ],
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Text(
+                      ((alwaysTheLatestFunds - _grandTotal) == 0
+                          ? ('sakto: ₱ ${pesoFormat.format(alwaysTheLatestFunds - _grandTotal)}')
+                          : ((alwaysTheLatestFunds - _grandTotal) < 0)
+                              ? ('sobra: ₱ ${pesoFormat.format((alwaysTheLatestFunds - _grandTotal) * -1)}')
+                              : ('kulang: ₱ ${pesoFormat.format((alwaysTheLatestFunds - _grandTotal) * -1)}')),
+                      // ((alwaysTheLatestFunds - _grandTotal) <= 0
+                      //     ? ('sakto:\n₱ ${pesoFormat.format(alwaysTheLatestFunds - _grandTotal)}')
+                      //     : 'kulang:\n₱ ${pesoFormat.format(alwaysTheLatestFunds - _grandTotal)}'),
+                      style: TextStyle(
+                          fontSize: 8,
+                          color: ((alwaysTheLatestFunds - _grandTotal) == 0
+                              ? Colors.green
+                              : ((alwaysTheLatestFunds - _grandTotal) < 0)
+                                  ? Colors.black
+                                  : Colors.red))),
                 ],
               ),
             ],
@@ -750,7 +779,7 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
 
 //floating salary  ###########################################################
   void _showSalary() {
-    _selectedFundCode = menuOthSalaryPayment;
+    //_selectedFundCode = menuOthSalaryPayment;
 
     String fundTypeCaption() {
       if (_selectedFundCode == fundTypeCodesEmployeeLayer[0]) {
@@ -782,7 +811,7 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
                     SuppliesHistRepository.instance
                         .setItemId(menuOthCashInOutFunds);
                     SuppliesHistRepository.instance
-                        .setItemUniqueId(_selectedFundCode);
+                        .setItemUniqueId(_selectedFundCode!);
                   });
                 },
                 borderRadius: BorderRadius.circular(8),
@@ -896,8 +925,8 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
 
     Future<void> saveButtonProcessCash() async {
       SuppliesHistRepository.instance.setItemName(
-          getItemNameOnly(menuOthCashInOutFunds, _selectedFundCode));
-      SuppliesHistRepository.instance.setItemUniqueId(_selectedFundCode);
+          getItemNameOnly(menuOthCashInOutFunds, _selectedFundCode!));
+      SuppliesHistRepository.instance.setItemUniqueId(_selectedFundCode!);
       SuppliesHistRepository.instance.setRemarks(remarksSuppliesVar.text);
       SuppliesHistRepository.instance.setCurrentCounter(
           int.parse(customerAmountVar.text.replaceAll(',', '')));
@@ -952,9 +981,9 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      fundTypeToggle(setState),
-                      customerAmount(setState),
                       customerName(setState),
+                      customerAmount(setState),
+                      fundTypeToggle(setState),
                       conRemarksSuppliesVar(setState),
                     ],
                   ),
@@ -976,6 +1005,11 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
                     isGcashCredit = true;
                     await saveButtonProcessCash();
                     Navigator.pop(context);
+                  } else if (_selectedFundCode == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                          content: Text('Please select transaction type.')),
+                    );
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
@@ -1031,7 +1065,7 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
       customerAmountVar.text = "";
       // customerNameVar.text = "";
       remarksSuppliesVar.text = "";
-      _selectedFundCode = menuOthUniqIdCashIn;
+      _selectedFundCode = null;
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Cannot Save')),

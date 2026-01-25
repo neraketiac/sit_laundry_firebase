@@ -193,6 +193,9 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
 
           for (var sMHData in listSMH) {
             SuppliesModelHist sMH = sMHData.data();
+            if (sMH.itemId == menuOthCashInOutFunds) {
+              alwaysTheLatestFunds = sMH.currentStocks;
+            }
             final rowData = TableRow(
                 decoration: BoxDecoration(color: Colors.black),
                 children: [

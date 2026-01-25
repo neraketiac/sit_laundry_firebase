@@ -34,6 +34,7 @@ bool bNagbigayFee = true;
 final value = new NumberFormat("##,##0", "en_US");
 late bool isAdmin = false;
 const bool allowPayment = true;
+late int alwaysTheLatestFunds;
 
 late JobsOnQueueModel jobsOnQueueModelGlobal;
 late SuppliesModelHist suppliesModelHistGlobal;

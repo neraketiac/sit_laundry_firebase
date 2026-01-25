@@ -26,6 +26,12 @@ class DatabaseSuppliesCurrent {
     return _suppliesCurrRef.orderBy('LogDate', descending: true).snapshots();
   }
 
+  Stream<QuerySnapshot> getFundsCurrentOnly() {
+    return _suppliesCurrRef
+        .where('ItemId', isEqualTo: menuOthCashInOutFunds)
+        .snapshots();
+  }
+
   Future<SuppliesModelHist> computeCurrentStocks(SuppliesModelHist sMH) async {
     // _suppliesCurrRef --if reuse, will not work
     var collectionRef = FirebaseFirestore.instance
@@ -52,7 +58,7 @@ class DatabaseSuppliesCurrent {
   Future<bool> addSuppliesCurr(SuppliesModelHist sMH) async {
     sMH = await computeCurrentStocks(sMH);
     //for EOD
-    if (ifMenuUniqueIsEOD(  sMH)) {
+    if (ifMenuUniqueIsEOD(sMH)) {
       if (sMH.currentCounter < sMH.currentStocks) {
         sMH.currentCounter = -1 * (sMH.currentStocks - sMH.currentCounter);
       } else if (sMH.currentCounter > sMH.currentStocks) {
@@ -80,6 +86,7 @@ class DatabaseSuppliesCurrent {
 
     //to be used in Supplies Current
     sMH.currentStocks = sMH.currentStocks + sMH.currentCounter;
+    alwaysTheLatestFunds = sMH.currentStocks;
 
     bool bSuccess = false;
     print("Doc id before=${sMH.docId}");
