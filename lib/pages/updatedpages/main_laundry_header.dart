@@ -45,10 +45,10 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
   int _selectedFundCode = menuOthLaundryPayment;
   final List<int> fundTypeCodes1stLayer = [
     menuOthLaundryPayment,
-    menuOthUniqIdCashIn,
+    menuOthUniqIdLoad,
   ];
   final List<int> fundTypeCodes2ndLayer = [
-    menuOthUniqIdLoad,
+    menuOthUniqIdCashIn,
     menuOthUniqIdCashOut,
   ];
   final List<int> fundTypeCodes3rdLayer = [
@@ -151,17 +151,17 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
     String fundTypeCaptionMulti() {
       switch (_selectedFundCode) {
         case menuOthLaundryPayment:
-          return 'Para sa customer\nbayad sa pina-laundry.\n(+)funds';
+          return 'Bayad sa pina-laundry.\nadd funds';
         case menuOthUniqIdCashIn:
-          return 'Para sa customer\nbayad sa pa-cash-in.\n(+)funds';
+          return 'Bayad sa pa-cash-in.\nadd funds';
         case menuOthUniqIdLoad:
-          return 'Para sa customer\nbayad sa pina-load.\n(+)funds';
+          return 'Bayad sa pina-load.\nadd funds';
         case menuOthUniqIdCashOut:
-          return 'Para sa customer\nna nagpa-cash-out.\n(-)funds';
+          return 'Pa-cash-out si customer.\nbawas funds';
         case menuOthUniqIdFundsIn:
-          return 'Para saten kung\nmagdadagdag ka sa funds.\n(+)funds';
+          return 'Add funds si staff.';
         case menuOthUniqIdFundsOut:
-          return 'Para saten kung\nmagbabawas ka sa funds.\n(-)funds';
+          return 'Bawas funds.\nIlagay kanino ibabawas.';
         default:
           return '';
       }
@@ -172,12 +172,29 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
         visible: true,
         child: Container(
           alignment: Alignment.center,
-          padding: const EdgeInsets.all(6.0),
+          padding: const EdgeInsets.all(1.0),
           decoration: decoLightBlue(),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // 🔹 TOP ROW
+              Text('For Customer'),
+              // ClipRRect(
+              //   borderRadius: BorderRadius.circular(12),
+              //   child: Container(
+              //     decoration: BoxDecoration(
+              //       borderRadius: BorderRadius.circular(12),
+              //       border: Border.all(color: Colors.red),
+              //     ),
+              //     child: Column(
+              //       mainAxisSize: MainAxisSize.min,
+              //       children: [
+
+              //       ],
+              //     ),
+              //   ),
+              // ),
+
+              // 🔹 FIRST ROW
               ToggleButtons(
                 isSelected: List.generate(
                   fundTypeCodes1stLayer.length,
@@ -194,6 +211,7 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
                 },
                 borderRadius: BorderRadius.circular(8),
                 selectedColor: Colors.white,
+                borderColor: Colors.blue,
                 fillColor: Colors.blue,
                 color: Colors.black,
                 constraints: const BoxConstraints(
@@ -202,11 +220,11 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
                 ),
                 children: const [
                   Text('LPayment'),
-                  Text('Cash in'),
+                  Text('Load'),
                 ],
               ),
 
-              const SizedBox(height: 8),
+              const Divider(height: 1),
 
               // 🔹 SECOND ROW
               ToggleButtons(
@@ -225,6 +243,7 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
                 },
                 borderRadius: BorderRadius.circular(8),
                 selectedColor: Colors.white,
+                borderColor: Colors.blue,
                 fillColor: Colors.blue,
                 color: Colors.black,
                 constraints: const BoxConstraints(
@@ -232,13 +251,13 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
                   minHeight: 40,
                 ),
                 children: const [
-                  Text('Load'),
+                  Text('Cash In'),
                   Text('Cash Out'),
                 ],
               ),
 
-              const SizedBox(height: 8),
-
+              const SizedBox(height: 1),
+              Text('For Staff'),
               // 🔹 THIRD ROW
               ToggleButtons(
                 isSelected: List.generate(
@@ -255,9 +274,10 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
                   });
                 },
                 borderRadius: BorderRadius.circular(8),
-                selectedColor: Colors.white,
-                fillColor: Colors.blue,
+                selectedColor: Colors.black,
+                fillColor: Colors.yellowAccent,
                 color: Colors.black,
+                borderColor: cSalaryOut,
                 constraints: const BoxConstraints(
                   minWidth: 110,
                   minHeight: 40,
@@ -267,8 +287,7 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
                   Text('Funds Out'),
                 ],
               ),
-              const SizedBox(height: 6),
-
+              const SizedBox(height: 1),
               // 🔹 CAPTION
               Text(
                 fundTypeCaptionMulti(),
@@ -402,6 +421,17 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
         return StatefulBuilder(builder: (context, setState) {
           return AlertDialog(
             backgroundColor: Colors.lightBlue,
+            contentPadding: const EdgeInsets.all(0),
+            titlePadding: const EdgeInsets.only(
+              top: 0,
+              left: 5,
+              right: 5,
+              bottom: 0,
+            ),
+            actionsPadding: const EdgeInsets.symmetric(
+              horizontal: 5,
+              vertical: 5,
+            ),
             title: Text(
               "Cash Funds",
               textAlign: TextAlign.center,
@@ -409,7 +439,7 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
             content: SingleChildScrollView(
               scrollDirection: Axis.vertical,
               child: Container(
-                padding: EdgeInsets.all(8.0),
+                padding: EdgeInsets.all(1.0),
                 decoration: BoxDecoration(
                     border: Border.all(color: Colors.blueAccent, width: 2.0)),
                 child: Form(
@@ -433,7 +463,10 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
                 onPressed: () {
                   Navigator.pop(context); // close popup
                 },
-                child: const Text('Cancel'),
+                child: const Text(
+                  'Cancel',
+                  style: TextStyle(color: Colors.black),
+                ),
               ),
               ElevatedButton(
                 onPressed: () async {
@@ -454,8 +487,7 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
                       !empNameToId.containsKey(autocompleteSelected.name)) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                          content:
-                              Text('Name must be an employee for Funds Out.')),
+                          content: Text('Name must be a staff for Funds Out.')),
                     );
                   } else {
                     await saveButtonProcessCash();
@@ -481,61 +513,72 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
       Widget denominationRow(int denom, Function setState) {
         final qty = _qtyMap[denom]!;
 
-        return Row(
-          children: [
-            // 🔹 Denomination (left)
-            SizedBox(
-              width: 60,
-              child: Text(
-                '$denom',
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
+        return Container(
+          margin: const EdgeInsets.symmetric(vertical: 0),
+          padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.black26),
+            borderRadius: BorderRadius.circular(6),
+            color: const Color.fromARGB(255, 124, 213, 255),
+          ),
+          child: Row(
+            //crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              // 🔹 Denomination (left)
+              SizedBox(
+                width: 60,
+                child: Text(
+                  '$denom',
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.right,
                 ),
-                textAlign: TextAlign.right,
               ),
-            ),
-            const SizedBox(width: 6),
-            // 🔹 Qty box
-            Container(
-              width: 40,
-              height: 32,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.black54),
-                borderRadius: BorderRadius.circular(6),
-                color: Colors.white,
+              const SizedBox(width: 4),
+              // 🔹 Qty box
+              Container(
+                width: 40,
+                height: 32,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.black54),
+                  borderRadius: BorderRadius.circular(6),
+                  color: Colors.white,
+                ),
+                child: Text(
+                  '$qty',
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
               ),
-              child: Text(
-                '$qty',
-                style: const TextStyle(fontWeight: FontWeight.w600),
+
+              const SizedBox(width: 4),
+
+              // 🔹 -1 button
+              IconButton(
+                icon: const Icon(Icons.remove_circle_outline, size: 20),
+                onPressed: qty > 0
+                    ? () {
+                        setState(() {
+                          _qtyMap[denom] = qty - 1;
+                        });
+                      }
+                    : null,
               ),
-            ),
 
-            const SizedBox(width: 6),
-
-            // 🔹 -1 button
-            IconButton(
-              icon: const Icon(Icons.remove_circle_outline, size: 20),
-              onPressed: qty > 0
-                  ? () {
-                      setState(() {
-                        _qtyMap[denom] = qty - 1;
-                      });
-                    }
-                  : null,
-            ),
-
-            // 🔹 +1 button
-            IconButton(
-              icon: const Icon(Icons.add_circle_outline, size: 20),
-              onPressed: () {
-                setState(() {
-                  _qtyMap[denom] = qty + 1;
-                });
-              },
-            ),
-          ],
+              // 🔹 +1 button
+              IconButton(
+                icon: const Icon(Icons.add_circle_outline, size: 20),
+                onPressed: () {
+                  setState(() {
+                    _qtyMap[denom] = qty + 1;
+                  });
+                },
+              ),
+            ],
+          ),
         );
       }
 
@@ -621,6 +664,17 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
       builder: (BuildContext context) {
         return StatefulBuilder(builder: (context, setState) {
           return AlertDialog(
+            contentPadding: const EdgeInsets.all(2),
+            titlePadding: const EdgeInsets.only(
+              top: 5,
+              left: 5,
+              right: 5,
+              bottom: 2,
+            ),
+            actionsPadding: const EdgeInsets.symmetric(
+              horizontal: 8,
+              vertical: 8,
+            ),
             backgroundColor: cFundsEOD,
             title: Text.rich(
               TextSpan(
@@ -633,13 +687,13 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
                     ),
                   ),
                   TextSpan(
-                    text: "Fund Check every\n",
+                    text: "Bilangain ang kasalukuyang funds\n",
                     style: TextStyle(
                       fontSize: 10, // 👈 smaller
                     ),
                   ),
                   TextSpan(
-                    text: "9am / 12nn / 7pm",
+                    text: "tuwing 9am / 12nn / 7pm",
                     style: TextStyle(
                       fontSize: 10, // 👈 smaller
                     ),
@@ -700,9 +754,9 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
 
     String fundTypeCaption() {
       if (_selectedFundCode == fundTypeCodesEmployeeLayer[0]) {
-        return '(+) Para madagdagan ang amount \n ng iyong Current Balance.';
+        return '(+) Ilista ang iyong kinita.';
       } else if (_selectedFundCode == fundTypeCodesEmployeeLayer[1]) {
-        return '(-) Bawasan ang balance\nisend sa iyong Gcash\nhindi kukuha sa Cash Funds.';
+        return '(-) Ilista ang nais na gcash\nibabawas ito sa kinita\n For real money, use "Funds Out".';
       }
       return '';
     }
@@ -740,8 +794,8 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
                   minHeight: 40,
                 ),
                 children: const [
-                  Text('Add Salary'),
-                  Text('Gcash Credit'),
+                  Text('Earn Cash'),
+                  Text('Get GCash'),
                 ],
               ),
 
@@ -855,19 +909,30 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
       builder: (BuildContext context) {
         return StatefulBuilder(builder: (context, setState) {
           return AlertDialog(
+            contentPadding: const EdgeInsets.all(2),
+            titlePadding: const EdgeInsets.only(
+              top: 5,
+              left: 5,
+              right: 5,
+              bottom: 2,
+            ),
+            actionsPadding: const EdgeInsets.symmetric(
+              horizontal: 8,
+              vertical: 8,
+            ),
             backgroundColor: cSalaryIn,
             title: Text.rich(
               TextSpan(
                 children: [
                   TextSpan(
-                    text: "Employee Maintenance\n",
+                    text: "Staff Maintenance\n",
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   TextSpan(
-                    text: "To add/sub to your current balance.",
+                    text: "Dagdag/bawas sa current balance.",
                     style: TextStyle(
                       fontSize: 10, // 👈 smaller
                     ),
@@ -914,8 +979,8 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                          content: Text(
-                              'Name must be an employee for Salary Payment.')),
+                          content:
+                              Text('Name must be a staff for Salary Payment.')),
                     );
                   }
                 },
@@ -984,6 +1049,9 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
       sMH.currentCounter = sMH.currentCounter * -1;
     }
 
+    // add funds in name to regular staff
+    // funds in is called paluwal, i-add sa sahod
+
     // ##### insert to Employee Current if Funds Out and name exists in nameMap ######
     // checking
     // 1. name exists in nameMap
@@ -995,17 +1063,20 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
       if (nameMap[sMH.customerName.toLowerCase()] !=
                   null //check if employee exists
               &&
-              (sMH.itemUniqueId == menuOthUniqIdFundsOut || //funds out employee
+              (sMH.itemUniqueId == menuOthUniqIdFundsOut //funds out employee
+                  ||
                   (isGcashCredit &&
                       sMH.itemUniqueId == menuOthUniqIdCashIn) //gcash credit
                   ||
                   ((isAdmin || allowPayment) &&
                       sMH.itemUniqueId ==
-                          menuOthSalaryPayment) //salary payment access by admin only
+                          menuOthSalaryPayment) //salary payment access by admin only, or allowPayment
+                  ||
+                  (sMH.itemUniqueId == menuOthUniqIdFundsIn) //paluwal
               ) &&
               (sMH.customerName != 'Ket' &&
                   sMH.customerName !=
-                      'DonF') //exclude employee record for admin
+                      'DonF') //funds out admin, no need to record in employee table
           ) {
         //############### start insert to Employee Current #################
         //get empId from nameMap
