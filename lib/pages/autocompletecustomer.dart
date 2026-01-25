@@ -15,9 +15,40 @@ class AutoCompleteCustomer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final customer = CustomerRepository.instance.customers;
-    
+
     return Autocomplete<CustomerModel>(
       displayStringForOption: _displayStringForOption,
+      fieldViewBuilder:
+          (context, textEditingController, focusNode, onFieldSubmitted) {
+        return TextFormField(
+          controller: textEditingController,
+          focusNode: focusNode,
+          decoration: InputDecoration(
+            labelText: 'Customer/Employee Name',
+            labelStyle: TextStyle(
+              fontSize: 12,
+              color: Colors.grey[700],
+            ),
+            hintText: 'Search Name',
+            hintStyle: TextStyle(
+              fontSize: 12,
+              color: Colors.grey[700],
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(color: Colors.grey),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(color: Colors.blue, width: 2),
+            ),
+          ),
+          onFieldSubmitted: (value) => onFieldSubmitted(),
+        );
+      },
       optionsBuilder: (inputNameTFF) {
         if (inputNameTFF.text == '') {
           return const Iterable<CustomerModel>.empty();
@@ -38,5 +69,4 @@ class AutoCompleteCustomer extends StatelessWidget {
       },
     );
   }
-
 }

@@ -1,6 +1,7 @@
 //Display
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:laundry_firebase/models/employeemodel.dart';
 import 'package:laundry_firebase/models/otheritemmodel.dart';
 import 'package:laundry_firebase/models/suppliesmodelhist.dart';
 import 'package:laundry_firebase/services/database_supplies_current.dart';
@@ -35,11 +36,17 @@ const int menuOthCashInOutFunds = 422,
 
 //Supplies Colors
 final Color cStocks = Color.fromRGBO(255, 251, 43, 0.452);
-final Color cCashOut = Color.fromRGBO(170, 170, 170, 1);
+final Color cCashOut =
+    Color.from(alpha: 1, red: 0.667, green: 0.667, blue: 0.667);
 final Color cCashIn = Color.fromRGBO(120, 120, 120, 1);
 final Color cCashFee = Color.fromRGBO(120, 120, 120, 1);
-final Color cFundsEOD = Color.fromRGBO(255, 92, 233, 1);
+final Color cFundsEOD = Color.fromRGBO(62, 255, 45, 1);
+final Color cFundsEOD2 = Color.fromRGBO(255, 92, 233, 1);
 final Color cFundsEODShaded = Color.fromRGBO(255, 92, 233, 0.3);
+final Color cMoneyIn = Color.fromRGBO(177, 177, 177, 1);
+final Color cMoneyOut = Color.fromRGBO(113, 113, 113, 1);
+final Color cSalaryIn = Color.fromRGBO(209, 99, 30, 1);
+final Color cSalaryOut = Color.fromRGBO(255, 151, 86, 1);
 
 void addListSuppItems() {
   //salary payment
@@ -130,7 +137,7 @@ void addListSuppItems() {
     itemId: menuOthCashInOutFunds,
     itemUniqueId: menuOthUniqIdFundsEOD,
     itemGroup: groupOth,
-    itemName: "Funds EOD",
+    itemName: "Funds Check",
     itemPrice: 0,
     stocksAlert: 1000,
     stocksType: "php",
@@ -371,6 +378,60 @@ Color getCOlorSuppliesHistoryVar(SuppliesModelHist sMH) {
       return cCashOut;
     } else if (ifMenuUniqueIsFee(sMH)) {
       return cCashFee;
+    }
+  }
+
+  return cStocks;
+}
+
+Color getCOlorSuppliesHistoryPosNeg(SuppliesModelHist sMH) {
+  if (sMH.itemId == menuOthCashInOutFunds) {
+    if (ifMenuUniqueIsCashIn(sMH)) {
+      return cMoneyIn;
+    } else if (ifMenuUniqueIsCashOut(sMH)) {
+      return cMoneyOut;
+    } else if (ifMenuUniqueIsLaundryPayment(sMH)) {
+      return cMoneyIn;
+    } else if (ifMenuUniqueIsLPaymentGCash(sMH)) {
+      return cMoneyIn;
+    } else if (sMH.itemUniqueId == menuOthUniqIdFundsEOD) {
+      return cFundsEOD;
+    } else if (ifMenuUniqueIsFundsIn(sMH)) {
+      return cMoneyIn;
+    } else if (ifMenuUniqueIsFundsOut(sMH)) {
+      return cMoneyOut;
+    } else if (ifMenuUniqueIsFee(sMH)) {
+      return cMoneyIn;
+    } else if (ifMenuUniqueIsLoad(sMH)) {
+      return cMoneyIn;
+    }
+  }
+
+  return cStocks;
+}
+
+Color getCOlorEmployeeHistoryPosNeg(EmployeeModel eM) {
+  if (eM.itemId == menuOthCashInOutFunds) {
+    if (ifMenuUniqueIsCashInEmp(eM)) {
+      return cSalaryOut;
+    } else if (ifMenuUniqueIsCashOutEmp(eM)) {
+      return cSalaryOut;
+    } else if (ifMenuUniqueIsLaundryPaymentEmp(eM)) {
+      return cSalaryIn;
+    } else if (ifMenuUniqueIsLPaymentGCashEmp(eM)) {
+      return cSalaryIn;
+    } else if (eM.itemUniqueId == menuOthUniqIdFundsEOD) {
+      return cFundsEOD;
+    } else if (ifMenuUniqueIsFundsInEmp(eM)) {
+      return cSalaryIn;
+    } else if (ifMenuUniqueIsFundsOutEmp(eM)) {
+      return cSalaryOut;
+    } else if (ifMenuUniqueIsFeeEmp(eM)) {
+      return cSalaryIn;
+    } else if (ifMenuUniqueIsLoadEmp(eM)) {
+      return cSalaryIn;
+    } else if (ifMenuUniqueIsSalaryPayEmp(eM)) {
+      return cSalaryIn;
     }
   }
 

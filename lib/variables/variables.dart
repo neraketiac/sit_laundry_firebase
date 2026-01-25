@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:laundry_firebase/models/customermodel.dart';
+import 'package:laundry_firebase/models/employeemodel.dart';
 import 'package:laundry_firebase/models/jobsonqueuemodel.dart';
 import 'package:laundry_firebase/models/otheritemmodel.dart';
 import 'package:laundry_firebase/models/suppliesmodelhist.dart';
@@ -311,7 +312,7 @@ const Map<String, String> nameMap = {
 
 const Map<String, String> mapEmpId = {
   '15#15': 'Jeng',
-  '12#12': 'Abi',
+  '12#12': 'Abby',
   '19#19': 'Lorie',
   '20#20': 'Seiji',
   '31#31': 'Analyn',
@@ -755,8 +756,22 @@ bool ifMenuUniqueIsCashIn(SuppliesModelHist sMH) {
   return false;
 }
 
+bool ifMenuUniqueIsCashInEmp(EmployeeModel eM) {
+  if (eM.itemUniqueId == menuOthUniqIdCashIn) {
+    return true;
+  }
+  return false;
+}
+
 bool ifMenuUniqueIsFundsIn(SuppliesModelHist sMH) {
   if (sMH.itemUniqueId == menuOthUniqIdFundsIn) {
+    return true;
+  }
+  return false;
+}
+
+bool ifMenuUniqueIsFundsInEmp(EmployeeModel eM) {
+  if (eM.itemUniqueId == menuOthUniqIdFundsIn) {
     return true;
   }
   return false;
@@ -769,8 +784,22 @@ bool ifMenuUniqueIsFee(SuppliesModelHist sMH) {
   return false;
 }
 
+bool ifMenuUniqueIsFeeEmp(EmployeeModel eM) {
+  if (eM.itemUniqueId == menuOthUniqIdFee) {
+    return true;
+  }
+  return false;
+}
+
 bool ifMenuUniqueIsLaundryPayment(SuppliesModelHist sMH) {
   if (sMH.itemUniqueId == menuOthLaundryPayment) {
+    return true;
+  }
+  return false;
+}
+
+bool ifMenuUniqueIsLaundryPaymentEmp(EmployeeModel eM) {
+  if (eM.itemUniqueId == menuOthLaundryPayment) {
     return true;
   }
   return false;
@@ -783,8 +812,22 @@ bool ifMenuUniqueIsLoad(SuppliesModelHist sMH) {
   return false;
 }
 
+bool ifMenuUniqueIsLoadEmp(EmployeeModel eM) {
+  if (eM.itemUniqueId == menuOthUniqIdLoad) {
+    return true;
+  }
+  return false;
+}
+
 bool ifMenuUniqueIsCashOut(SuppliesModelHist sMH) {
   if (sMH.itemUniqueId == menuOthUniqIdCashOut) {
+    return true;
+  }
+  return false;
+}
+
+bool ifMenuUniqueIsCashOutEmp(EmployeeModel eM) {
+  if (eM.itemUniqueId == menuOthUniqIdCashOut) {
     return true;
   }
   return false;
@@ -797,8 +840,22 @@ bool ifMenuUniqueIsEOD(SuppliesModelHist sMH) {
   return false;
 }
 
+bool ifMenuUniqueIsEODEmp(EmployeeModel eM) {
+  if (eM.itemUniqueId == menuOthUniqIdFundsEOD) {
+    return true;
+  }
+  return false;
+}
+
 bool ifMenuUniqueIsLPaymentGCash(SuppliesModelHist sMH) {
   if (sMH.itemUniqueId == menuOthLaundryPaymentGCash) {
+    return true;
+  }
+  return false;
+}
+
+bool ifMenuUniqueIsLPaymentGCashEmp(EmployeeModel eM) {
+  if (eM.itemUniqueId == menuOthLaundryPaymentGCash) {
     return true;
   }
   return false;
@@ -818,8 +875,29 @@ bool ifMenuUniqueIsExpense(SuppliesModelHist sMH) {
   return false;
 }
 
+bool ifMenuUniqueIsExpenseEmp(EmployeeModel eM) {
+  if (eM.itemUniqueId == menuOthExpense) {
+    return true;
+  }
+  return false;
+}
+
 bool ifMenuUniqueIsFundsOut(SuppliesModelHist sMH) {
   if (sMH.itemUniqueId == menuOthUniqIdFundsOut) {
+    return true;
+  }
+  return false;
+}
+
+bool ifMenuUniqueIsFundsOutEmp(EmployeeModel eM) {
+  if (eM.itemUniqueId == menuOthUniqIdFundsOut) {
+    return true;
+  }
+  return false;
+}
+
+bool ifMenuUniqueIsSalaryPayEmp(EmployeeModel eM) {
+  if (eM.itemUniqueId == menuOthSalaryPayment) {
     return true;
   }
   return false;

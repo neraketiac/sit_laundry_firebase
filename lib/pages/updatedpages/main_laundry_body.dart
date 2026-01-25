@@ -224,80 +224,148 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
       BuildContext context,
       SuppliesModelHist sMH,
     ) {
-      return Container(
-        height: 20,
-        color: getCOlorSuppliesHistoryVar(sMH),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Expanded(
-              child: Column(
-                mainAxisSize: MainAxisSize.max,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(
-                    height: 2,
-                  ),
-                  Row(
-                    children: [
-                      SizedBox(
-                        width: 2,
-                      ),
-                      Text(
-                          DateFormat('MM/dd/yy hh:mm:ss a')
-                              .format(sMH.logDate.toDate()),
-                          style: const TextStyle(
-                            fontSize: 10,
-                          )),
-                      SizedBox(
-                        width: 2,
-                      ),
-                      Text(sMH.itemName,
-                          style: const TextStyle(
-                              fontSize: 10, fontWeight: FontWeight.bold)),
-                      SizedBox(
-                        width: 2,
-                      ),
-                      Text(
-                          " ( ₱${value.format(sMH.currentCounter)} / ₱${value.format(sMH.currentStocks)} ) ",
-                          style: const TextStyle(fontSize: 11)),
-                      SizedBox(
-                        width: 2,
-                      ),
-                      Text(
-                          ifMenuUniqueIsCashIn(sMH)
-                              ? 'to:'
-                              : ifMenuUniqueIsFundsIn(sMH)
-                                  ? 'to:'
-                                  : 'by:',
-                          style: const TextStyle(
-                            fontSize: 10,
-                          )),
-                      Text(sMH.customerName,
-                          style: const TextStyle(
-                              fontSize: 10, fontWeight: FontWeight.bold)),
-                      SizedBox(
-                        width: 2,
-                      ),
-                      Text("log:{${sMH.empId}}",
-                          style: const TextStyle(
-                            fontSize: 10,
-                          )),
-                      SizedBox(
-                        width: 2,
-                      ),
-                      Text(":${sMH.remarks}",
-                          style: const TextStyle(
-                            fontSize: 10,
-                          )),
-                    ],
-                  ),
-                ],
+      Container regularContainer() {
+        return Container(
+          height: 20,
+          color: getCOlorSuppliesHistoryPosNeg(sMH),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Expanded(
+                child: Column(
+                  mainAxisSize: MainAxisSize.max,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(
+                      height: 2,
+                    ),
+                    Row(
+                      children: [
+                        SizedBox(
+                          width: 2,
+                        ),
+                        Text(
+                            DateFormat('MM/dd HH:mm:ss')
+                                .format(sMH.logDate.toDate()),
+                            style: const TextStyle(
+                              fontSize: 10,
+                            )),
+                        SizedBox(
+                          width: 2,
+                        ),
+                        Text(sMH.itemName,
+                            style: const TextStyle(
+                                fontSize: 10, fontWeight: FontWeight.bold)),
+                        SizedBox(
+                          width: 2,
+                        ),
+                        Text(
+                            ifMenuUniqueIsCashIn(sMH)
+                                ? 'to:'
+                                : ifMenuUniqueIsFundsIn(sMH)
+                                    ? 'to:'
+                                    : 'by:',
+                            style: const TextStyle(
+                              fontSize: 10,
+                            )),
+                        Text(sMH.customerName,
+                            style: const TextStyle(
+                                fontSize: 10, fontWeight: FontWeight.bold)),
+                        SizedBox(
+                          width: 2,
+                        ),
+                        Text(
+                            "(amt=₱${value.format(sMH.currentCounter)}/pCF=₱${value.format(sMH.currentStocks)})",
+                            style: const TextStyle(fontSize: 11)),
+                        SizedBox(
+                          width: 2,
+                        ),
+                        Text("log:${sMH.empId}",
+                            style: const TextStyle(
+                              fontSize: 10,
+                            )),
+                        SizedBox(
+                          width: 2,
+                        ),
+                        Text(":${sMH.remarks}",
+                            style: const TextStyle(
+                              fontSize: 10,
+                            )),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
-        ),
-      );
+            ],
+          ),
+        );
+      }
+
+      Container fundCheckContainer() {
+        return Container(
+          height: 20,
+          color: getCOlorSuppliesHistoryPosNeg(sMH),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Expanded(
+                child: Column(
+                  mainAxisSize: MainAxisSize.max,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(
+                      height: 2,
+                    ),
+                    Row(
+                      children: [
+                        SizedBox(
+                          width: 2,
+                        ),
+                        Text(
+                            DateFormat('MM/dd HH:mm:ss')
+                                .format(sMH.logDate.toDate()),
+                            style: const TextStyle(
+                              fontSize: 10,
+                            )),
+                        SizedBox(
+                          width: 2,
+                        ),
+                        Text(sMH.itemName,
+                            style: const TextStyle(
+                                fontSize: 10, fontWeight: FontWeight.bold)),
+                        SizedBox(
+                          width: 2,
+                        ),
+                        Text("by:${sMH.empId}",
+                            style: const TextStyle(
+                              fontSize: 10,
+                            )),
+                        SizedBox(
+                          width: 2,
+                        ),
+                        Text(
+                            "(amt=₱${value.format(sMH.currentCounter)}/pCF=₱${value.format(sMH.currentStocks)})",
+                            style: const TextStyle(fontSize: 11)),
+                        SizedBox(
+                          width: 2,
+                        ),
+                        Text(":${sMH.remarks}",
+                            style: const TextStyle(
+                              fontSize: 10,
+                            )),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      }
+
+      return (ifMenuUniqueIsEOD(sMH)
+          ? fundCheckContainer()
+          : regularContainer());
     }
 
     DatabaseSuppliesHist databaseSuppliesHist = DatabaseSuppliesHist();
@@ -467,7 +535,7 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
     ) {
       return Container(
         height: 20,
-        color: Colors.orange,
+        color: getCOlorEmployeeHistoryPosNeg(eM),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -485,7 +553,7 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                         width: 2,
                       ),
                       Text(
-                          DateFormat('MM/dd/yy hh:mm:ss a')
+                          DateFormat('MM/dd HH:mm:ss')
                               .format(eM.logDate.toDate()),
                           style: const TextStyle(
                             fontSize: 10,
@@ -500,13 +568,11 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                         width: 2,
                       ),
                       Text(
-                          " ( ₱${value.format(eM.currentCounter)} / ₱${value.format(eM.currentStocks)} ) ",
-                          style: const TextStyle(fontSize: 11)),
-                      SizedBox(
-                        width: 2,
-                      ),
-                      Text(
-                          "${(eM.remarks.contains('Cash-In') ? 'to:' : 'by:')}",
+                          (eM.remarks.contains('Cash-In')
+                              ? 'to:'
+                              : (eM.remarks.contains('Salary')
+                                  ? 'to:'
+                                  : 'by:')),
                           style: const TextStyle(
                             fontSize: 10,
                           )),
@@ -516,7 +582,13 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                       SizedBox(
                         width: 2,
                       ),
-                      Text("log:{${eM.logBy}}",
+                      Text(
+                          " (amt=₱${value.format(eM.currentCounter)}/pBal=₱${value.format(eM.currentStocks)})",
+                          style: const TextStyle(fontSize: 11)),
+                      SizedBox(
+                        width: 2,
+                      ),
+                      Text("log:${eM.logBy}",
                           style: const TextStyle(
                             fontSize: 10,
                           )),

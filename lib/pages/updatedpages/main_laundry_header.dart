@@ -55,6 +55,9 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
     menuOthLaundryPayment,
     menuOthUniqIdLoad,
   ];
+  final List<int> fundTypeCodes4thLayer = [
+    menuOthSalaryPayment,
+  ];
 
   @override
   void initState() {
@@ -142,519 +145,13 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
     );
   }
 
-//floating salary  ###########################################################
-  void _showSalary() {
-    _selectedFundCode = menuOthSalaryPayment;
-    // final FocusNode nameFocusNode = FocusNode();
-
-    // void normalizeName() {
-    //   final text = customerNameVar.text.trim().toLowerCase();
-
-    //   if (nameMap.containsKey(text)) {
-    //     customerNameVar.text = nameMap[text]!;
-    //   }
-    // }
-
-    // nameFocusNode.addListener(() {
-    //   if (!nameFocusNode.hasFocus) {
-    //     normalizeName();
-    //   }
-    // });
-
-    Visibility fundTypeToggle(Function setState) {
-      return Visibility(
-        visible: true,
-        child: Container(
-          alignment: Alignment.center,
-          padding: const EdgeInsets.all(6.0),
-          decoration: decoLightBlue(),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // 🔹 TOP ROW
-              ToggleButtons(
-                isSelected: List.generate(
-                  1,
-                  (i) => _selectedFundCode == menuOthSalaryPayment,
-                ),
-                onPressed: (index) {
-                  setState(() {
-                    _selectedFundCode = menuOthSalaryPayment;
-                    SuppliesHistRepository.instance
-                        .setItemId(menuOthCashInOutFunds);
-                    SuppliesHistRepository.instance
-                        .setItemUniqueId(_selectedFundCode);
-                  });
-                },
-                borderRadius: BorderRadius.circular(8),
-                selectedColor: Colors.black,
-                fillColor: Colors.yellowAccent,
-                color: Colors.black,
-                constraints: const BoxConstraints(
-                  minWidth: 110,
-                  minHeight: 40,
-                ),
-                children: const [
-                  Text('Salary Payment'),
-                ],
-              ),
-
-              const SizedBox(height: 8),
-              //
-            ],
-          ),
-        ),
-      );
-    }
-
-    Visibility customerAmount(Function setState) {
-      return Visibility(
-        visible: true,
-        child: Container(
-          padding: const EdgeInsets.all(1.0),
-          decoration: decoAmber(),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Label (not indented)
-              const Padding(
-                padding: EdgeInsets.only(left: 4, bottom: 4),
-                child: Text(
-                  'Amount',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-
-              // Amount field
-              TextFormField(
-                controller: customerAmountVar,
-                keyboardType:
-                    const TextInputType.numberWithOptions(decimal: true),
-                inputFormatters: [
-                  FilteringTextInputFormatter.allow(
-                    RegExp(r'\d+(\.\d{0,2})?'),
-                  ),
-                ],
-                decoration: InputDecoration(
-                  hintText: '0.00',
-                  border: const OutlineInputBorder(),
-                  prefixIcon: SizedBox(
-                    width: _fieldIndentWidth,
-                    child: const Center(
-                      child: Text(
-                        '₱',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    Visibility customerName(Function setState) {
-      return Visibility(
-        visible: true,
-        child: Container(
-          padding: const EdgeInsets.all(1.0),
-          decoration: decoAmber(),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              // 🔹 Label + Checkbox on same row
-              Padding(
-                padding: const EdgeInsets.only(left: 4, bottom: 4),
-                child: Row(
-                  children: [
-                    const Text(
-                      'Name',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // 🔹 Input Field (disabled if employee is checked)
-              // TextFormField(
-              //   controller: customerNameVar,
-              //   focusNode: nameFocusNode,
-              //   textCapitalization: TextCapitalization.words,
-              //   decoration: const InputDecoration(
-              //     hintText: 'Enter Name',
-              //     prefixIcon: SizedBox(width: _fieldIndentWidth),
-              //     border: OutlineInputBorder(),
-              //   ),
-              // ),
-              AutoCompleteCustomer(),
-              SizedBox(
-                height: 5,
-              ),
-              MaterialButton(
-                color: cButtons,
-                onPressed: () {
-                  allCardsVar(context);
-                },
-                child: Text("New Account"),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    Future<void> saveButtonProcessCash() async {
-      SuppliesHistRepository.instance.setItemName(
-          getItemNameOnly(menuOthCashInOutFunds, _selectedFundCode));
-      SuppliesHistRepository.instance.setItemUniqueId(_selectedFundCode);
-      SuppliesHistRepository.instance.setRemarks(remarksSuppliesVar.text);
-      SuppliesHistRepository.instance.setCurrentCounter(
-          int.parse(customerAmountVar.text.replaceAll(',', '')));
-      await _insertToFB();
-    }
-
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return StatefulBuilder(builder: (context, setState) {
-          return AlertDialog(
-            backgroundColor: Colors.yellowAccent,
-            title: Text(
-              "Salary of Employee",
-              textAlign: TextAlign.center,
-              style: TextStyle(backgroundColor: Colors.yellowAccent),
-            ),
-            content: SingleChildScrollView(
-              scrollDirection: Axis.vertical,
-              child: Container(
-                padding: EdgeInsets.all(8.0),
-                decoration: BoxDecoration(
-                    border: Border.all(color: Colors.blueAccent, width: 2.0)),
-                child: Form(
-                  //key: _formKey,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      fundTypeToggle(setState),
-                      customerAmount(setState),
-                      customerName(setState),
-                      conRemarksSuppliesVar(setState),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            // 👇 Bottom buttons
-            actionsAlignment: MainAxisAlignment.end,
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.pop(context); // close popup
-                },
-                child: const Text('Cancel'),
-              ),
-              ElevatedButton(
-                onPressed: () async {
-                  if (empNameToId.containsKey(autocompleteSelected.name)) {
-                    isGcashCredit = true;
-                    await saveButtonProcessCash();
-                    Navigator.pop(context);
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content: Text(
-                              'Name must be an employee for Salary Payment.')),
-                    );
-                  }
-                },
-                child: const Text('Save'),
-              ),
-            ],
-          );
-        });
-      },
-    );
-  }
-
-//floating gcash credit  ###########################################################
-  void _showGcashCredit() {
-    _selectedFundCode = menuOthUniqIdCashIn;
-    // final FocusNode nameFocusNode = FocusNode();
-
-    // void normalizeName() {
-    //   final text = customerNameVar.text.trim().toLowerCase();
-
-    //   if (nameMap.containsKey(text)) {
-    //     customerNameVar.text = nameMap[text]!;
-    //   }
-    // }
-
-    // nameFocusNode.addListener(() {
-    //   if (!nameFocusNode.hasFocus) {
-    //     normalizeName();
-    //   }
-    // });
-
-    Visibility fundTypeToggle(Function setState) {
-      return Visibility(
-        visible: true,
-        child: Container(
-          alignment: Alignment.center,
-          padding: const EdgeInsets.all(6.0),
-          decoration: decoLightBlue(),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // 🔹 TOP ROW
-              ToggleButtons(
-                isSelected: List.generate(
-                  1,
-                  (i) => _selectedFundCode == fundTypeCodes1stLayer[i],
-                ),
-                onPressed: (index) {
-                  setState(() {
-                    _selectedFundCode = fundTypeCodes1stLayer[index];
-                    SuppliesHistRepository.instance
-                        .setItemId(menuOthCashInOutFunds);
-                    SuppliesHistRepository.instance
-                        .setItemUniqueId(_selectedFundCode);
-                  });
-                },
-                borderRadius: BorderRadius.circular(8),
-                selectedColor: Colors.white,
-                fillColor: Colors.blue,
-                color: Colors.black,
-                constraints: const BoxConstraints(
-                  minWidth: 110,
-                  minHeight: 40,
-                ),
-                children: const [
-                  Text('Gcash Credit'),
-                ],
-              ),
-
-              const SizedBox(height: 8),
-              //
-            ],
-          ),
-        ),
-      );
-    }
-
-    Visibility customerAmount(Function setState) {
-      return Visibility(
-        visible: true,
-        child: Container(
-          padding: const EdgeInsets.all(1.0),
-          decoration: decoAmber(),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Label (not indented)
-              const Padding(
-                padding: EdgeInsets.only(left: 4, bottom: 4),
-                child: Text(
-                  'Amount',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-
-              // Amount field
-              TextFormField(
-                controller: customerAmountVar,
-                keyboardType:
-                    const TextInputType.numberWithOptions(decimal: true),
-                inputFormatters: [
-                  FilteringTextInputFormatter.allow(
-                    RegExp(r'\d+(\.\d{0,2})?'),
-                  ),
-                ],
-                decoration: InputDecoration(
-                  hintText: '0.00',
-                  border: const OutlineInputBorder(),
-                  prefixIcon: SizedBox(
-                    width: _fieldIndentWidth,
-                    child: const Center(
-                      child: Text(
-                        '₱',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    Visibility customerName(Function setState) {
-      return Visibility(
-        visible: true,
-        child: Container(
-          padding: const EdgeInsets.all(1.0),
-          decoration: decoAmber(),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              // 🔹 Label + Checkbox on same row
-              Padding(
-                padding: const EdgeInsets.only(left: 4, bottom: 4),
-                child: Row(
-                  children: [
-                    const Text(
-                      'Name',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // 🔹 Input Field (disabled if employee is checked)
-              // TextFormField(
-              //   controller: customerNameVar,
-              //   focusNode: nameFocusNode,
-              //   textCapitalization: TextCapitalization.words,
-              //   decoration: const InputDecoration(
-              //     hintText: 'Enter Name',
-              //     prefixIcon: SizedBox(width: _fieldIndentWidth),
-              //     border: OutlineInputBorder(),
-              //   ),
-              // ),
-              AutoCompleteCustomer(),
-              SizedBox(
-                height: 5,
-              ),
-              MaterialButton(
-                color: cButtons,
-                onPressed: () {
-                  allCardsVar(context);
-                },
-                child: Text("New Account"),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    Future<void> saveButtonProcessCash() async {
-      SuppliesHistRepository.instance.setItemName(
-          getItemNameOnly(menuOthCashInOutFunds, _selectedFundCode));
-      SuppliesHistRepository.instance.setItemUniqueId(_selectedFundCode);
-      SuppliesHistRepository.instance.setRemarks(remarksSuppliesVar.text);
-      SuppliesHistRepository.instance.setCurrentCounter(
-          int.parse(customerAmountVar.text.replaceAll(',', '')));
-      await _insertToFB();
-    }
-
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return StatefulBuilder(builder: (context, setState) {
-          return AlertDialog(
-            backgroundColor: Colors.lightBlue,
-            title: Text.rich(
-  TextSpan(
-    children: [
-      TextSpan(
-        text: "Employee Credit\n",
-        style: TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-      TextSpan(
-        text: "to be deducted ",
-        style: TextStyle(
-          fontSize: 10, // 👈 smaller
-        ),
-      ),
-      TextSpan(
-        text: "to your balance",
-        style: TextStyle(
-          fontSize: 10, // 👈 smaller
-        ),
-      ),
-    ],
-  ),
-  textAlign: TextAlign.center,
-),
-            content: SingleChildScrollView(
-              scrollDirection: Axis.vertical,
-              child: Container(
-                padding: EdgeInsets.all(8.0),
-                decoration: BoxDecoration(
-                    border: Border.all(color: Colors.blueAccent, width: 2.0)),
-                child: Form(
-                  //key: _formKey,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      fundTypeToggle(setState),
-                      customerAmount(setState),
-                      customerName(setState),
-                      conRemarksSuppliesVar(setState),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            // 👇 Bottom buttons
-            actionsAlignment: MainAxisAlignment.end,
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.pop(context); // close popup
-                },
-                child: const Text('Cancel'),
-              ),
-              ElevatedButton(
-                onPressed: () async {
-                  if (empNameToId.containsKey(autocompleteSelected.name)) {
-                    isGcashCredit = true;
-                    await saveButtonProcessCash();
-                    Navigator.pop(context);
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content: Text(
-                              'Customer name must be an employee for Gcash Credit.')),
-                    );
-                  }
-                },
-                child: const Text('Save'),
-              ),
-            ],
-          );
-        });
-      },
-    );
-  }
-
 //floating button new record  ###########################################################
   void _showEnterNewRecord() {
+    // debugPrint('${_selectedFundCode}watata$menuOthSalaryPayment');
+    if (_selectedFundCode == menuOthSalaryPayment) {
+      //   debugPrint('wetete');
+      _selectedFundCode = menuOthUniqIdCashIn;
+    }
     // final FocusNode nameFocusNode = FocusNode();
 
     // void normalizeName() {
@@ -844,15 +341,7 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
               Padding(
                 padding: const EdgeInsets.only(left: 4, bottom: 4),
                 child: Row(
-                  children: [
-                    const Text(
-                      'Name',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
+                  children: [],
                 ),
               ),
 
@@ -877,6 +366,9 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
                   allCardsVar(context);
                 },
                 child: Text("New Account"),
+              ),
+              SizedBox(
+                height: 5,
               ),
             ],
           ),
@@ -957,6 +449,272 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
                   } else {
                     await saveButtonProcessCash();
                     Navigator.pop(context);
+                  }
+                },
+                child: const Text('Save'),
+              ),
+            ],
+          );
+        });
+      },
+    );
+  }
+
+//floating gcash credit  ###########################################################
+  void _showGcashCredit() {
+    _selectedFundCode = menuOthUniqIdCashIn;
+    // final FocusNode nameFocusNode = FocusNode();
+
+    // void normalizeName() {
+    //   final text = customerNameVar.text.trim().toLowerCase();
+
+    //   if (nameMap.containsKey(text)) {
+    //     customerNameVar.text = nameMap[text]!;
+    //   }
+    // }
+
+    // nameFocusNode.addListener(() {
+    //   if (!nameFocusNode.hasFocus) {
+    //     normalizeName();
+    //   }
+    // });
+
+    Visibility fundTypeToggle(Function setState) {
+      return Visibility(
+        visible: true,
+        child: Container(
+          alignment: Alignment.center,
+          padding: const EdgeInsets.all(6.0),
+          decoration: decoLightBlue(),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // 🔹 TOP ROW
+              ToggleButtons(
+                isSelected: List.generate(
+                  1,
+                  (i) => _selectedFundCode == fundTypeCodes1stLayer[i],
+                ),
+                onPressed: (index) {
+                  setState(() {
+                    _selectedFundCode = fundTypeCodes1stLayer[index];
+                    SuppliesHistRepository.instance
+                        .setItemId(menuOthCashInOutFunds);
+                    SuppliesHistRepository.instance
+                        .setItemUniqueId(_selectedFundCode);
+                  });
+                },
+                borderRadius: BorderRadius.circular(8),
+                selectedColor: Colors.white,
+                fillColor: Colors.blue,
+                color: Colors.black,
+                constraints: const BoxConstraints(
+                  minWidth: 110,
+                  minHeight: 40,
+                ),
+                children: const [
+                  Text('Gcash Credit'),
+                ],
+              ),
+
+              const SizedBox(height: 8),
+              //
+            ],
+          ),
+        ),
+      );
+    }
+
+    Visibility customerAmount(Function setState) {
+      return Visibility(
+        visible: true,
+        child: Container(
+          padding: const EdgeInsets.all(1.0),
+          decoration: decoAmber(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Label (not indented)
+              const Padding(
+                padding: EdgeInsets.only(left: 4, bottom: 4),
+                child: Text(
+                  'Amount',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+
+              // Amount field
+              TextFormField(
+                controller: customerAmountVar,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(
+                    RegExp(r'\d+(\.\d{0,2})?'),
+                  ),
+                ],
+                decoration: InputDecoration(
+                  hintText: '0.00',
+                  border: const OutlineInputBorder(),
+                  prefixIcon: SizedBox(
+                    width: _fieldIndentWidth,
+                    child: const Center(
+                      child: Text(
+                        '₱',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    Visibility customerName(Function setState) {
+      return Visibility(
+        visible: true,
+        child: Container(
+          padding: const EdgeInsets.all(1.0),
+          decoration: decoAmber(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // 🔹 Label + Checkbox on same row
+              Padding(
+                padding: const EdgeInsets.only(left: 4, bottom: 4),
+                child: Row(
+                  children: [
+                    const Text(
+                      'Name',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // 🔹 Input Field (disabled if employee is checked)
+              // TextFormField(
+              //   controller: customerNameVar,
+              //   focusNode: nameFocusNode,
+              //   textCapitalization: TextCapitalization.words,
+              //   decoration: const InputDecoration(
+              //     hintText: 'Enter Name',
+              //     prefixIcon: SizedBox(width: _fieldIndentWidth),
+              //     border: OutlineInputBorder(),
+              //   ),
+              // ),
+              AutoCompleteCustomer(),
+              // SizedBox(
+              //   height: 5,
+              // ),
+              // MaterialButton(
+              //   color: cButtons,
+              //   onPressed: () {
+              //     allCardsVar(context);
+              //   },
+              //   child: Text("New Account"),
+              // ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    Future<void> saveButtonProcessCash() async {
+      SuppliesHistRepository.instance.setItemName(
+          getItemNameOnly(menuOthCashInOutFunds, _selectedFundCode));
+      SuppliesHistRepository.instance.setItemUniqueId(_selectedFundCode);
+      SuppliesHistRepository.instance.setRemarks(remarksSuppliesVar.text);
+      SuppliesHistRepository.instance.setCurrentCounter(
+          int.parse(customerAmountVar.text.replaceAll(',', '')));
+      await _insertToFB();
+    }
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(builder: (context, setState) {
+          return AlertDialog(
+            backgroundColor: Colors.lightBlue,
+            title: Text.rich(
+              TextSpan(
+                children: [
+                  TextSpan(
+                    text: "Employee Credit\n",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  TextSpan(
+                    text: "to be deducted ",
+                    style: TextStyle(
+                      fontSize: 10, // 👈 smaller
+                    ),
+                  ),
+                  TextSpan(
+                    text: "to your balance",
+                    style: TextStyle(
+                      fontSize: 10, // 👈 smaller
+                    ),
+                  ),
+                ],
+              ),
+              textAlign: TextAlign.center,
+            ),
+            content: SingleChildScrollView(
+              scrollDirection: Axis.vertical,
+              child: Container(
+                padding: EdgeInsets.all(8.0),
+                decoration: BoxDecoration(
+                    border: Border.all(color: Colors.blueAccent, width: 2.0)),
+                child: Form(
+                  //key: _formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // fundTypeToggle(setState),
+                      customerAmount(setState),
+                      customerName(setState),
+                      conRemarksSuppliesVar(setState),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            // 👇 Bottom buttons
+            actionsAlignment: MainAxisAlignment.end,
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context); // close popup
+                },
+                child: const Text('Cancel'),
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  if (empNameToId.containsKey(autocompleteSelected.name)) {
+                    isGcashCredit = true;
+                    await saveButtonProcessCash();
+                    Navigator.pop(context);
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                          content: Text(
+                              'Customer name must be an employee for Gcash Credit.')),
+                    );
                   }
                 },
                 child: const Text('Save'),
@@ -1084,13 +842,24 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
       String buildSelectedMoneyText() {
         final List<String> parts = [];
 
+        String formatDenom(int denom) {
+          if (denom >= 1000) {
+            return '${denom ~/ 1000}k';
+          } else if (denom >= 100) {
+            return '${denom ~/ 100}h';
+          } else {
+            return denom.toString();
+          }
+        }
+
         _qtyMap.forEach((denom, qty) {
           if (qty > 0) {
-            parts.add('₱$denom=$qty');
+            //parts.add('₱$denom=$qty');
+            parts.add('₱${formatDenom(denom)}');
           }
         });
 
-        return parts.join(', ');
+        return parts.join(',');
       }
 
       SuppliesHistRepository.instance.setItemName(
@@ -1149,6 +918,168 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
                     resetAllQty();
                   });
                   Navigator.pop(context);
+                },
+                child: const Text('Save'),
+              ),
+            ],
+          );
+        });
+      },
+    );
+  }
+
+//floating salary  ###########################################################
+  void _showSalary() {
+    _selectedFundCode = menuOthSalaryPayment;
+
+    Visibility customerAmount(Function setState) {
+      return Visibility(
+        visible: true,
+        child: Container(
+          padding: const EdgeInsets.all(1.0),
+          decoration: decoAmber(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Label (not indented)
+              const Padding(
+                padding: EdgeInsets.only(left: 4, bottom: 4),
+                child: Text(
+                  'Amount',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+
+              // Amount field
+              TextFormField(
+                controller: customerAmountVar,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(
+                    RegExp(r'\d+(\.\d{0,2})?'),
+                  ),
+                ],
+                decoration: InputDecoration(
+                  hintText: '0.00',
+                  border: const OutlineInputBorder(),
+                  prefixIcon: SizedBox(
+                    width: _fieldIndentWidth,
+                    child: const Center(
+                      child: Text(
+                        '₱',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    Visibility customerName(Function setState) {
+      return Visibility(
+        visible: true,
+        child: Container(
+          padding: const EdgeInsets.all(1.0),
+          decoration: decoAmber(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // 🔹 Label + Checkbox on same row
+              Padding(
+                padding: const EdgeInsets.only(left: 4, bottom: 4),
+                child: Row(
+                  children: [
+                    const Text(
+                      'Name',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              AutoCompleteCustomer(),
+            ],
+          ),
+        ),
+      );
+    }
+
+    Future<void> saveButtonProcessCash() async {
+      SuppliesHistRepository.instance.setItemName(
+          getItemNameOnly(menuOthCashInOutFunds, _selectedFundCode));
+      SuppliesHistRepository.instance.setItemUniqueId(_selectedFundCode);
+      SuppliesHistRepository.instance.setRemarks(remarksSuppliesVar.text);
+      SuppliesHistRepository.instance.setCurrentCounter(
+          int.parse(customerAmountVar.text.replaceAll(',', '')));
+      await _insertToFB();
+    }
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(builder: (context, setState) {
+          return AlertDialog(
+            backgroundColor: Colors.yellowAccent,
+            title: Text(
+              "Salary of Employee",
+              textAlign: TextAlign.center,
+              style: TextStyle(backgroundColor: Colors.yellowAccent),
+            ),
+            content: SingleChildScrollView(
+              scrollDirection: Axis.vertical,
+              child: Container(
+                padding: EdgeInsets.all(8.0),
+                decoration: BoxDecoration(
+                    border: Border.all(color: Colors.blueAccent, width: 2.0)),
+                child: Form(
+                  //key: _formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      customerAmount(setState),
+                      customerName(setState),
+                      conRemarksSuppliesVar(setState),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            // 👇 Bottom buttons
+            actionsAlignment: MainAxisAlignment.end,
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context); // close popup
+                },
+                child: const Text('Cancel'),
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  if (empNameToId.containsKey(autocompleteSelected.name)) {
+                    isGcashCredit = true;
+                    await saveButtonProcessCash();
+                    Navigator.pop(context);
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                          content: Text(
+                              'Name must be an employee for Salary Payment.')),
+                    );
+                  }
                 },
                 child: const Text('Save'),
               ),
@@ -1230,7 +1161,7 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
                   (isGcashCredit &&
                       sMH.itemUniqueId == menuOthUniqIdCashIn) //gcash credit
                   ||
-                  (( isAdmin || allowPayment ) &&
+                  ((isAdmin || allowPayment) &&
                       sMH.itemUniqueId ==
                           menuOthSalaryPayment) //salary payment access by admin only
               ) &&
@@ -1252,6 +1183,8 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
           countId: 0,
           currentCounter: sMH.currentCounter,
           currentStocks: 0,
+          itemId: sMH.itemId,
+          itemUniqueId: sMH.itemUniqueId,
           logDate: sMH.logDate,
           logBy: empIdGlobal,
           empName: sMH.customerName,
@@ -1260,7 +1193,8 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
           debugPrint("Employee Current updated...");
           //prevent generating another record in Supplies Current
           if (isGcashCredit ||
-              (( isAdmin || allowPayment) && sMH.itemUniqueId == menuOthSalaryPayment)) {
+              ((isAdmin || allowPayment) &&
+                  sMH.itemUniqueId == menuOthSalaryPayment)) {
             isGcashCredit = false;
             return true;
           }
@@ -1268,7 +1202,8 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
           debugPrint("Employee Current failed to update...");
           //prevent generating another record in Supplies Current
           if (isGcashCredit ||
-              (( isAdmin || allowPayment) && sMH.itemUniqueId == menuOthSalaryPayment)) {
+              ((isAdmin || allowPayment) &&
+                  sMH.itemUniqueId == menuOthSalaryPayment)) {
             isGcashCredit = false;
             return false;
           }
