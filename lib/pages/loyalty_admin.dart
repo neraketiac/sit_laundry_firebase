@@ -136,7 +136,6 @@ class _LoyaltyAdminState extends State<LoyaltyAdmin> {
       onPressed: () async {
         //pop box
         Navigator.pop(context);
-
         //run firebase add
         await _addDataJson(docIdFbController.text);
         fetchUsers();
@@ -150,7 +149,7 @@ class _LoyaltyAdminState extends State<LoyaltyAdmin> {
   Widget _readData(String s) {
     //read
     return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance.collection(s).snapshots(),
+      stream: FirebaseFirestore.instance.collection(s).limit(10).snapshots(),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
           return const Text('Something went wrong');
