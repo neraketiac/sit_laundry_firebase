@@ -51,6 +51,7 @@ const int menuDetDVal = 1, menuFabDVal = 2, menuBleDVal = 3, menuOthDVal = 4;
 
 List<OtherItemModel> listAddOnItemsGlobal = [];
 late OtherItemModel gselectedItemModel;
+late List<OtherItemModel> listAddedOtherItemModel = [];
 List<CustomerModel> customerOptionsFromVariable = [];
 CustomerModel autocompleteSelected = CustomerModel(
     customerId: 0,
@@ -208,6 +209,7 @@ void putEntries() {
   selectedFabVar = listFabItems[0];
   selectedBleVar = listBleItems[0];
   selectedOthVar = listOthItems[0];
+  //listAddedOtherItemModel.add(selectedOthVar);
 
   addListSuppItems();
 
@@ -494,6 +496,26 @@ Color? colLightBlue() {
 BoxDecoration decoLightBlue() {
   return BoxDecoration(
       color: colLightBlue(),
+      border: Border.all(color: borderColor(), width: 2.0));
+}
+
+Color? colGreenAccent() {
+  return Colors.greenAccent;
+}
+
+BoxDecoration decoGreenAccent() {
+  return BoxDecoration(
+      color: colGreenAccent(),
+      border: Border.all(color: borderColor(), width: 2.0));
+}
+
+Color? colDarkBlue() {
+  return Colors.blue[300];
+}
+
+BoxDecoration decoDarkBlue() {
+  return BoxDecoration(
+      color: colDarkBlue(),
       border: Border.all(color: borderColor(), width: 2.0));
 }
 

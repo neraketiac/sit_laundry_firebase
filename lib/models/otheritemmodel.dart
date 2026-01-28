@@ -63,4 +63,17 @@ class OtherItemModel {
         'StocksAlert': stocksAlert,
         'StocksType': stocksType,
       };
+
+  factory OtherItemModel.makeEmpty() {
+    return OtherItemModel(
+      docId: '',
+      itemId: 0,
+      itemUniqueId: 0,
+      itemGroup: '',
+      itemName: '',
+      itemPrice: 0,
+      stocksAlert: 0,
+      stocksType: '',
+    );
+  }
 }

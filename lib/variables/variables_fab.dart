@@ -21,10 +21,23 @@ const int menuFabSurf24mlDVal = 201,
     menuFabWKLDValPink48mlDVal = 2092,
     menuFabWKLDValGreenDVal = 210,
     menuFabWKLDValGreen24mlDVal = 2101,
-    menuFabWKLDValGreen48mlDVal = 2102;
+    menuFabWKLDValGreen48mlDVal = 2102,
+    menuFabWKLDValAny8ml = 2103;
+
+final addFabAnyItemModel = OtherItemModel(
+  docId: "",
+  itemId: menuFabWKLDValAny8ml,
+  itemUniqueId: menuFabWKLDValAny8ml,
+  itemGroup: groupFab,
+  itemName: "WKL(any 8ml)",
+  itemPrice: 8,
+  stocksAlert: 5,
+  stocksType: "pcs",
+);
 
 void addListFabItems() {
   //fab items
+  listFabItems.add(addFabAnyItemModel);
   listFabItems.add(OtherItemModel(
     docId: "",
     itemId: menuFabSurf24mlDVal,

@@ -1,10 +1,8 @@
-import 'package:flutter/material.dart';
 import 'package:laundry_firebase/models/jobsonqueuemodel.dart';
 
 class JobsOnQueueRepository {
   JobsOnQueueRepository._();
-  static final JobsOnQueueRepository instance =
-      JobsOnQueueRepository._();
+  static final JobsOnQueueRepository instance = JobsOnQueueRepository._();
 
   /// Single job (nullable until set)
   JobsOnQueueModel? jobsOnQueue;

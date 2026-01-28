@@ -25,7 +25,8 @@ const int menuOthWash = 401,
     menuOthW8t9 = 418,
     menuOthW9t10 = 419,
     menuOthW10t11 = 420,
-    menuOthW11t12 = 421;
+    menuOthW11t12 = 421,
+    menuOthXS = 422;
 const int menuOthUniqIdCashIn = 4401,
     menuOthUniqIdCashOut = 4402,
     menuOthUniqIdFundsIn = 4403,
@@ -33,8 +34,69 @@ const int menuOthUniqIdCashIn = 4401,
     menuOthLaundryPayment = 4405,
     menuOthSalaryPayment = 4406;
 
+final reg155ItemModel = OtherItemModel(
+  docId: "",
+  itemId: menuOth155,
+  itemUniqueId: menuOth155,
+  itemGroup: groupOth,
+  itemName: "Reg155",
+  itemPrice: 155,
+  stocksAlert: 5,
+  stocksType: "pcs",
+);
+
+final reg125ItemModel = OtherItemModel(
+  docId: "",
+  itemId: menuOth125,
+  itemUniqueId: menuOth125,
+  itemGroup: groupOth,
+  itemName: "Reg125",
+  itemPrice: 125,
+  stocksAlert: 5,
+  stocksType: "pcs",
+);
+
+final xDItemModel = OtherItemModel(
+  docId: "",
+  itemId: menuOthXD,
+  itemUniqueId: menuOthXD,
+  itemGroup: groupOth,
+  itemName: "Extra Dry",
+  itemPrice: 15,
+  stocksAlert: 5,
+  stocksType: "pcs",
+);
+
+final xWashItemModel = OtherItemModel(
+  docId: "",
+  itemId: menuOthXW,
+  itemUniqueId: menuOthXW,
+  itemGroup: groupOth,
+  itemName: "Extra Wash",
+  itemPrice: 20,
+  stocksAlert: 5,
+  stocksType: "pcs",
+);
+
+final xSpinItemModel = OtherItemModel(
+  docId: "",
+  itemId: menuOthXS,
+  itemUniqueId: menuOthXS,
+  itemGroup: groupOth,
+  itemName: "Extra Spin",
+  itemPrice: 20,
+  stocksAlert: 5,
+  stocksType: "pcs",
+);
+
 void addListOthItems() {
   //oth items
+  listOthItems.add(reg155ItemModel);
+  listOthItems.add(reg125ItemModel);
+  listOthItems.add(xDItemModel);
+  listOthItems.add(xWashItemModel);
+  listOthItems.add(xSpinItemModel);
+
   listOthItems.add(OtherItemModel(
     docId: "",
     itemId: menuOthWash,
@@ -52,26 +114,6 @@ void addListOthItems() {
     itemGroup: groupOth,
     itemName: "Dry",
     itemPrice: 49,
-    stocksAlert: 5,
-    stocksType: "pcs",
-  ));
-  listOthItems.add(OtherItemModel(
-    docId: "",
-    itemId: menuOth155,
-    itemUniqueId: menuOth155,
-    itemGroup: groupOth,
-    itemName: "Reg155",
-    itemPrice: 155,
-    stocksAlert: 5,
-    stocksType: "pcs",
-  ));
-  listOthItems.add(OtherItemModel(
-    docId: "",
-    itemId: menuOth125,
-    itemUniqueId: menuOth125,
-    itemGroup: groupOth,
-    itemName: "Reg125",
-    itemPrice: 125,
     stocksAlert: 5,
     stocksType: "pcs",
   ));
@@ -119,26 +161,6 @@ void addListOthItems() {
     stocksType: "pcs",
   ));
 
-  listOthItems.add(OtherItemModel(
-    docId: "",
-    itemId: menuOthXD,
-    itemUniqueId: menuOthXD,
-    itemGroup: groupOth,
-    itemName: "Extra Dry",
-    itemPrice: 15,
-    stocksAlert: 5,
-    stocksType: "pcs",
-  ));
-  listOthItems.add(OtherItemModel(
-    docId: "",
-    itemId: menuOthXW,
-    itemUniqueId: menuOthXW,
-    itemGroup: groupOth,
-    itemName: "Extra Wash",
-    itemPrice: 20,
-    stocksAlert: 5,
-    stocksType: "pcs",
-  ));
   listOthItems.add(OtherItemModel(
     docId: "",
     itemId: menuOthXR,

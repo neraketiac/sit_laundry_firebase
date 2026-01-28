@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:laundry_firebase/models/suppliesmodelhist.dart';
+import 'package:laundry_firebase/models/otheritemmodel.dart';
 
 // /// 🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦
 // /// 🔹 JOB ITEM MODEL
@@ -57,6 +57,9 @@ class JobsModel {
   /// 🟡 Customer
   final int customerId;
   final String customerName;
+  final bool
+      riderPickup; //always false, if true and already done status, auto-tag readyForDelivery
+  //can still be change readyForPickup by the customer
 
   /// 🟤 Pricing
   final bool perKilo;
@@ -88,7 +91,7 @@ class JobsModel {
   final String remarks;
 
   /// 🟢 Items (LIST VERSION 🔥)
-  final List<SuppliesModelHist> items;
+  final List<OtherItemModel> items;
 
   /// 🟠 Workflow Step
   /// Used ONLY in `Jobs_ongoing`
@@ -110,6 +113,7 @@ class JobsModel {
     required this.currentEmpId,
     required this.customerId,
     required this.customerName,
+    required this.riderPickup,
     required this.perKilo,
     required this.perLoad,
     required this.finalKilo,
@@ -135,6 +139,45 @@ class JobsModel {
     required this.disposed,
   });
 
+  factory JobsModel.makeEmpty() {
+    return JobsModel(
+      docId: '',
+      dateQ: Timestamp.now(),
+      needOn: Timestamp.now(),
+      dateO: Timestamp.now(),
+      paidD: Timestamp.now(),
+      dateD: Timestamp.now(),
+      createdBy: '',
+      currentEmpId: '',
+      customerId: 0,
+      customerName: '',
+      riderPickup: false,
+      perKilo: true,
+      perLoad: false,
+      finalKilo: 0,
+      finalLoad: 0,
+      finalPrice: 0,
+      regular: true,
+      sayosabon: false,
+      addOn: false,
+      fold: true,
+      mix: true,
+      basket: 0,
+      ebag: 0,
+      sako: 0,
+      unpaid: true,
+      paidcash: false,
+      paidgcash: false,
+      paidgcashverified: false,
+      paymentReceivedBy: '',
+      remarks: '',
+      items: [OtherItemModel.makeEmpty()],
+      processStep: '',
+      forDisposal: false,
+      disposed: false,
+    );
+  }
+
   /// 🟦 COPY WITH
   JobsModel copyWith({
     String? docId,
@@ -147,6 +190,7 @@ class JobsModel {
     String? currentEmpId,
     int? customerId,
     String? customerName,
+    bool? riderPickup,
     bool? perKilo,
     bool? perLoad,
     int? finalKilo,
@@ -166,7 +210,7 @@ class JobsModel {
     bool? paidgcashverified,
     String? paymentReceivedBy,
     String? remarks,
-    List<SuppliesModelHist>? items,
+    List<OtherItemModel>? items,
     String? processStep,
     bool? forDisposal,
     bool? disposed,
@@ -182,6 +226,7 @@ class JobsModel {
       currentEmpId: currentEmpId ?? this.currentEmpId,
       customerId: customerId ?? this.customerId,
       customerName: customerName ?? this.customerName,
+      riderPickup: riderPickup ?? this.riderPickup,
       perKilo: perKilo ?? this.perKilo,
       perLoad: perLoad ?? this.perLoad,
       finalKilo: finalKilo ?? this.finalKilo,
@@ -216,6 +261,7 @@ class JobsModel {
         currentEmpId: json['A1b_CurrentEmpId'],
         customerId: json['A4_CustomerId'],
         customerName: json['A5_CustomerName'],
+        riderPickup: json['A51_RiderPickup'],
         perKilo: json['A6_PerKilo'],
         perLoad: json['A7_PerLoad'],
         finalKilo: json['A8_FinalKilo'],
@@ -240,7 +286,7 @@ class JobsModel {
         dateO: json['A27_DateO'],
         dateD: json['C5_DateD'],
         items: (json['items'] as List)
-            .map((e) => SuppliesModelHist.fromJson(e))
+            .map((e) => OtherItemModel.fromJson(e))
             .toList(),
         processStep: json['processStep'],
         forDisposal: json['C11_ForDisposal'],
@@ -255,6 +301,7 @@ class JobsModel {
         'A1b_CurrentEmpId': currentEmpId,
         'A4_CustomerId': customerId,
         'A5_CustomerName': customerName,
+        'A51_RiderPickup': riderPickup,
         'A6_PerKilo': perKilo,
         'A7_PerLoad': perLoad,
         'A8_FinalKilo': finalKilo,

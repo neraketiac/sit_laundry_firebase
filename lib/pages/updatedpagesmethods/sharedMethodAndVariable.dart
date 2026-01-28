@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:laundry_firebase/models/customermodel.dart';
 import 'package:laundry_firebase/models/employeemodel.dart';
+import 'package:laundry_firebase/models/otheritemmodel.dart';
 import 'package:laundry_firebase/models/suppliesmodelhist.dart';
 import 'package:laundry_firebase/services/database_employee_current.dart';
 import 'package:laundry_firebase/services/database_supplies_current.dart';
@@ -12,12 +13,31 @@ import 'package:laundry_firebase/variables/variables_oth.dart';
 import 'package:laundry_firebase/variables/variables_supplies.dart';
 
 double quantityKg = 5;
+int quantityLoad = 1;
 late bool isGcashCredit = false;
 const double fieldIndentWidth = 40;
 TextEditingController customerNumberVar = TextEditingController();
 TextEditingController customerAmountVar = TextEditingController();
-int selectedfundTypeCodesSorting = forSorting;
-int selectedfundTypeCodesPackage = regularPackage;
+int selectedRiderPickup = forSorting;
+int selectedPackage = regularPackage;
+int selectedPackagePrev = regularPackage;
+int selectedOthers = menuOthDVal;
+int totalPriceRegSS = 0;
+int totalPriceRegSSShortCut = 0;
+OtherItemModel selectedItemModel = reg125ItemModel;
+int selectedOthersShortCut = menuOth155;
+bool selectedFold = true;
+bool selectedMix = true;
+int basketCount = 0;
+int ecoBagCount = 0;
+int sakoCount = 0;
+int addFabCount = 0;
+int addExtraDryCount = 0;
+int addExtraWashCount = 0;
+int addExtraSpinCount = 0;
+bool isMaxFab = false;
+int totalPriceOthers = 0;
+bool isPerKg = true;
 
 final NumberFormat pesoFormat = NumberFormat('#,##0', 'en_PH');
 
@@ -28,9 +48,64 @@ final Map<int, int> qtyMap = {
   for (final d in [1000, 500, 200, 100, 50, 20, 10, 5, 1]) d: 0,
 };
 
+// 🔢 Price formatter
+final formatter = NumberFormat.currency(
+  locale: 'en_PH',
+  symbol: '₱ ',
+  decimalDigits: 2,
+);
+
 int? selectedFundCode; // = menuOthLaundryPayment;
 
 //SHARED METHODS ###########################################################
+
+// 🔘 Reusable button
+Widget boxButton2label({
+  required String label,
+  required String label2,
+  required bool boldLabel2,
+  required VoidCallback? onTap,
+  bool disabled = false,
+}) {
+  final color = disabled ? Colors.grey.shade400 : Colors.black54;
+
+  return InkWell(
+    onTap: disabled ? null : onTap,
+    borderRadius: BorderRadius.circular(6),
+    child: Container(
+      width: 52,
+      height: 31,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        border: Border.all(
+          color: color,
+        ),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Text.rich(
+        TextSpan(
+          children: [
+            TextSpan(
+              text: '$label ',
+              style: TextStyle(
+                fontSize: (boldLabel2 ? 10 : 12),
+                fontWeight: (boldLabel2 ? FontWeight.normal : FontWeight.bold),
+              ),
+            ),
+            TextSpan(
+              text: label2,
+              style: TextStyle(
+                  fontSize: (boldLabel2 ? 12 : 10),
+                  fontWeight:
+                      (boldLabel2 ? FontWeight.bold : FontWeight.normal)),
+            ),
+          ],
+        ),
+        textAlign: TextAlign.center,
+      ),
+    ),
+  );
+}
 
 int get grandTotal {
   int total = 0;
