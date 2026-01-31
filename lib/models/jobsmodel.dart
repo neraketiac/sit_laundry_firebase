@@ -57,9 +57,8 @@ class JobsModel {
   /// 🟡 Customer
   final int customerId;
   final String customerName;
-  final bool
-      riderPickup; //always false, if true and already done status, auto-tag readyForDelivery
-  //can still be change readyForPickup by the customer
+  final bool forSorting;
+  final bool riderPickup;
 
   /// 🟤 Pricing
   final bool perKilo;
@@ -83,8 +82,13 @@ class JobsModel {
   /// 🔵 Payment
   final bool unpaid;
   final bool paidcash;
-  final bool paidgcash;
-  final bool paidgcashverified;
+  final bool paidGCash;
+  final bool paidGCashverified;
+  final bool partialPaidCash;
+  final bool partialPaidGCash;
+  final int partialPaidCashAmount; //portion paid by cash
+  final int partialPaidGCashAmount; //portion paid by gcash
+  //if combine, can be tag paidCash & paidGCash
   final String paymentReceivedBy;
 
   /// 🟣 Remarks
@@ -95,7 +99,7 @@ class JobsModel {
 
   /// 🟠 Workflow Step
   /// Used ONLY in `Jobs_ongoing`
-  /// Values: 'washing' | 'drying' | 'folding'
+  /// Values: 'waiting', 'washing' | 'drying' | 'folding' | 'done'
   final String processStep;
 
   /// 🔴 Disposal
@@ -113,6 +117,7 @@ class JobsModel {
     required this.currentEmpId,
     required this.customerId,
     required this.customerName,
+    required this.forSorting,
     required this.riderPickup,
     required this.perKilo,
     required this.perLoad,
@@ -129,8 +134,12 @@ class JobsModel {
     required this.sako,
     required this.unpaid,
     required this.paidcash,
-    required this.paidgcash,
-    required this.paidgcashverified,
+    required this.paidGCash,
+    required this.partialPaidCash,
+    required this.partialPaidGCash,
+    required this.partialPaidCashAmount,
+    required this.partialPaidGCashAmount,
+    required this.paidGCashverified,
     required this.paymentReceivedBy,
     required this.remarks,
     required this.items,
@@ -151,6 +160,7 @@ class JobsModel {
       currentEmpId: '',
       customerId: 0,
       customerName: '',
+      forSorting: false,
       riderPickup: false,
       perKilo: true,
       perLoad: false,
@@ -167,8 +177,12 @@ class JobsModel {
       sako: 0,
       unpaid: true,
       paidcash: false,
-      paidgcash: false,
-      paidgcashverified: false,
+      paidGCash: false,
+      partialPaidCash: false,
+      partialPaidGCash: false,
+      partialPaidCashAmount: 0,
+      partialPaidGCashAmount: 0,
+      paidGCashverified: false,
       paymentReceivedBy: '',
       remarks: '',
       items: [OtherItemModel.makeEmpty()],
@@ -190,6 +204,7 @@ class JobsModel {
     String? currentEmpId,
     int? customerId,
     String? customerName,
+    bool? forSorting,
     bool? riderPickup,
     bool? perKilo,
     bool? perLoad,
@@ -206,8 +221,12 @@ class JobsModel {
     int? sako,
     bool? unpaid,
     bool? paidcash,
-    bool? paidgcash,
-    bool? paidgcashverified,
+    bool? paidGCash,
+    bool? paidGCashverified,
+    bool? partialPaidCash,
+    bool? partialPaidGCash,
+    int? partialPaidCashAmount,
+    int? partialPaidGCashAmount,
     String? paymentReceivedBy,
     String? remarks,
     List<OtherItemModel>? items,
@@ -226,6 +245,7 @@ class JobsModel {
       currentEmpId: currentEmpId ?? this.currentEmpId,
       customerId: customerId ?? this.customerId,
       customerName: customerName ?? this.customerName,
+      forSorting: forSorting ?? this.forSorting,
       riderPickup: riderPickup ?? this.riderPickup,
       perKilo: perKilo ?? this.perKilo,
       perLoad: perLoad ?? this.perLoad,
@@ -242,8 +262,14 @@ class JobsModel {
       sako: sako ?? this.sako,
       unpaid: unpaid ?? this.unpaid,
       paidcash: paidcash ?? this.paidcash,
-      paidgcash: paidgcash ?? this.paidgcash,
-      paidgcashverified: paidgcashverified ?? this.paidgcashverified,
+      paidGCash: paidGCash ?? this.paidGCash,
+      partialPaidCash: partialPaidCash ?? this.partialPaidCash,
+      partialPaidGCash: partialPaidGCash ?? this.partialPaidGCash,
+      partialPaidCashAmount:
+          partialPaidCashAmount ?? this.partialPaidCashAmount,
+      partialPaidGCashAmount:
+          partialPaidGCashAmount ?? this.partialPaidGCashAmount,
+      paidGCashverified: paidGCashverified ?? this.paidGCashverified,
       paymentReceivedBy: paymentReceivedBy ?? this.paymentReceivedBy,
       remarks: remarks ?? this.remarks,
       items: items ?? this.items,
@@ -261,6 +287,7 @@ class JobsModel {
         currentEmpId: json['A1b_CurrentEmpId'],
         customerId: json['A4_CustomerId'],
         customerName: json['A5_CustomerName'],
+        forSorting: json['A50_ForSorting'],
         riderPickup: json['A51_RiderPickup'],
         perKilo: json['A6_PerKilo'],
         perLoad: json['A7_PerLoad'],
@@ -279,8 +306,12 @@ class JobsModel {
         remarks: json['A20_Remarks'],
         unpaid: json['A21_Unpaid'],
         paidcash: json['A22_PaidCash'],
-        paidgcash: json['A23_PaidGCash'],
-        paidgcashverified: json['A24_PaidGCashVerified'],
+        paidGCash: json['A23_PaidGCash'],
+        partialPaidCash: json['A231_PartialPaidCash'],
+        partialPaidGCash: json['A232_PartialPaidGCash'],
+        partialPaidCashAmount: json['A233_PartialPaidCashAmount'],
+        partialPaidGCashAmount: json['A234_PartialPaidGCashAmount'],
+        paidGCashverified: json['A24_PaidGCashVerified'],
         paymentReceivedBy: json['A25_PaymentReceivedBy'],
         paidD: json['A26_PaidD'],
         dateO: json['A27_DateO'],
@@ -301,6 +332,7 @@ class JobsModel {
         'A1b_CurrentEmpId': currentEmpId,
         'A4_CustomerId': customerId,
         'A5_CustomerName': customerName,
+        'A50_ForSorting': forSorting,
         'A51_RiderPickup': riderPickup,
         'A6_PerKilo': perKilo,
         'A7_PerLoad': perLoad,
@@ -319,8 +351,12 @@ class JobsModel {
         'A20_Remarks': remarks,
         'A21_Unpaid': unpaid,
         'A22_PaidCash': paidcash,
-        'A23_PaidGCash': paidgcash,
-        'A24_PaidGCashVerified': paidgcashverified,
+        'A23_PaidGCash': paidGCash,
+        'A231_PartialPaidCash': partialPaidCash,
+        'A232_PartialPaidGCash': partialPaidGCash,
+        'A233_PartialPaidCashAmount': partialPaidCashAmount,
+        'A234_PartialPaidGCashAmount': partialPaidGCashAmount,
+        'A24_PaidGCashVerified': paidGCashverified,
         'A25_PaymentReceivedBy': paymentReceivedBy,
         'A26_PaidD': paidD,
         'A27_DateO': dateO,

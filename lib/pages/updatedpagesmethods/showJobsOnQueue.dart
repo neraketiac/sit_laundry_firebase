@@ -340,37 +340,6 @@ void showJobsOnQueue(BuildContext context) {
       });
     }
 
-    // 🔘 Reusable button
-    Widget boxButton({
-      required String label,
-      required VoidCallback? onTap,
-      bool disabled = false,
-    }) {
-      final color = disabled ? Colors.grey.shade400 : Colors.black54;
-
-      return InkWell(
-        onTap: disabled ? null : onTap,
-        borderRadius: BorderRadius.circular(6),
-        child: Container(
-          width: 42,
-          height: 36,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            border: Border.all(color: color),
-            borderRadius: BorderRadius.circular(6),
-          ),
-          child: Text(
-            label,
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
-          ),
-        ),
-      );
-    }
-
     return Visibility(
       visible: (selectedPackage == othersPackage ? false : isPerKg),
       child: Container(
@@ -477,15 +446,18 @@ void showJobsOnQueue(BuildContext context) {
                           width: 80, // underline length
                           color: Colors.black,
                         ),
-                        boxButton2label(
-                          label: 'kg ',
-                          label2: 'load',
-                          boldLabel2: false,
-                          onTap: () {
-                            setState(() {
-                              isPerKg = false;
-                            });
-                          },
+                        Container(
+                          decoration: decoGreenAccentNoBorder(),
+                          child: boxButton2label(
+                            label: 'kg ',
+                            label2: 'load',
+                            boldLabel2: false,
+                            onTap: () {
+                              setState(() {
+                                isPerKg = false;
+                              });
+                            },
+                          ),
                         ),
                       ],
                     ),
@@ -580,37 +552,6 @@ void showJobsOnQueue(BuildContext context) {
       setState(() {
         quantityLoad -= 1;
       });
-    }
-
-    // 🔘 Reusable button
-    Widget boxButton({
-      required String label,
-      required VoidCallback? onTap,
-      bool disabled = false,
-    }) {
-      final color = disabled ? Colors.grey.shade400 : Colors.black54;
-
-      return InkWell(
-        onTap: disabled ? null : onTap,
-        borderRadius: BorderRadius.circular(6),
-        child: Container(
-          width: 42,
-          height: 36,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            border: Border.all(color: color),
-            borderRadius: BorderRadius.circular(6),
-          ),
-          child: Text(
-            label,
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
-          ),
-        ),
-      );
     }
 
     return Visibility(
@@ -714,15 +655,18 @@ void showJobsOnQueue(BuildContext context) {
                           width: 80, // underline length
                           color: Colors.black,
                         ),
-                        boxButton2label(
-                          label: 'kg ',
-                          label2: 'load',
-                          boldLabel2: true,
-                          onTap: () {
-                            setState(() {
-                              isPerKg = true;
-                            });
-                          },
+                        Container(
+                          decoration: decoGreenAccentNoBorder(),
+                          child: boxButton2label(
+                            label: 'kg ',
+                            label2: 'load',
+                            boldLabel2: true,
+                            onTap: () {
+                              setState(() {
+                                isPerKg = true;
+                              });
+                            },
+                          ),
                         ),
                       ],
                     ),
@@ -1158,42 +1102,32 @@ void showJobsOnQueue(BuildContext context) {
   }
 
   Visibility visBasket(Function setState) {
+    // ➕➖ handlers
+    void incrementOne() {
+      setState(() {
+        basketCount += 1;
+      });
+    }
+
+    void decrementOne() {
+      setState(() {
+        basketCount -= 1;
+      });
+    }
+
     return Visibility(
       visible: true,
       child: Container(
         alignment: Alignment.center,
         padding: const EdgeInsets.all(6.0),
-        decoration: (basketCount > 0 ? decoGreenAccent() : decoLightBlue()),
+        decoration: (basketCount > 0 ? decoGreenAccent2() : decoLightBlue()),
         child: Row(
           mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             // ➖ -1
-            InkWell(
-              onTap: basketCount > 0
-                  ? () {
-                      setState(() {
-                        basketCount--;
-                      });
-                    }
-                  : null,
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  border: Border.all(color: cSalaryOut),
-                  borderRadius: BorderRadius.circular(8),
-                  color: Colors.blue[100],
-                ),
-                child: Text(
-                  '-1',
-                  style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: basketCount > 0 ? Colors.black : Colors.white),
-                ),
-              ),
-            ),
-
+            boxButton(
+                label: '-1', disabled: basketCount <= 0, onTap: decrementOne),
             const SizedBox(width: 12),
 
             // 🧺 basket : x
@@ -1205,28 +1139,7 @@ void showJobsOnQueue(BuildContext context) {
             ),
 
             const SizedBox(width: 12),
-
-            // ➕ +1
-            InkWell(
-              onTap: () {
-                setState(() {
-                  basketCount++;
-                });
-              },
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  border: Border.all(color: cSalaryOut),
-                  borderRadius: BorderRadius.circular(8),
-                  color: Colors.blue[100],
-                ),
-                child: const Text(
-                  '+1',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ),
-            ),
+            boxButton(label: '+1', onTap: incrementOne),
           ],
         ),
       ),
@@ -1234,41 +1147,32 @@ void showJobsOnQueue(BuildContext context) {
   }
 
   Visibility visEcoBag(Function setState) {
+    // ➕➖ handlers
+    void incrementOne() {
+      setState(() {
+        ecoBagCount += 1;
+      });
+    }
+
+    void decrementOne() {
+      setState(() {
+        ecoBagCount -= 1;
+      });
+    }
+
     return Visibility(
       visible: true,
       child: Container(
         alignment: Alignment.center,
         padding: const EdgeInsets.all(6.0),
-        decoration: (ecoBagCount > 0 ? decoGreenAccent() : decoLightBlue()),
+        decoration: (ecoBagCount > 0 ? decoGreenAccent2() : decoLightBlue()),
         child: Row(
           mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             // ➖ -1
-            InkWell(
-              onTap: ecoBagCount > 0
-                  ? () {
-                      setState(() {
-                        ecoBagCount--;
-                      });
-                    }
-                  : null,
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  border: Border.all(color: cSalaryOut),
-                  borderRadius: BorderRadius.circular(8),
-                  color: Colors.blue[100],
-                ),
-                child: Text(
-                  '-1',
-                  style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: ecoBagCount > 0 ? Colors.black : Colors.white),
-                ),
-              ),
-            ),
+            boxButton(
+                label: '-1', disabled: ecoBagCount <= 0, onTap: decrementOne),
 
             const SizedBox(width: 12),
 
@@ -1282,26 +1186,7 @@ void showJobsOnQueue(BuildContext context) {
             const SizedBox(width: 12),
 
             // ➕ +1
-            InkWell(
-              onTap: () {
-                setState(() {
-                  ecoBagCount++;
-                });
-              },
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  border: Border.all(color: cSalaryOut),
-                  borderRadius: BorderRadius.circular(8),
-                  color: Colors.blue[100],
-                ),
-                child: const Text(
-                  '+1',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ),
-            ),
+            boxButton(label: '+1', onTap: incrementOne),
           ],
         ),
       ),
@@ -1309,41 +1194,32 @@ void showJobsOnQueue(BuildContext context) {
   }
 
   Visibility visSako(Function setState) {
+    // ➕➖ handlers
+    void incrementOne() {
+      setState(() {
+        sakoCount += 1;
+      });
+    }
+
+    void decrementOne() {
+      setState(() {
+        sakoCount -= 1;
+      });
+    }
+
     return Visibility(
       visible: true,
       child: Container(
         alignment: Alignment.center,
         padding: const EdgeInsets.all(6.0),
-        decoration: (sakoCount > 0 ? decoGreenAccent() : decoLightBlue()),
+        decoration: (sakoCount > 0 ? decoGreenAccent2() : decoLightBlue()),
         child: Row(
           mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             // ➖ -1
-            InkWell(
-              onTap: sakoCount > 0
-                  ? () {
-                      setState(() {
-                        sakoCount--;
-                      });
-                    }
-                  : null,
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  border: Border.all(color: cSalaryOut),
-                  borderRadius: BorderRadius.circular(8),
-                  color: Colors.blue[100],
-                ),
-                child: Text(
-                  '-1',
-                  style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: sakoCount > 0 ? Colors.black : Colors.white),
-                ),
-              ),
-            ),
+            boxButton(
+                label: '-1', disabled: sakoCount <= 0, onTap: decrementOne),
 
             const SizedBox(width: 12),
 
@@ -1357,26 +1233,7 @@ void showJobsOnQueue(BuildContext context) {
             const SizedBox(width: 12),
 
             // ➕ +1
-            InkWell(
-              onTap: () {
-                setState(() {
-                  sakoCount++;
-                });
-              },
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  border: Border.all(color: cSalaryOut),
-                  borderRadius: BorderRadius.circular(8),
-                  color: Colors.blue[100],
-                ),
-                child: const Text(
-                  '+1',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ),
-            ),
+            boxButton(label: '+1', onTap: incrementOne),
           ],
         ),
       ),
@@ -1384,42 +1241,32 @@ void showJobsOnQueue(BuildContext context) {
   }
 
   Visibility visAddFab(Function setState) {
+    // ➕➖ handlers
+    void incrementOne() {
+      setState(() {
+        addFabCount += 1;
+      });
+    }
+
+    void decrementOne() {
+      setState(() {
+        addFabCount -= 1;
+      });
+    }
+
     return Visibility(
       visible: (selectedPackage == othersPackage ? false : true),
       child: Container(
         alignment: Alignment.center,
         padding: const EdgeInsets.all(6.0),
-        decoration: (addFabCount > 0 ? decoGreenAccent() : decoLightBlue()),
+        decoration: (addFabCount > 0 ? decoGreenAccent2() : decoLightBlue()),
         child: Row(
           mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             // ➖ -1
-            InkWell(
-              onTap: addFabCount > 0
-                  ? () {
-                      setState(() {
-                        addFabCount--;
-                        totalPriceRegSSShortCut -= addFabAnyItemModel.itemPrice;
-                      });
-                    }
-                  : null,
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  border: Border.all(color: cSalaryOut),
-                  borderRadius: BorderRadius.circular(8),
-                  color: Colors.blue[100],
-                ),
-                child: Text(
-                  '-1',
-                  style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: addFabCount > 0 ? Colors.black : Colors.white),
-                ),
-              ),
-            ),
+            boxButton(
+                label: '-1', disabled: addFabCount <= 0, onTap: decrementOne),
 
             const SizedBox(width: 12),
 
@@ -1433,27 +1280,7 @@ void showJobsOnQueue(BuildContext context) {
             const SizedBox(width: 12),
 
             // ➕ +1
-            InkWell(
-              onTap: () {
-                setState(() {
-                  addFabCount++;
-                  totalPriceRegSSShortCut += addFabAnyItemModel.itemPrice;
-                });
-              },
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  border: Border.all(color: cSalaryOut),
-                  borderRadius: BorderRadius.circular(8),
-                  color: Colors.blue[100],
-                ),
-                child: const Text(
-                  '+1',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ),
-            ),
+            boxButton(label: '+1', onTap: incrementOne),
           ],
         ),
       ),
@@ -1461,44 +1288,35 @@ void showJobsOnQueue(BuildContext context) {
   }
 
   Visibility visAddDry(Function setState) {
+    // ➕➖ handlers
+    void incrementOne() {
+      setState(() {
+        addExtraDryCount += 1;
+      });
+    }
+
+    void decrementOne() {
+      setState(() {
+        addExtraDryCount -= 1;
+      });
+    }
+
     return Visibility(
       visible: (selectedPackage == othersPackage ? false : true),
       child: Container(
         alignment: Alignment.center,
         padding: const EdgeInsets.all(6.0),
         decoration:
-            (addExtraDryCount > 0 ? decoGreenAccent() : decoLightBlue()),
+            (addExtraDryCount > 0 ? decoGreenAccent2() : decoLightBlue()),
         child: Row(
           mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             // ➖ -1
-            InkWell(
-              onTap: addExtraDryCount > 0
-                  ? () {
-                      setState(() {
-                        addExtraDryCount--;
-                        totalPriceRegSSShortCut -= xDItemModel.itemPrice;
-                      });
-                    }
-                  : null,
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  border: Border.all(color: cSalaryOut),
-                  borderRadius: BorderRadius.circular(8),
-                  color: Colors.blue[100],
-                ),
-                child: Text(
-                  '-1',
-                  style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color:
-                          addExtraDryCount > 0 ? Colors.black : Colors.white),
-                ),
-              ),
-            ),
+            boxButton(
+                label: '-1',
+                disabled: addExtraDryCount <= 0,
+                onTap: decrementOne),
 
             const SizedBox(width: 12),
 
@@ -1512,27 +1330,7 @@ void showJobsOnQueue(BuildContext context) {
             const SizedBox(width: 12),
 
             // ➕ +1
-            InkWell(
-              onTap: () {
-                setState(() {
-                  addExtraDryCount++;
-                  totalPriceRegSSShortCut += xDItemModel.itemPrice;
-                });
-              },
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  border: Border.all(color: cSalaryOut),
-                  borderRadius: BorderRadius.circular(8),
-                  color: Colors.blue[100],
-                ),
-                child: const Text(
-                  '+1',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ),
-            ),
+            boxButton(label: '+1', onTap: incrementOne),
           ],
         ),
       ),
@@ -1540,44 +1338,35 @@ void showJobsOnQueue(BuildContext context) {
   }
 
   Visibility visAddWash(Function setState) {
+    // ➕➖ handlers
+    void incrementOne() {
+      setState(() {
+        addExtraWashCount += 1;
+      });
+    }
+
+    void decrementOne() {
+      setState(() {
+        addExtraWashCount -= 1;
+      });
+    }
+
     return Visibility(
       visible: (selectedPackage == othersPackage ? false : true),
       child: Container(
         alignment: Alignment.center,
         padding: const EdgeInsets.all(6.0),
         decoration:
-            (addExtraWashCount > 0 ? decoGreenAccent() : decoLightBlue()),
+            (addExtraWashCount > 0 ? decoGreenAccent2() : decoLightBlue()),
         child: Row(
           mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             // ➖ -1
-            InkWell(
-              onTap: addExtraWashCount > 0
-                  ? () {
-                      setState(() {
-                        addExtraWashCount--;
-                        totalPriceRegSSShortCut -= xWashItemModel.itemPrice;
-                      });
-                    }
-                  : null,
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  border: Border.all(color: cSalaryOut),
-                  borderRadius: BorderRadius.circular(8),
-                  color: Colors.blue[100],
-                ),
-                child: Text(
-                  '-1',
-                  style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color:
-                          addExtraWashCount > 0 ? Colors.black : Colors.white),
-                ),
-              ),
-            ),
+            boxButton(
+                label: '-1',
+                disabled: addExtraWashCount <= 0,
+                onTap: decrementOne),
 
             const SizedBox(width: 12),
 
@@ -1591,27 +1380,7 @@ void showJobsOnQueue(BuildContext context) {
             const SizedBox(width: 12),
 
             // ➕ +1
-            InkWell(
-              onTap: () {
-                setState(() {
-                  addExtraWashCount++;
-                  totalPriceRegSSShortCut += xWashItemModel.itemPrice;
-                });
-              },
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  border: Border.all(color: cSalaryOut),
-                  borderRadius: BorderRadius.circular(8),
-                  color: Colors.blue[100],
-                ),
-                child: const Text(
-                  '+1',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ),
-            ),
+            boxButton(label: '+1', onTap: incrementOne),
           ],
         ),
       ),
@@ -1619,44 +1388,35 @@ void showJobsOnQueue(BuildContext context) {
   }
 
   Visibility visAddSpin(Function setState) {
+    // ➕➖ handlers
+    void incrementOne() {
+      setState(() {
+        addExtraSpinCount += 1;
+      });
+    }
+
+    void decrementOne() {
+      setState(() {
+        addExtraSpinCount -= 1;
+      });
+    }
+
     return Visibility(
       visible: (selectedPackage == othersPackage ? false : true),
       child: Container(
         alignment: Alignment.center,
         padding: const EdgeInsets.all(6.0),
         decoration:
-            (addExtraSpinCount > 0 ? decoGreenAccent() : decoLightBlue()),
+            (addExtraSpinCount > 0 ? decoGreenAccent2() : decoLightBlue()),
         child: Row(
           mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             // ➖ -1
-            InkWell(
-              onTap: addExtraSpinCount > 0
-                  ? () {
-                      setState(() {
-                        addExtraSpinCount--;
-                        totalPriceRegSSShortCut -= xSpinItemModel.itemPrice;
-                      });
-                    }
-                  : null,
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  border: Border.all(color: cSalaryOut),
-                  borderRadius: BorderRadius.circular(8),
-                  color: Colors.blue[100],
-                ),
-                child: Text(
-                  '-1',
-                  style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color:
-                          addExtraSpinCount > 0 ? Colors.black : Colors.white),
-                ),
-              ),
-            ),
+            boxButton(
+                label: '-1',
+                disabled: addExtraSpinCount <= 0,
+                onTap: decrementOne),
 
             const SizedBox(width: 12),
 
@@ -1670,60 +1430,7 @@ void showJobsOnQueue(BuildContext context) {
             const SizedBox(width: 12),
 
             // ➕ +1
-            InkWell(
-              onTap: () {
-                setState(() {
-                  addExtraSpinCount++;
-                  totalPriceRegSSShortCut += xSpinItemModel.itemPrice;
-                });
-              },
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  border: Border.all(color: cSalaryOut),
-                  borderRadius: BorderRadius.circular(8),
-                  color: Colors.blue[100],
-                ),
-                child: const Text(
-                  '+1',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Visibility visShortCuts(Function setState) {
-    return Visibility(
-      visible: true,
-      child: Container(
-        alignment: Alignment.center,
-        padding: const EdgeInsets.all(6.0),
-        decoration: decoLightBlue(),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ElevatedButton(
-              onPressed: () {
-                setState(() {
-                  isMaxFab = !isMaxFab; // toggle color
-                });
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.grey.shade300, // button bg (optional)
-              ),
-              child: Text(
-                'MaxFab',
-                style: TextStyle(
-                  color: isMaxFab ? Colors.black : Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            )
+            boxButton(label: '+1', onTap: incrementOne),
           ],
         ),
       ),
@@ -1787,7 +1494,6 @@ void showJobsOnQueue(BuildContext context) {
                     visAddFab(setState),
                     visAddWash(setState),
                     visAddSpin(setState),
-                    //visShortCuts(setState),
                     conRemarksSuppliesVar(setState),
                   ],
                 ),

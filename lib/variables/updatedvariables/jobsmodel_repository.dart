@@ -18,8 +18,6 @@ class JobsModelRepository {
   }
 
   void clear() {
-    // jobsModel = JobsModel.makeEmpty();
-    //jobsModel = null;
     jobsModel = JobsModel(
         docId: '',
         dateQ: Timestamp.now(),
@@ -31,6 +29,8 @@ class JobsModelRepository {
         currentEmpId: '',
         customerId: 0,
         customerName: '',
+        forSorting: false,
+        riderPickup: false,
         perKilo: true,
         perLoad: false,
         finalKilo: 0,
@@ -46,8 +46,12 @@ class JobsModelRepository {
         sako: 0,
         unpaid: true,
         paidcash: false,
-        paidgcash: false,
-        paidgcashverified: false,
+        paidGCash: false,
+        partialPaidCash: false,
+        partialPaidGCash: false,
+        partialPaidCashAmount: 0,
+        partialPaidGCashAmount: 0,
+        paidGCashverified: false,
         paymentReceivedBy: '',
         remarks: '',
         items: [OtherItemModel.makeEmpty()],

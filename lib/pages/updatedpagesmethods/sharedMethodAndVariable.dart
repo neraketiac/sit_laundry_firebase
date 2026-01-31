@@ -60,6 +60,39 @@ int? selectedFundCode; // = menuOthLaundryPayment;
 //SHARED METHODS ###########################################################
 
 // 🔘 Reusable button
+Widget boxButton({
+  required String label,
+  required VoidCallback? onTap,
+  bool disabled = false,
+}) {
+  final color = disabled ? Colors.grey.shade400 : Colors.black54;
+  final decoColor = disabled ? Colors.transparent : Colors.greenAccent;
+
+  return InkWell(
+    onTap: disabled ? null : onTap,
+    borderRadius: BorderRadius.circular(6),
+    child: Container(
+      width: 42,
+      height: 36,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: decoColor,
+        border: Border.all(color: color),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.bold,
+          color: color,
+        ),
+      ),
+    ),
+  );
+}
+
+// 🔘 Reusable button
 Widget boxButton2label({
   required String label,
   required String label2,
@@ -68,6 +101,7 @@ Widget boxButton2label({
   bool disabled = false,
 }) {
   final color = disabled ? Colors.grey.shade400 : Colors.black54;
+  final decoColor = disabled ? Colors.transparent : Colors.greenAccent;
 
   return InkWell(
     onTap: disabled ? null : onTap,
@@ -77,6 +111,7 @@ Widget boxButton2label({
       height: 31,
       alignment: Alignment.center,
       decoration: BoxDecoration(
+        color: decoColor,
         border: Border.all(
           color: color,
         ),

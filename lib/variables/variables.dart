@@ -509,6 +509,22 @@ BoxDecoration decoGreenAccent() {
       border: Border.all(color: borderColor(), width: 2.0));
 }
 
+Color? colGreenAccent2() {
+  return Colors.greenAccent[100];
+}
+
+BoxDecoration decoGreenAccent2() {
+  return BoxDecoration(
+      color: colGreenAccent2(),
+      border: Border.all(color: borderColor(), width: 2.0));
+}
+
+BoxDecoration decoGreenAccentNoBorder() {
+  return BoxDecoration(
+    color: colGreenAccent(),
+  );
+}
+
 Color? colDarkBlue() {
   return Colors.blue[300];
 }
