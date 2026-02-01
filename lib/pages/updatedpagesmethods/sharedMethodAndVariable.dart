@@ -6,7 +6,9 @@ import 'package:laundry_firebase/models/employeemodel.dart';
 import 'package:laundry_firebase/models/otheritemmodel.dart';
 import 'package:laundry_firebase/models/suppliesmodelhist.dart';
 import 'package:laundry_firebase/services/database_employee_current.dart';
+import 'package:laundry_firebase/services/database_jobs.dart';
 import 'package:laundry_firebase/services/database_supplies_current.dart';
+import 'package:laundry_firebase/variables/updatedvariables/jobsmodel_repository.dart';
 import 'package:laundry_firebase/variables/updatedvariables/supplies_hist_repository.dart';
 import 'package:laundry_firebase/variables/variables.dart';
 import 'package:laundry_firebase/variables/variables_oth.dart';
@@ -67,6 +69,38 @@ Widget boxButton({
 }) {
   final color = disabled ? Colors.grey.shade400 : Colors.black54;
   final decoColor = disabled ? Colors.transparent : Colors.greenAccent;
+
+  return InkWell(
+    onTap: disabled ? null : onTap,
+    borderRadius: BorderRadius.circular(6),
+    child: Container(
+      width: 42,
+      height: 36,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: decoColor,
+        border: Border.all(color: color),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.bold,
+          color: color,
+        ),
+      ),
+    ),
+  );
+}
+
+Widget boxButtonOtherItems({
+  required String label,
+  required VoidCallback? onTap,
+  bool disabled = false,
+}) {
+  final color = disabled ? Colors.grey.shade400 : Colors.black54;
+  final decoColor = disabled ? Colors.transparent : Colors.pinkAccent[100];
 
   return InkWell(
     onTap: disabled ? null : onTap,
@@ -275,4 +309,16 @@ Future<bool> _processTypeOfPay(SuppliesModelHist sMH) async {
   DatabaseSuppliesCurrent databaseSuppliesCurrent = DatabaseSuppliesCurrent();
   return await databaseSuppliesCurrent.addSuppliesCurr(sMH);
   // return false;
+}
+
+Future<void> insertToFBJobsOnQueuelRepository(BuildContext context) async {
+  DatabaseJobsQueue databaseJobsQueue = DatabaseJobsQueue();
+
+  if (await databaseJobsQueue
+      .add(JobsModelRepository.instance.getJobsModel()!)) {
+  } else {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Error insert Jobs On Queue.')),
+    );
+  }
 }

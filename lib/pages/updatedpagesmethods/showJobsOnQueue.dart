@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:laundry_firebase/models/otheritemmodel.dart';
 import 'package:laundry_firebase/pages/autocompletecustomer.dart';
 import 'package:laundry_firebase/pages/updatedpagesmethods/sharedMethodAndVariable.dart';
-import 'package:laundry_firebase/variables/updatedvariables/supplies_hist_repository.dart';
+import 'package:laundry_firebase/variables/updatedvariables/jobsmodel_repository.dart';
 import 'package:laundry_firebase/variables/variables.dart';
 import 'package:laundry_firebase/variables/variables_ble.dart';
 import 'package:laundry_firebase/variables/variables_det.dart';
@@ -45,18 +45,6 @@ void showJobsOnQueue(BuildContext context) {
                 children: [],
               ),
             ),
-
-            // 🔹 Input Field (disabled if employee is checked)
-            // TextFormField(
-            //   controller: visCustomerNameVar,
-            //   focusNode: nameFocusNode,
-            //   textCapitalization: TextCapitalization.words,
-            //   decoration: const InputDecoration(
-            //     hintText: 'Enter Name',
-            //     prefixIcon: SizedBox(width: _fieldIndentWidth),
-            //     border: OutlineInputBorder(),
-            //   ),
-            // ),
             AutoCompleteCustomer(),
             SizedBox(
               height: 5,
@@ -100,10 +88,6 @@ void showJobsOnQueue(BuildContext context) {
               onPressed: (index) {
                 setState(() {
                   selectedRiderPickup = listRiderPickup[index];
-                  SuppliesHistRepository.instance
-                      .setItemId(menuOthCashInOutFunds);
-                  SuppliesHistRepository.instance
-                      .setItemUniqueId(selectedRiderPickup!);
                 });
               },
               borderRadius: BorderRadius.circular(8),
@@ -171,10 +155,6 @@ void showJobsOnQueue(BuildContext context) {
                                 setState(() {
                                   selectedPackage = listPackage[index];
                                   selectedPackagePrev = listPackage[index];
-                                  SuppliesHistRepository.instance
-                                      .setItemId(menuOthCashInOutFunds);
-                                  SuppliesHistRepository.instance
-                                      .setItemUniqueId(selectedPackage!);
                                   listAddedOtherItemModel.clear();
                                   totalPriceOthers = 0;
                                 });
@@ -191,10 +171,6 @@ void showJobsOnQueue(BuildContext context) {
                     setState(() {
                       selectedPackage = listPackage[index];
                       selectedPackagePrev = listPackage[index];
-                      SuppliesHistRepository.instance
-                          .setItemId(menuOthCashInOutFunds);
-                      SuppliesHistRepository.instance
-                          .setItemUniqueId(selectedPackage!);
                       if (selectedPackage == othersPackage) {
                         selectedItemModel = listOthItems[0];
                       }
@@ -726,6 +702,11 @@ void showJobsOnQueue(BuildContext context) {
   }
 
   Visibility visAmountOthersOnly(Function setState) {
+    void addOtherItem(OtherItemModel item) {
+      listAddedOtherItemModel.add(item);
+      totalPriceOthers += item.itemPrice;
+    }
+
     return Visibility(
       visible: (selectedPackage == othersPackage),
       child: Container(
@@ -791,31 +772,23 @@ void showJobsOnQueue(BuildContext context) {
                       setState(() {
                         selectedOthersShortCut =
                             listOthersDropDownShortCuts[index];
-                        SuppliesHistRepository.instance
-                            .setItemId(menuOthCashInOutFunds);
-                        SuppliesHistRepository.instance
-                            .setItemUniqueId(selectedOthersShortCut!);
                         if (selectedOthersShortCut == menuOth155) {
-                          listAddedOtherItemModel.add(reg155ItemModel);
-                          totalPriceOthers += reg155ItemModel.itemPrice;
+                          addOtherItem(reg155ItemModel);
                         }
                         if (selectedOthersShortCut == menuOth125) {
-                          listAddedOtherItemModel.add(reg125ItemModel);
-                          totalPriceOthers += reg125ItemModel.itemPrice;
+                          addOtherItem(reg125ItemModel);
                         }
                         if (selectedOthersShortCut == menuOthXD) {
-                          listAddedOtherItemModel.add(xDItemModel);
-                          totalPriceOthers += xDItemModel.itemPrice;
+                          addOtherItem(xDItemModel);
                         }
                         if (selectedOthersShortCut == menuFabWKLDValAny8ml) {
-                          listAddedOtherItemModel.add(addFabAnyItemModel);
-                          totalPriceOthers += addFabAnyItemModel.itemPrice;
+                          addOtherItem(addFabAnyItemModel);
                         }
                       });
                     },
                     borderRadius: BorderRadius.circular(8),
                     selectedColor: Colors.black,
-                    fillColor: Colors.greenAccent,
+                    fillColor: Colors.pinkAccent[100],
                     color: Colors.black,
                     borderColor: cSalaryOut,
                     constraints: const BoxConstraints(
@@ -850,10 +823,6 @@ void showJobsOnQueue(BuildContext context) {
                     onPressed: (index) {
                       setState(() {
                         selectedOthers = listOthersDropDown[index];
-                        SuppliesHistRepository.instance
-                            .setItemId(menuOthCashInOutFunds);
-                        SuppliesHistRepository.instance
-                            .setItemUniqueId(selectedOthers!);
                         (selectedOthers == menuOthDVal
                             ? selectedItemModel = listOthItems[0]
                             : selectedOthers == menuDetDVal
@@ -865,7 +834,7 @@ void showJobsOnQueue(BuildContext context) {
                     },
                     borderRadius: BorderRadius.circular(8),
                     selectedColor: Colors.black,
-                    fillColor: Colors.greenAccent,
+                    fillColor: Colors.pinkAccent[100],
                     color: Colors.black,
                     borderColor: cSalaryOut,
                     constraints: const BoxConstraints(
@@ -896,6 +865,8 @@ void showJobsOnQueue(BuildContext context) {
                           child: DropdownButtonFormField<OtherItemModel>(
                             isDense: true,
                             iconSize: 18,
+                            dropdownColor:
+                                const Color.fromARGB(255, 252, 162, 192),
                             style: const TextStyle(
                               fontSize: 12,
                               color: Colors.black,
@@ -907,6 +878,8 @@ void showJobsOnQueue(BuildContext context) {
                                 vertical: 8,
                               ),
                               border: OutlineInputBorder(),
+                              filled: true, // enables background color
+                              fillColor: Color.fromARGB(255, 255, 144, 181),
                             ),
                             hint: const Text(
                               'Select supply',
@@ -949,10 +922,11 @@ void showJobsOnQueue(BuildContext context) {
                         child: ElevatedButton(
                           onPressed: () {
                             setState(() {
-                              listAddedOtherItemModel.add(selectedItemModel);
-                              totalPriceOthers += selectedItemModel.itemPrice;
+                              addOtherItem(selectedItemModel);
                             });
                           },
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.pinkAccent[100]),
                           child: const Text(
                             'Add',
                             style: TextStyle(fontSize: 12),
@@ -967,7 +941,8 @@ void showJobsOnQueue(BuildContext context) {
                   /// 🧾 Selected Items Preview
                   Column(
                     children: listAddedOtherItemModel.map((e) {
-                      return Padding(
+                      return Container(
+                        decoration: decoPinkAccent(),
                         padding: const EdgeInsets.symmetric(horizontal: 50),
                         child: Row(
                           children: [
@@ -1245,12 +1220,16 @@ void showJobsOnQueue(BuildContext context) {
     void incrementOne() {
       setState(() {
         addFabCount += 1;
+        listAddedOtherItemModel.add(addFabAnyItemModel);
+        totalPriceRegSSShortCut += addFabAnyItemModel.itemPrice;
       });
     }
 
     void decrementOne() {
       setState(() {
         addFabCount -= 1;
+        listAddedOtherItemModel.remove(addFabAnyItemModel);
+        totalPriceRegSSShortCut -= addFabAnyItemModel.itemPrice;
       });
     }
 
@@ -1259,13 +1238,13 @@ void showJobsOnQueue(BuildContext context) {
       child: Container(
         alignment: Alignment.center,
         padding: const EdgeInsets.all(6.0),
-        decoration: (addFabCount > 0 ? decoGreenAccent2() : decoLightBlue()),
+        decoration: (addFabCount > 0 ? decoOtherItems() : decoLightBlue()),
         child: Row(
           mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             // ➖ -1
-            boxButton(
+            boxButtonOtherItems(
                 label: '-1', disabled: addFabCount <= 0, onTap: decrementOne),
 
             const SizedBox(width: 12),
@@ -1280,7 +1259,7 @@ void showJobsOnQueue(BuildContext context) {
             const SizedBox(width: 12),
 
             // ➕ +1
-            boxButton(label: '+1', onTap: incrementOne),
+            boxButtonOtherItems(label: '+1', onTap: incrementOne),
           ],
         ),
       ),
@@ -1292,12 +1271,16 @@ void showJobsOnQueue(BuildContext context) {
     void incrementOne() {
       setState(() {
         addExtraDryCount += 1;
+        listAddedOtherItemModel.add(xDItemModel);
+        totalPriceRegSSShortCut += xDItemModel.itemPrice;
       });
     }
 
     void decrementOne() {
       setState(() {
         addExtraDryCount -= 1;
+        listAddedOtherItemModel.remove(xDItemModel);
+        totalPriceRegSSShortCut -= xDItemModel.itemPrice;
       });
     }
 
@@ -1306,14 +1289,13 @@ void showJobsOnQueue(BuildContext context) {
       child: Container(
         alignment: Alignment.center,
         padding: const EdgeInsets.all(6.0),
-        decoration:
-            (addExtraDryCount > 0 ? decoGreenAccent2() : decoLightBlue()),
+        decoration: (addExtraDryCount > 0 ? decoOtherItems() : decoLightBlue()),
         child: Row(
           mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             // ➖ -1
-            boxButton(
+            boxButtonOtherItems(
                 label: '-1',
                 disabled: addExtraDryCount <= 0,
                 onTap: decrementOne),
@@ -1330,7 +1312,7 @@ void showJobsOnQueue(BuildContext context) {
             const SizedBox(width: 12),
 
             // ➕ +1
-            boxButton(label: '+1', onTap: incrementOne),
+            boxButtonOtherItems(label: '+1', onTap: incrementOne),
           ],
         ),
       ),
@@ -1342,12 +1324,16 @@ void showJobsOnQueue(BuildContext context) {
     void incrementOne() {
       setState(() {
         addExtraWashCount += 1;
+        listAddedOtherItemModel.add(xWashItemModel);
+        totalPriceRegSSShortCut += xWashItemModel.itemPrice;
       });
     }
 
     void decrementOne() {
       setState(() {
         addExtraWashCount -= 1;
+        listAddedOtherItemModel.remove(xWashItemModel);
+        totalPriceRegSSShortCut -= xWashItemModel.itemPrice;
       });
     }
 
@@ -1357,13 +1343,13 @@ void showJobsOnQueue(BuildContext context) {
         alignment: Alignment.center,
         padding: const EdgeInsets.all(6.0),
         decoration:
-            (addExtraWashCount > 0 ? decoGreenAccent2() : decoLightBlue()),
+            (addExtraWashCount > 0 ? decoOtherItems() : decoLightBlue()),
         child: Row(
           mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             // ➖ -1
-            boxButton(
+            boxButtonOtherItems(
                 label: '-1',
                 disabled: addExtraWashCount <= 0,
                 onTap: decrementOne),
@@ -1380,7 +1366,7 @@ void showJobsOnQueue(BuildContext context) {
             const SizedBox(width: 12),
 
             // ➕ +1
-            boxButton(label: '+1', onTap: incrementOne),
+            boxButtonOtherItems(label: '+1', onTap: incrementOne),
           ],
         ),
       ),
@@ -1392,12 +1378,16 @@ void showJobsOnQueue(BuildContext context) {
     void incrementOne() {
       setState(() {
         addExtraSpinCount += 1;
+        listAddedOtherItemModel.add(xSpinItemModel);
+        totalPriceRegSSShortCut += xSpinItemModel.itemPrice;
       });
     }
 
     void decrementOne() {
       setState(() {
         addExtraSpinCount -= 1;
+        listAddedOtherItemModel.remove(xSpinItemModel);
+        totalPriceRegSSShortCut -= xSpinItemModel.itemPrice;
       });
     }
 
@@ -1407,13 +1397,13 @@ void showJobsOnQueue(BuildContext context) {
         alignment: Alignment.center,
         padding: const EdgeInsets.all(6.0),
         decoration:
-            (addExtraSpinCount > 0 ? decoGreenAccent2() : decoLightBlue()),
+            (addExtraSpinCount > 0 ? decoOtherItems() : decoLightBlue()),
         child: Row(
           mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             // ➖ -1
-            boxButton(
+            boxButtonOtherItems(
                 label: '-1',
                 disabled: addExtraSpinCount <= 0,
                 onTap: decrementOne),
@@ -1430,21 +1420,46 @@ void showJobsOnQueue(BuildContext context) {
             const SizedBox(width: 12),
 
             // ➕ +1
-            boxButton(label: '+1', onTap: incrementOne),
+            boxButtonOtherItems(label: '+1', onTap: incrementOne),
           ],
         ),
       ),
     );
   }
 
-  Future<void> saveButtonProcessCash() async {
-    SuppliesHistRepository.instance
-        .setItemName(getItemNameOnly(menuOthCashInOutFunds, selectedFundCode!));
-    SuppliesHistRepository.instance.setItemUniqueId(selectedFundCode!);
-    SuppliesHistRepository.instance.setRemarks(remarksSuppliesVar.text);
-    SuppliesHistRepository.instance.setCurrentCounter(
-        int.parse(customerAmountVar.text.replaceAll(',', '')));
-    await insertToFB(context);
+  Future<void> saveButtonSetRepository() async {
+    (selectedRiderPickup == forSorting
+        ? JobsModelRepository.instance.setForSorting = true
+        : JobsModelRepository.instance.setRiderPickup = true);
+
+    if (selectedPackage == othersPackage) {
+      JobsModelRepository.instance.setAddOn = true;
+      JobsModelRepository.instance.setFinalPrice = totalPriceOthers;
+    } else {
+      JobsModelRepository.instance.setFinalPrice = totalPriceRegSS;
+      if (selectedPackage == regularPackage) {
+        JobsModelRepository.instance.setRegular = true;
+      } else {
+        JobsModelRepository.instance.setSayosabon = true;
+      }
+    }
+
+    //via shortcuts or others tab
+    if (listAddedOtherItemModel.isNotEmpty) {
+      JobsModelRepository.instance.setItems = listAddedOtherItemModel;
+    }
+
+    (isPerKg == true
+        ? JobsModelRepository.instance.setPerKilo = true
+        : JobsModelRepository.instance.setPerLoad = true);
+
+    JobsModelRepository.instance.setFold = selectedFold;
+    JobsModelRepository.instance.setMix = selectedMix;
+    JobsModelRepository.instance.setBasket = basketCount;
+    JobsModelRepository.instance.setEbag = ecoBagCount;
+    JobsModelRepository.instance.setSako = sakoCount;
+    JobsModelRepository.instance.setRemarks = remarksSuppliesVar.text;
+    await insertToFBJobsOnQueuelRepository(context);
   }
 
   showDialog(
@@ -1514,32 +1529,13 @@ void showJobsOnQueue(BuildContext context) {
             ),
             ElevatedButton(
               onPressed: () async {
-                if (customerAmountVar.text.isEmpty ||
-                    int.parse(customerAmountVar.text) <= 0) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Please enter amount.')),
-                  );
-                } else if (ifMenuUniqueIsFundsOut(
-                        SuppliesHistRepository.instance.suppliesModelHist!) &&
-                    remarksSuppliesVar.text.isEmpty) {
+                if (JobsModelRepository.instance.getCustomerId() == 0) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                        content: Text('Remarks is required for Funds Out.')),
-                  );
-                } else if (ifMenuUniqueIsFundsOut(
-                        SuppliesHistRepository.instance.suppliesModelHist!) &&
-                    !empNameToId.containsKey(autocompleteSelected.name)) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                        content: Text('Name must be a staff for Funds Out.')),
-                  );
-                } else if (selectedFundCode == null) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                        content: Text('Please select transaction type.')),
+                        content: Text('Please select customer name.')),
                   );
                 } else {
-                  await saveButtonProcessCash();
+                  await saveButtonSetRepository();
                   Navigator.pop(context);
                 }
               },

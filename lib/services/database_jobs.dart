@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:laundry_firebase/models/jobsmodelnolist.dart';
+import 'package:laundry_firebase/models/jobsmodel.dart';
 
 /// 🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦
 /// 🔹 COLLECTION REFERENCES
@@ -18,8 +18,21 @@ class DatabaseJobsQueue {
       _firestore.collection(JOBS_QUEUE_REF);
 
   /// ➕ Add job to queue
-  Future<void> add(JobsModel job) async {
-    await _ref.doc(job.docId).set(job.toJson());
+  Future<bool> add(JobsModel job) async {
+    bool bSuccess = false;
+    final docRef = _ref.doc(); // auto-generate ID
+    job.docId = docRef.id; // store the ID in your model
+    await docRef
+        .set(job.toJson())
+        .then((value) => {
+              print("Jobs On Queue insert done."),
+              bSuccess = true,
+            })
+        .catchError((error) => {
+              print("Failed insert Jobs On Queue : $error ${job.customerName}"),
+              bSuccess = false,
+            });
+    return bSuccess;
   }
 
   /// 📥 Get single job

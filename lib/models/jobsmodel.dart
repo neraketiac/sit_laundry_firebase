@@ -5,11 +5,11 @@ import 'package:laundry_firebase/models/otheritemmodel.dart';
 // /// 🔹 JOB ITEM MODEL
 // /// 🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦
 // class JobItem {
-//   final int itemId;
-//   final String itemName;
-//   final int itemPcs;
-//   final int itemPrice;
-//   final int itemPriceTotal;
+//   int itemId;
+//   String itemName;
+//   int itemPcs;
+//   int itemPrice;
+//   int itemPriceTotal;
 
 //   JobItem({
 //     required this.itemId,
@@ -41,70 +41,70 @@ import 'package:laundry_firebase/models/otheritemmodel.dart';
 /// 🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩
 class JobsModel {
   /// 🔵 Identity
-  final String docId;
+  String docId;
 
   /// 🟣 Dates
-  final Timestamp dateQ;
-  final Timestamp needOn;
-  final Timestamp dateO;
-  final Timestamp paidD;
-  final Timestamp dateD;
+  Timestamp dateQ;
+  Timestamp needOn;
+  Timestamp dateO;
+  Timestamp paidD;
+  Timestamp dateD;
 
   /// 🟠 Employee
-  final String createdBy;
-  final String currentEmpId;
+  String createdBy;
+  String currentEmpId;
 
   /// 🟡 Customer
-  final int customerId;
-  final String customerName;
-  final bool forSorting;
-  final bool riderPickup;
+  int customerId;
+  String customerName;
+  bool forSorting;
+  bool riderPickup;
 
   /// 🟤 Pricing
-  final bool perKilo;
-  final bool perLoad;
-  final int finalKilo;
-  final int finalLoad;
-  final int finalPrice;
+  bool perKilo;
+  bool perLoad;
+  int finalKilo;
+  int finalLoad;
+  int finalPrice;
 
   /// 🟢 Options
-  final bool regular;
-  final bool sayosabon;
-  final bool addOn;
-  final bool fold;
-  final bool mix;
+  bool regular;
+  bool sayosabon;
+  bool addOn;
+  bool fold;
+  bool mix;
 
   /// 🔴 Containers
-  final int basket;
-  final int ebag;
-  final int sako;
+  int basket;
+  int ebag;
+  int sako;
 
   /// 🔵 Payment
-  final bool unpaid;
-  final bool paidcash;
-  final bool paidGCash;
-  final bool paidGCashverified;
-  final bool partialPaidCash;
-  final bool partialPaidGCash;
-  final int partialPaidCashAmount; //portion paid by cash
-  final int partialPaidGCashAmount; //portion paid by gcash
+  bool unpaid;
+  bool paidcash;
+  bool paidGCash;
+  bool paidGCashverified;
+  bool partialPaidCash;
+  bool partialPaidGCash;
+  int partialPaidCashAmount; //portion paid by cash
+  int partialPaidGCashAmount; //portion paid by gcash
   //if combine, can be tag paidCash & paidGCash
-  final String paymentReceivedBy;
+  String paymentReceivedBy;
 
   /// 🟣 Remarks
-  final String remarks;
+  String remarks;
 
   /// 🟢 Items (LIST VERSION 🔥)
-  final List<OtherItemModel> items;
+  List<OtherItemModel> items;
 
   /// 🟠 Workflow Step
   /// Used ONLY in `Jobs_ongoing`
   /// Values: 'waiting', 'washing' | 'drying' | 'folding' | 'done'
-  final String processStep;
+  String processStep;
 
   /// 🔴 Disposal
-  final bool forDisposal;
-  final bool disposed;
+  bool forDisposal;
+  bool disposed;
 
   JobsModel({
     required this.docId,

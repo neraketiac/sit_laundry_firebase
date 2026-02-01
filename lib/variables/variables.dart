@@ -51,7 +51,7 @@ const int menuDetDVal = 1, menuFabDVal = 2, menuBleDVal = 3, menuOthDVal = 4;
 
 List<OtherItemModel> listAddOnItemsGlobal = [];
 late OtherItemModel gselectedItemModel;
-late List<OtherItemModel> listAddedOtherItemModel = [];
+List<OtherItemModel> listAddedOtherItemModel = [];
 List<CustomerModel> customerOptionsFromVariable = [];
 CustomerModel autocompleteSelected = CustomerModel(
     customerId: 0,
@@ -516,6 +516,26 @@ Color? colGreenAccent2() {
 BoxDecoration decoGreenAccent2() {
   return BoxDecoration(
       color: colGreenAccent2(),
+      border: Border.all(color: borderColor(), width: 2.0));
+}
+
+Color? colPurpleAccen() {
+  return Colors.purpleAccent[100];
+}
+
+BoxDecoration decoOtherItems() {
+  return BoxDecoration(
+      color: colPurpleAccen(),
+      border: Border.all(color: borderColor(), width: 2.0));
+}
+
+Color? colPinkAccent() {
+  return Colors.pinkAccent[100];
+}
+
+BoxDecoration decoPinkAccent() {
+  return BoxDecoration(
+      color: colPinkAccent(),
       border: Border.all(color: borderColor(), width: 2.0));
 }
 

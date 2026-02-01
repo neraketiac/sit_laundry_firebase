@@ -10,7 +10,6 @@ import 'package:laundry_firebase/services/database_supplies_history.dart';
 import 'package:laundry_firebase/variables/variables.dart';
 import 'package:laundry_firebase/variables/variables_det.dart';
 import 'package:laundry_firebase/variables/variables_fab.dart';
-import 'package:laundry_firebase/variables/variables_oth.dart';
 import 'package:laundry_firebase/variables/variables_supplies.dart';
 
 class MyMainLaundryBody extends StatefulWidget {
@@ -256,6 +255,12 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                         SizedBox(
                           width: 2,
                         ),
+                        Text(
+                            "(₱${value.format(sMH.currentCounter)}/pCF=₱${value.format(sMH.currentStocks)})",
+                            style: const TextStyle(fontSize: 11)),
+                        SizedBox(
+                          width: 2,
+                        ),
                         Text(sMH.itemName,
                             style: const TextStyle(
                                 fontSize: 10, fontWeight: FontWeight.bold)),
@@ -269,12 +274,6 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                         Text(sMH.customerName,
                             style: const TextStyle(
                                 fontSize: 10, fontWeight: FontWeight.bold)),
-                        SizedBox(
-                          width: 2,
-                        ),
-                        Text(
-                            "(amt=₱${value.format(sMH.currentCounter)}/pCF=₱${value.format(sMH.currentStocks)})",
-                            style: const TextStyle(fontSize: 11)),
                         SizedBox(
                           width: 2,
                         ),
@@ -328,6 +327,12 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                         SizedBox(
                           width: 2,
                         ),
+                        Text(
+                            "(₱${value.format(sMH.currentCounter)}/pCF=₱${value.format(sMH.currentStocks)})",
+                            style: const TextStyle(fontSize: 11)),
+                        SizedBox(
+                          width: 2,
+                        ),
                         Text(sMH.itemName,
                             style: const TextStyle(
                                 fontSize: 10, fontWeight: FontWeight.bold)),
@@ -338,12 +343,6 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                             style: const TextStyle(
                               fontSize: 10,
                             )),
-                        SizedBox(
-                          width: 2,
-                        ),
-                        Text(
-                            "(amt=₱${value.format(sMH.currentCounter)}/pCF=₱${value.format(sMH.currentStocks)})",
-                            style: const TextStyle(fontSize: 11)),
                         SizedBox(
                           width: 2,
                         ),

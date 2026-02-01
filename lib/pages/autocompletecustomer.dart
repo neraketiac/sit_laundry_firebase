@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:laundry_firebase/models/customermodel.dart';
+import 'package:laundry_firebase/models/jobsmodel.dart';
 import 'package:laundry_firebase/variables/updatedvariables/customer_repository.dart';
+import 'package:laundry_firebase/variables/updatedvariables/jobsmodel_repository.dart';
 import 'package:laundry_firebase/variables/updatedvariables/supplies_hist_repository.dart';
 import 'package:laundry_firebase/variables/variables.dart';
 
@@ -63,6 +65,8 @@ class AutoCompleteCustomer extends StatelessWidget {
       onSelected: (CustomerModel selectedModel) {
         autocompleteSelected = selectedModel;
         SuppliesHistRepository.instance.setCustomerName(selectedModel.name);
+        JobsModelRepository.instance.setCustomerName(selectedModel.name);
+        JobsModelRepository.instance.setCustomerId(selectedModel.customerId);
         bCustomerName = true;
         debugPrint(
             'You just selected ${_displayStringForOption(selectedModel)}');
