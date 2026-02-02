@@ -213,9 +213,6 @@ void showJobsOnQueue(BuildContext context) {
   }
 
   Visibility visAmountRegSSPerKg(Function setState) {
-    final int tier1Increase = 35;
-    final int tier2Increase = 105;
-
     const maxPartialOptions = {
       regularPackage: 3,
       sayoSabonPackage: 2,
@@ -230,8 +227,37 @@ void showJobsOnQueue(BuildContext context) {
 
     final int pricePerSet = prices[selectedPackage] ?? 155;
     final int maxPartial = maxPartialOptions[selectedPackage] ?? 3;
+    // 🧠 UI rules
 
-    String formatPriceExpression(int total) {
+    final bool showPointOne = quantityKg >= 8 && (quantityKg % 8) < maxPartial;
+
+// 💰 Tiered price computation
+    int computeTotalPrice(double q) {
+      int counter = (q / 8).floor(); // how many full 8s
+      counter = (counter == 0 ? 1 : counter);
+
+      int remainingPrice = 0;
+
+      if (q > 8) {
+        double remaining = double.parse((q % 8).toStringAsFixed(1));
+        if (remaining <= 0) {
+          remainingPrice = 0;
+        } else if (remaining > 0 && remaining <= 0.9) {
+          remainingPrice = tier1Increase;
+        } else if (remaining < maxPartial) {
+          remainingPrice = tier2Increase;
+        } else if (remaining >= maxPartial) {
+          remainingPrice = pricePerSet;
+        }
+        debugPrint('c=$counter rP=$remainingPrice r=$remaining');
+      }
+
+      return (counter * pricePerSet) + remainingPrice;
+    }
+
+    totalPriceRegSS = computeTotalPrice(quantityKg) + totalPriceShortCutRegSS;
+
+    String showHowMany155or125Set(int total) {
       //int base = pricePerSet;
       List<int> extras = [
         pricePerSet + tier1Increase,
@@ -272,36 +298,6 @@ void showJobsOnQueue(BuildContext context) {
       // Fallback if it doesn't match the pattern
       return ' $total';
     }
-
-    // 💰 Tiered price computation
-    int computeTotalPrice(double q) {
-      int counter = (q / 8).floor(); // how many full 8s
-      counter = (counter == 0 ? 1 : counter);
-
-      int remainingPrice = 0;
-
-      if (q > 8) {
-        double remaining = double.parse((q % 8).toStringAsFixed(1));
-        if (remaining <= 0) {
-          remainingPrice = 0;
-        } else if (remaining > 0 && remaining <= 0.9) {
-          remainingPrice = tier1Increase;
-        } else if (remaining < maxPartial) {
-          remainingPrice = tier2Increase;
-        } else if (remaining >= maxPartial) {
-          remainingPrice = pricePerSet;
-        }
-        debugPrint('c=$counter rP=$remainingPrice r=$remaining');
-      }
-
-      return (counter * pricePerSet) + remainingPrice;
-    }
-
-    // 🧠 UI rules
-
-    final bool showPointOne = quantityKg >= 8 && (quantityKg % 8) < maxPartial;
-
-    totalPriceRegSS = computeTotalPrice(quantityKg) + totalPriceRegSSShortCut;
 
     // ➕➖ handlers
     void incrementOne() {
@@ -360,7 +356,7 @@ void showJobsOnQueue(BuildContext context) {
                         maintainAnimation: true,
                         maintainState: true,
                         child: Text(
-                          formatPriceExpression(computeTotalPrice(quantityKg)),
+                          showHowMany155or125Set(computeTotalPrice(quantityKg)),
                           style: TextStyle(fontSize: 10),
                         ),
                       ),
@@ -397,7 +393,7 @@ void showJobsOnQueue(BuildContext context) {
                         ),
                       ),
                       Text(
-                        formatPriceExpression(computeTotalPrice(quantityKg)),
+                        showHowMany155or125Set(computeTotalPrice(quantityKg)),
                         style: TextStyle(fontSize: 10),
                       ),
                     ],
@@ -525,7 +521,7 @@ void showJobsOnQueue(BuildContext context) {
     final int pricePerSet = prices[selectedPackage] ?? 155;
     // 🧠 UI rules
 
-    totalPriceRegSS = (pricePerSet * quantityLoad) + totalPriceRegSSShortCut;
+    totalPriceRegSS = (pricePerSet * quantityLoad) + totalPriceShortCutRegSS;
 
     // ➕➖ handlers
     void incrementOne() {
@@ -1524,7 +1520,7 @@ void showJobsOnQueue(BuildContext context) {
       setState(() {
         addFabCount += 1;
         listAddedOtherItemModel.add(addFabAnyItemModel);
-        totalPriceRegSSShortCut += addFabAnyItemModel.itemPrice;
+        totalPriceShortCutRegSS += addFabAnyItemModel.itemPrice;
       });
     }
 
@@ -1532,7 +1528,7 @@ void showJobsOnQueue(BuildContext context) {
       setState(() {
         addFabCount -= 1;
         listAddedOtherItemModel.remove(addFabAnyItemModel);
-        totalPriceRegSSShortCut -= addFabAnyItemModel.itemPrice;
+        totalPriceShortCutRegSS -= addFabAnyItemModel.itemPrice;
       });
     }
 
@@ -1575,7 +1571,7 @@ void showJobsOnQueue(BuildContext context) {
       setState(() {
         addExtraDryCount += 1;
         listAddedOtherItemModel.add(xDItemModel);
-        totalPriceRegSSShortCut += xDItemModel.itemPrice;
+        totalPriceShortCutRegSS += xDItemModel.itemPrice;
       });
     }
 
@@ -1583,7 +1579,7 @@ void showJobsOnQueue(BuildContext context) {
       setState(() {
         addExtraDryCount -= 1;
         listAddedOtherItemModel.remove(xDItemModel);
-        totalPriceRegSSShortCut -= xDItemModel.itemPrice;
+        totalPriceShortCutRegSS -= xDItemModel.itemPrice;
       });
     }
 
@@ -1628,7 +1624,7 @@ void showJobsOnQueue(BuildContext context) {
       setState(() {
         addExtraWashCount += 1;
         listAddedOtherItemModel.add(xWashItemModel);
-        totalPriceRegSSShortCut += xWashItemModel.itemPrice;
+        totalPriceShortCutRegSS += xWashItemModel.itemPrice;
       });
     }
 
@@ -1636,7 +1632,7 @@ void showJobsOnQueue(BuildContext context) {
       setState(() {
         addExtraWashCount -= 1;
         listAddedOtherItemModel.remove(xWashItemModel);
-        totalPriceRegSSShortCut -= xWashItemModel.itemPrice;
+        totalPriceShortCutRegSS -= xWashItemModel.itemPrice;
       });
     }
 
@@ -1682,7 +1678,7 @@ void showJobsOnQueue(BuildContext context) {
       setState(() {
         addExtraSpinCount += 1;
         listAddedOtherItemModel.add(xSpinItemModel);
-        totalPriceRegSSShortCut += xSpinItemModel.itemPrice;
+        totalPriceShortCutRegSS += xSpinItemModel.itemPrice;
       });
     }
 
@@ -1690,7 +1686,7 @@ void showJobsOnQueue(BuildContext context) {
       setState(() {
         addExtraSpinCount -= 1;
         listAddedOtherItemModel.remove(xSpinItemModel);
-        totalPriceRegSSShortCut -= xSpinItemModel.itemPrice;
+        totalPriceShortCutRegSS -= xSpinItemModel.itemPrice;
       });
     }
 
@@ -1731,6 +1727,19 @@ void showJobsOnQueue(BuildContext context) {
   }
 
   Future<void> saveButtonSetRepository() async {
+    int computeLoadForKg(double kg) {
+      double remainder = kg % 8;
+      int wholeEight = kg ~/ 8;
+      int lastCounter = 0;
+      if (remainder <= 0.9) {
+        lastCounter = 0;
+      } else {
+        lastCounter = 1;
+      }
+
+      return wholeEight + lastCounter;
+    }
+
     //dates
     /// 🟣 Dates
     JobsModelRepository.instance.setDateQ = Timestamp.now();
@@ -1783,6 +1792,7 @@ void showJobsOnQueue(BuildContext context) {
     if (isPerKg) {
       JobsModelRepository.instance.setPerKilo = true;
       JobsModelRepository.instance.setFinalKilo = quantityKg;
+      JobsModelRepository.instance.setFinalLoad = computeLoadForKg(quantityKg);
     } else {
       JobsModelRepository.instance.setPerLoad = true;
       JobsModelRepository.instance.setFinalLoad = quantityLoad;
@@ -1839,8 +1849,9 @@ void showJobsOnQueue(BuildContext context) {
                     visCustomerName(setState),
                     visRiderPickup(setState),
                     visSelectPackage(setState),
-                    visAmountRegSSPerKg(setState),
-                    visAmountRegSSPerLoad(setState),
+                    (isPerKg
+                        ? visAmountRegSSPerKg(setState)
+                        : visAmountRegSSPerLoad(setState)),
                     visAmountOthersOnly(setState),
                     visPaidUnPaid(setState),
                     Text(

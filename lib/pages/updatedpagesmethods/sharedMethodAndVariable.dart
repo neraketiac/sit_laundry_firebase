@@ -16,7 +16,7 @@ import 'package:laundry_firebase/variables/variables_supplies.dart';
 
 double quantityKg = 5;
 int quantityLoad = 1;
-late bool isGcashCredit = false;
+bool isGcashCredit = false;
 const double fieldIndentWidth = 40;
 TextEditingController customerNumberVar = TextEditingController();
 TextEditingController customerAmountVar = TextEditingController();
@@ -27,7 +27,7 @@ int selectedPackage = regularPackage;
 int selectedPackagePrev = regularPackage;
 int selectedOthers = menuOthDVal;
 int totalPriceRegSS = 0;
-int totalPriceRegSSShortCut = 0;
+int totalPriceShortCutRegSS = 0;
 OtherItemModel selectedItemModel = reg125ItemModel;
 int selectedOthersShortCut = menuOth155;
 int selectedPaidUnpaid = unpaid;
@@ -46,6 +46,8 @@ int addExtraSpinCount = 0;
 bool isMaxFab = false;
 int totalPriceOthers = 0;
 bool isPerKg = true;
+final int tier1Increase = 35;
+final int tier2Increase = 105;
 
 final NumberFormat pesoFormat = NumberFormat('#,##0', 'en_PH');
 
