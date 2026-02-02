@@ -11,39 +11,25 @@ class JobsModelRepository {
   JobsModel? jobsModel;
 
   Future<void> reset() async {
-    clear();
-  }
-
-  // JobsModel getJobsModel() => jobsModel;
-
-  JobsModel? getJobsModel() {
-    return jobsModel;
-  }
-
-  void setJobModel(JobsModel jobsModel) {
-    jobsModel = jobsModel;
-  }
-
-  void clear() {
     jobsModel = JobsModel(
         docId: '',
-        dateQ: Timestamp.now(),
-        needOn: Timestamp.now(),
-        dateO: Timestamp.now(),
-        paidD: Timestamp.now(),
-        dateD: Timestamp.now(),
+        dateQ: timestamp1900,
+        needOn: timestamp1900,
+        dateO: timestamp1900,
+        paidD: timestamp1900,
+        dateD: timestamp1900,
         createdBy: '',
         currentEmpId: '',
         customerId: 0,
         customerName: '',
         forSorting: false,
         riderPickup: false,
-        perKilo: true,
+        perKilo: false,
         perLoad: false,
         finalKilo: 0,
         finalLoad: 0,
         finalPrice: 0,
-        regular: true,
+        regular: false,
         sayosabon: false,
         addOn: false,
         fold: true,
@@ -65,6 +51,16 @@ class JobsModelRepository {
         processStep: '',
         forDisposal: false,
         disposed: false);
+  }
+
+  // JobsModel getJobsModel() => jobsModel;
+
+  JobsModel? getJobsModel() {
+    return jobsModel;
+  }
+
+  void setJobModel(JobsModel jobsModel) {
+    jobsModel = jobsModel;
   }
 
   void setPackage(int selectedPackage) {
@@ -121,7 +117,7 @@ class JobsModelRepository {
   set setRiderPickup(bool value) => jobsModel!.riderPickup = value;
   set setPerKilo(bool value) => jobsModel!.perKilo = value;
   set setPerLoad(bool value) => jobsModel!.perLoad = value;
-  set setFinalKilo(int value) => jobsModel!.finalKilo = value;
+  set setFinalKilo(double value) => jobsModel!.finalKilo = value;
   set setFinalLoad(int value) => jobsModel!.finalLoad = value;
   set setFinalPrice(int value) => jobsModel!.finalPrice = value;
   set setRegular(bool value) => jobsModel!.regular = value;

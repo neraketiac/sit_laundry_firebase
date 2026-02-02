@@ -46,6 +46,12 @@ late String selectedNumberVar = "1";
 int iAmountDisplay = 0, iAmountFinal = 0;
 String allClear = "c";
 
+// Create a DateTime for Jan 1, 1900
+final oldDate = DateTime(1900, 1, 1);
+
+// Convert to Firestore Timestamp
+final timestamp1900 = Timestamp.fromDate(oldDate);
+
 //general
 const int menuDetDVal = 1, menuFabDVal = 2, menuBleDVal = 3, menuOthDVal = 4;
 
@@ -84,7 +90,11 @@ const int forSorting = 501,
 
 //paymentStats
 //Map<int, String> mapPaymentStat = {};
-const int unpaid = 801, paidCash = 802, paidGCash = 803, waitGCash = 804;
+const int unpaid = 801,
+    paidCash = 802,
+    paidGCash = 803,
+    partialPaidCash = 804,
+    partialPaidGCash = 805;
 
 // class OthItems {
 //   int menuDVal;

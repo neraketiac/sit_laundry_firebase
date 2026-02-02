@@ -5,7 +5,6 @@ import 'package:laundry_firebase/pages/updatedpagesmethods/showFundCheck.dart';
 import 'package:laundry_firebase/pages/updatedpagesmethods/showJobsOnQueue.dart';
 import 'package:laundry_firebase/pages/updatedpagesmethods/showSalaryMaintenance.dart';
 import 'package:laundry_firebase/variables/updatedvariables/jobsmodel_repository.dart';
-import 'package:laundry_firebase/variables/updatedvariables/jobsonqueue_repository.dart';
 import 'package:laundry_firebase/variables/updatedvariables/supplies_hist_repository.dart';
 import 'package:laundry_firebase/variables/variables.dart';
 import 'package:laundry_firebase/variables/variables_supplies.dart';
@@ -33,11 +32,8 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
     } else {
       isAdmin = false;
     }
-    // JobsOnQueueRepository.instance.loadOnce();
-    // JobsOnQueueRepository.instance.setCreatedBy(_sEmpId);
-    // JobsOnQueueRepository.instance.currentEmpId(_sEmpId);
     SuppliesHistRepository.instance.reset();
-    JobsModelRepository.instance.clear();
+    JobsModelRepository.instance.reset();
   }
 
   @override
