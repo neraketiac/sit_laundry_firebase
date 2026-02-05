@@ -22,6 +22,13 @@ import 'package:laundry_firebase/variables/variables_jobsongoing.dart';
 import 'package:laundry_firebase/variables/variables_oth.dart';
 import 'package:laundry_firebase/variables/variables_supplies.dart';
 
+const String storageKey = 'customer_code';
+
+bool loading = true;
+bool loggedIn = false;
+bool rememberMe = true;
+TextEditingController memberController = TextEditingController();
+
 late bool bHaveInternet = false;
 bool showDet = false, showFab = false, showBle = false, showOth = false;
 bool bDelAddOnsVar = true;

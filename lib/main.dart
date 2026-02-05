@@ -1,5 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:laundry_firebase/pages/autologin.dart';
 import 'package:laundry_firebase/pages/enterloyaltycode.dart';
 
 Future<void> main() async {
@@ -30,6 +31,7 @@ class MyApp extends StatelessWidget {
       //home: MyHome(),
       //home: MyLoyalty(),
       home: EnterLoyaltyCode(),
+      //home: CustomerGatePage(),
       //home: MyMenuMain(),
     );
   }

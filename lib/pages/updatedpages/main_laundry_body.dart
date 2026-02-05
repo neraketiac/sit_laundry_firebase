@@ -2,13 +2,16 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:laundry_firebase/models/employeesetupmodel.dart';
+import 'package:laundry_firebase/pages/enterloyaltycode.dart';
 import 'package:laundry_firebase/pages/updatedpagesmethods/readDataEmployeeCurr.dart';
 import 'package:laundry_firebase/pages/updatedpagesmethods/readDataEmployeeHist.dart';
 import 'package:laundry_firebase/pages/updatedpagesmethods/readDataJobsOnQueue.dart';
 import 'package:laundry_firebase/pages/updatedpagesmethods/readSuppliesCurrent.dart';
 import 'package:laundry_firebase/pages/updatedpagesmethods/readSuppliesHist.dart';
+import 'package:laundry_firebase/pages/updatedpagesmethods/sharedMethodAndVariable.dart';
 import 'package:laundry_firebase/services/database_employee_setup.dart';
 import 'package:laundry_firebase/variables/variables.dart';
+import 'package:web/web.dart' as web;
 
 class MyMainLaundryBody extends StatefulWidget {
   final String empidClass;
@@ -178,14 +181,39 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
     return Scaffold(
       backgroundColor: Colors.deepPurple[100],
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         toolbarHeight: 48,
         title: Row(
           children: [
             Expanded(
-              child: Text(
-                "$dateText. Hello ${empSetup.empName}",
-                style: const TextStyle(fontSize: 14),
-                overflow: TextOverflow.ellipsis,
+              child: Row(
+                children: [
+                  Text(
+                    "$dateText. Hello ${empSetup.empName}",
+                    style: const TextStyle(fontSize: 14),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  IconButton(
+                    tooltip: 'Logout',
+                    icon: const Icon(Icons.logout, size: 14),
+                    onPressed: () {
+                      web.window.localStorage.removeItem(storageKey);
+
+                      setState(() {
+                        loggedIn = false;
+                        memberController.clear();
+                        rememberMe = true;
+                      });
+
+                      Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const EnterLoyaltyCode()),
+                        (route) => false,
+                      );
+                    },
+                  ),
+                ],
               ),
             ),
             SingleChildScrollView(

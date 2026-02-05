@@ -12,6 +12,8 @@ import 'package:laundry_firebase/pages/updatedpages/main_laundry_header.dart';
 import 'package:laundry_firebase/variables/updatedvariables/customer_repository.dart';
 import 'package:laundry_firebase/variables/variables.dart';
 
+import 'package:web/web.dart' as web;
+
 class EnterLoyaltyCode extends StatefulWidget {
   const EnterLoyaltyCode({super.key});
 
@@ -20,13 +22,84 @@ class EnterLoyaltyCode extends StatefulWidget {
 }
 
 class _EnterLoyaltyCodeState extends State<EnterLoyaltyCode> {
+  String? error;
+
   String streamName = "0";
-  late TextEditingController memberController = TextEditingController();
-  
+
   @override
   void initState() {
     super.initState();
     CustomerRepository.instance.loadOnce();
+
+    _checkSavedCode();
+  }
+
+  Future<void> _checkSavedCode() async {
+    final savedCode = web.window.localStorage.getItem(storageKey);
+
+    if (savedCode == null) {
+      setState(() => loading = false);
+      return;
+    }
+
+    final isValid = await _validateCode(savedCode);
+
+    setState(() {
+      loggedIn = isValid;
+      loading = false;
+    });
+  }
+
+  Future<bool> _validateCode(String code) async {
+    final snap = await FirebaseFirestore.instance
+        .collection('EmployeeSetup')
+        .where('EmpId', isEqualTo: code)
+        // .where('active', isEqualTo: true)
+        .limit(1)
+        .get();
+
+    return snap.docs.isNotEmpty;
+  }
+
+  Future<void> _login() async {
+    final code = memberController.text.trim();
+
+    if (code.isEmpty) {
+      setState(() => error = 'Please enter your unique number');
+      return;
+    }
+
+    setState(() {
+      loading = true;
+      error = null;
+    });
+
+    final isValid = await _validateCode(code);
+
+    if (isValid) {
+      if (rememberMe) {
+        web.window.localStorage.setItem(storageKey, code);
+      }
+
+      setState(() {
+        loggedIn = true;
+        loading = false;
+      });
+    } else {
+      setState(() {
+        error = 'Invalid unique number';
+        loading = false;
+      });
+    }
+  }
+
+  void _logout() {
+    web.window.localStorage.removeItem(storageKey);
+    setState(() {
+      loggedIn = false;
+      memberController.clear();
+      rememberMe = true;
+    });
   }
 
   @override
@@ -40,153 +113,162 @@ class _EnterLoyaltyCodeState extends State<EnterLoyaltyCode> {
           toolbarHeight: 60,
         ),
         body: SingleChildScrollView(
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+          child: loading
+              ? const CircularProgressIndicator()
+              : loggedIn
+                  ? _rowSingleRead()
+                  : _loginWKL(),
+        ));
+  }
+
+  Row _loginWKL() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Expanded(
+          child: Column(
             children: [
-              Expanded(
-                child: Column(
-                  children: [
-                    const SizedBox(
-                      height: 1,
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        ElevatedButton(
-                            onPressed: () {
-                              setState(() {
-                                setMemberController("1");
-                              });
-                            },
-                            child: const Text("1")),
-                        const SizedBox(
-                          width: 1,
-                        ),
-                        ElevatedButton(
-                            onPressed: () {
-                              setMemberController("2");
-                            },
-                            child: const Text("2")),
-                        const SizedBox(
-                          width: 1,
-                        ),
-                        ElevatedButton(
-                            onPressed: () {
-                              setMemberController("3");
-                            },
-                            child: const Text("3")),
-                      ],
-                    ),
-                    const SizedBox(
-                      height: 1,
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        ElevatedButton(
-                            onPressed: () {
-                              setMemberController("4");
-                            },
-                            child: const Text("4")),
-                        const SizedBox(
-                          width: 1,
-                        ),
-                        ElevatedButton(
-                            onPressed: () {
-                              setMemberController("5");
-                            },
-                            child: const Text("5")),
-                        const SizedBox(
-                          width: 1,
-                        ),
-                        ElevatedButton(
-                            onPressed: () {
-                              setMemberController("6");
-                            },
-                            child: const Text("6")),
-                      ],
-                    ),
-                    const SizedBox(
-                      height: 1,
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        ElevatedButton(
-                            onPressed: () {
-                              setMemberController("7");
-                            },
-                            child: const Text("7")),
-                        ElevatedButton(
-                            onPressed: () {
-                              setMemberController("8");
-                            },
-                            child: const Text("8")),
-                        ElevatedButton(
-                            onPressed: () {
-                              setMemberController("9");
-                            },
-                            child: const Text("9")),
-                      ],
-                    ),
-                    const SizedBox(
-                      height: 1,
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        ElevatedButton(
-                            onPressed: () {
-                              setMemberController("*");
-                            },
-                            child: const Text("*")),
-                        ElevatedButton(
-                            onPressed: () {
-                              setMemberController("0");
-                            },
-                            child: const Text("0")),
-                        ElevatedButton(
-                            onPressed: () {
-                              setMemberController("#");
-                            },
-                            child: const Text("#")),
-                      ],
-                    ),
-                    const SizedBox(
-                      height: 1,
-                    ),
-                    Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                      ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            if (memberController.text.isNotEmpty) {
-                              _singleReadData(memberController.text);
-                            }
-                          });
-                        },
-                        child: const Text("View Card"),
-                      ),
-                      ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            memberController.text = "";
-                          });
-                        },
-                        child: const Text("Clear"),
-                      ),
-                    ]),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text("Your Card Num: ${memberController.text}"),
-                      ],
-                    )
-                  ],
-                ),
+              const SizedBox(
+                height: 1,
               ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          setMemberController("1");
+                        });
+                      },
+                      child: const Text("1")),
+                  const SizedBox(
+                    width: 1,
+                  ),
+                  ElevatedButton(
+                      onPressed: () {
+                        setMemberController("2");
+                      },
+                      child: const Text("2")),
+                  const SizedBox(
+                    width: 1,
+                  ),
+                  ElevatedButton(
+                      onPressed: () {
+                        setMemberController("3");
+                      },
+                      child: const Text("3")),
+                ],
+              ),
+              const SizedBox(
+                height: 1,
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  ElevatedButton(
+                      onPressed: () {
+                        setMemberController("4");
+                      },
+                      child: const Text("4")),
+                  const SizedBox(
+                    width: 1,
+                  ),
+                  ElevatedButton(
+                      onPressed: () {
+                        setMemberController("5");
+                      },
+                      child: const Text("5")),
+                  const SizedBox(
+                    width: 1,
+                  ),
+                  ElevatedButton(
+                      onPressed: () {
+                        setMemberController("6");
+                      },
+                      child: const Text("6")),
+                ],
+              ),
+              const SizedBox(
+                height: 1,
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  ElevatedButton(
+                      onPressed: () {
+                        setMemberController("7");
+                      },
+                      child: const Text("7")),
+                  ElevatedButton(
+                      onPressed: () {
+                        setMemberController("8");
+                      },
+                      child: const Text("8")),
+                  ElevatedButton(
+                      onPressed: () {
+                        setMemberController("9");
+                      },
+                      child: const Text("9")),
+                ],
+              ),
+              const SizedBox(
+                height: 1,
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  ElevatedButton(
+                      onPressed: () {
+                        setMemberController("*");
+                      },
+                      child: const Text("*")),
+                  ElevatedButton(
+                      onPressed: () {
+                        setMemberController("0");
+                      },
+                      child: const Text("0")),
+                  ElevatedButton(
+                      onPressed: () {
+                        setMemberController("#");
+                      },
+                      child: const Text("#")),
+                ],
+              ),
+              const SizedBox(
+                height: 1,
+              ),
+              Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                ElevatedButton(
+                  onPressed: () {
+                    setState(() {
+                      if (memberController.text.isNotEmpty) {
+                        // _singleReadData(memberController.text);
+                        _login();
+                      }
+                    });
+                  },
+                  child: const Text("View Card"),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    setState(() {
+                      memberController.text = "";
+                    });
+                  },
+                  child: const Text("Clear"),
+                ),
+              ]),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text("Your Card Num: ${memberController.text}"),
+                ],
+              )
             ],
           ),
-        ));
+        ),
+      ],
+    );
   }
 
   void setMemberController(String s) {
@@ -231,6 +313,18 @@ class _EnterLoyaltyCodeState extends State<EnterLoyaltyCode> {
         .push(MaterialPageRoute(builder: (context) => const MySaveText()));
   }
 
+  Row _rowSingleRead() {
+    final savedCode = web.window.localStorage.getItem(storageKey);
+    if (loggedIn) {
+      _singleReadData(savedCode.toString());
+    } else {
+      return _loginWKL();
+    }
+    return Row(
+      children: [],
+    );
+  }
+
   Future<void> _singleReadData(String s) async {
     // // checkInternet(context);
     // // if (bHaveInternet) {
@@ -256,7 +350,6 @@ class _EnterLoyaltyCodeState extends State<EnterLoyaltyCode> {
         // ignore: use_build_context_synchronously
         _singleCard(context);
       } else {
-        
         if (mapEmpId[s]!.isNotEmpty) {
           // ignore: use_build_context_synchronously
           _queuePage(context, mapEmpId[s]!);
