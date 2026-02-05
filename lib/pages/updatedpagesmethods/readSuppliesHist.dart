@@ -13,71 +13,77 @@ Widget readDataSuppliesHistory() {
     BuildContext context,
     SuppliesModelHist sMH,
   ) {
+    bool bNegative = (sMH.currentCounter < 0 ? true : false);
+
     Container regularContainer() {
       return Container(
-        height: 20,
-        color: getCOlorSuppliesHistoryPosNeg(sMH),
+        height: 22,
+        padding: const EdgeInsets.symmetric(horizontal: 4),
+        decoration: BoxDecoration(
+          color: Colors.grey[400],
+          border: Border(
+            bottom: BorderSide(
+              color: const Color.fromARGB(255, 89, 89, 89),
+              width: 0.6,
+            ),
+          ),
+        ),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            // Time
+            Text(
+              DateFormat('MM/dd hh:mm a').format(sMH.logDate.toDate()),
+              style: TextStyle(
+                fontSize: 9,
+                color: const Color.fromARGB(255, 68, 68, 68),
+              ),
+            ),
+            const SizedBox(width: 4),
+
+            // Amount
+            Text(
+              "₱${value.format(sMH.currentCounter)}",
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
+                color: (bNegative
+                    ? Color.fromARGB(255, 185, 57, 48)
+                    : Color(0xFF0D47A1)),
+              ),
+            ),
+            const SizedBox(width: 4),
+
+            // Main log text
             Expanded(
-              child: Column(
-                mainAxisSize: MainAxisSize.max,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(
-                    height: 2,
-                  ),
-                  Row(
-                    children: [
-                      SizedBox(
-                        width: 2,
-                      ),
-                      Text(
-                          DateFormat('MM/dd HH:mm:ss')
-                              .format(sMH.logDate.toDate()),
-                          style: const TextStyle(
-                            fontSize: 10,
-                          )),
-                      SizedBox(
-                        width: 2,
-                      ),
-                      Text(
-                          "(₱${value.format(sMH.currentCounter)}/pCF=₱${value.format(sMH.currentStocks)})",
-                          style: const TextStyle(fontSize: 11)),
-                      SizedBox(
-                        width: 2,
-                      ),
-                      Text(sMH.itemName,
-                          style: const TextStyle(
-                              fontSize: 10, fontWeight: FontWeight.bold)),
-                      SizedBox(
-                        width: 2,
-                      ),
-                      Text(ifMenuUniqueIsCashIn(sMH) ? 'to:' : 'by:',
-                          style: const TextStyle(
-                            fontSize: 10,
-                          )),
-                      Text(sMH.customerName,
-                          style: const TextStyle(
-                              fontSize: 10, fontWeight: FontWeight.bold)),
-                      SizedBox(
-                        width: 2,
-                      ),
-                      Text("log:${sMH.empId}",
-                          style: const TextStyle(
-                            fontSize: 10,
-                          )),
-                      SizedBox(
-                        width: 2,
-                      ),
-                      Text((sMH.remarks.isEmpty ? '' : ":${sMH.remarks}"),
-                          style: const TextStyle(
-                            fontSize: 10,
-                          )),
-                    ],
-                  ),
-                ],
+              child: Text(
+                "${sMH.itemName} ${ifMenuUniqueIsCashIn(sMH) ? 'to' : 'by'} ${sMH.customerName} : ${sMH.remarks}",
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF263238),
+                ),
+              ),
+            ),
+
+            //log by
+            Text(
+              sMH.empId,
+              style: TextStyle(
+                  fontSize: 8,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey[800]),
+            ),
+
+            // Stocks
+            Text(
+              "pCF ₱${value.format(sMH.currentStocks)}",
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
+                color: (bNegative
+                    ? Color.fromARGB(255, 185, 57, 48)
+                    : Color(0xFF0D47A1)),
               ),
             ),
           ],
@@ -86,60 +92,67 @@ Widget readDataSuppliesHistory() {
     }
 
     Container fundCheckContainer() {
+      bool bNegative = (sMH.currentCounter < 0 ? true : false);
       return Container(
-        height: 20,
-        color: getCOlorSuppliesHistoryPosNeg(sMH),
+        height: 22,
+        padding: const EdgeInsets.symmetric(horizontal: 4),
+        decoration: BoxDecoration(
+          color: const Color.fromARGB(
+              255, 155, 155, 155), // slightly darker laundry blue
+          border: Border(
+            bottom: BorderSide(
+              color: const Color.fromARGB(255, 89, 89, 89),
+              width: 0.6,
+            ),
+          ),
+        ),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            // Time
+            Text(
+              DateFormat('MM/dd hh:mm a').format(sMH.logDate.toDate()),
+              style: TextStyle(
+                fontSize: 9,
+                color: const Color.fromARGB(255, 68, 68, 68),
+              ),
+            ),
+            const SizedBox(width: 4),
+
+            // Amount
+            Text(
+              "₱${value.format(sMH.currentCounter)}",
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
+                color: (bNegative
+                    ? Color.fromARGB(255, 185, 57, 48)
+                    : Color(0xFF0D47A1)),
+              ),
+            ),
+            const SizedBox(width: 4),
+
+            // Main log text
             Expanded(
-              child: Column(
-                mainAxisSize: MainAxisSize.max,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(
-                    height: 2,
-                  ),
-                  Row(
-                    children: [
-                      SizedBox(
-                        width: 2,
-                      ),
-                      Text(
-                          DateFormat('MM/dd HH:mm:ss')
-                              .format(sMH.logDate.toDate()),
-                          style: const TextStyle(
-                            fontSize: 10,
-                          )),
-                      SizedBox(
-                        width: 2,
-                      ),
-                      Text(
-                          "(₱${value.format(sMH.currentCounter)}/pCF=₱${value.format(sMH.currentStocks)})",
-                          style: const TextStyle(fontSize: 11)),
-                      SizedBox(
-                        width: 2,
-                      ),
-                      Text(sMH.itemName,
-                          style: const TextStyle(
-                              fontSize: 10, fontWeight: FontWeight.bold)),
-                      SizedBox(
-                        width: 2,
-                      ),
-                      Text("by:${sMH.empId}",
-                          style: const TextStyle(
-                            fontSize: 10,
-                          )),
-                      SizedBox(
-                        width: 2,
-                      ),
-                      Text((sMH.remarks.isEmpty ? '' : ":${sMH.remarks}"),
-                          style: const TextStyle(
-                            fontSize: 10,
-                          )),
-                    ],
-                  ),
-                ],
+              child: Text(
+                "${sMH.itemName} by ${sMH.empId} : ${sMH.remarks}",
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF263238),
+                ),
+              ),
+            ),
+
+            // Stocks
+            Text(
+              " pCF ₱${value.format(sMH.currentStocks)}",
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
+                color: (bNegative
+                    ? Color.fromARGB(255, 185, 57, 48)
+                    : Color(0xFF0D47A1)),
               ),
             ),
           ],

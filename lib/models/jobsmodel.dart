@@ -66,6 +66,7 @@ class JobsModel {
   double finalKilo;
   int finalLoad;
   int finalPrice;
+  int promoCounter;
 
   /// 🟢 Options
   bool regular;
@@ -124,6 +125,7 @@ class JobsModel {
     required this.finalKilo,
     required this.finalLoad,
     required this.finalPrice,
+    required this.promoCounter,
     required this.regular,
     required this.sayosabon,
     required this.addOn,
@@ -167,6 +169,7 @@ class JobsModel {
       finalKilo: 0,
       finalLoad: 0,
       finalPrice: 0,
+      promoCounter: 0,
       regular: true,
       sayosabon: false,
       addOn: false,
@@ -211,6 +214,7 @@ class JobsModel {
     double? finalKilo,
     int? finalLoad,
     int? finalPrice,
+    int? promoCounter,
     bool? regular,
     bool? sayosabon,
     bool? addOn,
@@ -252,6 +256,7 @@ class JobsModel {
       finalKilo: finalKilo ?? this.finalKilo,
       finalLoad: finalLoad ?? this.finalLoad,
       finalPrice: finalPrice ?? this.finalPrice,
+      promoCounter: promoCounter ?? this.promoCounter,
       regular: regular ?? this.regular,
       sayosabon: sayosabon ?? this.sayosabon,
       addOn: addOn ?? this.addOn,
@@ -294,6 +299,7 @@ class JobsModel {
         finalKilo: json['Q04_FinalKilo'],
         finalLoad: json['Q05_FinalLoad'],
         finalPrice: json['Q06_FinalPrice'],
+        promoCounter: json['Q06_PromoCounter'],
         regular: json['Q07_Regular'],
         sayosabon: json['Q08_Sayosabon'],
         addOn: json['Q09_AddOn'],
@@ -339,6 +345,7 @@ class JobsModel {
         'Q04_FinalKilo': finalKilo,
         'Q05_FinalLoad': finalLoad,
         'Q06_FinalPrice': finalPrice,
+        'Q06_PromoCounter': promoCounter,
         'Q07_Regular': regular,
         'Q08_Sayosabon': sayosabon,
         'Q09_AddOn': addOn,

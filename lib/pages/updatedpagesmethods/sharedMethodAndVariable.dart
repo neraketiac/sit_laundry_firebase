@@ -14,6 +14,13 @@ import 'package:laundry_firebase/variables/variables.dart';
 import 'package:laundry_firebase/variables/variables_oth.dart';
 import 'package:laundry_firebase/variables/variables_supplies.dart';
 
+//admin
+bool selectedShowLaundry = false;
+bool selectedShowSuppliesCurr = false;
+bool selectedShowSuppliesHist = false;
+bool selectedShowEmployee = false;
+
+//
 double quantityKg = 5;
 int quantityLoad = 1;
 bool isGcashCredit = false;
@@ -324,6 +331,9 @@ Future<void> insertToFBJobsOnQueuelRepository(BuildContext context) async {
 
   if (await databaseJobsQueue
       .add(JobsModelRepository.instance.getJobsModel()!)) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Insert on Queue done.')),
+    );
   } else {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Error insert Jobs On Queue.')),

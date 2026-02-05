@@ -7,7 +7,6 @@ import 'package:laundry_firebase/pages/updatedpagesmethods/showSalaryMaintenance
 import 'package:laundry_firebase/variables/updatedvariables/jobsmodel_repository.dart';
 import 'package:laundry_firebase/variables/updatedvariables/supplies_hist_repository.dart';
 import 'package:laundry_firebase/variables/variables.dart';
-import 'package:laundry_firebase/variables/variables_supplies.dart';
 
 class MyMainLaundryHeader extends StatefulWidget {
   final String empid;
@@ -20,6 +19,8 @@ class MyMainLaundryHeader extends StatefulWidget {
 
 class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
   late String _sEmpId;
+
+  bool _isOpen = false;
 
   @override
   void initState() {
@@ -36,61 +37,108 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
     JobsModelRepository.instance.reset();
   }
 
+  Widget _fab({
+    required String hero,
+    required IconData icon,
+    required double bottom,
+    required double right,
+    required VoidCallback onTap,
+  }) {
+    return AnimatedPositioned(
+      duration: const Duration(milliseconds: 320), // fast → slow
+      curve: Curves.easeOutCubic,
+      bottom: bottom,
+      right: right,
+      child: FloatingActionButton(
+        heroTag: hero,
+        mini: true,
+        onPressed: onTap,
+        child: Icon(icon),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    const double base = 16;
     return Scaffold(
       body: MyMainLaundryBody(_sEmpId),
-      floatingActionButton: Column(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          FloatingActionButton(
-            heroTag: "JobsOnQueuex",
-            onPressed: () {
-              remarksControllerVar.text = "";
-              showJobsOnQueue(context);
-            },
-            child: const Icon(Icons.local_laundry_service_sharp),
-          ),
-          SizedBox(
-            height: 5,
-          ),
-          FloatingActionButton(
-            backgroundColor: Colors.lightBlue.shade100,
-            hoverColor: Colors.lightBlue,
-            heroTag: "Enter New Record...",
-            onPressed: () {
-              showCashFundsInput(context);
-            },
-            child: const Text(
-              "₱",
-              style: TextStyle(
-                fontSize: 26,
-                fontWeight: FontWeight.bold,
-              ),
+      floatingActionButton: SizedBox(
+        width: 300,
+        height: 300,
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            /// ───── Vertical (bottom → top)
+            _fab(
+              hero: 'JobsOnQueue',
+              icon: Icons.local_laundry_service,
+              bottom: _isOpen ? base + 180 : base,
+              right: base,
+              onTap: () {
+                showJobsOnQueue(context);
+              },
             ),
-          ),
-          FloatingActionButton(
-            backgroundColor: cFundsEOD,
-            hoverColor: cFundsEOD,
-            heroTag: "Out",
-            onPressed: () {
-              showFundCheck(context);
-            },
-            child: const Icon(Icons.timer_off_outlined),
-          ),
-          Visibility(
-            visible: (isAdmin ? true : allowPayment),
-            child: FloatingActionButton(
-              backgroundColor: cSalaryIn,
-              hoverColor: cSalaryIn,
-              heroTag: "Admin",
-              onPressed: () {
+            _fab(
+              hero: 'Funds In Funds Out',
+              icon: Icons.money,
+              bottom: _isOpen ? base + 120 : base,
+              right: base,
+              onTap: () {
+                showCashFundsInput(context);
+              },
+            ),
+            _fab(
+              hero: 'Fund Check',
+              icon: Icons.price_check_outlined,
+              bottom: _isOpen ? base + 60 : base,
+              right: base,
+              onTap: () {
+                showFundCheck(context);
+              },
+            ),
+
+            /// ───── Horizontal (right → left)
+            // _fab(
+            //   hero: 'FundCheck',
+            //   icon: Icons.price_check_outlined,
+            //   bottom: base,
+            //   right: _isOpen ? base + 180 : base,
+            //   onTap: () {
+            //     showFundCheck(context);
+            //   },
+            // ),
+            // _fab(
+            //   hero: 'Salary',
+            //   icon: Icons.emoji_people_sharp,
+            //   bottom: base,
+            //   right: _isOpen ? base + 120 : base,
+            //   onTap: () {},
+            // ),
+            _fab(
+              hero: 'Salary Input',
+              icon: Icons.timer_sharp,
+              bottom: base,
+              right: _isOpen ? base + 60 : base,
+              onTap: () {
                 showSalaryMaintenance(context);
               },
-              child: const Icon(Icons.add_moderator_outlined),
             ),
-          ),
-        ],
+
+            /// ───── Main FAB (Y)
+            Positioned(
+              bottom: base,
+              right: base,
+              child: FloatingActionButton(
+                heroTag: 'main',
+                onPressed: () {
+                  setState(() => _isOpen = !_isOpen);
+                },
+                child: Icon(_isOpen ? Icons.close : Icons.menu),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -29,6 +29,7 @@ class JobsModelRepository {
         finalKilo: 0,
         finalLoad: 0,
         finalPrice: 0,
+        promoCounter: 0,
         regular: false,
         sayosabon: false,
         addOn: false,
@@ -120,6 +121,7 @@ class JobsModelRepository {
   set setFinalKilo(double value) => jobsModel!.finalKilo = value;
   set setFinalLoad(int value) => jobsModel!.finalLoad = value;
   set setFinalPrice(int value) => jobsModel!.finalPrice = value;
+  set setPromoCounter(int value) => jobsModel!.promoCounter = value;
   set setRegular(bool value) => jobsModel!.regular = value;
   set setSayosabon(bool value) => jobsModel!.sayosabon = value;
   set setAddOn(bool value) => jobsModel!.addOn = value;

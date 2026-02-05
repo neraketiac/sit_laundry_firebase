@@ -49,6 +49,10 @@ class DatabaseJobsQueue {
         );
   }
 
+  // Stream<QuerySnapshot> getAllJobsOnQueue() {
+  //   return _ref.orderBy('A01_DateQ', descending: false).snapshots();
+  // }
+
   /// ❌ Delete job
   Future<void> delete(String docId) async {
     await _ref.doc(docId).delete();

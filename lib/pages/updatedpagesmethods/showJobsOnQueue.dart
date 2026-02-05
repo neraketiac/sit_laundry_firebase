@@ -1727,14 +1727,20 @@ void showJobsOnQueue(BuildContext context) {
   }
 
   Future<void> saveButtonSetRepository() async {
+    int promoCounter = 0;
     int computeLoadForKg(double kg) {
       double remainder = kg % 8;
       int wholeEight = kg ~/ 8;
       int lastCounter = 0;
-      if (remainder <= 0.9) {
+      if (remainder < 1) {
         lastCounter = 0;
       } else {
         lastCounter = 1;
+      }
+      if (remainder >= 3) {
+        promoCounter = wholeEight + 1;
+      } else {
+        promoCounter = wholeEight;
       }
 
       return wholeEight + lastCounter;
@@ -1789,13 +1795,16 @@ void showJobsOnQueue(BuildContext context) {
     //weight status
     JobsModelRepository.instance.setPerKilo = false;
     JobsModelRepository.instance.setPerLoad = false;
+
     if (isPerKg) {
       JobsModelRepository.instance.setPerKilo = true;
       JobsModelRepository.instance.setFinalKilo = quantityKg;
       JobsModelRepository.instance.setFinalLoad = computeLoadForKg(quantityKg);
+      JobsModelRepository.instance.setPromoCounter = promoCounter;
     } else {
       JobsModelRepository.instance.setPerLoad = true;
       JobsModelRepository.instance.setFinalLoad = quantityLoad;
+      JobsModelRepository.instance.setPromoCounter = quantityLoad;
     }
 
     //list other items
