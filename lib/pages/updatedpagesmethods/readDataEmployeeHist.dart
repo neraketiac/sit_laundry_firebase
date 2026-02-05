@@ -13,76 +13,75 @@ Widget readDataEmployeeHist() {
     BuildContext context,
     EmployeeModel eM,
   ) {
+    bool bNegative = (eM.currentCounter < 0 ? true : false);
     return Container(
-      height: 20,
-      color: getCOlorEmployeeHistoryPosNeg(eM),
+      height: 22,
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      decoration: BoxDecoration(
+        color: Colors.grey[400],
+        border: Border(
+          bottom: BorderSide(
+            color: const Color.fromARGB(255, 89, 89, 89),
+            width: 0.6,
+          ),
+        ),
+      ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          // Time
+          Text(
+            DateFormat('MM/dd hh:mm a').format(eM.logDate.toDate()),
+            style: TextStyle(
+              fontSize: 9,
+              color: const Color.fromARGB(255, 68, 68, 68),
+            ),
+          ),
+          const SizedBox(width: 4),
+
+          // Amount
+          Text(
+            "₱${value.format(eM.currentCounter)}",
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+              color: (bNegative
+                  ? Color.fromARGB(255, 185, 57, 48)
+                  : Color(0xFF0D47A1)),
+            ),
+          ),
+          const SizedBox(width: 4),
+
+          // Main log text
           Expanded(
-            child: Column(
-              mainAxisSize: MainAxisSize.max,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(
-                  height: 2,
-                ),
-                Row(
-                  children: [
-                    SizedBox(
-                      width: 2,
-                    ),
-                    Text(
-                        DateFormat('MM/dd HH:mm:ss')
-                            .format(eM.logDate.toDate()),
-                        style: const TextStyle(
-                          fontSize: 10,
-                        )),
-                    SizedBox(
-                      width: 2,
-                    ),
-                    Text(eM.itemName,
-                        style: const TextStyle(
-                            fontSize: 10, fontWeight: FontWeight.bold)),
-                    SizedBox(
-                      width: 2,
-                    ),
-                    Text(
-                        (ifMenuUniqueIsCashInEmp(eM)
-                            ? 'to:'
-                            : (ifMenuUniqueIsSalaryPayEmp(eM) ? 'to:' : 'by:')),
-                        style: const TextStyle(
-                          fontSize: 10,
-                        )),
-                    Text(eM.empName,
-                        style: const TextStyle(
-                            fontSize: 10, fontWeight: FontWeight.bold)),
-                    SizedBox(
-                      width: 2,
-                    ),
-                    Text(
-                        " (amt=₱${value.format(eM.currentCounter)}/pBal=₱${value.format(eM.currentStocks)})",
-                        style: const TextStyle(fontSize: 11)),
-                    SizedBox(
-                      width: 2,
-                    ),
-                    Text("log:${eM.logBy}",
-                        style: const TextStyle(
-                          fontSize: 10,
-                        )),
-                    SizedBox(
-                      width: 2,
-                    ),
-                    Text((eM.remarks.isEmpty ? '' : ":${eM.remarks}"),
-                        style: const TextStyle(
-                          fontSize: 10,
-                        )),
-                    SizedBox(
-                      width: 2,
-                    ),
-                  ],
-                ),
-              ],
+            child: Text(
+              "${eM.itemName} ${ifMenuUniqueIsCashInEmp(eM) ? 'to' : 'by'} ${eM.empName} : ${eM.remarks}",
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF263238),
+              ),
+            ),
+          ),
+
+          //log by
+          Text(
+            eM.logBy,
+            style: TextStyle(
+                fontSize: 8,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey[800]),
+          ),
+
+          // Stocks
+          Text(
+            "pCF ₱${value.format(eM.currentStocks)}",
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+              color: (bNegative
+                  ? Color.fromARGB(255, 185, 57, 48)
+                  : Color(0xFF0D47A1)),
             ),
           ),
         ],
@@ -102,8 +101,7 @@ Widget readDataEmployeeHist() {
         //header
         if (bHeader) {
           var rowData = TableRow(
-              decoration:
-                  const BoxDecoration(color: Color.fromARGB(255, 9, 194, 49)),
+              decoration: BoxDecoration(color: Colors.grey),
               children: [
                 // AutoCompleteCustomer(),
                 const Text(

@@ -34,10 +34,10 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
     return Row(
       children: [
         SizedBox(
-          width: 8,
+          width: 1,
         ),
         Transform.scale(
-          scale: 0.8, // shrink the checkbox itself
+          scale: 0.9, // shrink the checkbox itself
           child: Checkbox(
             value: selectedBool,
             onChanged: onChanged,
@@ -50,11 +50,11 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
         Text(
           title,
           style: const TextStyle(
-            fontSize: 10,
+            fontSize: 12,
             fontWeight: FontWeight.bold,
           ),
         ),
-        const SizedBox(width: 8), // tiny gap
+        const SizedBox(width: 5),
       ],
     );
   }
@@ -91,69 +91,59 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
     return Scaffold(
       backgroundColor: Colors.deepPurple[100],
       appBar: AppBar(
-        title: Row(
-          children: [
-            Text(
-                "${DateFormat('MMM dd, yyyy').format(Timestamp.now().toDate())}. Hello $empIdGlobal"),
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                SizedBox(
-                  width: 10,
-                ),
-                Container(
-                  color: Colors.amber,
-                  child: _checkBox(
-                    title: 'Show Laundry',
-                    selectedBool: selectedShowLaundry,
-                    onChanged: (value) {
-                      setState(() {
-                        selectedShowLaundry = value ?? false;
-                      });
-                    },
-                  ),
-                ),
-                Container(
-                  color: Colors.amber[200],
-                  child: _checkBox(
-                    title: 'Current Supplies',
-                    selectedBool: selectedShowSuppliesCurr,
-                    onChanged: (value) {
-                      setState(() {
-                        selectedShowSuppliesCurr = value ?? false;
-                      });
-                    },
-                  ),
-                ),
-                Container(
-                  color: Colors.amber,
-                  child: _checkBox(
-                    title: 'History Supplies',
-                    selectedBool: selectedShowSuppliesHist,
-                    onChanged: (value) {
-                      setState(() {
-                        selectedShowSuppliesHist = value ?? false;
-                      });
-                    },
-                  ),
-                ),
-                Container(
-                  color: Colors.amber[200],
-                  child: _checkBox(
-                    title: 'Employee Details',
-                    selectedBool: selectedShowEmployee,
-                    onChanged: (value) {
-                      setState(() {
-                        selectedShowEmployee = value ?? false;
-                      });
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ],
+        title: Text(
+          "${DateFormat('MMM dd, yyyy').format(Timestamp.now().toDate())}. Hello $empIdGlobal",
         ),
-        toolbarHeight: 25,
+        toolbarHeight: 48,
+        actions: [
+          SizedBox(
+            height: 48,
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  Container(
+                    color: Colors.lightBlueAccent[700],
+                    child: _checkBox(
+                      title: 'Laundry',
+                      selectedBool: selectedShowLaundry,
+                      onChanged: (v) =>
+                          setState(() => selectedShowLaundry = v ?? false),
+                    ),
+                  ),
+                  Container(
+                    color: Colors.lightBlueAccent,
+                    child: _checkBox(
+                      title: 'Funds',
+                      selectedBool: selectedShowSuppliesCurr,
+                      onChanged: (v) =>
+                          setState(() => selectedShowSuppliesCurr = v ?? false),
+                    ),
+                  ),
+                  Container(
+                    color: Colors.grey,
+                    child: _checkBox(
+                      title: 'History',
+                      selectedBool: selectedShowSuppliesHist,
+                      onChanged: (v) =>
+                          setState(() => selectedShowSuppliesHist = v ?? false),
+                    ),
+                  ),
+                  Container(
+                    color: Colors.amber,
+                    child: _checkBox(
+                      title: 'Emp',
+                      selectedBool: selectedShowEmployee,
+                      onChanged: (v) =>
+                          setState(() => selectedShowEmployee = v ?? false),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         scrollDirection: Axis.horizontal,

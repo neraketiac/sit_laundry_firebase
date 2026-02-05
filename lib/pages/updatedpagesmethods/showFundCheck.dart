@@ -13,70 +13,70 @@ void showFundCheck(BuildContext context) {
   Visibility countBills(Function setState) {
     Widget denominationRow(int denom, Function setState) {
       final qty = qtyMap[denom]!;
+      final TextEditingController controller =
+          TextEditingController(text: qty.toString());
 
       return Container(
         margin: const EdgeInsets.symmetric(vertical: 0),
-        padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
         decoration: BoxDecoration(
-          border: Border.all(color: Colors.black26),
-          borderRadius: BorderRadius.circular(6),
-          color: const Color.fromARGB(255, 124, 213, 255),
+          color: Colors.blue.shade50,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: Colors.blue.shade200),
         ),
         child: Row(
-          //crossAxisAlignment: CrossAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            // 🔹 Denomination (left)
-            SizedBox(
-              width: 60,
-              child: Text(
-                '$denom',
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                ),
-                textAlign: TextAlign.right,
-              ),
-            ),
-            const SizedBox(width: 4),
-            // 🔹 Qty box
-            Container(
-              width: 40,
-              height: 32,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.black54),
-                borderRadius: BorderRadius.circular(6),
-                color: Colors.white,
-              ),
-              child: Text(
-                '$qty',
-                style: const TextStyle(fontWeight: FontWeight.w600),
-              ),
+            Text(
+              '   ₱$denom',
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             ),
 
-            const SizedBox(width: 4),
-
-            // 🔹 -1 button
-            IconButton(
-              icon: const Icon(Icons.remove_circle_outline, size: 20),
-              onPressed: qty > 0
-                  ? () {
-                      setState(() {
-                        qtyMap[denom] = qty - 1;
-                      });
-                    }
-                  : null,
-            ),
-
-            // 🔹 +1 button
-            IconButton(
-              icon: const Icon(Icons.add_circle_outline, size: 20),
-              onPressed: () {
-                setState(() {
-                  qtyMap[denom] = qty + 1;
-                });
-              },
+            // Group for buttons + qty
+            IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  IconButton(
+                    padding: const EdgeInsets.all(2),
+                    constraints:
+                        const BoxConstraints(minWidth: 32, minHeight: 32),
+                    icon: const Icon(Icons.remove_circle,
+                        color: Colors.blue, size: 24),
+                    onPressed: qty > 0
+                        ? () => setState(() => qtyMap[denom] = qty - 1)
+                        : null,
+                  ),
+                  SizedBox(
+                    width: 48,
+                    height: 36,
+                    child: TextField(
+                      controller: controller,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(fontSize: 14),
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(
+                        isDense: true,
+                        contentPadding: EdgeInsets.symmetric(vertical: 8),
+                        border: OutlineInputBorder(),
+                      ),
+                      onChanged: (val) {
+                        final intVal = int.tryParse(val) ?? 0;
+                        setState(() => qtyMap[denom] = intVal);
+                      },
+                    ),
+                  ),
+                  IconButton(
+                    padding: const EdgeInsets.all(4),
+                    constraints:
+                        const BoxConstraints(minWidth: 32, minHeight: 32),
+                    icon: const Icon(Icons.add_circle,
+                        color: Colors.blue, size: 24),
+                    onPressed: () => setState(() => qtyMap[denom] = qty + 1),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
@@ -252,7 +252,7 @@ void showFundCheck(BuildContext context) {
                 setState(() {
                   resetAllQty();
                 });
-                Navigator.pop(context); // close popup
+                //Navigator.pop(context); // close popup
               },
               child: const Text('Reset'),
             ),

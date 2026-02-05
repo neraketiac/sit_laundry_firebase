@@ -73,7 +73,7 @@ Widget readDataEmployeeCurr() {
         //header
         if (bHeader) {
           const rowData = TableRow(
-              decoration: BoxDecoration(color: Color.fromARGB(255, 9, 194, 49)),
+              decoration: BoxDecoration(color: Colors.lightBlueAccent),
               children: [
                 Text(
                   "Current Balance",

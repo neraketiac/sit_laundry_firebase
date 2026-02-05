@@ -829,7 +829,8 @@ bool ifMenuUniqueIsCashIn(SuppliesModelHist sMH) {
 }
 
 bool ifMenuUniqueIsCashInEmp(EmployeeModel eM) {
-  if (eM.itemUniqueId == menuOthUniqIdCashIn) {
+  if (eM.itemUniqueId == menuOthUniqIdCashIn ||
+      eM.itemUniqueId == menuOthSalaryPayment) {
     return true;
   }
   return false;

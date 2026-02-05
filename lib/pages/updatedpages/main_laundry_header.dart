@@ -8,6 +8,25 @@ import 'package:laundry_firebase/variables/updatedvariables/jobsmodel_repository
 import 'package:laundry_firebase/variables/updatedvariables/supplies_hist_repository.dart';
 import 'package:laundry_firebase/variables/variables.dart';
 
+/*
+cd C:\Users\haali\Documents\GIT_SIT\sit_laundry_firebase
+C:\Users\haali\Documents\GIT_SIT\sit_laundry_firebase> git status
+C:\Users\haali\Documents\GIT_SIT\sit_laundry_firebase> git add .
+C:\Users\haali\Documents\GIT_SIT\sit_laundry_firebase> git commit -m "JobsOnGoing"
+C:\Users\haali\Documents\GIT_SIT\sit_laundry_firebase> git push
+
+flutter build web
+firebase login
+firebase init hosting
+  public (yes)
+  rewrite index (yes)
+  github (no)
+open file firebase.json change public to build/web
+firebase deploy
+
+
+*/
+
 class MyMainLaundryHeader extends StatefulWidget {
   final String empid;
 

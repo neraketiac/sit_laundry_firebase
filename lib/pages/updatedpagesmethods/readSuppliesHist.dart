@@ -97,8 +97,7 @@ Widget readDataSuppliesHistory() {
         height: 22,
         padding: const EdgeInsets.symmetric(horizontal: 4),
         decoration: BoxDecoration(
-          color: const Color.fromARGB(
-              255, 155, 155, 155), // slightly darker laundry blue
+          color: cFundsEOD,
           border: Border(
             bottom: BorderSide(
               color: const Color.fromARGB(255, 89, 89, 89),
@@ -175,8 +174,7 @@ Widget readDataSuppliesHistory() {
         //header
         if (bHeader) {
           var rowData = TableRow(
-              decoration:
-                  const BoxDecoration(color: Color.fromARGB(255, 9, 194, 49)),
+              decoration: const BoxDecoration(color: Colors.grey),
               children: [
                 // AutoCompleteCustomer(),
                 const Text(
