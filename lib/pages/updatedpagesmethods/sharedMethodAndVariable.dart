@@ -14,12 +14,6 @@ import 'package:laundry_firebase/variables/variables.dart';
 import 'package:laundry_firebase/variables/variables_oth.dart';
 import 'package:laundry_firebase/variables/variables_supplies.dart';
 
-//admin
-bool selectedShowLaundry = false;
-bool selectedShowSuppliesCurr = false;
-bool selectedShowSuppliesHist = false;
-bool selectedShowEmployee = false;
-
 //
 double quantityKg = 5;
 int quantityLoad = 1;

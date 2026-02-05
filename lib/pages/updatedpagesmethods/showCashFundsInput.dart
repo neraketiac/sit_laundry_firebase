@@ -98,10 +98,28 @@ void showCashFundsInput(BuildContext context) {
                 minWidth: 110,
                 minHeight: 40,
               ),
-              children: const [
-                Text('LPayment'),
-                Text('Load'),
-              ],
+              children: List.generate(fundTypeCodes1stLayer.length, (index) {
+                return GestureDetector(
+                  onDoubleTap: () {
+                    setState(() {
+                      if (fundTypeCodes1stLayer[index] ==
+                          menuOthLaundryPayment) {
+                        customerAmountVar.text =
+                            (int.parse(customerAmountVar.text) + 155)
+                                .toString();
+                      }
+                    });
+
+                    // You can add any double-tap specific logic here
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: Text(
+                      ['LPayment', 'Load'][index],
+                    ),
+                  ),
+                );
+              }),
             ),
 
             const Divider(height: 1),
@@ -329,8 +347,8 @@ void showCashFundsInput(BuildContext context) {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     customerName(setState),
-                    fundTypeToggle(setState),
                     customerAmount(setState),
+                    fundTypeToggle(setState),
                     conRemarksSuppliesVar(setState),
                   ],
                 ),
