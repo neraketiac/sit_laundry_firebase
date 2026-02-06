@@ -8,7 +8,7 @@ import 'package:laundry_firebase/pages/loyalty_single.dart';
 import 'package:laundry_firebase/pages/menu/menu_constants.dart';
 import 'package:laundry_firebase/pages/menu/menu_main.dart';
 import 'package:laundry_firebase/pages/save_text.dart';
-import 'package:laundry_firebase/pages/updatedpages/main_laundry_header.dart';
+import 'package:laundry_firebase/pages/updatedpages/header/main_laundry_header.dart';
 import 'package:laundry_firebase/variables/updatedvariables/customer_repository.dart';
 import 'package:laundry_firebase/variables/variables.dart';
 
@@ -263,6 +263,13 @@ class _EnterLoyaltyCodeState extends State<EnterLoyaltyCode> {
                 children: [
                   Text("Your Card Num: ${memberController.text}"),
                 ],
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(error.toString() == 'null' ? '' : error.toString(),
+                      style: TextStyle(color: Colors.red))
+                ],
               )
             ],
           ),
@@ -315,11 +322,11 @@ class _EnterLoyaltyCodeState extends State<EnterLoyaltyCode> {
 
   Row _rowSingleRead() {
     final savedCode = web.window.localStorage.getItem(storageKey);
-    if (loggedIn) {
-      _singleReadData(savedCode.toString());
-    } else {
-      return _loginWKL();
-    }
+    // if (loggedIn) {
+    _singleReadData(savedCode.toString());
+    // } else {
+    //   return _loginWKL();
+    // }
     return Row(
       children: [],
     );

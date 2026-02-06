@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:laundry_firebase/pages/updatedpages/main_laundry_body.dart';
-import 'package:laundry_firebase/pages/updatedpagesmethods/showCashFundsInput.dart';
-import 'package:laundry_firebase/pages/updatedpagesmethods/showFundCheck.dart';
-import 'package:laundry_firebase/pages/updatedpagesmethods/showJobsOnQueue.dart';
-import 'package:laundry_firebase/pages/updatedpagesmethods/showSalaryMaintenance.dart';
+import 'package:laundry_firebase/pages/updatedpages/body/main_laundry_body.dart';
+import 'package:laundry_firebase/pages/updatedpages/header/Funds/showCashFundsInput.dart';
+import 'package:laundry_firebase/pages/updatedpages/header/Funds/showFundCheck.dart';
+import 'package:laundry_firebase/pages/updatedpages/header/JobsOnQueue/showJobsOnQueue.dart';
+import 'package:laundry_firebase/pages/updatedpages/header/Employee/showSalaryMaintenance.dart';
 import 'package:laundry_firebase/variables/updatedvariables/jobsmodel_repository.dart';
 import 'package:laundry_firebase/variables/updatedvariables/supplies_hist_repository.dart';
 import 'package:laundry_firebase/variables/variables.dart';

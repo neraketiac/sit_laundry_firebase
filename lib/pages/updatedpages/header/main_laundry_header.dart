@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:laundry_firebase/pages/updatedpages/main_laundry_body.dart';
-import 'package:laundry_firebase/pages/updatedpagesmethods/showCashFundsInput.dart';
-import 'package:laundry_firebase/pages/updatedpagesmethods/showFundCheck.dart';
-import 'package:laundry_firebase/pages/updatedpagesmethods/showJobsOnQueue.dart';
-import 'package:laundry_firebase/pages/updatedpagesmethods/showSalaryMaintenance.dart';
+import 'package:laundry_firebase/pages/updatedpages/body/main_laundry_body.dart';
+import 'package:laundry_firebase/pages/updatedpages/header/Funds/showCalendarDialog.dart';
+import 'package:laundry_firebase/pages/updatedpages/header/Funds/showCashFundsInput.dart';
+import 'package:laundry_firebase/pages/updatedpages/header/Funds/showFundCheck.dart';
+import 'package:laundry_firebase/pages/updatedpages/header/JobsOnQueue/showJobsOnQueue.dart';
+import 'package:laundry_firebase/pages/updatedpages/header/Employee/showSalaryMaintenance.dart';
 import 'package:laundry_firebase/variables/updatedvariables/jobsmodel_repository.dart';
 import 'package:laundry_firebase/variables/updatedvariables/supplies_hist_repository.dart';
 import 'package:laundry_firebase/variables/variables.dart';
@@ -37,6 +38,9 @@ class MyMainLaundryHeader extends StatefulWidget {
 }
 
 class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
+//*showJobsOnQueue
+//*showJobsOnQueue
+
   late String _sEmpId;
 
   bool _isOpen = false;
@@ -54,6 +58,10 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
     }
     SuppliesHistRepository.instance.reset();
     JobsModelRepository.instance.reset();
+
+    //*show JobsOnQueue
+
+    //*showJobsOnQueue
   }
 
   Widget _fab({
@@ -127,13 +135,19 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
             //     showFundCheck(context);
             //   },
             // ),
-            // _fab(
-            //   hero: 'Salary',
-            //   icon: Icons.emoji_people_sharp,
-            //   bottom: base,
-            //   right: _isOpen ? base + 120 : base,
-            //   onTap: () {},
-            // ),
+            _fab(
+              hero: 'Calendar',
+              icon: Icons.calendar_month,
+              bottom: base,
+              right: _isOpen ? base + 120 : base,
+              onTap: () async {
+                await showCalendarDialog(context);
+
+                // if (result != null) {
+                //   print(result); // Map<DateTime, DaySelection>
+                // };
+              },
+            ),
             _fab(
               hero: 'Salary Input',
               icon: Icons.timer_sharp,

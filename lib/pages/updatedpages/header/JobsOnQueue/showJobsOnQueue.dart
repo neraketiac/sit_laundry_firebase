@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:laundry_firebase/models/otheritemmodel.dart';
 import 'package:laundry_firebase/pages/autocompletecustomer.dart';
-import 'package:laundry_firebase/pages/updatedpagesmethods/sharedMethodAndVariable.dart';
+import 'package:laundry_firebase/pages/updatedpages/sharedmethods/sharedMethodAndVariable.dart';
 import 'package:laundry_firebase/variables/updatedvariables/jobsmodel_repository.dart';
 import 'package:laundry_firebase/variables/variables.dart';
 import 'package:laundry_firebase/variables/variables_ble.dart';
@@ -1005,13 +1005,8 @@ void showJobsOnQueue(BuildContext context) {
       unpaid,
       paidCash,
       paidGCash,
-      // partialPaidCash,
-      // partialPaidGCash,
     ];
-    // final List<int> listPaidUnpaid2 = [
-    //   partialPaidCash,
-    //   partialPaidGCash,
-    // ];
+
     return Visibility(
       visible: true,
       child: Container(
@@ -1058,30 +1053,6 @@ void showJobsOnQueue(BuildContext context) {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // ToggleButtons(
-                //   isSelected: List.generate(
-                //     listPaidUnpaid2.length,
-                //     (i) => selectedPaidUnpaid == listPaidUnpaid2[i],
-                //   ),
-                //   onPressed: (index) {
-                //     setState(() {
-                //       selectedPaidUnpaid = listPaidUnpaid2[index];
-                //     });
-                //   },
-                //   borderRadius: BorderRadius.circular(8),
-                //   selectedColor: Colors.black,
-                //   fillColor: Colors.greenAccent,
-                //   color: Colors.black,
-                //   borderColor: cSalaryOut,
-                //   constraints: const BoxConstraints(
-                //     minWidth: 60,
-                //     minHeight: 25,
-                //   ),
-                //   children: const [
-                //     Text('Partial Cash', style: TextStyle(fontSize: 10)),
-                //     Text('Partial GCash', style: TextStyle(fontSize: 10)),
-                //   ],
-                // ),
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [

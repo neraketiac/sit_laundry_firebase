@@ -3,12 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:laundry_firebase/models/employeesetupmodel.dart';
 import 'package:laundry_firebase/pages/enterloyaltycode.dart';
-import 'package:laundry_firebase/pages/updatedpagesmethods/readDataEmployeeCurr.dart';
-import 'package:laundry_firebase/pages/updatedpagesmethods/readDataEmployeeHist.dart';
-import 'package:laundry_firebase/pages/updatedpagesmethods/readDataJobsOnQueue.dart';
-import 'package:laundry_firebase/pages/updatedpagesmethods/readSuppliesCurrent.dart';
-import 'package:laundry_firebase/pages/updatedpagesmethods/readSuppliesHist.dart';
-import 'package:laundry_firebase/pages/updatedpagesmethods/sharedMethodAndVariable.dart';
+import 'package:laundry_firebase/pages/updatedpages/body/Employee/readDataEmployeeCurr.dart';
+import 'package:laundry_firebase/pages/updatedpages/body/Employee/readDataEmployeeHist.dart';
+import 'package:laundry_firebase/pages/updatedpages/body/JobsOnQueue/readDataJobsOnQueue.dart';
+import 'package:laundry_firebase/pages/updatedpages/body/Supplies/readSuppliesCurrent.dart';
+import 'package:laundry_firebase/pages/updatedpages/body/Supplies/readSuppliesHist.dart';
 import 'package:laundry_firebase/services/database_employee_setup.dart';
 import 'package:laundry_firebase/variables/variables.dart';
 import 'package:web/web.dart' as web;
@@ -201,7 +200,6 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
 
                       setState(() {
                         loggedIn = false;
-                        memberController.clear();
                         rememberMe = true;
                       });
 
