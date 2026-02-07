@@ -5,7 +5,6 @@ import 'package:intl/intl.dart';
 import 'package:laundry_firebase/models/employeemodel.dart';
 import 'package:laundry_firebase/services/database_employee_hist.dart';
 import 'package:laundry_firebase/variables/variables.dart';
-import 'package:laundry_firebase/variables/variables_supplies.dart';
 
 Widget readDataEmployeeHist() {
   bool bHeader = true;
@@ -14,6 +13,7 @@ Widget readDataEmployeeHist() {
     EmployeeModel eM,
   ) {
     bool bNegative = (eM.currentCounter < 0 ? true : false);
+    bool bNegativePCF = (eM.currentStocks < 0 ? true : false);
     return Container(
       height: 22,
       padding: const EdgeInsets.symmetric(horizontal: 4),
@@ -79,7 +79,7 @@ Widget readDataEmployeeHist() {
             style: TextStyle(
               fontSize: 10,
               fontWeight: FontWeight.w600,
-              color: (bNegative
+              color: (bNegativePCF
                   ? Color.fromARGB(255, 185, 57, 48)
                   : Color(0xFF0D47A1)),
             ),

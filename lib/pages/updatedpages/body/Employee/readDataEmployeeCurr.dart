@@ -12,6 +12,7 @@ Widget readDataEmployeeCurr() {
     BuildContext context,
     EmployeeModel eM,
   ) {
+    bool bNegativePCF = (eM.currentStocks < 0 ? true : false);
     return Container(
       height: 22,
       color: cSalaryCurrent,
@@ -46,9 +47,12 @@ Widget readDataEmployeeCurr() {
                     ),
                     Text(
                       "₱ ${value.format(eM.currentStocks)}  ",
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
+                        color: (bNegativePCF
+                            ? Color.fromARGB(255, 185, 57, 48)
+                            : Color(0xFF0D47A1)),
                       ),
                     ),
                   ],

@@ -14,6 +14,7 @@ Widget readDataSuppliesHistory() {
     SuppliesModelHist sMH,
   ) {
     bool bNegative = (sMH.currentCounter < 0 ? true : false);
+    bool bNegativePCF = (sMH.currentStocks < 0 ? true : false);
 
     Container regularContainer() {
       return Container(
@@ -81,7 +82,7 @@ Widget readDataSuppliesHistory() {
               style: TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.w600,
-                color: (bNegative
+                color: (bNegativePCF
                     ? Color.fromARGB(255, 185, 57, 48)
                     : Color(0xFF0D47A1)),
               ),
@@ -93,6 +94,7 @@ Widget readDataSuppliesHistory() {
 
     Container fundCheckContainer() {
       bool bNegative = (sMH.currentCounter < 0 ? true : false);
+      bool bNegativePCF = (sMH.currentStocks < 0 ? true : false);
       return Container(
         height: 22,
         padding: const EdgeInsets.symmetric(horizontal: 4),
@@ -149,7 +151,7 @@ Widget readDataSuppliesHistory() {
               style: TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.w600,
-                color: (bNegative
+                color: (bNegativePCF
                     ? Color.fromARGB(255, 185, 57, 48)
                     : Color(0xFF0D47A1)),
               ),
