@@ -264,7 +264,7 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
           children: [
             _animatedPanel(
               visible: empSetup.showLaundry,
-              width: 250,
+              width: 320,
               child: readDataJobsOnQueue(),
             ),
             _animatedPanel(

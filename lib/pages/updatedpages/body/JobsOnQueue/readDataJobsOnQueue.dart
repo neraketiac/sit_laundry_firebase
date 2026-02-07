@@ -1,30 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:laundry_firebase/models/jobsmodel.dart';
+import 'package:laundry_firebase/services/database_jobs.dart';
+import 'package:laundry_firebase/variables/variables.dart';
+import 'package:laundry_firebase/variables/variables_fab.dart';
+import 'package:laundry_firebase/variables/variables_oth.dart';
 
 Widget readDataJobsOnQueue() {
-  final sample = [
-    {
-      'id': '1',
-      'name': 'Wash & Fold',
-      'price': '₱120',
-      'status': 'Ready',
-      'progress': 1.0
-    },
-    {
-      'id': '2',
-      'name': 'Dry Clean',
-      'price': '₱200',
-      'status': 'In Progress',
-      'progress': 0.45
-    },
-    {
-      'id': '3',
-      'name': 'Iron Only',
-      'price': '₱50',
-      'status': 'Queued',
-      'progress': 0.0
-    },
-  ];
-
+  DatabaseJobsQueue databaseJobsQueue = DatabaseJobsQueue();
   int? selectedIndex;
 
   IconData statusIcon(double p) {
@@ -33,143 +15,279 @@ Widget readDataJobsOnQueue() {
     return Icons.pause;
   }
 
-  return StatefulBuilder(
-    builder: (context, setState) {
-      return ReorderableListView(
-        shrinkWrap: true,
-        onReorder: (oldIndex, newIndex) {
-          setState(() {
-            if (newIndex > oldIndex) newIndex -= 1;
-            final item = sample.removeAt(oldIndex);
-            sample.insert(newIndex, item);
+  String processStatusJobsOnQueue(JobsModel jM) {
+    if (jM.forSorting) {
+      return 'For Sorting';
+    }
+    if (jM.riderPickup) {
+      return 'Rider Pickup';
+    }
+    return 'no status';
+  }
 
-            if (selectedIndex == oldIndex) {
-              selectedIndex = newIndex;
-            }
-          });
-        },
-        children: List.generate(sample.length, (index) {
-          final r = sample[index];
-          final progress = r['progress'] as double;
-          final isRunning = progress > 0 && progress < 1;
-          final isSelected = selectedIndex == index;
+  const Map<int, String> itemNameAliases = {
+    menuOthXD: 'XD',
+    menuOthXW: 'XW',
+    menuOthXS: 'XS',
+  };
 
-          return TweenAnimationBuilder<double>(
-            key: ValueKey(r['id']),
-            tween: Tween(begin: 0, end: progress),
-            duration: const Duration(milliseconds: 900),
-            curve: Curves.easeOutCubic,
-            builder: (context, value, _) {
-              return MouseRegion(
-                cursor: SystemMouseCursors.click,
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 250),
-                  margin: const EdgeInsets.symmetric(vertical: 10),
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: isSelected
-                        ? Colors.deepPurple.shade100
-                        : Colors.deepPurple.shade50,
-                    borderRadius: BorderRadius.circular(18),
-                    boxShadow: [
-                      if (isSelected)
-                        BoxShadow(
-                          color: Colors.deepPurple.withOpacity(0.35),
-                          blurRadius: 12,
-                          offset: const Offset(0, 6),
-                        ),
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      // 🔘 Drag handle (web-friendly)
-                      ReorderableDragStartListener(
-                        index: index,
-                        child: MouseRegion(
-                          cursor: SystemMouseCursors.grab,
-                          child: const Icon(Icons.drag_handle),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
+  String afterNameStatuses(JobsModel jM) {
+    final List<String> parts = [];
 
-                      // Progress badge
-                      Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          SizedBox(
-                            width: 48,
-                            height: 48,
-                            child: CircularProgressIndicator(
-                              value: value,
-                              strokeWidth: 6,
-                              backgroundColor: Colors.red,
-                              color: isSelected
-                                  ? Colors.deepPurple
-                                  : Colors.deepPurple.shade300,
-                            ),
-                          ),
-                          AnimatedRotation(
-                            turns: isRunning ? 1 : 0,
-                            duration: const Duration(seconds: 2),
-                            curve: Curves.linear,
-                            child: Icon(
-                              statusIcon(progress),
+    if (jM.basket > 0) parts.add('${jM.basket}B');
+    if (jM.ebag > 0) parts.add('${jM.ebag}E');
+    if (jM.sako > 0) parts.add('${jM.sako}S');
+
+    return parts.join(' ');
+  }
+
+  String belowNameStatuses(JobsModel jM) {
+    final List<String> parts = [];
+
+    /// 🔁 Group item names and count
+    if (jM.items != null && jM.items!.isNotEmpty) {
+      final Map<String, int> itemCounts = {};
+
+      for (final item in jM.items!) {
+        late String? name;
+        if (item.itemGroup == groupOth) {
+          name = itemNameAliases[item.itemUniqueId];
+        } else {
+          name = item.itemGroup.trim();
+        }
+
+        if (name == null || name.isEmpty) continue;
+
+        itemCounts[name] = (itemCounts[name] ?? 0) + 1;
+      }
+
+      /// 🧾 Build display string
+      itemCounts.forEach((name, count) {
+        if (count > 1) {
+          parts.add('$count-$name');
+        } else {
+          parts.add(name);
+        }
+      });
+    }
+
+    return parts.join(' ');
+  }
+
+  String displayCustomerName(String? name) {
+    if (name == null || name.isEmpty) return '';
+    return name.length > 7 ? name.substring(0, 7) : name;
+  }
+
+  return StreamBuilder<List<JobsModel>>(
+    stream: databaseJobsQueue.streamAll(),
+    builder: (context, snapshot) {
+      if (snapshot.hasError) {
+        return const Center(child: Text('Error loading jobs'));
+      }
+
+      if (!snapshot.hasData) {
+        return const Center(child: CircularProgressIndicator());
+      }
+
+      final jobs = snapshot.data!;
+
+      return StatefulBuilder(
+        builder: (context, setState) {
+          return ReorderableListView(
+            shrinkWrap: true,
+            onReorder: (oldIndex, newIndex) {
+              setState(() {
+                if (newIndex > oldIndex) newIndex -= 1;
+                final item = jobs.removeAt(oldIndex);
+                jobs.insert(newIndex, item);
+
+                if (selectedIndex == oldIndex) {
+                  selectedIndex = newIndex;
+                }
+              });
+            },
+            children: List.generate(jobs.length, (index) {
+              final job = jobs[index];
+
+              final progress = 0;
+              final isRunning = progress > 0 && progress < 1;
+              final isSelected = selectedIndex == index;
+
+              return TweenAnimationBuilder<double>(
+                key: ValueKey(job.docId),
+                tween: Tween(begin: 0, end: 0),
+                duration: const Duration(milliseconds: 900),
+                curve: Curves.easeOutCubic,
+                builder: (context, value, _) {
+                  return MouseRegion(
+                    cursor: SystemMouseCursors.click,
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 250),
+                      margin: const EdgeInsets.symmetric(vertical: 10),
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? Colors.deepPurple.shade100
+                            : Colors.deepPurple.shade50,
+                        borderRadius: BorderRadius.circular(18),
+                        boxShadow: [
+                          if (isSelected)
+                            BoxShadow(
                               color: Colors.deepPurple,
-                              size: 20,
+                              blurRadius: 12,
+                              offset: const Offset(0, 6),
                             ),
-                          ),
                         ],
                       ),
-                      const SizedBox(width: 14),
+                      child: Row(
+                        children: [
+                          /// 🔘 Drag handle
+                          ReorderableDragStartListener(
+                            index: index,
+                            child: MouseRegion(
+                              cursor: SystemMouseCursors.grab,
+                              child: const Icon(Icons.drag_handle),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
 
-                      // Content (clickable)
-                      Expanded(
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(12),
-                          onTap: () {
-                            setState(() {
-                              selectedIndex = index;
-                            });
-                          },
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                          /// 🔄 Progress badge
+                          Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              SizedBox(
+                                width: 38,
+                                height: 38,
+                                child: CircularProgressIndicator(
+                                  value: value,
+                                  strokeWidth: 6,
+                                  backgroundColor: Colors.red,
+                                  color: isSelected
+                                      ? Colors.deepPurple
+                                      : Colors.deepPurple.shade300,
+                                ),
+                              ),
+                              AnimatedRotation(
+                                turns: isRunning ? 1 : 0,
+                                duration: const Duration(seconds: 2),
+                                curve: Curves.linear,
+                                child: Icon(
+                                  statusIcon(0),
+                                  color: Colors.deepPurple,
+                                  size: 20,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(width: 7),
+
+                          /// 📄 Job info
+                          Expanded(
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(12),
+                              onTap: () {
+                                setState(() {
+                                  selectedIndex = index;
+                                });
+                              },
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        '${displayCustomerName(job.customerName)} (${job.finalLoad})',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                          color: isSelected
+                                              ? Colors.deepPurple
+                                              : Colors.black,
+                                        ),
+                                      ),
+                                      SizedBox(
+                                        width: 3,
+                                      ),
+                                      Text(
+                                        afterNameStatuses(job),
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.w600,
+                                            color: isSelected
+                                                ? Colors.deepPurple
+                                                : Colors.black,
+                                            fontSize: 10),
+                                      ),
+                                    ],
+                                  ),
+                                  SizedBox(
+                                    width: 3,
+                                  ),
+                                  Text(
+                                    belowNameStatuses(job),
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        color: isSelected
+                                            ? Colors.deepPurple
+                                            : Colors.black,
+                                        fontSize: 10),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    processStatusJobsOnQueue(job),
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      color: Colors.deepPurple.shade400,
+                                    ),
+                                  ),
+                                  Text(
+                                    (job.remarks),
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      color: Colors.deepPurple.shade400,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+
+                          /// 💰 Price
+                          Column(
                             children: [
                               Text(
-                                r['name'] as String,
+                                '₱ ${job.finalPrice}',
                                 style: TextStyle(
-                                  fontWeight: FontWeight.w600,
+                                  fontWeight: FontWeight.bold,
                                   color: isSelected
                                       ? Colors.deepPurple
                                       : Colors.black,
                                 ),
                               ),
-                              const SizedBox(height: 6),
                               Text(
-                                r['status'] as String,
+                                (job.unpaid ? 'unpaid' : 'paid'),
                                 style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.deepPurple.shade400,
+                                  fontWeight: FontWeight.w600,
+                                  color: isSelected
+                                      ? Colors.deepPurple
+                                      : Colors.red[200],
+                                  fontSize: 10,
                                 ),
                               ),
                             ],
                           ),
-                        ),
+                          SizedBox(
+                            width: 20,
+                          ),
+                        ],
                       ),
-
-                      Text(
-                        r['price'] as String,
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: isSelected ? Colors.deepPurple : Colors.black,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                    ),
+                  );
+                },
               );
-            },
+            }),
           );
-        }),
+        },
       );
     },
   );

@@ -197,7 +197,6 @@ Future<void> insertToFB(BuildContext context) async {
   //insert to database
   //save to repository
 
-  SuppliesHistRepository.instance.setItemId(menuOthCashInOutFunds);
   SuppliesHistRepository.instance.setCustomerId(123); //dummy
   //SuppliesHistRepository.instance.setCustomerName(customerNameVar.text);
   //SuppliesHistRepository.instance.setCustomerName(autocompleteSelected.name);

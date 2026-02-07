@@ -43,10 +43,10 @@ void showSalaryMaintenance(BuildContext context) {
               onPressed: (index) {
                 setState(() {
                   selectedFundCode = fundTypeCodesEmployeeLayer[index];
-                  SuppliesHistRepository.instance
-                      .setItemId(menuOthCashInOutFunds);
-                  SuppliesHistRepository.instance
-                      .setItemUniqueId(selectedFundCode!);
+                  // SuppliesHistRepository.instance
+                  //     .setItemId(menuOthCashInOutFunds);
+                  // SuppliesHistRepository.instance
+                  //     .setItemUniqueId(selectedFundCode!);
                 });
               },
               borderRadius: BorderRadius.circular(8),
@@ -161,6 +161,7 @@ void showSalaryMaintenance(BuildContext context) {
   Future<void> saveButtonProcessCash() async {
     SuppliesHistRepository.instance
         .setItemName(getItemNameOnly(menuOthCashInOutFunds, selectedFundCode!));
+    SuppliesHistRepository.instance.setItemId(menuOthCashInOutFunds);
     SuppliesHistRepository.instance.setItemUniqueId(selectedFundCode!);
     SuppliesHistRepository.instance.setRemarks(remarksSuppliesVar.text);
     SuppliesHistRepository.instance.setCurrentCounter(

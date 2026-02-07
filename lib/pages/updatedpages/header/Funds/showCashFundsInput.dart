@@ -83,10 +83,6 @@ void showCashFundsInput(BuildContext context) {
               onPressed: (index) {
                 setState(() {
                   selectedFundCode = fundTypeCodes1stLayer[index];
-                  SuppliesHistRepository.instance
-                      .setItemId(menuOthCashInOutFunds);
-                  SuppliesHistRepository.instance
-                      .setItemUniqueId(selectedFundCode!);
                 });
               },
               borderRadius: BorderRadius.circular(8),
@@ -133,10 +129,10 @@ void showCashFundsInput(BuildContext context) {
               onPressed: (index) {
                 setState(() {
                   selectedFundCode = fundTypeCodes2ndLayer[index];
-                  SuppliesHistRepository.instance
-                      .setItemId(menuOthCashInOutFunds);
-                  SuppliesHistRepository.instance
-                      .setItemUniqueId(selectedFundCode!);
+                  // SuppliesHistRepository.instance
+                  //     .setItemId(menuOthCashInOutFunds);
+                  // SuppliesHistRepository.instance
+                  //     .setItemUniqueId(selectedFundCode!);
                 });
               },
               borderRadius: BorderRadius.circular(8),
@@ -165,10 +161,10 @@ void showCashFundsInput(BuildContext context) {
               onPressed: (index) {
                 setState(() {
                   selectedFundCode = fundTypeCodes3rdLayer[index];
-                  SuppliesHistRepository.instance
-                      .setItemId(menuOthCashInOutFunds);
-                  SuppliesHistRepository.instance
-                      .setItemUniqueId(selectedFundCode!);
+                  // SuppliesHistRepository.instance
+                  //     .setItemId(menuOthCashInOutFunds);
+                  // SuppliesHistRepository.instance
+                  //     .setItemUniqueId(selectedFundCode!);
                 });
               },
               borderRadius: BorderRadius.circular(8),
@@ -304,9 +300,10 @@ void showCashFundsInput(BuildContext context) {
     );
   }
 
-  Future<void> saveButtonProcessCash() async {
+  Future<void> saveButtonSetRepository() async {
     SuppliesHistRepository.instance
         .setItemName(getItemNameOnly(menuOthCashInOutFunds, selectedFundCode!));
+    SuppliesHistRepository.instance.setItemId(menuOthCashInOutFunds);
     SuppliesHistRepository.instance.setItemUniqueId(selectedFundCode!);
     SuppliesHistRepository.instance.setRemarks(remarksSuppliesVar.text);
     SuppliesHistRepository.instance.setCurrentCounter(
@@ -394,7 +391,7 @@ void showCashFundsInput(BuildContext context) {
                         content: Text('Please select transaction type.')),
                   );
                 } else {
-                  await saveButtonProcessCash();
+                  await saveButtonSetRepository();
                   Navigator.pop(context);
                 }
               },

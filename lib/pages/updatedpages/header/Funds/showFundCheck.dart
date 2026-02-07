@@ -177,6 +177,7 @@ void showFundCheck(BuildContext context) {
 
     SuppliesHistRepository.instance.setItemName(
         getItemNameOnly(menuOthCashInOutFunds, menuOthUniqIdFundsEOD));
+    SuppliesHistRepository.instance.setItemId(menuOthCashInOutFunds);
     SuppliesHistRepository.instance.setItemUniqueId(menuOthUniqIdFundsEOD);
     SuppliesHistRepository.instance.setRemarks(buildSelectedMoneyText());
     SuppliesHistRepository.instance.setCurrentCounter(grandTotal);
