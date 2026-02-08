@@ -39,7 +39,7 @@ class JobsModelRepository {
         ebag: 0,
         sako: 0,
         unpaid: true,
-        paidcash: false,
+        paidCash: false,
         paidGCash: false,
         partialPaidCash: false,
         partialPaidGCash: false,
@@ -100,8 +100,44 @@ class JobsModelRepository {
     jobsModel!.finalPrice -= value;
   }
 
+  int getFinalPrice() {
+    return jobsModel!.finalPrice;
+  }
+
   int getCustomerId() {
     return jobsModel!.customerId;
+  }
+
+  bool getUnpaid() {
+    return jobsModel!.unpaid;
+  }
+
+  bool getPaidCash() {
+    return jobsModel!.paidCash;
+  }
+
+  bool getPaidGCash() {
+    return jobsModel!.paidGCash;
+  }
+
+  bool getPartialPaidCash() {
+    return jobsModel!.partialPaidCash;
+  }
+
+  bool getPartialPaidGCash() {
+    return jobsModel!.partialPaidGCash;
+  }
+
+  int getPartialPaidCashAmount() {
+    return jobsModel!.partialPaidCashAmount;
+  }
+
+  int getPartialPaidGCashAmount() {
+    return jobsModel!.partialPaidCashAmount;
+  }
+
+  bool getGCashVerified() {
+    return jobsModel!.paidGCashverified;
   }
 
   set setDocId(String value) => jobsModel!.docId = value;
@@ -131,7 +167,7 @@ class JobsModelRepository {
   set setEbag(int value) => jobsModel!.ebag = value;
   set setSako(int value) => jobsModel!.sako = value;
   set setUnpaid(bool value) => jobsModel!.unpaid = value;
-  set setPaidCash(bool value) => jobsModel!.paidcash = value;
+  set setPaidCash(bool value) => jobsModel!.paidCash = value;
   set setPaidGCash(bool value) => jobsModel!.paidGCash = value;
   set setPartialPaidCash(bool value) => jobsModel!.partialPaidCash = value;
   set setPartialPaidGCash(bool value) => jobsModel!.partialPaidGCash = value;

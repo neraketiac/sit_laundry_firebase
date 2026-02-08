@@ -122,75 +122,74 @@ Widget readDataJobsOnQueue() {
                 builder: (context, value, _) {
                   return MouseRegion(
                     cursor: SystemMouseCursors.click,
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 250),
-                      margin: const EdgeInsets.symmetric(vertical: 10),
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: isSelected
-                            ? Colors.deepPurple.shade100
-                            : Colors.deepPurple.shade50,
-                        borderRadius: BorderRadius.circular(18),
-                        boxShadow: [
-                          if (isSelected)
-                            BoxShadow(
-                              color: Colors.deepPurple,
-                              blurRadius: 12,
-                              offset: const Offset(0, 6),
-                            ),
-                        ],
-                      ),
-                      child: Row(
-                        children: [
-                          /// 🔘 Drag handle
-                          ReorderableDragStartListener(
-                            index: index,
-                            child: MouseRegion(
-                              cursor: SystemMouseCursors.grab,
-                              child: const Icon(Icons.drag_handle),
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-
-                          /// 🔄 Progress badge
-                          Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              SizedBox(
-                                width: 38,
-                                height: 38,
-                                child: CircularProgressIndicator(
-                                  value: value,
-                                  strokeWidth: 6,
-                                  backgroundColor: Colors.red,
-                                  color: isSelected
-                                      ? Colors.deepPurple
-                                      : Colors.deepPurple.shade300,
-                                ),
+                    child: InkWell(
+                      onTap: () {
+                        setState(() {
+                          selectedIndex = index;
+                        });
+                      },
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 250),
+                        margin: const EdgeInsets.symmetric(vertical: 10),
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? Colors.deepPurple.shade100
+                              : Colors.deepPurple.shade50,
+                          borderRadius: BorderRadius.circular(18),
+                          boxShadow: [
+                            if (isSelected)
+                              BoxShadow(
+                                color: Colors.deepPurple,
+                                blurRadius: 12,
+                                offset: const Offset(0, 6),
                               ),
-                              AnimatedRotation(
-                                turns: isRunning ? 1 : 0,
-                                duration: const Duration(seconds: 2),
-                                curve: Curves.linear,
-                                child: Icon(
-                                  statusIcon(0),
-                                  color: Colors.deepPurple,
-                                  size: 20,
-                                ),
+                          ],
+                        ),
+                        child: Row(
+                          children: [
+                            /// 🔘 Drag handle
+                            ReorderableDragStartListener(
+                              index: index,
+                              child: MouseRegion(
+                                cursor: SystemMouseCursors.grab,
+                                child: const Icon(Icons.drag_handle),
                               ),
-                            ],
-                          ),
-                          const SizedBox(width: 7),
+                            ),
+                            const SizedBox(width: 10),
 
-                          /// 📄 Job info
-                          Expanded(
-                            child: InkWell(
-                              borderRadius: BorderRadius.circular(12),
-                              onTap: () {
-                                setState(() {
-                                  selectedIndex = index;
-                                });
-                              },
+                            /// 🔄 Progress badge
+                            Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                SizedBox(
+                                  width: 38,
+                                  height: 38,
+                                  child: CircularProgressIndicator(
+                                    value: value,
+                                    strokeWidth: 6,
+                                    backgroundColor: Colors.red,
+                                    color: isSelected
+                                        ? Colors.deepPurple
+                                        : Colors.deepPurple.shade300,
+                                  ),
+                                ),
+                                AnimatedRotation(
+                                  turns: isRunning ? 1 : 0,
+                                  duration: const Duration(seconds: 2),
+                                  curve: Curves.linear,
+                                  child: Icon(
+                                    statusIcon(0),
+                                    color: Colors.deepPurple,
+                                    size: 20,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(width: 7),
+
+                            /// 📄 Job info
+                            Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
@@ -250,36 +249,52 @@ Widget readDataJobsOnQueue() {
                                 ],
                               ),
                             ),
-                          ),
 
-                          /// 💰 Price
-                          Column(
-                            children: [
-                              Text(
-                                '₱ ${job.finalPrice}',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: isSelected
-                                      ? Colors.deepPurple
-                                      : Colors.black,
+                            /// 💰 Price
+                            Column(
+                              children: [
+                                Text(
+                                  '₱ ${job.finalPrice}',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: isSelected
+                                        ? Colors.deepPurple
+                                        : Colors.black,
+                                  ),
                                 ),
-                              ),
-                              Text(
-                                (job.unpaid ? 'unpaid' : 'paid'),
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w600,
-                                  color: isSelected
-                                      ? Colors.deepPurple
-                                      : Colors.red[200],
-                                  fontSize: 10,
+                                Text(
+                                  (job.paidCash
+                                      ? 'Paid\nCash'
+                                      : job.paidGCash
+                                          ? 'Paid\nGCash'
+                                          : job.partialPaidCash &&
+                                                  job.partialPaidGCash
+                                              ? 'Partial\nboth'
+                                              : job.partialPaidCash
+                                                  ? 'Partial\nCash'
+                                                  : job.partialPaidGCash
+                                                      ? 'Partial\nGCash'
+                                                      : 'Unpaid'),
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    color: isSelected
+                                        ? (job.paidCash
+                                            ? Colors.deepPurple
+                                            : Colors.red[200])
+                                        : (job.paidCash
+                                            ? Colors.black
+                                            : Colors.red[200]),
+                                    fontSize: 10,
+                                  ),
+                                  textAlign: TextAlign.right,
                                 ),
-                              ),
-                            ],
-                          ),
-                          SizedBox(
-                            width: 20,
-                          ),
-                        ],
+                              ],
+                            ),
+                            SizedBox(
+                              width: 20,
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   );

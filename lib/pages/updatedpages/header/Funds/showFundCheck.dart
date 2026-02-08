@@ -151,7 +151,7 @@ void showFundCheck(BuildContext context) {
     );
   }
 
-  Future<void> saveButtonProcessEOD() async {
+  Future<void> saveButtonSetRepository() async {
     String buildSelectedMoneyText() {
       final List<String> parts = [];
 
@@ -182,7 +182,7 @@ void showFundCheck(BuildContext context) {
     SuppliesHistRepository.instance.setRemarks(buildSelectedMoneyText());
     SuppliesHistRepository.instance.setCurrentCounter(grandTotal);
 
-    await insertToFB(context);
+    await insertToFBSuppliesHistory(context);
   }
 
   showDialog(
@@ -259,7 +259,7 @@ void showFundCheck(BuildContext context) {
             ),
             ElevatedButton(
               onPressed: () async {
-                saveButtonProcessEOD();
+                saveButtonSetRepository();
                 setState(() {
                   resetAllQty();
                 });

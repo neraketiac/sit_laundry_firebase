@@ -1,4 +1,3 @@
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:laundry_firebase/models/employeemodel.dart';
@@ -22,18 +21,19 @@ class DatabaseEmployeeCurrent {
   }
 
   Stream<QuerySnapshot> get() {
-    if (empIdGlobal == 'Ket' || empIdGlobal == 'DonF'){
+    if (empIdGlobal == 'Ket' || empIdGlobal == 'DonF') {
       return _employeeCurrRef.orderBy('LogDate', descending: true).snapshots();
     } else {
       return _employeeCurrRef
-      .where( 'EmpId', isEqualTo: empNameToId[empIdGlobal])
-      .orderBy('LogDate', descending: true).snapshots();
+          .where('EmpId', isEqualTo: empNameToId[empIdGlobal])
+          .orderBy('LogDate', descending: true)
+          .snapshots();
     }
   }
 
   Future<bool> addEmployeeCurr(EmployeeModel eM) async {
     eM = await _computeCurrentStocks(eM);
-    
+
     DatabaseEmployeeHist databaseEmployeeHist = DatabaseEmployeeHist();
     await databaseEmployeeHist.addEmployeeHist(eM);
 
@@ -57,7 +57,7 @@ class DatabaseEmployeeCurrent {
                 _updateDocId(eM),
                 print("Supplies Current Save done...."),
                 bSuccess = true,
-        })
+              })
           .catchError((error) => {
                 print("Failed : $error ${eM.empId}"),
                 bSuccess = false,
@@ -86,7 +86,7 @@ class DatabaseEmployeeCurrent {
     debugPrint("Compute Current Stocks for ${eM.empId}");
     var collectionRef = FirebaseFirestore.instance
         .collection('EmployeeCurr')
-        .where('EmpId', isEqualTo: eM.empId);      
+        .where('EmpId', isEqualTo: eM.empId);
     var querySnapshots = await collectionRef.get();
     for (var doc in querySnapshots.docs) {
       eM.currentStocks = doc['CurrentStocks'];
@@ -98,12 +98,12 @@ class DatabaseEmployeeCurrent {
     return eM;
   }
 
-    Future<void> _updateDocId(EmployeeModel eM) async {
+  Future<void> _updateDocId(EmployeeModel eM) async {
     await _employeeCurrRef
         .doc(eM.docId)
         .update(eM.toJson())
         .then((value) => {
-              print("Update Done updateDocId"),
+              print("Update Done updateDocId database_employee_current"),
             })
         .catchError(
           (error) => print("Update Failed : $error"),

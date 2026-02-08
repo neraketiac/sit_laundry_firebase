@@ -49,6 +49,8 @@ int totalPriceOthers = 0;
 bool isPerKg = true;
 final int tier1Increase = 35;
 final int tier2Increase = 105;
+int pricePerSet = 0;
+int maxPartial = 0;
 
 final NumberFormat pesoFormat = NumberFormat('#,##0', 'en_PH');
 
@@ -193,7 +195,74 @@ int get grandTotal {
   return total;
 }
 
-Future<void> insertToFB(BuildContext context) async {
+String showHowMany155or125Set(int total, bool bSeparate) {
+  //int base = pricePerSet;
+  List<int> extras = [pricePerSet + tier1Increase, pricePerSet + tier2Increase];
+
+  // Base single
+  if (total == pricePerSet) return ' $pricePerSet';
+
+  // Extras alone
+  if (extras.contains(total)) return ' $total';
+
+  for (final extra in [0, ...extras]) {
+    final remaining = total - extra;
+
+    if (remaining <= 0) continue;
+    if (remaining % pricePerSet != 0) continue;
+
+    final multiplier = remaining ~/ pricePerSet;
+
+    if (multiplier == 1 && extra == 0) {
+      return ' $pricePerSet';
+    }
+
+    if (multiplier == 1 && extra != 0) {
+      return ' $pricePerSet\n + $extra';
+    }
+
+    if (multiplier > 1 && extra == 0) {
+      return ' ($pricePerSet * $multiplier)';
+    }
+
+    if (multiplier > 1 && extra != 0) {
+      if (bSeparate) {
+        return ' ($pricePerSet * $multiplier)\n + $extra';
+      } else {
+        return ' ($pricePerSet * $multiplier) + $extra';
+      }
+    }
+  }
+
+  // Fallback if it doesn't match the pattern
+  return ' $total';
+}
+
+// 💰 Tiered price computation
+int computeTotalPrice(double q) {
+  int counter = (q / 8).floor(); // how many full 8s
+  counter = (counter == 0 ? 1 : counter);
+
+  int remainingPrice = 0;
+
+  if (q > 8) {
+    double remaining = double.parse((q % 8).toStringAsFixed(1));
+    if (remaining <= 0) {
+      remainingPrice = 0;
+    } else if (remaining > 0 && remaining <= 0.9) {
+      remainingPrice = tier1Increase;
+    } else if (remaining < maxPartial) {
+      remainingPrice = tier2Increase;
+    } else if (remaining >= maxPartial) {
+      remainingPrice = pricePerSet;
+    }
+    debugPrint('c=$counter rP=$remainingPrice r=$remaining');
+  }
+
+  return (counter * pricePerSet) + remainingPrice;
+}
+
+Future<void> insertToFBSuppliesHistory(BuildContext context) async {
   //insert to database
   //save to repository
 
@@ -331,5 +400,54 @@ Future<void> insertToFBJobsOnQueuelRepository(BuildContext context) async {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Error insert Jobs On Queue.')),
     );
+  }
+}
+
+//laundry payment
+Future<void> insertLaundryPaymentSuppliesHistory(
+    BuildContext context, String viaJobs) async {
+  //generate only when funds received ( paidCash, partialPaidCash )
+  if (JobsModelRepository.instance.getPaidCash() ||
+      JobsModelRepository.instance.getPartialPaidCash()) {
+    SuppliesHistRepository.instance.setItemName(getItemNameOnly(
+        menuOthCashInOutFunds, menuOthLaundryPayment)); //cash laundry payment
+    SuppliesHistRepository.instance.setItemId(menuOthCashInOutFunds);
+    SuppliesHistRepository.instance
+        .setItemUniqueId(menuOthLaundryPayment); //cash laundry payment
+    SuppliesHistRepository.instance.setRemarks('auto via $viaJobs paid');
+
+    if (JobsModelRepository.instance.getPartialPaidCash()) {
+      SuppliesHistRepository.instance.setCurrentCounter(
+          JobsModelRepository.instance.getPartialPaidCashAmount());
+    } else {
+      SuppliesHistRepository.instance
+          .setCurrentCounter(JobsModelRepository.instance.getFinalPrice());
+    }
+
+    await insertToFBSuppliesHistory(context);
+  }
+}
+
+//laundry payment revert
+Future<void> revertLaundryPaymentSuppliesHistory(
+    BuildContext context, String viaJobs) async {
+  //generate only in body jobsonqueue, jobsongoing, jobsdone
+  if (JobsModelRepository.instance.getUnpaid()) {
+    SuppliesHistRepository.instance.setItemName(getItemNameOnly(
+        menuOthCashInOutFunds, menuOthUniqIdFundsOut)); //funds out
+    SuppliesHistRepository.instance.setItemId(menuOthCashInOutFunds);
+    SuppliesHistRepository.instance
+        .setItemUniqueId(menuOthUniqIdFundsOut); //funds out
+    SuppliesHistRepository.instance.setRemarks('auto via $viaJobs unpaid');
+
+    if (JobsModelRepository.instance.getPartialPaidCashAmount() > 0) {
+      SuppliesHistRepository.instance.setCurrentCounter(
+          JobsModelRepository.instance.getPartialPaidCashAmount());
+    } else {
+      SuppliesHistRepository.instance
+          .setCurrentCounter(JobsModelRepository.instance.getFinalPrice());
+    }
+
+    await insertToFBSuppliesHistory(context);
   }
 }

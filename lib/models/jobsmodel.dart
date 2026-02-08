@@ -82,7 +82,7 @@ class JobsModel {
 
   /// 🔵 Payment
   bool unpaid;
-  bool paidcash;
+  bool paidCash;
   bool paidGCash;
   bool paidGCashverified;
   bool partialPaidCash;
@@ -135,7 +135,7 @@ class JobsModel {
     required this.ebag,
     required this.sako,
     required this.unpaid,
-    required this.paidcash,
+    required this.paidCash,
     required this.paidGCash,
     required this.partialPaidCash,
     required this.partialPaidGCash,
@@ -179,7 +179,7 @@ class JobsModel {
       ebag: 0,
       sako: 0,
       unpaid: true,
-      paidcash: false,
+      paidCash: false,
       paidGCash: false,
       partialPaidCash: false,
       partialPaidGCash: false,
@@ -224,7 +224,7 @@ class JobsModel {
     int? ebag,
     int? sako,
     bool? unpaid,
-    bool? paidcash,
+    bool? paidCash,
     bool? paidGCash,
     bool? paidGCashverified,
     bool? partialPaidCash,
@@ -266,7 +266,7 @@ class JobsModel {
       ebag: ebag ?? this.ebag,
       sako: sako ?? this.sako,
       unpaid: unpaid ?? this.unpaid,
-      paidcash: paidcash ?? this.paidcash,
+      paidCash: paidCash ?? this.paidCash,
       paidGCash: paidGCash ?? this.paidGCash,
       partialPaidCash: partialPaidCash ?? this.partialPaidCash,
       partialPaidGCash: partialPaidGCash ?? this.partialPaidGCash,
@@ -311,7 +311,7 @@ class JobsModel {
         sako: json['Q14_Sako'],
         remarks: json['R00_Remarks'],
         unpaid: json['P00_Unpaid'],
-        paidcash: json['P01_PaidCash'],
+        paidCash: json['P01_PaidCash'],
         paidGCash: json['P02_PaidGCash'],
         partialPaidCash: json['P03_PartialPaidCash'],
         partialPaidGCash: json['P04_PartialPaidGCash'],
@@ -357,7 +357,7 @@ class JobsModel {
         'Q14_Sako': sako,
         'R00_Remarks': remarks,
         'P00_Unpaid': unpaid,
-        'P01_PaidCash': paidcash,
+        'P01_PaidCash': paidCash,
         'P02_PaidGCash': paidGCash,
         'P03_PartialPaidCash': partialPaidCash,
         'P04_PartialPaidGCash': partialPaidGCash,

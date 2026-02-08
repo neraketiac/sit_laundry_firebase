@@ -176,7 +176,7 @@ class DatabaseSuppliesCurrent {
         .doc(sMH.docId)
         .update(sMH.toJson())
         .then((value) => {
-              print("Update Done updateDocId"),
+              print("Update Done updateDocId database_jobsonqueuefbmodel"),
             })
         .catchError(
           (error) => print("Update Failed : $error"),

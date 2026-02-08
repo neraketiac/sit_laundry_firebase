@@ -106,7 +106,7 @@ class DatabaseJobsOnQueue {
         .doc(jOQM.docId)
         .update(jOQM.toJson())
         .then((value) => {
-              print("Update Done updateDocId"),
+              print("Update Done updateDocId database_jobsonsqueue"),
             })
         .catchError(
           (error) => print("Update Failed : $error"),

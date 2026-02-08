@@ -8,7 +8,7 @@ const Color _gcButtons = Color.fromRGBO(134, 218, 252, 0.733);
 class DatabaseCustomerFBModel {
   final _firestore = FirebaseFirestore.instance;
 
-late final CollectionReference _customerFBMColRef;
+  late final CollectionReference _customerFBMColRef;
 
   DatabaseCustomerFBModel() {
     _customerFBMColRef = _firestore
@@ -25,12 +25,11 @@ late final CollectionReference _customerFBMColRef;
   }
 
   void addCustomerFBM(CustomerFirebaseModel cFBM) async {
-
     await _customerFBMColRef
         .add(cFBM)
         .then((value) => {
               print("Insert Done.${cFBM.docId}"),
-              })
+            })
         .catchError(
           (error) => print("Failed : $error ${cFBM.docId}"),
         );
@@ -41,7 +40,7 @@ late final CollectionReference _customerFBMColRef;
         .doc(cFBM.docId)
         .update(cFBM.toJson())
         .then((value) => {
-              print("Update Done updateDocId"),
+              print("Update Done updateDocId database_customerfbmodel"),
             })
         .catchError(
           (error) => print("Update Failed : $error"),

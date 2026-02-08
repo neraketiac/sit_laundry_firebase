@@ -9,7 +9,7 @@ const Color _gcButtons = Color.fromRGBO(134, 218, 252, 0.733);
 class DatabaseEmployeeModel {
   final _firestore = FirebaseFirestore.instance;
 
-late final CollectionReference _employeeMColRef;
+  late final CollectionReference _employeeMColRef;
 
   DatabaseEmployeeModel(String sEmployeeId) {
     _employeeMColRef = _firestore
@@ -27,12 +27,11 @@ late final CollectionReference _employeeMColRef;
   }
 
   void addEmployeeModel(EmployeeModel eM) async {
-
     await _employeeMColRef
         .add(eM)
         .then((value) => {
               print("Insert Done.${eM.docId}"),
-              })
+            })
         .catchError(
           (error) => print("Failed : $error ${eM.docId}"),
         );
@@ -43,7 +42,7 @@ late final CollectionReference _employeeMColRef;
         .doc(eM.docId)
         .update(eM.toJson())
         .then((value) => {
-              print("Update Done updateDocId"),
+              print("Update Done updateDocId database_employeemodel"),
             })
         .catchError(
           (error) => print("Update Failed : $error"),

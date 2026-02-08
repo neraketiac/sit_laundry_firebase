@@ -28,7 +28,7 @@ class _QRCashState extends State<QRCash> {
   }
 
   Future<void> saveButtonProcessEOD() async {
-    await insertToFB(context);
+    await insertToFBSuppliesHistory(context);
   }
 
   @override

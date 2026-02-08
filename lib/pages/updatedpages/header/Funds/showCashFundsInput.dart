@@ -308,7 +308,7 @@ void showCashFundsInput(BuildContext context) {
     SuppliesHistRepository.instance.setRemarks(remarksSuppliesVar.text);
     SuppliesHistRepository.instance.setCurrentCounter(
         int.parse(customerAmountVar.text.replaceAll(',', '')));
-    await insertToFB(context);
+    await insertToFBSuppliesHistory(context);
   }
 
   showDialog(

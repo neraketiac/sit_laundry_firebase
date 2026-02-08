@@ -29,11 +29,9 @@ class DatabaseJobsOnQueueFBModel {
   }
 
   void addJobsOnQueueFBM(JobsOnQueueFBModel jOQFBM) async {
-    
     await _jobsOnQueueFBModelRef
         .add(jOQFBM)
-        .then((value) => {
-            })
+        .then((value) => {})
         // ignore: invalid_return_type_for_catch_error
         .catchError(
           (error) => print("Failed : $error ${jOQFBM.docId}"),
@@ -45,14 +43,15 @@ class DatabaseJobsOnQueueFBModel {
         .doc(jOQFBM.docId)
         .update(jOQFBM.toJson())
         .then((value) => {
-              print("Update Done updateDocId"),
+              print("Update Done updateDocId database_jobsonqueuefbmodel"),
             })
         .catchError(
           (error) => print("Update Failed : $error"),
         );
   }
 
-  void updateJobsOnQueueFBM(String docId, JobsOnQueueFBModel jobsOnQueueFBModel) async {
+  void updateJobsOnQueueFBM(
+      String docId, JobsOnQueueFBModel jobsOnQueueFBModel) async {
     _jobsOnQueueFBModelRef.doc(docId).update(jobsOnQueueFBModel.toJson());
   }
 

@@ -158,7 +158,7 @@ void showSalaryMaintenance(BuildContext context) {
     );
   }
 
-  Future<void> saveButtonProcessCash() async {
+  Future<void> saveButtonSetRepository() async {
     SuppliesHistRepository.instance
         .setItemName(getItemNameOnly(menuOthCashInOutFunds, selectedFundCode!));
     SuppliesHistRepository.instance.setItemId(menuOthCashInOutFunds);
@@ -166,7 +166,7 @@ void showSalaryMaintenance(BuildContext context) {
     SuppliesHistRepository.instance.setRemarks(remarksSuppliesVar.text);
     SuppliesHistRepository.instance.setCurrentCounter(
         int.parse(customerAmountVar.text.replaceAll(',', '')));
-    await insertToFB(context);
+    await insertToFBSuppliesHistory(context);
   }
 
   showDialog(
@@ -239,7 +239,7 @@ void showSalaryMaintenance(BuildContext context) {
               onPressed: () async {
                 if (empNameToId.containsKey(autocompleteSelected.name)) {
                   isGcashCredit = true;
-                  await saveButtonProcessCash();
+                  await saveButtonSetRepository();
                   Navigator.pop(context);
                 } else if (selectedFundCode == null) {
                   ScaffoldMessenger.of(context).showSnackBar(
