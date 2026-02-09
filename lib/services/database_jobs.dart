@@ -44,7 +44,7 @@ class DatabaseJobsQueue {
 
   /// 🔄 Stream all queued jobs
   Stream<List<JobsModel>> streamAll() {
-    return _ref.snapshots().map(
+    return _ref.orderBy('A00_JobsId').snapshots().map(
           (s) => s.docs.map((d) => JobsModel.fromJson(d.data())).toList(),
         );
   }
@@ -56,6 +56,33 @@ class DatabaseJobsQueue {
   /// ❌ Delete job
   Future<void> delete(String docId) async {
     await _ref.doc(docId).delete();
+  }
+
+  Future<void> updateJobId(String docId, int jobId) async {
+    await _ref.doc(docId).update({
+      'A00_JobsId': jobId,
+    });
+  }
+
+  Future<void> updatePaidUnpaid(JobsModel jM) async {
+    await _ref.doc(jM.docId).update(jM.toJson());
+  }
+
+  Future<bool> update(JobsModel jM) async {
+    bool bSuccess = false;
+    await _ref
+        .doc(jM.docId)
+        .update(jM.toJson())
+        .then((value) => {
+              print("Update Done"),
+              bSuccess = true,
+            })
+        .catchError((error) => {
+              print("Failed Update Jobs On Queue : $error ${jM.customerName}"),
+              bSuccess = false,
+            });
+    ;
+    return bSuccess;
   }
 }
 

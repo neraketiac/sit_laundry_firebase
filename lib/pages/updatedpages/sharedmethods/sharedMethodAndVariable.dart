@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:laundry_firebase/models/customermodel.dart';
 import 'package:laundry_firebase/models/employeemodel.dart';
+import 'package:laundry_firebase/models/jobsmodel.dart';
 import 'package:laundry_firebase/models/otheritemmodel.dart';
 import 'package:laundry_firebase/models/suppliesmodelhist.dart';
 import 'package:laundry_firebase/services/database_employee_current.dart';
@@ -449,5 +450,19 @@ Future<void> revertLaundryPaymentSuppliesHistory(
     }
 
     await insertToFBSuppliesHistory(context);
+  }
+}
+
+Future<void> updateJobsModel(BuildContext context, JobsModel jM) async {
+  DatabaseJobsQueue databaseJobsQueue = DatabaseJobsQueue();
+
+  if (await databaseJobsQueue.update(jM)) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Update on Queue done.')),
+    );
+  } else {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Error update Jobs On Queue.')),
+    );
   }
 }

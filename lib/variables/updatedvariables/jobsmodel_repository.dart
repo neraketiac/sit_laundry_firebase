@@ -13,6 +13,7 @@ class JobsModelRepository {
   Future<void> reset() async {
     jobsModel = JobsModel(
         docId: '',
+        jobsId: 0,
         dateQ: timestamp1900,
         needOn: timestamp1900,
         dateO: timestamp1900,
@@ -100,6 +101,10 @@ class JobsModelRepository {
     jobsModel!.finalPrice -= value;
   }
 
+  int getJobsId() {
+    return jobsModel!.jobsId;
+  }
+
   int getFinalPrice() {
     return jobsModel!.finalPrice;
   }
@@ -141,6 +146,7 @@ class JobsModelRepository {
   }
 
   set setDocId(String value) => jobsModel!.docId = value;
+  set setJobsId(int value) => jobsModel!.jobsId = value;
   set setDateQ(Timestamp value) => jobsModel!.dateQ = value;
   set setNeedOn(Timestamp value) => jobsModel!.needOn = value;
   set setDateO(Timestamp value) => jobsModel!.dateO = value;

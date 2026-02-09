@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:laundry_firebase/pages/updatedpages/body/main_laundry_body.dart';
-import 'package:laundry_firebase/pages/updatedpages/header/Funds/showCashFundsInput.dart';
+import 'package:laundry_firebase/pages/updatedpages/header/Funds/showGCashTransactions.dart';
 import 'package:laundry_firebase/pages/updatedpages/header/Funds/showFundCheck.dart';
 import 'package:laundry_firebase/pages/updatedpages/header/JobsOnQueue/showJobsOnQueue.dart';
 import 'package:laundry_firebase/pages/updatedpages/header/Employee/showSalaryMaintenance.dart';
@@ -59,7 +59,7 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
             hoverColor: Colors.lightBlue,
             heroTag: "Enter New Record...",
             onPressed: () {
-              showCashFundsInput(context);
+              showGCashTransactions(context);
             },
             child: const Text(
               "₱",

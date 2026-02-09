@@ -1,4 +1,4 @@
-//floating salary  ###########################################################
+//floating button new record  ###########################################################
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:laundry_firebase/pages/autocompletecustomer.dart';
@@ -8,21 +8,39 @@ import 'package:laundry_firebase/variables/variables.dart';
 import 'package:laundry_firebase/variables/variables_oth.dart';
 import 'package:laundry_firebase/variables/variables_supplies.dart';
 
-void showSalaryMaintenance(BuildContext context) {
-  //selectedFundCode = menuOthSalaryPayment;
+void showGCashTransactions(BuildContext context) {
+  // if (selectedFundCode == menuOthSalaryPayment) {
+  //   selectedFundCode = menuOthLaundryPayment;
+  // }
 
-  final List<int> fundTypeCodesEmployeeLayer = [
-    menuOthSalaryPayment,
-    menuOthUniqIdCashIn
+  final List<int> fundTypeCodes1stLayer = [
+    menuOthLaundryPayment,
+    menuOthUniqIdLoad,
   ];
 
-  String fundTypeCaption() {
-    if (selectedFundCode == fundTypeCodesEmployeeLayer[0]) {
-      return '(+) Dagdagan ang current balance.\nRemarks sample:\nKumita sa petsa ito\nMali ang naibawas\n ';
-    } else if (selectedFundCode == fundTypeCodesEmployeeLayer[1]) {
-      return '(-) Bawasan ang current balance.\nRemarks sample:\nvia GCash ang current balance\nMali ang naidagdag\nFor real money, sa funds out.';
+  final List<int> fundTypeCodes2ndLayer = [
+    menuOthUniqIdCashIn,
+    menuOthUniqIdCashOut,
+  ];
+
+  final List<int> fundTypeCodes3rdLayer = [
+    menuOthUniqIdFundsIn,
+    menuOthUniqIdFundsOut,
+  ];
+
+  String fundTypeCaptionMulti() {
+    switch (selectedFundCode) {
+      case menuOthLaundryPayment:
+        return 'Bayad sa pina-laundry.\nadd funds';
+      case menuOthUniqIdCashIn:
+        return 'Bayad sa pa-cash-in.\nadd funds';
+      case menuOthUniqIdLoad:
+        return 'Bayad sa pina-load.\nadd funds';
+      case menuOthUniqIdCashOut:
+        return 'Pa-cash-out si customer.\nbawas funds';
+      default:
+        return '';
     }
-    return '';
   }
 
   Visibility fundTypeToggle(Function setState) {
@@ -30,27 +48,71 @@ void showSalaryMaintenance(BuildContext context) {
       visible: true,
       child: Container(
         alignment: Alignment.center,
-        padding: const EdgeInsets.all(6.0),
+        padding: const EdgeInsets.all(1.0),
         decoration: decoLightBlue(),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            Text('For Customer'),
+            // 🔹 FIRST ROW
             ToggleButtons(
               isSelected: List.generate(
-                fundTypeCodesEmployeeLayer.length,
-                (i) => selectedFundCode == fundTypeCodesEmployeeLayer[i],
+                fundTypeCodes1stLayer.length,
+                (i) => selectedFundCode == fundTypeCodes1stLayer[i],
               ),
               onPressed: (index) {
                 setState(() {
-                  selectedFundCode = fundTypeCodesEmployeeLayer[index];
-                  // SuppliesHistRepository.instance
-                  //     .setItemId(menuOthCashInOutFunds);
-                  // SuppliesHistRepository.instance
-                  //     .setItemUniqueId(selectedFundCode!);
+                  selectedFundCode = fundTypeCodes1stLayer[index];
                 });
               },
               borderRadius: BorderRadius.circular(8),
               selectedColor: Colors.white,
+              borderColor: Colors.blue,
+              fillColor: Colors.blue,
+              color: Colors.black,
+              constraints: const BoxConstraints(
+                minWidth: 110,
+                minHeight: 40,
+              ),
+              children: List.generate(fundTypeCodes1stLayer.length, (index) {
+                return GestureDetector(
+                  onDoubleTap: () {
+                    setState(() {
+                      if (fundTypeCodes1stLayer[index] ==
+                          menuOthLaundryPayment) {
+                        customerAmountVar.text =
+                            (int.parse(customerAmountVar.text) + 155)
+                                .toString();
+                      }
+                    });
+
+                    // You can add any double-tap specific logic here
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: Text(
+                      ['LPayment', 'Load'][index],
+                    ),
+                  ),
+                );
+              }),
+            ),
+
+            const Divider(height: 1),
+            // 🔹 SECOND ROW
+            ToggleButtons(
+              isSelected: List.generate(
+                fundTypeCodes2ndLayer.length,
+                (i) => selectedFundCode == fundTypeCodes2ndLayer[i],
+              ),
+              onPressed: (index) {
+                setState(() {
+                  selectedFundCode = fundTypeCodes2ndLayer[index];
+                });
+              },
+              borderRadius: BorderRadius.circular(8),
+              selectedColor: Colors.white,
+              borderColor: Colors.blue,
               fillColor: Colors.blue,
               color: Colors.black,
               constraints: const BoxConstraints(
@@ -58,42 +120,14 @@ void showSalaryMaintenance(BuildContext context) {
                 minHeight: 40,
               ),
               children: const [
-                Row(
-                  children: [
-                    Text('('),
-                    Text(
-                      '+',
-                      style: TextStyle(
-                        color: Colors.lightBlueAccent,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(')Salary'),
-                  ],
-                ),
-                Row(
-                  children: [
-                    Text('('),
-                    Text(
-                      '−',
-                      style: TextStyle(
-                        color: Colors.red,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(')Salary'),
-                  ],
-                ),
+                Text('Cash In'),
+                Text('Cash Out'),
               ],
             ),
-
-            const SizedBox(height: 6),
-
+            const SizedBox(height: 1),
             // 🔹 CAPTION
             Text(
-              fundTypeCaption(),
+              fundTypeCaptionMulti(),
               textAlign: TextAlign.center,
               style: const TextStyle(
                 fontSize: 12,
@@ -171,13 +205,38 @@ void showSalaryMaintenance(BuildContext context) {
           children: [
             // 🔹 Label + Checkbox on same row
             Padding(
-              padding: const EdgeInsets.only(left: 2, bottom: 1),
+              padding: const EdgeInsets.only(left: 4, bottom: 4),
               child: Row(
                 children: [],
               ),
             ),
 
+            // 🔹 Input Field (disabled if employee is checked)
+            // TextFormField(
+            //   controller: customerNameVar,
+            //   focusNode: nameFocusNode,
+            //   textCapitalization: TextCapitalization.words,
+            //   decoration: const InputDecoration(
+            //     hintText: 'Enter Name',
+            //     prefixIcon: SizedBox(width: _fieldIndentWidth),
+            //     border: OutlineInputBorder(),
+            //   ),
+            // ),
             AutoCompleteCustomer(),
+            SizedBox(
+              height: 5,
+            ),
+            MaterialButton(
+              color: cButtons,
+              onPressed: () {
+                Navigator.pop(context);
+                allCardsVar(context);
+              },
+              child: Text("New Account"),
+            ),
+            SizedBox(
+              height: 5,
+            ),
           ],
         ),
       ),
@@ -200,42 +259,26 @@ void showSalaryMaintenance(BuildContext context) {
     builder: (BuildContext context) {
       return StatefulBuilder(builder: (context, setState) {
         return AlertDialog(
-          contentPadding: const EdgeInsets.all(2),
+          backgroundColor: Colors.lightBlue,
+          contentPadding: const EdgeInsets.all(0),
           titlePadding: const EdgeInsets.only(
-            top: 5,
+            top: 0,
             left: 5,
             right: 5,
-            bottom: 2,
+            bottom: 0,
           ),
           actionsPadding: const EdgeInsets.symmetric(
-            horizontal: 8,
-            vertical: 8,
+            horizontal: 5,
+            vertical: 5,
           ),
-          backgroundColor: cSalaryIn,
-          title: Text.rich(
-            TextSpan(
-              children: [
-                TextSpan(
-                  text: "Staff Maintenance\n",
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                TextSpan(
-                  text: "Dagdag/bawas sa current balance.",
-                  style: TextStyle(
-                    fontSize: 10, // 👈 smaller
-                  ),
-                ),
-              ],
-            ),
+          title: Text(
+            "Cash Funds",
             textAlign: TextAlign.center,
           ),
           content: SingleChildScrollView(
             scrollDirection: Axis.vertical,
             child: Container(
-              padding: EdgeInsets.all(8.0),
+              padding: EdgeInsets.all(1.0),
               decoration: BoxDecoration(
                   border: Border.all(color: Colors.blueAccent, width: 2.0)),
               child: Form(
@@ -244,8 +287,8 @@ void showSalaryMaintenance(BuildContext context) {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     customerName(setState),
-                    fundTypeToggle(setState),
                     customerAmount(setState),
+                    fundTypeToggle(setState),
                     conRemarksSuppliesVar(setState),
                   ],
                 ),
@@ -259,25 +302,40 @@ void showSalaryMaintenance(BuildContext context) {
               onPressed: () {
                 Navigator.pop(context); // close popup
               },
-              child: const Text('Cancel'),
+              child: const Text(
+                'Cancel',
+                style: TextStyle(color: Colors.black),
+              ),
             ),
             ElevatedButton(
               onPressed: () async {
-                if (empNameToId.containsKey(autocompleteSelected.name)) {
-                  isGcashCredit = true;
-                  await saveButtonSetRepository();
-                  Navigator.pop(context);
+                if (customerAmountVar.text.isEmpty ||
+                    int.parse(customerAmountVar.text) <= 0) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Please enter amount.')),
+                  );
+                } else if (ifMenuUniqueIsFundsOut(
+                        SuppliesHistRepository.instance.suppliesModelHist!) &&
+                    remarksSuppliesVar.text.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                        content: Text('Remarks is required for Funds Out.')),
+                  );
+                } else if (ifMenuUniqueIsFundsOut(
+                        SuppliesHistRepository.instance.suppliesModelHist!) &&
+                    !empNameToId.containsKey(autocompleteSelected.name)) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                        content: Text('Name must be a staff for Funds Out.')),
+                  );
                 } else if (selectedFundCode == null) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                         content: Text('Please select transaction type.')),
                   );
                 } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                        content:
-                            Text('Name must be a staff for Salary Payment.')),
-                  );
+                  await saveButtonSetRepository();
+                  Navigator.pop(context);
                 }
               },
               child: const Text('Save'),

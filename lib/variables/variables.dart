@@ -483,6 +483,12 @@ final Color cWaitRiderDelivery = Color.fromRGBO(62, 255, 45, 1); //rider
 final Color cNasaCustomerNa = Color.fromRGBO(92, 91, 91, 1);
 final Color cRiderOnDelivery = Color.fromRGBO(62, 255, 45, 1); //rider
 
+final Color cShowGCash = Colors.lightBlueAccent;
+final Color cFundsInFundsOut = Colors.amberAccent;
+final Color cFundsCheck = Colors.lightGreenAccent;
+final Color cJobsOnQueue = Colors.blue;
+final Color cEmployeeMaintenance = Colors.deepOrangeAccent;
+
 Color paymentStatColor(String paymentStat) {
   if (paymentStat == "Paid" ||
       paymentStat == "PaidGCash" ||
@@ -513,6 +519,12 @@ Color? colLightBlue() {
 BoxDecoration decoLightBlue() {
   return BoxDecoration(
       color: colLightBlue(),
+      border: Border.all(color: borderColor(), width: 2.0));
+}
+
+BoxDecoration decoFundsInFundsOut() {
+  return BoxDecoration(
+      color: cFundsInFundsOut,
       border: Border.all(color: borderColor(), width: 2.0));
 }
 

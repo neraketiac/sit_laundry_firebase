@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:laundry_firebase/models/jobsmodel.dart';
+import 'package:laundry_firebase/pages/updatedpages/body/JobsOnQueue/showPaidUnpaid.dart';
 import 'package:laundry_firebase/services/database_jobs.dart';
 import 'package:laundry_firebase/variables/variables.dart';
-import 'package:laundry_firebase/variables/variables_fab.dart';
 import 'package:laundry_firebase/variables/variables_oth.dart';
 
 Widget readDataJobsOnQueue() {
@@ -26,9 +26,9 @@ Widget readDataJobsOnQueue() {
   }
 
   const Map<int, String> itemNameAliases = {
-    menuOthXD: 'XD',
-    menuOthXW: 'XW',
-    menuOthXS: 'XS',
+    menuOthXD: 'xD',
+    menuOthXW: 'xW',
+    menuOthXS: 'xS',
   };
 
   String afterNameStatuses(JobsModel jM) {
@@ -106,6 +106,13 @@ Widget readDataJobsOnQueue() {
                   selectedIndex = newIndex;
                 }
               });
+              //save changes of order
+              for (int i = 0; i < jobs.length; i++) {
+                final job = jobs[i];
+
+                databaseJobsQueue.updateJobId(job.docId, i);
+              }
+              //save changes of order
             },
             children: List.generate(jobs.length, (index) {
               final job = jobs[index];
@@ -236,7 +243,9 @@ Widget readDataJobsOnQueue() {
                                     processStatusJobsOnQueue(job),
                                     style: TextStyle(
                                       fontSize: 10,
-                                      color: Colors.deepPurple.shade400,
+                                      color: (job.forSorting
+                                          ? Colors.deepPurple.shade400
+                                          : Colors.redAccent),
                                     ),
                                   ),
                                   Text(
@@ -251,44 +260,55 @@ Widget readDataJobsOnQueue() {
                             ),
 
                             /// 💰 Price
-                            Column(
-                              children: [
-                                Text(
-                                  '₱ ${job.finalPrice}',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: isSelected
-                                        ? Colors.deepPurple
-                                        : Colors.black,
+                            InkWell(
+                              onTap: (() {
+                                showPaidUnpaid(context, job);
+                              }),
+                              child: Column(
+                                children: [
+                                  Text(
+                                    '₱ ${job.finalPrice}',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: isSelected
+                                          ? (job.paidCash
+                                              ? Colors.deepPurple
+                                              : Colors.redAccent)
+                                          : (job.paidCash
+                                              ? Colors.black
+                                              : Colors.redAccent),
+                                    ),
                                   ),
-                                ),
-                                Text(
-                                  (job.paidCash
-                                      ? 'Paid\nCash'
-                                      : job.paidGCash
-                                          ? 'Paid\nGCash'
-                                          : job.partialPaidCash &&
-                                                  job.partialPaidGCash
-                                              ? 'Partial\nboth'
-                                              : job.partialPaidCash
-                                                  ? 'Partial\nCash'
-                                                  : job.partialPaidGCash
-                                                      ? 'Partial\nGCash'
-                                                      : 'Unpaid'),
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    color: isSelected
-                                        ? (job.paidCash
-                                            ? Colors.deepPurple
-                                            : Colors.red[200])
-                                        : (job.paidCash
-                                            ? Colors.black
-                                            : Colors.red[200]),
-                                    fontSize: 10,
+                                  Text(
+                                    (job.unpaid
+                                        ? 'Unpaid'
+                                        : job.paidCash
+                                            ? 'Paid\nCash'
+                                            : job.paidGCash
+                                                ? 'Paid\nGCash'
+                                                : job.partialPaidCash &&
+                                                        job.partialPaidGCash
+                                                    ? 'Partial\nboth'
+                                                    : job.partialPaidCash
+                                                        ? 'Partial\nCash'
+                                                        : job.partialPaidGCash
+                                                            ? 'Partial\nGCash'
+                                                            : 'Unpaid'),
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      color: isSelected
+                                          ? (job.paidCash
+                                              ? Colors.deepPurple
+                                              : Colors.redAccent)
+                                          : (job.paidCash
+                                              ? Colors.black
+                                              : Colors.redAccent),
+                                      fontSize: 10,
+                                    ),
+                                    textAlign: TextAlign.right,
                                   ),
-                                  textAlign: TextAlign.right,
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                             SizedBox(
                               width: 20,

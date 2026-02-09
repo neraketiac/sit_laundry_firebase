@@ -42,6 +42,7 @@ import 'package:laundry_firebase/models/otheritemmodel.dart';
 class JobsModel {
   /// 🔵 Identity
   String docId;
+  int jobsId;
 
   /// 🟣 Dates
   Timestamp dateQ;
@@ -109,6 +110,7 @@ class JobsModel {
 
   JobsModel({
     required this.docId,
+    required this.jobsId,
     required this.dateQ,
     required this.needOn,
     required this.dateO,
@@ -153,6 +155,7 @@ class JobsModel {
   factory JobsModel.makeEmpty() {
     return JobsModel(
       docId: '',
+      jobsId: 0,
       dateQ: Timestamp.now(),
       needOn: Timestamp.now(),
       dateO: Timestamp.now(),
@@ -198,6 +201,7 @@ class JobsModel {
   /// 🟦 COPY WITH
   JobsModel copyWith({
     String? docId,
+    int? jobsId,
     Timestamp? dateQ,
     Timestamp? needOn,
     Timestamp? dateO,
@@ -240,6 +244,7 @@ class JobsModel {
   }) {
     return JobsModel(
       docId: docId ?? this.docId,
+      jobsId: jobsId ?? this.jobsId,
       dateQ: dateQ ?? this.dateQ,
       needOn: needOn ?? this.needOn,
       dateO: dateO ?? this.dateO,
@@ -287,6 +292,7 @@ class JobsModel {
   /// 🟩 FROM FIRESTORE
   factory JobsModel.fromJson(Map<String, dynamic> json) => JobsModel(
         docId: json['A00_DocId'],
+        jobsId: json['A00_JobsId'],
         dateQ: json['A01_DateQ'],
         createdBy: json['A10_CreatedBy'],
         currentEmpId: json['A12_CurrentEmpId'],
@@ -333,6 +339,7 @@ class JobsModel {
   /// 🟧 TO FIRESTORE
   Map<String, dynamic> toJson() => {
         'A00_DocId': docId,
+        'A00_JobsId': jobsId,
         'A01_DateQ': dateQ,
         'A10_CreatedBy': createdBy,
         'A12_CurrentEmpId': currentEmpId,
