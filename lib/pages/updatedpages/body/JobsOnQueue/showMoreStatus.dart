@@ -1,8 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:laundry_firebase/models/jobsmodel.dart';
 import 'package:laundry_firebase/models/otheritemmodel.dart';
-import 'package:laundry_firebase/pages/autocompletecustomer.dart';
 import 'package:laundry_firebase/pages/updatedpages/sharedmethods/sharedMethodAndVariable.dart';
 import 'package:laundry_firebase/variables/updatedvariables/jobsmodel_repository.dart';
 import 'package:laundry_firebase/variables/variables.dart';
@@ -12,7 +11,7 @@ import 'package:laundry_firebase/variables/variables_fab.dart';
 import 'package:laundry_firebase/variables/variables_oth.dart';
 import 'package:laundry_firebase/variables/variables_supplies.dart';
 
-void showJobsOnQueue(BuildContext context) {
+void showMoreStatus(BuildContext context, JobsModel jM) {
   final List<int> listOthersDropDown = [
     menuOthDVal,
     menuDetDVal,
@@ -30,134 +29,6 @@ void showJobsOnQueue(BuildContext context) {
     sayoSabonPackage,
     othersPackage,
   ];
-
-  void resetSelected() {
-    successInsertFB = false;
-    selectedRiderPickup = forSorting;
-    //package status
-    selectedPackage = regularPackage;
-
-    //prices
-    totalPriceRegSS = 155;
-    totalPriceOthers = 0;
-
-    //payment status
-    selectedPaidUnpaid = unpaid;
-
-    selectedPaidPartialCash = false;
-    selectedPaidPartialGCash = false;
-    partialCashAmountVar.text = '';
-    partialGCashAmountVar.text = '';
-
-    //verified gcash
-    selectedPaidGCashVerified = false;
-
-    //weight status
-    isPerKg = true;
-
-    quantityKg = 8;
-    quantityLoad = 1;
-    remarksSuppliesVar.text = '';
-
-    //list other items
-    listAddedOtherItemModel.clear();
-
-    //other options
-    selectedFold = true;
-    selectedMix = true;
-    basketCount = 0;
-    ecoBagCount = 0;
-    sakoCount = 0;
-    addFabCount = 0;
-    addExtraDryCount = 0;
-    addExtraWashCount = 0;
-    addExtraSpinCount = 0;
-  }
-
-  Visibility visCustomerName(Function setState) {
-    return Visibility(
-      visible: true,
-      child: Container(
-        padding: const EdgeInsets.all(1.0),
-        decoration: decoAmber(),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            // 🔹 Label + Checkbox on same row
-            Padding(
-              padding: const EdgeInsets.only(left: 4, bottom: 4),
-              child: Row(
-                children: [],
-              ),
-            ),
-            AutoCompleteCustomer(),
-            SizedBox(
-              height: 5,
-            ),
-            MaterialButton(
-              color: cButtons,
-              onPressed: () {
-                Navigator.pop(context);
-                allCardsVar(context);
-              },
-              child: Text("New Account"),
-            ),
-            SizedBox(
-              height: 5,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Visibility visRiderPickup(Function setState) {
-    final List<int> listRiderPickup = [
-      forSorting,
-      riderPickup,
-    ];
-    return Visibility(
-      visible: true,
-      child: Container(
-        alignment: Alignment.center,
-        padding: const EdgeInsets.all(1.0),
-        decoration: decoLightBlue(),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Initial Status',
-              style: TextStyle(fontSize: 11),
-            ),
-            ToggleButtons(
-              isSelected: List.generate(
-                listRiderPickup.length,
-                (i) => selectedRiderPickup == listRiderPickup[i],
-              ),
-              onPressed: (index) {
-                setState(() {
-                  selectedRiderPickup = listRiderPickup[index];
-                });
-              },
-              borderRadius: BorderRadius.circular(8),
-              selectedColor: Colors.black,
-              fillColor: Colors.greenAccent,
-              color: Colors.black,
-              borderColor: cSalaryOut,
-              constraints: const BoxConstraints(
-                minWidth: 80,
-                minHeight: 25,
-              ),
-              children: const [
-                Text('For Sorting'),
-                Text('Rider Pickup'),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
   Visibility visSelectPackage(Function setState) {
     return Visibility(
@@ -979,270 +850,6 @@ void showJobsOnQueue(BuildContext context) {
     );
   }
 
-  Visibility visPaidUnPaid(Function setState) {
-    final List<int> listPaidUnpaid = [
-      unpaid,
-      paidCash,
-      paidGCash,
-    ];
-
-    return Visibility(
-      visible: true,
-      child: Container(
-        alignment: Alignment.center,
-        padding: const EdgeInsets.all(1.0),
-        decoration: decoLightBlue(),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          spacing: 0,
-          children: [
-            Text(
-              'Payment Status',
-              style: TextStyle(fontSize: 11),
-            ),
-            ToggleButtons(
-              isSelected: List.generate(
-                listPaidUnpaid.length,
-                (i) => selectedPaidUnpaid == listPaidUnpaid[i],
-              ),
-              onPressed: (index) {
-                setState(() {
-                  if (selectedPaidUnpaid == listPaidUnpaid[index]) {
-                    selectedPaidUnpaid = 0;
-                  } else {
-                    selectedPaidUnpaid = listPaidUnpaid[index];
-                  }
-                });
-              },
-              borderRadius: BorderRadius.circular(8),
-              selectedColor: Colors.black,
-              fillColor: Colors.greenAccent,
-              color: Colors.black,
-              borderColor: cSalaryOut,
-              constraints: const BoxConstraints(
-                minWidth: 60,
-                minHeight: 25,
-              ),
-              children: const [
-                Text('Unpaid', style: TextStyle(fontSize: 11)),
-                Text('Paid Cash', style: TextStyle(fontSize: 11)),
-                Text('Paid GCash', style: TextStyle(fontSize: 10)),
-              ],
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      'Partial\ncash?',
-                      style: const TextStyle(
-                        fontSize: 7,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(width: 2), // tiny gap
-                    Transform.scale(
-                      scale: 0.7, // shrink the checkbox itself
-                      child: Checkbox(
-                        value: selectedPaidPartialCash,
-                        onChanged: (bool? value) {
-                          setState(() {
-                            selectedPaidPartialCash = value ?? false;
-                          });
-                        },
-                        visualDensity: VisualDensity(
-                            horizontal: -4, vertical: -4), // tighter
-                        materialTapTargetSize: MaterialTapTargetSize
-                            .shrinkWrap, // no extra padding
-                      ),
-                    ),
-                  ],
-                ),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      'Partial\nGCash?',
-                      style: const TextStyle(
-                        fontSize: 7,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(width: 2), // tiny gap
-                    Transform.scale(
-                      scale: 0.7, // shrink the checkbox itself
-                      child: Checkbox(
-                        value: selectedPaidPartialGCash,
-                        onChanged: (bool? value) {
-                          setState(() {
-                            selectedPaidPartialGCash = value ?? false;
-                          });
-                        },
-                        visualDensity: VisualDensity(
-                            horizontal: -4, vertical: -4), // tighter
-                        materialTapTargetSize: MaterialTapTargetSize
-                            .shrinkWrap, // no extra padding
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(
-                  width: 2,
-                ),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      'GCash\nverified?',
-                      style: const TextStyle(
-                        fontSize: 7,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(width: 2), // tiny gap
-                    Transform.scale(
-                      scale: 0.7, // shrink the checkbox itself
-                      child: Checkbox(
-                        value: selectedPaidGCashVerified,
-                        onChanged: (bool? value) {
-                          setState(() {
-                            selectedPaidGCashVerified = value ?? false;
-                          });
-                        },
-                        visualDensity: VisualDensity(
-                            horizontal: -4, vertical: -4), // tighter
-                        materialTapTargetSize: MaterialTapTargetSize
-                            .shrinkWrap, // no extra padding
-                      ),
-                    ),
-                  ],
-                )
-              ],
-            ),
-            SizedBox(
-              height: 4,
-            ),
-            //Partial Cash Amount
-            Visibility(
-              visible: selectedPaidPartialCash,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Label (not indented)
-                  const Padding(
-                    padding: EdgeInsets.only(left: 4, bottom: 4),
-                    child: Text(
-                      'Partial Cash Amount',
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                  TextFormField(
-                    controller: partialCashAmountVar,
-                    keyboardType:
-                        const TextInputType.numberWithOptions(decimal: true),
-                    textAlign: TextAlign.center,
-                    inputFormatters: [
-                      FilteringTextInputFormatter.allow(
-                          RegExp(r'\d+(\.\d{0,2})?')),
-                    ],
-                    style: const TextStyle(fontSize: 12), // shrink text size
-                    decoration: InputDecoration(
-                      isDense: true, // 🔹 makes the field more compact
-                      contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 6),
-                      hintText: '0.00',
-                      hintStyle: const TextStyle(fontSize: 12),
-                      border: const OutlineInputBorder(),
-                      filled: true, // 🔹 enable background fill
-                      fillColor: Colors.white, // 🔹 set background to white
-                      prefixIconConstraints: const BoxConstraints(
-                        minWidth: 24, // 🔹 narrower prefix space
-                        minHeight: 24,
-                      ),
-                      prefixIcon: const Padding(
-                        padding: EdgeInsets.only(left: 4, right: 4),
-                        child: Text(
-                          '₱',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(
-              height: 2,
-            ),
-            //Partial GCash Amount
-            Visibility(
-              visible: selectedPaidPartialGCash,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Label (not indented)
-                  const Padding(
-                    padding: EdgeInsets.only(left: 4, bottom: 4),
-                    child: Text(
-                      'Partial GCash Amount',
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                  TextFormField(
-                    controller: partialGCashAmountVar,
-                    keyboardType:
-                        const TextInputType.numberWithOptions(decimal: true),
-                    textAlign: TextAlign.center,
-                    inputFormatters: [
-                      FilteringTextInputFormatter.allow(
-                          RegExp(r'\d+(\.\d{0,2})?')),
-                    ],
-                    style: const TextStyle(fontSize: 12), // shrink text size
-                    decoration: InputDecoration(
-                      isDense: true, // 🔹 makes the field more compact
-                      contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 6),
-                      hintText: '0.00',
-                      hintStyle: const TextStyle(fontSize: 12),
-                      border: const OutlineInputBorder(),
-                      filled: true, // 🔹 enable background fill
-                      fillColor: Colors.white, // 🔹 set background to white
-                      prefixIconConstraints: const BoxConstraints(
-                        minWidth: 24, // 🔹 narrower prefix space
-                        minHeight: 24,
-                      ),
-                      prefixIcon: const Padding(
-                        padding: EdgeInsets.only(left: 4, right: 4),
-                        child: Text(
-                          '₱',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Visibility visFold(Function setState) {
     return Visibility(
       visible: (selectedPackage == othersPackage ? false : true),
@@ -1677,6 +1284,9 @@ void showJobsOnQueue(BuildContext context) {
   }
 
   Future<void> saveButtonSetRepository() async {
+    //reuse the repository.
+    JobsModelRepository.instance.jobsModel = jM;
+
     int promoCounter = 0;
     int computeLoadForKg(double kg) {
       double remainder = kg % 8;
@@ -1723,25 +1333,6 @@ void showJobsOnQueue(BuildContext context) {
       JobsModelRepository.instance.setFinalPrice = totalPriceRegSS;
     }
 
-    //payment status
-    JobsModelRepository.instance.setUnpaid = unpaid == selectedPaidUnpaid;
-    JobsModelRepository.instance.setPaidCash = paidCash == selectedPaidUnpaid;
-    JobsModelRepository.instance.setPaidGCash = paidGCash == selectedPaidUnpaid;
-    JobsModelRepository.instance.setPartialPaidCash = selectedPaidPartialCash;
-    JobsModelRepository.instance.setPartialPaidGCash = selectedPaidPartialGCash;
-    JobsModelRepository.instance.setPartialPaidCashAmount =
-        int.tryParse(partialCashAmountVar.text) ?? 0;
-    JobsModelRepository.instance.setPartialPaidGCashAmount =
-        int.tryParse(partialGCashAmountVar.text) ?? 0;
-
-    if (unpaid != selectedPaidUnpaid) {
-      JobsModelRepository.instance.setPaymentReceivedBy = empIdGlobal;
-    }
-
-    //verified gcash
-    JobsModelRepository.instance.setPaidGCashVerified =
-        selectedPaidGCashVerified;
-
     //weight status
     JobsModelRepository.instance.setPerKilo = false;
     JobsModelRepository.instance.setPerLoad = false;
@@ -1773,7 +1364,8 @@ void showJobsOnQueue(BuildContext context) {
     JobsModelRepository.instance.setEbag = ecoBagCount;
     JobsModelRepository.instance.setSako = sakoCount;
 
-    await callDatabaseJobsQueueAdd(context);
+    //should be update
+    //await callDatabaseJobsQueueAdd(context);
     //await setRepositoryLaundryPayment(context, 'Show Jobs OnQueue');
   }
 
@@ -1809,14 +1401,11 @@ void showJobsOnQueue(BuildContext context) {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    visCustomerName(setState),
-                    visRiderPickup(setState),
                     visSelectPackage(setState),
                     (isPerKg
                         ? visAmountRegSSPerKg(setState)
                         : visAmountRegSSPerLoad(setState)),
                     visAmountOthersOnly(setState),
-                    visPaidUnPaid(setState),
                     Text(
                       'Other Options',
                       style: TextStyle(fontSize: 11),
@@ -1861,7 +1450,6 @@ void showJobsOnQueue(BuildContext context) {
                   );
                 } else {
                   await saveButtonSetRepository();
-                  if (successInsertFB) resetSelected();
                   Navigator.pop(context);
                 }
               },

@@ -16,10 +16,11 @@ import 'package:laundry_firebase/variables/variables_oth.dart';
 import 'package:laundry_firebase/variables/variables_supplies.dart';
 
 //
-double quantityKg = 5;
+double quantityKg = 8;
 int quantityLoad = 1;
 bool isGcashCredit = false;
 const double fieldIndentWidth = 40;
+TextEditingController customerNameVar = TextEditingController();
 TextEditingController customerNumberVar = TextEditingController();
 TextEditingController customerAmountVar = TextEditingController();
 TextEditingController partialCashAmountVar = TextEditingController();
@@ -28,7 +29,7 @@ int selectedRiderPickup = forSorting;
 int selectedPackage = regularPackage;
 int selectedPackagePrev = regularPackage;
 int selectedOthers = menuOthDVal;
-int totalPriceRegSS = 0;
+int totalPriceRegSS = 155;
 int totalPriceShortCutRegSS = 0;
 OtherItemModel selectedItemModel = reg125ItemModel;
 int selectedOthersShortCut = menuOth155;
@@ -52,6 +53,7 @@ final int tier1Increase = 35;
 final int tier2Increase = 105;
 int pricePerSet = 0;
 int maxPartial = 0;
+bool successInsertFB = false;
 
 final NumberFormat pesoFormat = NumberFormat('#,##0', 'en_PH');
 
@@ -263,34 +265,36 @@ int computeTotalPrice(double q) {
   return (counter * pricePerSet) + remainingPrice;
 }
 
-Future<void> insertToFBSuppliesHistory(BuildContext context) async {
+void resetAfterInsert() {
+  SuppliesHistRepository.instance.reset();
+  autocompleteSelected = CustomerModel(
+      customerId: 0,
+      name: '',
+      address: '',
+      contact: '',
+      remarks: '',
+      loyaltyCount: 0);
+  customerAmountVar.text = "";
+  // customerNameVar.text = "";
+  remarksSuppliesVar.text = "";
+  selectedFundCode = null;
+}
+
+Future<void> setSuppliesRepository(BuildContext context) async {
   //insert to database
   //save to repository
 
   SuppliesHistRepository.instance.setCustomerId(123); //dummy
-  //SuppliesHistRepository.instance.setCustomerName(customerNameVar.text);
-  //SuppliesHistRepository.instance.setCustomerName(autocompleteSelected.name);
   SuppliesHistRepository.instance
       .setLogDate(Timestamp.fromDate(DateTime.now()));
 
-  if (await _processTypeOfPay(
+  if (await _callDatabaseSuppliesCurrentAdd(
       SuppliesHistRepository.instance.suppliesModelHist!)) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Success')),
     );
     print("Sucess");
-    SuppliesHistRepository.instance.reset();
-    autocompleteSelected = CustomerModel(
-        customerId: 0,
-        name: '',
-        address: '',
-        contact: '',
-        remarks: '',
-        loyaltyCount: 0);
-    customerAmountVar.text = "";
-    // customerNameVar.text = "";
-    remarksSuppliesVar.text = "";
-    selectedFundCode = null;
+    resetAfterInsert();
   } else {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Cannot Save')),
@@ -300,7 +304,7 @@ Future<void> insertToFBSuppliesHistory(BuildContext context) async {
 }
 
 //insert new Supplies
-Future<bool> _processTypeOfPay(SuppliesModelHist sMH) async {
+Future<bool> _callDatabaseSuppliesCurrentAdd(SuppliesModelHist sMH) async {
   //if cashout or funds out, make current counter negative
   if (ifMenuUniqueIsCashOut(sMH) ||
       ifMenuUniqueIsFundsOut(sMH) ||
@@ -389,15 +393,17 @@ Future<bool> _processTypeOfPay(SuppliesModelHist sMH) async {
   // return false;
 }
 
-Future<void> insertToFBJobsOnQueuelRepository(BuildContext context) async {
+Future<void> callDatabaseJobsQueueAdd(BuildContext context) async {
   DatabaseJobsQueue databaseJobsQueue = DatabaseJobsQueue();
 
   if (await databaseJobsQueue
       .add(JobsModelRepository.instance.getJobsModel()!)) {
+    successInsertFB = true;
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Insert on Queue done.')),
     );
   } else {
+    successInsertFB = false;
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Error insert Jobs On Queue.')),
     );
@@ -405,11 +411,13 @@ Future<void> insertToFBJobsOnQueuelRepository(BuildContext context) async {
 }
 
 //laundry payment
-Future<void> insertLaundryPaymentSuppliesHistory(
+Future<void> setRepositoryLaundryPayment(
     BuildContext context, String viaJobs) async {
   //generate only when funds received ( paidCash, partialPaidCash )
+  //only PaidCash or PartialPaidCash
   if (JobsModelRepository.instance.getPaidCash() ||
       JobsModelRepository.instance.getPartialPaidCash()) {
+    //auto generated for Laundry payment, once user tag job to paid.
     SuppliesHistRepository.instance.setItemName(getItemNameOnly(
         menuOthCashInOutFunds, menuOthLaundryPayment)); //cash laundry payment
     SuppliesHistRepository.instance.setItemId(menuOthCashInOutFunds);
@@ -425,15 +433,17 @@ Future<void> insertLaundryPaymentSuppliesHistory(
           .setCurrentCounter(JobsModelRepository.instance.getFinalPrice());
     }
 
-    await insertToFBSuppliesHistory(context);
+    await setSuppliesRepository(context);
   }
 }
 
-//laundry payment revert
+//revert laundry payment
 Future<void> revertLaundryPaymentSuppliesHistory(
     BuildContext context, String viaJobs) async {
-  //generate only in body jobsonqueue, jobsongoing, jobsdone
+  //generate only when funds received and needs to revert ( paidCash, partialPaidCash )
+  //only PaidCash or PartialPaidCash
   if (JobsModelRepository.instance.getUnpaid()) {
+    //auto generated for Laundry payment, once user tag job to paid, reverted as funds out
     SuppliesHistRepository.instance.setItemName(getItemNameOnly(
         menuOthCashInOutFunds, menuOthUniqIdFundsOut)); //funds out
     SuppliesHistRepository.instance.setItemId(menuOthCashInOutFunds);
@@ -449,11 +459,12 @@ Future<void> revertLaundryPaymentSuppliesHistory(
           .setCurrentCounter(JobsModelRepository.instance.getFinalPrice());
     }
 
-    await insertToFBSuppliesHistory(context);
+    await setSuppliesRepository(context);
   }
 }
 
-Future<void> updateJobsModel(BuildContext context, JobsModel jM) async {
+Future<void> callDatabaseJobsQueueUpdate(
+    BuildContext context, JobsModel jM) async {
   DatabaseJobsQueue databaseJobsQueue = DatabaseJobsQueue();
 
   if (await databaseJobsQueue.update(jM)) {

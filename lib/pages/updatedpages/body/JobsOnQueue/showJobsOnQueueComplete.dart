@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:laundry_firebase/models/jobsmodel.dart';
 import 'package:laundry_firebase/models/otheritemmodel.dart';
 import 'package:laundry_firebase/pages/autocompletecustomer.dart';
 import 'package:laundry_firebase/pages/updatedpages/sharedmethods/sharedMethodAndVariable.dart';
@@ -12,7 +13,7 @@ import 'package:laundry_firebase/variables/variables_fab.dart';
 import 'package:laundry_firebase/variables/variables_oth.dart';
 import 'package:laundry_firebase/variables/variables_supplies.dart';
 
-void showJobsOnQueue(BuildContext context) {
+void showJobsOnQueueComplete(BuildContext context, JobsModel jM) {
   final List<int> listOthersDropDown = [
     menuOthDVal,
     menuDetDVal,
@@ -31,47 +32,81 @@ void showJobsOnQueue(BuildContext context) {
     othersPackage,
   ];
 
-  void resetSelected() {
-    successInsertFB = false;
-    selectedRiderPickup = forSorting;
+  void syncThisShowToSelected() {
+    //admin
+    jM.currentEmpId = empIdGlobal;
+
+    customerNameVar.text = jM.customerName;
+
+    //initial status
+    //riderpickup can be true and forsorting is true, but always display the forSorting. meaning pickup is done.
+    //if pickup is false, it went to forsorting but never in pickup.
+    if (jM.riderPickup) selectedRiderPickup = riderPickup;
+    if (jM.forSorting) selectedRiderPickup = forSorting;
+
     //package status
-    selectedPackage = regularPackage;
+    if (jM.regular) selectedPackage = regularPackage;
+    if (jM.sayosabon) selectedPackage = sayoSabonPackage;
+    if (jM.addOn) selectedPackage = othersPackage;
 
     //prices
-    totalPriceRegSS = 155;
-    totalPriceOthers = 0;
+    if (jM.addOn) {
+      totalPriceOthers = jM.finalPrice;
+      totalPriceRegSS = 0;
+    } else {
+      totalPriceRegSS = jM.finalPrice;
+      totalPriceOthers = 0;
+    }
 
     //payment status
-    selectedPaidUnpaid = unpaid;
-
-    selectedPaidPartialCash = false;
-    selectedPaidPartialGCash = false;
-    partialCashAmountVar.text = '';
-    partialGCashAmountVar.text = '';
+    if (jM.unpaid) selectedPaidUnpaid = unpaid;
+    if (jM.paidCash) selectedPaidUnpaid = paidCash;
+    if (jM.paidGCash) selectedPaidUnpaid = paidGCash;
+    selectedPaidPartialCash = jM.partialPaidCash;
+    selectedPaidPartialGCash = jM.partialPaidGCash;
+    partialCashAmountVar.text = jM.partialPaidCashAmount.toString();
+    partialGCashAmountVar.text = jM.partialPaidGCashAmount.toString();
 
     //verified gcash
-    selectedPaidGCashVerified = false;
+    selectedPaidGCashVerified = jM.paidGCashverified;
 
     //weight status
-    isPerKg = true;
+    if (jM.perKilo) isPerKg = true;
+    if (jM.perLoad) isPerKg = false;
 
-    quantityKg = 8;
-    quantityLoad = 1;
-    remarksSuppliesVar.text = '';
+    quantityKg = jM.finalKilo;
+    quantityLoad = jM.finalLoad;
+    remarksSuppliesVar.text = jM.remarks;
 
     //list other items
-    listAddedOtherItemModel.clear();
+    listAddedOtherItemModel = jM.items;
 
     //other options
-    selectedFold = true;
-    selectedMix = true;
-    basketCount = 0;
-    ecoBagCount = 0;
-    sakoCount = 0;
-    addFabCount = 0;
-    addExtraDryCount = 0;
-    addExtraWashCount = 0;
-    addExtraSpinCount = 0;
+    selectedFold = jM.fold;
+    selectedMix = jM.mix;
+    basketCount = jM.basket;
+    ecoBagCount = jM.ebag;
+    sakoCount = jM.sako;
+
+    if (selectedPackage != othersPackage) {
+      addFabCount = listAddedOtherItemModel
+          .where((e) => e.itemUniqueId == addFabAnyItemModel.itemUniqueId)
+          .length;
+      addExtraDryCount = listAddedOtherItemModel
+          .where((e) => e.itemUniqueId == xDItemModel.itemUniqueId)
+          .length;
+      addExtraWashCount = listAddedOtherItemModel
+          .where((e) => e.itemUniqueId == xWashItemModel.itemUniqueId)
+          .length;
+      addExtraSpinCount = listAddedOtherItemModel
+          .where((e) => e.itemUniqueId == xSpinItemModel.itemUniqueId)
+          .length;
+    } else {
+      addFabCount = 0;
+      addExtraDryCount = 0;
+      addExtraWashCount = 0;
+      addExtraSpinCount = 0;
+    }
   }
 
   Visibility visCustomerName(Function setState) {
@@ -90,17 +125,34 @@ void showJobsOnQueue(BuildContext context) {
                 children: [],
               ),
             ),
-            AutoCompleteCustomer(),
-            SizedBox(
-              height: 5,
-            ),
-            MaterialButton(
-              color: cButtons,
-              onPressed: () {
-                Navigator.pop(context);
-                allCardsVar(context);
-              },
-              child: Text("New Account"),
+            TextFormField(
+              controller: customerNameVar,
+              readOnly: true, // 👈 prevents editing
+              textAlign: TextAlign.center,
+              decoration: InputDecoration(
+                labelText: 'Customer Name',
+                labelStyle: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey[700],
+                ),
+                hintText: 'Search Name',
+                hintStyle: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey[700],
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: Colors.grey),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: Colors.blue, width: 2),
+                ),
+              ),
+              onFieldSubmitted: (_) {}, // optional / can remove
             ),
             SizedBox(
               height: 5,
@@ -1773,10 +1825,12 @@ void showJobsOnQueue(BuildContext context) {
     JobsModelRepository.instance.setEbag = ecoBagCount;
     JobsModelRepository.instance.setSako = sakoCount;
 
-    await callDatabaseJobsQueueAdd(context);
+    //should be update
+    //await callDatabaseJobsQueueAdd(context);
     //await setRepositoryLaundryPayment(context, 'Show Jobs OnQueue');
   }
 
+  syncThisShowToSelected();
   showDialog(
     context: context,
     builder: (BuildContext context) {
@@ -1795,7 +1849,7 @@ void showJobsOnQueue(BuildContext context) {
             vertical: 5,
           ),
           title: Text(
-            "Enter Laundry",
+            "Jobs On Queue",
             textAlign: TextAlign.center,
           ),
           content: SingleChildScrollView(
@@ -1861,11 +1915,10 @@ void showJobsOnQueue(BuildContext context) {
                   );
                 } else {
                   await saveButtonSetRepository();
-                  if (successInsertFB) resetSelected();
                   Navigator.pop(context);
                 }
               },
-              child: const Text('Save'),
+              child: const Text('Update'),
             ),
           ],
         );

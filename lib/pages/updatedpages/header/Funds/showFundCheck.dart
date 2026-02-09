@@ -182,7 +182,7 @@ void showFundCheck(BuildContext context) {
     SuppliesHistRepository.instance.setRemarks(buildSelectedMoneyText());
     SuppliesHistRepository.instance.setCurrentCounter(grandTotal);
 
-    await insertToFBSuppliesHistory(context);
+    await setSuppliesRepository(context);
   }
 
   showDialog(

@@ -192,7 +192,7 @@ void showSalaryMaintenance(BuildContext context) {
     SuppliesHistRepository.instance.setRemarks(remarksSuppliesVar.text);
     SuppliesHistRepository.instance.setCurrentCounter(
         int.parse(customerAmountVar.text.replaceAll(',', '')));
-    await insertToFBSuppliesHistory(context);
+    await setSuppliesRepository(context);
   }
 
   showDialog(

@@ -20,11 +20,13 @@ C:\Users\haali\Documents\GIT_SIT\sit_laundry_firebase> git push
 
 flutter build web
 firebase login
-firebase init hosting
-  public (yes)
-  rewrite index (yes)
-  github (no)
-open file firebase.json change public to build/web
+///--<< do this on first time only
+  firebase init hosting
+    public (yes)
+    rewrite index (yes)
+    github (no)
+  open file firebase.json change public to build/web
+//-->>
 firebase deploy
 
 

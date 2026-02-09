@@ -1,14 +1,81 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:laundry_firebase/models/jobsmodel.dart';
 import 'package:laundry_firebase/pages/updatedpages/sharedmethods/sharedMethodAndVariable.dart';
-import 'package:laundry_firebase/services/database_jobs.dart';
 import 'package:laundry_firebase/variables/updatedvariables/jobsmodel_repository.dart';
 import 'package:laundry_firebase/variables/variables.dart';
 import 'package:laundry_firebase/variables/variables_supplies.dart';
 
+//reuse showJobsOnQueue removed dont needed.
+
 void showPaidUnpaid(BuildContext context, JobsModel jM) {
+  void syncThisShowToSelected() {
+    customerNameVar.text = jM.customerName;
+    //payment status
+    if (jM.unpaid) selectedPaidUnpaid = unpaid;
+    if (jM.paidCash) selectedPaidUnpaid = paidCash;
+    if (jM.paidGCash) selectedPaidUnpaid = paidGCash;
+    selectedPaidPartialCash = jM.partialPaidCash;
+    selectedPaidPartialGCash = jM.partialPaidGCash;
+    partialCashAmountVar.text = jM.partialPaidCashAmount.toString();
+    partialGCashAmountVar.text = jM.partialPaidGCashAmount.toString();
+    selectedPaidGCashVerified = jM.paidGCashverified;
+  }
+
+  Visibility visCustomerName(Function setState) {
+    return Visibility(
+      visible: true,
+      child: Container(
+        padding: const EdgeInsets.all(1.0),
+        decoration: decoAmber(),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            // 🔹 Label + Checkbox on same row
+            Padding(
+              padding: const EdgeInsets.only(left: 4, bottom: 4),
+              child: Row(
+                children: [],
+              ),
+            ),
+            TextFormField(
+              controller: customerNameVar,
+              readOnly: true, // 👈 prevents editing
+              textAlign: TextAlign.center,
+              decoration: InputDecoration(
+                labelText: 'Customer Name',
+                labelStyle: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey[700],
+                ),
+                hintText: 'Search Name',
+                hintStyle: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey[700],
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: Colors.grey),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: Colors.blue, width: 2),
+                ),
+              ),
+              onFieldSubmitted: (_) {}, // optional / can remove
+            ),
+            SizedBox(
+              height: 5,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Visibility visPaidUnPaid(Function setState) {
     final List<int> listPaidUnpaid = [
       unpaid,
@@ -274,6 +341,7 @@ void showPaidUnpaid(BuildContext context, JobsModel jM) {
   }
 
   Future<void> saveButtonSetRepository() async {
+    //reuse the repository.
     JobsModelRepository.instance.jobsModel = jM;
     //payment status
     JobsModelRepository.instance.setUnpaid = unpaid == selectedPaidUnpaid;
@@ -289,17 +357,15 @@ void showPaidUnpaid(BuildContext context, JobsModel jM) {
     if (unpaid != selectedPaidUnpaid) {
       JobsModelRepository.instance.setPaymentReceivedBy = empIdGlobal;
     }
-
-    //verified gcash
     JobsModelRepository.instance.setPaidGCashVerified =
         selectedPaidGCashVerified;
-    // DatabaseJobsQueue databaseJobsQueue = DatabaseJobsQueue();
-    // databaseJobsQueue
-    //     .updatePaidUnpaid(JobsModelRepository.instance.getJobsModel()!);
-    await updateJobsModel(
+
+    await callDatabaseJobsQueueUpdate(
         context, JobsModelRepository.instance.getJobsModel()!);
-    //await insertLaundryPaymentSuppliesHistory(context, 'Show Jobs OnQueue');
+    //await setRepositoryLaundryPayment(context, 'Show Jobs OnQueue');
   }
+
+  syncThisShowToSelected();
 
   showDialog(
     context: context,
@@ -319,7 +385,7 @@ void showPaidUnpaid(BuildContext context, JobsModel jM) {
             vertical: 5,
           ),
           title: Text(
-            "Enter Laundry",
+            "Change Payment\nStatus",
             textAlign: TextAlign.center,
           ),
           content: SingleChildScrollView(
@@ -331,8 +397,13 @@ void showPaidUnpaid(BuildContext context, JobsModel jM) {
               child: Form(
                 //key: _formKey,
                 child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   mainAxisSize: MainAxisSize.min,
                   children: [
+                    visCustomerName(setState),
+                    SizedBox(
+                      height: 8,
+                    ),
                     visPaidUnPaid(setState),
                   ],
                 ),
