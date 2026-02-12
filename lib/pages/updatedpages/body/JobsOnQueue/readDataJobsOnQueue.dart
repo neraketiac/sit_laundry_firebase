@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:laundry_firebase/models/jobsmodel.dart';
 import 'package:laundry_firebase/pages/updatedpages/body/JobsOnQueue/showJobsOnQueueComplete.dart';
 import 'package:laundry_firebase/pages/updatedpages/body/JobsOnQueue/showPaidUnpaid.dart';
+import 'package:laundry_firebase/pages/updatedpages/sharedmethods/sharedMethodAndVariable.dart';
 import 'package:laundry_firebase/services/database_jobs.dart';
 import 'package:laundry_firebase/variables/variables.dart';
 import 'package:laundry_firebase/variables/variables_oth.dart';
@@ -10,10 +11,25 @@ Widget readDataJobsOnQueue() {
   DatabaseJobsQueue databaseJobsQueue = DatabaseJobsQueue();
   int? selectedIndex;
 
-  IconData statusIcon(double p) {
-    if (p == 1) return Icons.check;
-    if (p > 0) return Icons.sync;
+  IconData statusIcon(JobsModel jM) {
+    if (jM.forSorting) {
+      return Icons.sort_by_alpha_outlined;
+    }
+    if (jM.riderPickup) {
+      return Icons.delivery_dining;
+    }
     return Icons.pause;
+  }
+
+  Color backGroundStatusColor(JobsModel jM) {
+    if (jM.forSorting) {
+      return Colors.green.shade300;
+      ;
+    }
+    if (jM.riderPickup) {
+      return Colors.redAccent;
+    }
+    return Colors.grey;
   }
 
   String processStatusJobsOnQueue(JobsModel jM) {
@@ -168,32 +184,38 @@ Widget readDataJobsOnQueue() {
                             const SizedBox(width: 10),
 
                             /// 🔄 Progress badge
-                            Stack(
-                              alignment: Alignment.center,
-                              children: [
-                                SizedBox(
-                                  width: 38,
-                                  height: 38,
-                                  child: CircularProgressIndicator(
-                                    value: value,
-                                    strokeWidth: 6,
-                                    backgroundColor: Colors.red,
-                                    color: isSelected
-                                        ? Colors.deepPurple
-                                        : Colors.deepPurple.shade300,
+                            InkWell(
+                              onTap: () {
+                                // Handle progress tap if needed
+                              },
+                              child: Stack(
+                                alignment: Alignment.center,
+                                children: [
+                                  SizedBox(
+                                    width: 38,
+                                    height: 38,
+                                    child: CircularProgressIndicator(
+                                      value: value,
+                                      strokeWidth: 6,
+                                      backgroundColor:
+                                          backGroundStatusColor(job),
+                                      color: isSelected
+                                          ? Colors.deepPurple
+                                          : Colors.deepPurple.shade300,
+                                    ),
                                   ),
-                                ),
-                                AnimatedRotation(
-                                  turns: isRunning ? 1 : 0,
-                                  duration: const Duration(seconds: 2),
-                                  curve: Curves.linear,
-                                  child: Icon(
-                                    statusIcon(0),
-                                    color: Colors.deepPurple,
-                                    size: 20,
+                                  AnimatedRotation(
+                                    turns: isRunning ? 1 : 0,
+                                    duration: const Duration(seconds: 2),
+                                    curve: Curves.linear,
+                                    child: Icon(
+                                      statusIcon(job),
+                                      color: Colors.deepPurple,
+                                      size: 20,
+                                    ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                             const SizedBox(width: 7),
 
@@ -242,7 +264,7 @@ Widget readDataJobsOnQueue() {
                                   ),
                                   const SizedBox(height: 2),
                                   Text(
-                                    '${processStatusJobsOnQueue(job)}  ${job.pricingSetup}',
+                                    processStatusJobsOnQueue(job),
                                     style: TextStyle(
                                       fontSize: 10,
                                       color: (job.forSorting
@@ -251,7 +273,7 @@ Widget readDataJobsOnQueue() {
                                     ),
                                   ),
                                   Text(
-                                    (job.remarks),
+                                    '${job.pricingSetup} ${job.remarks}',
                                     style: TextStyle(
                                       fontSize: 10,
                                       color: Colors.deepPurple.shade400,

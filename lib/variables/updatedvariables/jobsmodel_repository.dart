@@ -62,31 +62,31 @@ class JobsModelRepository {
     return jobsModel;
   }
 
-  void setJobModel(JobsModel jobsModel) {
-    jobsModel = jobsModel;
+  void setJobModel(JobsModel value) {
+    jobsModel = value;
   }
 
-  void setPackage(int selectedPackage) {
-    setRegular = selectedPackage == regularPackage;
-    setSayosabon = selectedPackage == sayoSabonPackage;
-    setAddOn = selectedPackage == othersPackage;
+  void setPackage(int value) {
+    setRegular = value == regularPackage;
+    setSayosabon = value == sayoSabonPackage;
+    setAddOn = value == othersPackage;
   }
 
   // Add item
-  void addItem(OtherItemModel item) {
-    jobsModel!.items.add(item);
+  void addItem(OtherItemModel value) {
+    jobsModel!.items.add(value);
   }
 
   // Delete item by index
-  void deleteItemAt(int index) {
-    if (index >= 0 && index < jobsModel!.items.length) {
-      jobsModel!.items.removeAt(index);
+  void deleteItemAt(int value) {
+    if (value >= 0 && value < jobsModel!.items.length) {
+      jobsModel!.items.removeAt(value);
     }
   }
 
   // Delete item by matching condition
-  void deleteItem(OtherItemModel item) {
-    jobsModel!.items.remove(item);
+  void deleteItem(OtherItemModel value) {
+    jobsModel!.items.remove(value);
   }
 
   // Clear all items
@@ -116,6 +116,10 @@ class JobsModelRepository {
 
   int getCustomerId() {
     return jobsModel!.customerId;
+  }
+
+  bool getAddOn() {
+    return jobsModel!.addOn;
   }
 
   bool getUnpaid() {

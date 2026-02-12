@@ -1,13 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/material.dart';
-import 'package:laundry_firebase/models/jobsonqueuemodel.dart';
 import 'package:laundry_firebase/models/suppliesmodelhist.dart';
 import 'package:laundry_firebase/variables/variables.dart';
 
 class SuppliesHistRepository {
   SuppliesHistRepository._();
-  static final SuppliesHistRepository instance =
-      SuppliesHistRepository._();
+  static final SuppliesHistRepository instance = SuppliesHistRepository._();
 
   /// Single job (nullable until set)
   SuppliesModelHist? suppliesModelHist;
@@ -24,62 +21,60 @@ class SuppliesHistRepository {
     // _loaded = true;
   }
 
-  void setSuppliesCurrent(SuppliesModelHist supplies) {
-    suppliesModelHist = supplies;
+  void setSuppliesCurrent(SuppliesModelHist value) {
+    suppliesModelHist = value;
   }
 
   void clear() {
     // suppliesModelHist = null;
-     suppliesModelHist = SuppliesModelHist(
-      docId: "",
-      countId: 0,
-      itemId: 123,
-      itemUniqueId: 123,
-      itemName: "123",
-      currentCounter: 0,
-      currentStocks: 0,
-      logDate: Timestamp.now(),
-      empId: empIdGlobal,
-      customerId: 1,
-      customerName: "",
-      remarks: "");
+    suppliesModelHist = SuppliesModelHist(
+        docId: "",
+        countId: 0,
+        itemId: 123,
+        itemUniqueId: 123,
+        itemName: "123",
+        currentCounter: 0,
+        currentStocks: 0,
+        logDate: Timestamp.now(),
+        empId: empIdGlobal,
+        customerId: 1,
+        customerName: "",
+        remarks: "");
   }
 
-
-  void setItemId(int itemId) {
-    suppliesModelHist!.itemId = itemId;
+  void setItemId(int value) {
+    suppliesModelHist!.itemId = value;
   }
 
-  void setItemUniqueId(int itemUniqueId) {
-    suppliesModelHist!.itemUniqueId = itemUniqueId;
+  void setItemUniqueId(int value) {
+    suppliesModelHist!.itemUniqueId = value;
   }
 
-  void setItemName(String itemName) {
-    suppliesModelHist!.itemName = itemName;
+  void setItemName(String value) {
+    suppliesModelHist!.itemName = value;
   }
 
-  void setCurrentCounter(int currentCounter) {
-    suppliesModelHist!.currentCounter = currentCounter;
-  } 
-
-  void setEmpId(String empId) {
-    suppliesModelHist!.empId = empId;
+  void setCurrentCounter(int value) {
+    suppliesModelHist!.currentCounter = value;
   }
 
-  void setCustomerId(int customerId) {
-    suppliesModelHist!.customerId = customerId;
+  void setEmpId(String value) {
+    suppliesModelHist!.empId = value;
   }
 
-  void setCustomerName(String customerName) {
-    suppliesModelHist!.customerName = customerName;
+  void setCustomerId(int value) {
+    suppliesModelHist!.customerId = value;
   }
 
-  void setLogDate(Timestamp logDate) {
-    suppliesModelHist!.logDate = logDate;
+  void setCustomerName(String value) {
+    suppliesModelHist!.customerName = value;
   }
 
-  void setRemarks(String remarks) {
-    suppliesModelHist!.remarks = remarks;
+  void setLogDate(Timestamp value) {
+    suppliesModelHist!.logDate = value;
   }
 
+  void setRemarks(String value) {
+    suppliesModelHist!.remarks = value;
+  }
 }

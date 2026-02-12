@@ -1,9 +1,7 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:laundry_firebase/models/jobsmodel.dart';
 import 'package:laundry_firebase/models/otheritemmodel.dart';
-import 'package:laundry_firebase/pages/autocompletecustomer.dart';
 import 'package:laundry_firebase/pages/updatedpages/sharedmethods/sharedMethodAndVariable.dart';
 import 'package:laundry_firebase/variables/updatedvariables/jobsmodel_repository.dart';
 import 'package:laundry_firebase/variables/variables.dart';
@@ -239,6 +237,8 @@ void showJobsOnQueueComplete(BuildContext context, JobsModel jM) {
                       barrierDismissible: false,
                       builder: (context) {
                         return AlertDialog(
+                          icon: const Icon(Icons.warning,
+                              color: Colors.redAccent),
                           title: const Text('Confirm'),
                           content: const Text(
                             'Added items in All Services\nwill be delete?',
@@ -1732,101 +1732,7 @@ void showJobsOnQueueComplete(BuildContext context, JobsModel jM) {
     //reuse the repository.
     JobsModelRepository.instance.jobsModel = jM;
 
-    int promoCounter = 0;
-    int computeLoadForKg(double kg) {
-      double remainder = kg % 8;
-      int wholeEight = kg ~/ 8;
-      int lastCounter = 0;
-      if (remainder < 1) {
-        lastCounter = 0;
-      } else {
-        lastCounter = 1;
-      }
-      if (remainder >= 3) {
-        promoCounter = wholeEight + 1;
-      } else {
-        promoCounter = wholeEight;
-      }
-
-      return wholeEight + lastCounter;
-    }
-
-    //dates
-    /// 🟣 Dates
-    JobsModelRepository.instance.setDateQ = Timestamp.now();
-
-    //admin
-    JobsModelRepository.instance.setCreatedBy = empIdGlobal;
-    JobsModelRepository.instance.setCurrentEmpId = empIdGlobal;
-
-    //initial status
-    JobsModelRepository.instance.setForSorting =
-        forSorting == selectedRiderPickup;
-    JobsModelRepository.instance.setRiderPickup =
-        riderPickup == selectedRiderPickup;
-
-    //package status
-    JobsModelRepository.instance.setRegular = regularPackage == selectedPackage;
-    JobsModelRepository.instance.setSayosabon =
-        sayoSabonPackage == selectedPackage;
-    JobsModelRepository.instance.setAddOn = othersPackage == selectedPackage;
-
-    //prices
-    if (selectedPackage == othersPackage) {
-      JobsModelRepository.instance.setFinalPrice = totalPriceOthers;
-    } else {
-      JobsModelRepository.instance.setFinalPrice = totalPriceRegSS;
-    }
-
-    //payment status
-    JobsModelRepository.instance.setUnpaid = unpaid == selectedPaidUnpaid;
-    JobsModelRepository.instance.setPaidCash = paidCash == selectedPaidUnpaid;
-    JobsModelRepository.instance.setPaidGCash = paidGCash == selectedPaidUnpaid;
-    JobsModelRepository.instance.setPartialPaidCash = selectedPaidPartialCash;
-    JobsModelRepository.instance.setPartialPaidGCash = selectedPaidPartialGCash;
-    JobsModelRepository.instance.setPartialPaidCashAmount =
-        int.tryParse(partialCashAmountVar.text) ?? 0;
-    JobsModelRepository.instance.setPartialPaidGCashAmount =
-        int.tryParse(partialGCashAmountVar.text) ?? 0;
-
-    if (unpaid != selectedPaidUnpaid) {
-      JobsModelRepository.instance.setPaymentReceivedBy = empIdGlobal;
-    }
-
-    //verified gcash
-    JobsModelRepository.instance.setPaidGCashVerified =
-        selectedPaidGCashVerified;
-
-    //weight status
-    JobsModelRepository.instance.setPerKilo = false;
-    JobsModelRepository.instance.setPerLoad = false;
-
-    if (isPerKg) {
-      JobsModelRepository.instance.setPerKilo = true;
-      JobsModelRepository.instance.setFinalKilo = quantityKg;
-      JobsModelRepository.instance.setFinalLoad = computeLoadForKg(quantityKg);
-      JobsModelRepository.instance.setPromoCounter = promoCounter;
-      JobsModelRepository.instance.setRemarks =
-          '${remarksSuppliesVar.text} ${showHowMany155or125Set(computeTotalPrice(quantityKg), false)}';
-    } else {
-      JobsModelRepository.instance.setPerLoad = true;
-      JobsModelRepository.instance.setFinalLoad = quantityLoad;
-      JobsModelRepository.instance.setPromoCounter = quantityLoad;
-      JobsModelRepository.instance.setRemarks =
-          '${remarksSuppliesVar.text} per Load';
-    }
-
-    //list other items
-    if (listAddedOtherItemModel.isNotEmpty) {
-      JobsModelRepository.instance.setItems = listAddedOtherItemModel;
-    }
-
-    //other options
-    JobsModelRepository.instance.setFold = selectedFold;
-    JobsModelRepository.instance.setMix = selectedMix;
-    JobsModelRepository.instance.setBasket = basketCount;
-    JobsModelRepository.instance.setEbag = ecoBagCount;
-    JobsModelRepository.instance.setSako = sakoCount;
+    setSelectedToRepository();
 
     //should be update
     await callDatabaseJobsQueueUpdate(
@@ -1903,6 +1809,58 @@ void showJobsOnQueueComplete(BuildContext context, JobsModel jM) {
           actions: [
             TextButton(
               onPressed: () {
+                showDialog<bool>(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (context) {
+                    return AlertDialog(
+                      icon: const Icon(Icons.warning, color: Colors.redAccent),
+                      title: const Text('Confirm'),
+                      content: const Text(
+                        'Are you sure you want to delete this job?',
+                        textAlign: TextAlign.center,
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () {
+                            setState(() {});
+                            Navigator.pop(context, false);
+                          },
+                          child: const Text('No'),
+                        ),
+                        ElevatedButton(
+                          onPressed: () {
+                            setState(() {});
+                            Navigator.pop(context, true);
+                          },
+                          child: const Text('Yes'),
+                        ),
+                      ],
+                    );
+                  },
+                );
+              },
+              style: TextButton.styleFrom(
+                backgroundColor: Colors.lightBlueAccent.shade100,
+                textStyle: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              child: const Text(
+                'Delete',
+                style: TextStyle(color: Colors.black),
+              ),
+            ),
+            TextButton(
+              style: TextButton.styleFrom(
+                backgroundColor: Colors.lightBlueAccent.shade100,
+                textStyle: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              onPressed: () {
                 Navigator.pop(context); // close popup
               },
               child: const Text(
@@ -1910,12 +1868,18 @@ void showJobsOnQueueComplete(BuildContext context, JobsModel jM) {
                 style: TextStyle(color: Colors.black),
               ),
             ),
+            SizedBox(
+              width: 8,
+            ),
             ElevatedButton(
               onPressed: () async {
                 await saveButtonSetRepository();
                 Navigator.pop(context);
               },
               child: const Text('Update'),
+            ),
+            SizedBox(
+              width: 1,
             ),
           ],
         );

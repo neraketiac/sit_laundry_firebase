@@ -1677,107 +1677,21 @@ void showJobsOnQueue(BuildContext context) {
   }
 
   Future<void> saveButtonSetRepository() async {
-    int promoCounter = 0;
-    int computeLoadForKg(double kg) {
-      double remainder = kg % 8;
-      int wholeEight = kg ~/ 8;
-      int lastCounter = 0;
-      if (remainder < 1) {
-        lastCounter = 0;
-      } else {
-        lastCounter = 1;
-      }
-      if (remainder >= 3) {
-        promoCounter = wholeEight + 1;
-      } else {
-        promoCounter = wholeEight;
-      }
-
-      return wholeEight + lastCounter;
-    }
-
-    //dates
+//dates
     /// 🟣 Dates
     JobsModelRepository.instance.setDateQ = Timestamp.now();
 
     //admin
     JobsModelRepository.instance.setCreatedBy = empIdGlobal;
-    JobsModelRepository.instance.setCurrentEmpId = empIdGlobal;
 
-    //initial status
-    JobsModelRepository.instance.setForSorting =
-        forSorting == selectedRiderPickup;
-    JobsModelRepository.instance.setRiderPickup =
-        riderPickup == selectedRiderPickup;
-
-    //package status
-    JobsModelRepository.instance.setRegular = regularPackage == selectedPackage;
-    JobsModelRepository.instance.setSayosabon =
-        sayoSabonPackage == selectedPackage;
-    JobsModelRepository.instance.setAddOn = othersPackage == selectedPackage;
-
-    //prices
-    if (selectedPackage == othersPackage) {
-      JobsModelRepository.instance.setFinalPrice = totalPriceOthers;
-    } else {
-      JobsModelRepository.instance.setFinalPrice = totalPriceRegSS;
-    }
-
-    //payment status
-    JobsModelRepository.instance.setUnpaid = unpaid == selectedPaidUnpaid;
-    JobsModelRepository.instance.setPaidCash = paidCash == selectedPaidUnpaid;
-    JobsModelRepository.instance.setPaidGCash = paidGCash == selectedPaidUnpaid;
-    JobsModelRepository.instance.setPartialPaidCash = selectedPaidPartialCash;
-    JobsModelRepository.instance.setPartialPaidGCash = selectedPaidPartialGCash;
-    JobsModelRepository.instance.setPartialPaidCashAmount =
-        int.tryParse(partialCashAmountVar.text) ?? 0;
-    JobsModelRepository.instance.setPartialPaidGCashAmount =
-        int.tryParse(partialGCashAmountVar.text) ?? 0;
-
-    if (unpaid != selectedPaidUnpaid) {
-      JobsModelRepository.instance.setPaymentReceivedBy = empIdGlobal;
-    }
-
-    //verified gcash
-    JobsModelRepository.instance.setPaidGCashVerified =
-        selectedPaidGCashVerified;
-
-    //weight status
-    JobsModelRepository.instance.setPerKilo = false;
-    JobsModelRepository.instance.setPerLoad = false;
-
-    if (isPerKg) {
-      JobsModelRepository.instance.setPerKilo = true;
-      JobsModelRepository.instance.setFinalKilo = quantityKg;
-      JobsModelRepository.instance.setFinalLoad = computeLoadForKg(quantityKg);
-      JobsModelRepository.instance.setPromoCounter = promoCounter;
-      JobsModelRepository.instance.setPricingSetup =
-          showHowMany155or125Set(computeTotalPrice(quantityKg), false);
-      JobsModelRepository.instance.setRemarks = remarksSuppliesVar.text;
-    } else {
-      JobsModelRepository.instance.setPerLoad = true;
-      JobsModelRepository.instance.setFinalLoad = quantityLoad;
-      JobsModelRepository.instance.setPromoCounter = quantityLoad;
-      JobsModelRepository.instance.setRemarks =
-          '${remarksSuppliesVar.text} per Load';
-    }
-
-    //list other items
-    if (listAddedOtherItemModel.isNotEmpty) {
-      JobsModelRepository.instance.setItems = listAddedOtherItemModel;
-    }
-
-    //other options
-    JobsModelRepository.instance.setFold = selectedFold;
-    JobsModelRepository.instance.setMix = selectedMix;
-    JobsModelRepository.instance.setBasket = basketCount;
-    JobsModelRepository.instance.setEbag = ecoBagCount;
-    JobsModelRepository.instance.setSako = sakoCount;
+    setSelectedToRepository();
 
     await callDatabaseJobsQueueAdd(context);
     //await setRepositoryLaundryPayment(context, 'Show Jobs OnQueue');
   }
 
+  //reset only when submit, so that when user opens the popup again, their previous selections are still there until they decide to save or cancel. This is more user-friendly as it prevents accidental loss of input if they open the popup multiple times.
+  //resetSelected();
   showDialog(
     context: context,
     builder: (BuildContext context) {

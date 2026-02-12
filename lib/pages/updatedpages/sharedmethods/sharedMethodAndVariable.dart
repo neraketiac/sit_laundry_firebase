@@ -199,40 +199,47 @@ int get grandTotal {
 }
 
 String showHowMany155or125Set(int total, bool bSeparate) {
-  //int base = pricePerSet;
-  List<int> extras = [pricePerSet + tier1Increase, pricePerSet + tier2Increase];
+  if (JobsModelRepository.instance.getAddOn()) {
+    return '';
+  } else {
+//int base = pricePerSet;
+    List<int> extras = [
+      pricePerSet + tier1Increase,
+      pricePerSet + tier2Increase
+    ];
 
-  // Base single
-  if (total == pricePerSet) return ' $pricePerSet';
+    // Base single
+    if (total == pricePerSet) return ' $pricePerSet';
 
-  // Extras alone
-  if (extras.contains(total)) return ' $total';
+    // Extras alone
+    if (extras.contains(total)) return ' $total';
 
-  for (final extra in [0, ...extras]) {
-    final remaining = total - extra;
+    for (final extra in [0, ...extras]) {
+      final remaining = total - extra;
 
-    if (remaining <= 0) continue;
-    if (remaining % pricePerSet != 0) continue;
+      if (remaining <= 0) continue;
+      if (remaining % pricePerSet != 0) continue;
 
-    final multiplier = remaining ~/ pricePerSet;
+      final multiplier = remaining ~/ pricePerSet;
 
-    if (multiplier == 1 && extra == 0) {
-      return ' $pricePerSet';
-    }
+      if (multiplier == 1 && extra == 0) {
+        return ' $pricePerSet';
+      }
 
-    if (multiplier == 1 && extra != 0) {
-      return ' $pricePerSet\n + $extra';
-    }
+      if (multiplier == 1 && extra != 0) {
+        return ' $pricePerSet\n + $extra';
+      }
 
-    if (multiplier > 1 && extra == 0) {
-      return ' ($pricePerSet * $multiplier)';
-    }
+      if (multiplier > 1 && extra == 0) {
+        return ' ($pricePerSet * $multiplier)';
+      }
 
-    if (multiplier > 1 && extra != 0) {
-      if (bSeparate) {
-        return ' ($pricePerSet * $multiplier)\n + $extra';
-      } else {
-        return ' ($pricePerSet * $multiplier) + $extra';
+      if (multiplier > 1 && extra != 0) {
+        if (bSeparate) {
+          return ' ($pricePerSet * $multiplier)\n + $extra';
+        } else {
+          return ' ($pricePerSet * $multiplier) + $extra';
+        }
       }
     }
   }
@@ -278,6 +285,99 @@ void resetAfterInsert() {
   // customerNameVar.text = "";
   remarksSuppliesVar.text = "";
   selectedFundCode = null;
+}
+
+//set selected to repository
+void setSelectedToRepository() {
+  int promoCounter = 0;
+  int computeLoadForKg(double kg) {
+    double remainder = kg % 8;
+    int wholeEight = kg ~/ 8;
+    int lastCounter = 0;
+    if (remainder < 1) {
+      lastCounter = 0;
+    } else {
+      lastCounter = 1;
+    }
+    if (remainder >= 3) {
+      promoCounter = wholeEight + 1;
+    } else {
+      promoCounter = wholeEight;
+    }
+
+    return wholeEight + lastCounter;
+  }
+
+  JobsModelRepository.instance.setCurrentEmpId = empIdGlobal;
+
+  //initial status
+  JobsModelRepository.instance.setForSorting =
+      forSorting == selectedRiderPickup;
+  JobsModelRepository.instance.setRiderPickup =
+      riderPickup == selectedRiderPickup;
+
+  //package status
+  JobsModelRepository.instance.setRegular = regularPackage == selectedPackage;
+  JobsModelRepository.instance.setSayosabon =
+      sayoSabonPackage == selectedPackage;
+  JobsModelRepository.instance.setAddOn = othersPackage == selectedPackage;
+
+  //prices
+  if (selectedPackage == othersPackage) {
+    JobsModelRepository.instance.setFinalPrice = totalPriceOthers;
+  } else {
+    JobsModelRepository.instance.setFinalPrice = totalPriceRegSS;
+  }
+
+  //payment status
+  JobsModelRepository.instance.setUnpaid = unpaid == selectedPaidUnpaid;
+  JobsModelRepository.instance.setPaidCash = paidCash == selectedPaidUnpaid;
+  JobsModelRepository.instance.setPaidGCash = paidGCash == selectedPaidUnpaid;
+  JobsModelRepository.instance.setPartialPaidCash = selectedPaidPartialCash;
+  JobsModelRepository.instance.setPartialPaidGCash = selectedPaidPartialGCash;
+  JobsModelRepository.instance.setPartialPaidCashAmount =
+      int.tryParse(partialCashAmountVar.text) ?? 0;
+  JobsModelRepository.instance.setPartialPaidGCashAmount =
+      int.tryParse(partialGCashAmountVar.text) ?? 0;
+
+  if (unpaid != selectedPaidUnpaid) {
+    JobsModelRepository.instance.setPaymentReceivedBy = empIdGlobal;
+  }
+
+  //verified gcash
+  JobsModelRepository.instance.setPaidGCashVerified = selectedPaidGCashVerified;
+
+  //weight status
+  JobsModelRepository.instance.setPerKilo = false;
+  JobsModelRepository.instance.setPerLoad = false;
+
+  if (isPerKg) {
+    JobsModelRepository.instance.setPerKilo = true;
+    JobsModelRepository.instance.setFinalKilo = quantityKg;
+    JobsModelRepository.instance.setFinalLoad = computeLoadForKg(quantityKg);
+    JobsModelRepository.instance.setPromoCounter = promoCounter;
+    JobsModelRepository.instance.setPricingSetup =
+        showHowMany155or125Set(computeTotalPrice(quantityKg), false);
+    JobsModelRepository.instance.setRemarks = remarksSuppliesVar.text;
+  } else {
+    JobsModelRepository.instance.setPerLoad = true;
+    JobsModelRepository.instance.setFinalLoad = quantityLoad;
+    JobsModelRepository.instance.setPromoCounter = quantityLoad;
+    JobsModelRepository.instance.setPricingSetup = 'Load(s): $quantityLoad';
+    JobsModelRepository.instance.setRemarks = remarksSuppliesVar.text;
+  }
+
+  //list other items
+  if (listAddedOtherItemModel.isNotEmpty) {
+    JobsModelRepository.instance.setItems = listAddedOtherItemModel;
+  }
+
+  //other options
+  JobsModelRepository.instance.setFold = selectedFold;
+  JobsModelRepository.instance.setMix = selectedMix;
+  JobsModelRepository.instance.setBasket = basketCount;
+  JobsModelRepository.instance.setEbag = ecoBagCount;
+  JobsModelRepository.instance.setSako = sakoCount;
 }
 
 Future<void> setSuppliesRepository(BuildContext context) async {
