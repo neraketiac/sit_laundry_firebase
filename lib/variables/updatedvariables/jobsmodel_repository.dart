@@ -31,6 +31,7 @@ class JobsModelRepository {
         finalLoad: 0,
         finalPrice: 0,
         promoCounter: 0,
+        pricingSetup: '',
         regular: false,
         sayosabon: false,
         addOn: false,
@@ -109,6 +110,10 @@ class JobsModelRepository {
     return jobsModel!.finalPrice;
   }
 
+  String getPricingSetup() {
+    return jobsModel!.pricingSetup;
+  }
+
   int getCustomerId() {
     return jobsModel!.customerId;
   }
@@ -164,6 +169,7 @@ class JobsModelRepository {
   set setFinalLoad(int value) => jobsModel!.finalLoad = value;
   set setFinalPrice(int value) => jobsModel!.finalPrice = value;
   set setPromoCounter(int value) => jobsModel!.promoCounter = value;
+  set setPricingSetup(String value) => jobsModel!.pricingSetup = value;
   set setRegular(bool value) => jobsModel!.regular = value;
   set setSayosabon(bool value) => jobsModel!.sayosabon = value;
   set setAddOn(bool value) => jobsModel!.addOn = value;

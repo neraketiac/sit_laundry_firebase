@@ -1751,8 +1751,9 @@ void showJobsOnQueue(BuildContext context) {
       JobsModelRepository.instance.setFinalKilo = quantityKg;
       JobsModelRepository.instance.setFinalLoad = computeLoadForKg(quantityKg);
       JobsModelRepository.instance.setPromoCounter = promoCounter;
-      JobsModelRepository.instance.setRemarks =
-          '${remarksSuppliesVar.text} ${showHowMany155or125Set(computeTotalPrice(quantityKg), false)}';
+      JobsModelRepository.instance.setPricingSetup =
+          showHowMany155or125Set(computeTotalPrice(quantityKg), false);
+      JobsModelRepository.instance.setRemarks = remarksSuppliesVar.text;
     } else {
       JobsModelRepository.instance.setPerLoad = true;
       JobsModelRepository.instance.setFinalLoad = quantityLoad;

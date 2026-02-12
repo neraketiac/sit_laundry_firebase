@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:laundry_firebase/models/jobsmodel.dart';
 import 'package:laundry_firebase/pages/updatedpages/body/JobsOnQueue/showJobsOnQueueComplete.dart';
-import 'package:laundry_firebase/pages/updatedpages/body/JobsOnQueue/showMoreStatus.dart';
 import 'package:laundry_firebase/pages/updatedpages/body/JobsOnQueue/showPaidUnpaid.dart';
 import 'package:laundry_firebase/services/database_jobs.dart';
 import 'package:laundry_firebase/variables/variables.dart';
@@ -243,7 +242,7 @@ Widget readDataJobsOnQueue() {
                                   ),
                                   const SizedBox(height: 2),
                                   Text(
-                                    processStatusJobsOnQueue(job),
+                                    '${processStatusJobsOnQueue(job)}  ${job.pricingSetup}',
                                     style: TextStyle(
                                       fontSize: 10,
                                       color: (job.forSorting

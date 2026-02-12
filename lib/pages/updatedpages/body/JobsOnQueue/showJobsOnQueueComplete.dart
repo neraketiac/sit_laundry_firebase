@@ -1729,6 +1729,9 @@ void showJobsOnQueueComplete(BuildContext context, JobsModel jM) {
   }
 
   Future<void> saveButtonSetRepository() async {
+    //reuse the repository.
+    JobsModelRepository.instance.jobsModel = jM;
+
     int promoCounter = 0;
     int computeLoadForKg(double kg) {
       double remainder = kg % 8;
@@ -1826,7 +1829,8 @@ void showJobsOnQueueComplete(BuildContext context, JobsModel jM) {
     JobsModelRepository.instance.setSako = sakoCount;
 
     //should be update
-    //await callDatabaseJobsQueueAdd(context);
+    await callDatabaseJobsQueueUpdate(
+        context, JobsModelRepository.instance.getJobsModel()!);
     //await setRepositoryLaundryPayment(context, 'Show Jobs OnQueue');
   }
 
@@ -1908,15 +1912,8 @@ void showJobsOnQueueComplete(BuildContext context, JobsModel jM) {
             ),
             ElevatedButton(
               onPressed: () async {
-                if (JobsModelRepository.instance.getCustomerId() == 0) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                        content: Text('Please select customer name.')),
-                  );
-                } else {
-                  await saveButtonSetRepository();
-                  Navigator.pop(context);
-                }
+                await saveButtonSetRepository();
+                Navigator.pop(context);
               },
               child: const Text('Update'),
             ),

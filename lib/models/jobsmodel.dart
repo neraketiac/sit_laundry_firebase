@@ -68,6 +68,7 @@ class JobsModel {
   int finalLoad;
   int finalPrice;
   int promoCounter;
+  String pricingSetup;
 
   /// 🟢 Options
   bool regular;
@@ -128,6 +129,7 @@ class JobsModel {
     required this.finalLoad,
     required this.finalPrice,
     required this.promoCounter,
+    required this.pricingSetup,
     required this.regular,
     required this.sayosabon,
     required this.addOn,
@@ -173,6 +175,7 @@ class JobsModel {
       finalLoad: 0,
       finalPrice: 0,
       promoCounter: 0,
+      pricingSetup: '',
       regular: true,
       sayosabon: false,
       addOn: false,
@@ -219,6 +222,7 @@ class JobsModel {
     int? finalLoad,
     int? finalPrice,
     int? promoCounter,
+    String? pricingSetup,
     bool? regular,
     bool? sayosabon,
     bool? addOn,
@@ -262,6 +266,7 @@ class JobsModel {
       finalLoad: finalLoad ?? this.finalLoad,
       finalPrice: finalPrice ?? this.finalPrice,
       promoCounter: promoCounter ?? this.promoCounter,
+      pricingSetup: pricingSetup ?? this.pricingSetup,
       regular: regular ?? this.regular,
       sayosabon: sayosabon ?? this.sayosabon,
       addOn: addOn ?? this.addOn,
@@ -306,6 +311,7 @@ class JobsModel {
         finalLoad: json['Q05_FinalLoad'],
         finalPrice: json['Q06_FinalPrice'],
         promoCounter: json['Q06_PromoCounter'],
+        pricingSetup: json['Q06_PricingSetup'],
         regular: json['Q07_Regular'],
         sayosabon: json['Q08_Sayosabon'],
         addOn: json['Q09_AddOn'],
@@ -353,6 +359,7 @@ class JobsModel {
         'Q05_FinalLoad': finalLoad,
         'Q06_FinalPrice': finalPrice,
         'Q06_PromoCounter': promoCounter,
+        'Q06_PricingSetup': pricingSetup,
         'Q07_Regular': regular,
         'Q08_Sayosabon': sayosabon,
         'Q09_AddOn': addOn,
