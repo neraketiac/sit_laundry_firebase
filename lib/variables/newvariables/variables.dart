@@ -8,7 +8,6 @@ import 'package:laundry_firebase/models/newmodels/employeemodel.dart';
 import 'package:laundry_firebase/models/oldmodels/jobsonqueuemodel.dart';
 import 'package:laundry_firebase/models/newmodels/otheritemmodel.dart';
 import 'package:laundry_firebase/models/newmodels/suppliesmodelhist.dart';
-import 'package:laundry_firebase/pages/newpages/sharedmethods/autocompletecustomer.dart';
 import 'package:laundry_firebase/pages/loyalty_admin.dart';
 import 'package:laundry_firebase/pages/oldpages/queue.dart';
 import 'package:laundry_firebase/services/oldservices/database_jobsonqueue.dart';

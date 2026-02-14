@@ -964,10 +964,36 @@ void showJobOnQueue(BuildContext context, JobModelRepository jobRepo) {
 
   Visibility visPaidUnPaid(Function setState) {
     final List<int> listPaidUnpaid = [
-      unpaid,
       paidCash,
       paidGCash,
     ];
+
+    const String titlePaymentStatus = 'Payment Status';
+    late String actualPaymentStatus = '';
+
+    String returnPaymentStatus(bool paidCash, bool paidGCash) {
+      if (paidCash && paidGCash) {
+        jobRepo.partialCashAmountVar.text = (jobRepo.finalPrice / 2).toString();
+        if (jobRepo.selectedPackage == othersPackage) {
+          jobRepo.partialGCashAmountVar.text =
+              (jobRepo.totalPriceOthers / 2).toString();
+        } else {
+          jobRepo.partialGCashAmountVar.text =
+              (jobRepo.totalPriceRegSS / 2).toString();
+        }
+      }
+      if (paidCash) {
+        if (jobRepo.partialCashAmountVar.text == '') {
+          jobRepo.partialCashAmountVar.text = jobRepo.finalPrice.toString();
+        }
+      }
+      if (paidGCash) {
+        if (jobRepo.partialGCashAmountVar.text == '') {
+          jobRepo.partialGCashAmountVar.text = jobRepo.finalPrice.toString();
+        }
+      }
+      return '';
+    }
 
     return Visibility(
       visible: true,
@@ -980,37 +1006,8 @@ void showJobOnQueue(BuildContext context, JobModelRepository jobRepo) {
           spacing: 0,
           children: [
             Text(
-              'Payment Status',
+              titlePaymentStatus,
               style: TextStyle(fontSize: 11),
-            ),
-            ToggleButtons(
-              isSelected: List.generate(
-                listPaidUnpaid.length,
-                (i) => jobRepo.selectedPaidUnpaid == listPaidUnpaid[i],
-              ),
-              onPressed: (index) {
-                setState(() {
-                  if (jobRepo.selectedPaidUnpaid == listPaidUnpaid[index]) {
-                    jobRepo.selectedPaidUnpaid = 0;
-                  } else {
-                    jobRepo.selectedPaidUnpaid = listPaidUnpaid[index];
-                  }
-                });
-              },
-              borderRadius: BorderRadius.circular(8),
-              selectedColor: Colors.black,
-              fillColor: Colors.greenAccent,
-              color: Colors.black,
-              borderColor: cSalaryOut,
-              constraints: const BoxConstraints(
-                minWidth: 60,
-                minHeight: 25,
-              ),
-              children: const [
-                Text('Unpaid', style: TextStyle(fontSize: 11)),
-                Text('Paid Cash', style: TextStyle(fontSize: 11)),
-                Text('Paid GCash', style: TextStyle(fontSize: 10)),
-              ],
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -1019,9 +1016,9 @@ void showJobOnQueue(BuildContext context, JobModelRepository jobRepo) {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      'Partial\ncash?',
+                      'Cash',
                       style: const TextStyle(
-                        fontSize: 7,
+                        fontSize: 10,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -1029,10 +1026,11 @@ void showJobOnQueue(BuildContext context, JobModelRepository jobRepo) {
                     Transform.scale(
                       scale: 0.7, // shrink the checkbox itself
                       child: Checkbox(
-                        value: jobRepo.selectedPaidPartialCash,
+                        value: jobRepo.paidCash,
                         onChanged: (bool? value) {
                           setState(() {
-                            jobRepo.selectedPaidPartialCash = value ?? false;
+                            jobRepo.paidCash = value ?? false;
+                            returnPaymentStatus(value!, jobRepo.paidGCash);
                           });
                         },
                         visualDensity: VisualDensity(
@@ -1047,9 +1045,9 @@ void showJobOnQueue(BuildContext context, JobModelRepository jobRepo) {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      'Partial\nGCash?',
+                      'GCash',
                       style: const TextStyle(
-                        fontSize: 7,
+                        fontSize: 10,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -1057,10 +1055,11 @@ void showJobOnQueue(BuildContext context, JobModelRepository jobRepo) {
                     Transform.scale(
                       scale: 0.7, // shrink the checkbox itself
                       child: Checkbox(
-                        value: jobRepo.selectedPaidPartialGCash,
+                        value: jobRepo.paidGCash,
                         onChanged: (bool? value) {
                           setState(() {
-                            jobRepo.selectedPaidPartialGCash = value ?? false;
+                            jobRepo.paidGCash = value ?? false;
+                            returnPaymentStatus(jobRepo.paidGCash, value!);
                           });
                         },
                         visualDensity: VisualDensity(
@@ -1071,155 +1070,362 @@ void showJobOnQueue(BuildContext context, JobModelRepository jobRepo) {
                     ),
                   ],
                 ),
-                SizedBox(
-                  width: 2,
-                ),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      'GCash\nverified?',
-                      style: const TextStyle(
-                        fontSize: 7,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(width: 2), // tiny gap
-                    Transform.scale(
-                      scale: 0.7, // shrink the checkbox itself
-                      child: Checkbox(
-                        value: jobRepo.selectedPaidGCashVerified,
-                        onChanged: (bool? value) {
-                          setState(() {
-                            jobRepo.selectedPaidGCashVerified = value ?? false;
-                          });
-                        },
-                        visualDensity: VisualDensity(
-                            horizontal: -4, vertical: -4), // tighter
-                        materialTapTargetSize: MaterialTapTargetSize
-                            .shrinkWrap, // no extra padding
-                      ),
-                    ),
-                  ],
-                )
               ],
             ),
-            SizedBox(
-              height: 4,
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: 0),
+                    child: TextFormField(
+                      controller: jobRepo.partialCashAmountVar,
+                      keyboardType:
+                          const TextInputType.numberWithOptions(decimal: true),
+                      textAlign: TextAlign.center,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(
+                            RegExp(r'^\d*\.?\d{0,2}')),
+                      ],
+                      style: const TextStyle(fontSize: 12),
+                      decoration: const InputDecoration(
+                        labelText: 'Cash Amount',
+                        labelStyle: TextStyle(fontSize: 10),
+                        isDense: true,
+                        contentPadding:
+                            EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                        hintText: '0.00',
+                        hintStyle: TextStyle(fontSize: 12),
+                        border: OutlineInputBorder(),
+                        filled: true,
+                        fillColor: Colors.white,
+                        prefixIconConstraints: BoxConstraints(
+                          minWidth: 24,
+                          minHeight: 24,
+                        ),
+                        prefixIcon: Padding(
+                          padding: EdgeInsets.only(left: 4, right: 4),
+                          child: Text(
+                            '₱',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 0),
+                    child: TextFormField(
+                      controller: jobRepo.partialGCashAmountVar,
+                      keyboardType:
+                          const TextInputType.numberWithOptions(decimal: true),
+                      textAlign: TextAlign.center,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(
+                            RegExp(r'^\d*\.?\d{0,2}')),
+                      ],
+                      style: const TextStyle(fontSize: 12),
+                      decoration: const InputDecoration(
+                        labelText: 'GCash Amount',
+                        labelStyle: TextStyle(fontSize: 10),
+                        isDense: true,
+                        contentPadding:
+                            EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                        hintText: '0.00',
+                        hintStyle: TextStyle(fontSize: 12),
+                        border: OutlineInputBorder(),
+                        filled: true,
+                        fillColor: Colors.white,
+                        prefixIconConstraints: BoxConstraints(
+                          minWidth: 24,
+                          minHeight: 24,
+                        ),
+                        prefixIcon: Padding(
+                          padding: EdgeInsets.only(left: 4, right: 4),
+                          child: Text(
+                            '₱',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'GCash\nverified?',
+                  style: const TextStyle(
+                    fontSize: 7,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(width: 2), // tiny gap
+                Transform.scale(
+                  scale: 0.7, // shrink the checkbox itself
+                  child: Checkbox(
+                    value: jobRepo.selectedPaidGCashVerified,
+                    onChanged: (bool? value) {
+                      setState(() {
+                        jobRepo.selectedPaidGCashVerified = value ?? false;
+                      });
+                    },
+                    visualDensity:
+                        VisualDensity(horizontal: -4, vertical: -4), // tighter
+                    materialTapTargetSize:
+                        MaterialTapTargetSize.shrinkWrap, // no extra padding
+                  ),
+                ),
+              ],
+            )
+            // ToggleButtons(
+            //   isSelected: List.generate(
+            //     listPaidUnpaid.length,
+            //     (i) => jobRepo.selectedPaidUnpaid == listPaidUnpaid[i],
+            //   ),
+            //   onPressed: (index) {
+            //     setState(() {
+            //       if (jobRepo.selectedPaidUnpaid == listPaidUnpaid[index]) {
+            //         jobRepo.selectedPaidUnpaid = 0;
+            //       } else {
+            //         jobRepo.selectedPaidUnpaid = listPaidUnpaid[index];
+            //       }
+            //     });
+            //   },
+            //   borderRadius: BorderRadius.circular(8),
+            //   selectedColor: Colors.black,
+            //   fillColor: Colors.greenAccent,
+            //   color: Colors.black,
+            //   borderColor: cSalaryOut,
+            //   constraints: const BoxConstraints(
+            //     minWidth: 60,
+            //     minHeight: 25,
+            //   ),
+            //   children: const [
+            //     Text('Paid Cash', style: TextStyle(fontSize: 11)),
+            //     Text('Paid GCash', style: TextStyle(fontSize: 10)),
+            //   ],
+            // ),
+
+            // Row(
+            //   mainAxisAlignment: MainAxisAlignment.center,
+            //   children: [
+            //     Row(
+            //       mainAxisSize: MainAxisSize.min,
+            //       children: [
+            //         Text(
+            //           'Partial\ncash?',
+            //           style: const TextStyle(
+            //             fontSize: 7,
+            //             fontWeight: FontWeight.bold,
+            //           ),
+            //         ),
+            //         const SizedBox(width: 2), // tiny gap
+            //         Transform.scale(
+            //           scale: 0.7, // shrink the checkbox itself
+            //           child: Checkbox(
+            //             value: jobRepo.selectedPaidPartialCash,
+            //             onChanged: (bool? value) {
+            //               setState(() {
+            //                 jobRepo.selectedPaidPartialCash = value ?? false;
+            //               });
+            //             },
+            //             visualDensity: VisualDensity(
+            //                 horizontal: -4, vertical: -4), // tighter
+            //             materialTapTargetSize: MaterialTapTargetSize
+            //                 .shrinkWrap, // no extra padding
+            //           ),
+            //         ),
+            //       ],
+            //     ),
+            //     Row(
+            //       mainAxisSize: MainAxisSize.min,
+            //       children: [
+            //         Text(
+            //           'Partial\nGCash?',
+            //           style: const TextStyle(
+            //             fontSize: 7,
+            //             fontWeight: FontWeight.bold,
+            //           ),
+            //         ),
+            //         const SizedBox(width: 2), // tiny gap
+            //         Transform.scale(
+            //           scale: 0.7, // shrink the checkbox itself
+            //           child: Checkbox(
+            //             value: jobRepo.selectedPaidPartialGCash,
+            //             onChanged: (bool? value) {
+            //               setState(() {
+            //                 jobRepo.selectedPaidPartialGCash = value ?? false;
+            //               });
+            //             },
+            //             visualDensity: VisualDensity(
+            //                 horizontal: -4, vertical: -4), // tighter
+            //             materialTapTargetSize: MaterialTapTargetSize
+            //                 .shrinkWrap, // no extra padding
+            //           ),
+            //         ),
+            //       ],
+            //     ),
+            //     SizedBox(
+            //       width: 2,
+            //     ),
+            //     Row(
+            //       mainAxisSize: MainAxisSize.min,
+            //       children: [
+            //         Text(
+            //           'GCash\nverified?',
+            //           style: const TextStyle(
+            //             fontSize: 7,
+            //             fontWeight: FontWeight.bold,
+            //           ),
+            //         ),
+            //         const SizedBox(width: 2), // tiny gap
+            //         Transform.scale(
+            //           scale: 0.7, // shrink the checkbox itself
+            //           child: Checkbox(
+            //             value: jobRepo.selectedPaidGCashVerified,
+            //             onChanged: (bool? value) {
+            //               setState(() {
+            //                 jobRepo.selectedPaidGCashVerified = value ?? false;
+            //               });
+            //             },
+            //             visualDensity: VisualDensity(
+            //                 horizontal: -4, vertical: -4), // tighter
+            //             materialTapTargetSize: MaterialTapTargetSize
+            //                 .shrinkWrap, // no extra padding
+            //           ),
+            //         ),
+            //       ],
+            //     )
+            //   ],
+            // ),
+            // SizedBox(
+            //   height: 4,
+            // ),
             //Partial Cash Amount
-            Visibility(
-              visible: jobRepo.selectedPaidPartialCash,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Label (not indented)
-                  const Padding(
-                    padding: EdgeInsets.only(left: 4, bottom: 4),
-                    child: Text(
-                      'Partial Cash Amount',
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                  TextFormField(
-                    controller: jobRepo.partialCashAmountVar,
-                    keyboardType:
-                        const TextInputType.numberWithOptions(decimal: true),
-                    textAlign: TextAlign.center,
-                    inputFormatters: [
-                      FilteringTextInputFormatter.allow(
-                          RegExp(r'\d+(\.\d{0,2})?')),
-                    ],
-                    style: const TextStyle(fontSize: 12), // shrink text size
-                    decoration: InputDecoration(
-                      isDense: true, // 🔹 makes the field more compact
-                      contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 6),
-                      hintText: '0.00',
-                      hintStyle: const TextStyle(fontSize: 12),
-                      border: const OutlineInputBorder(),
-                      filled: true, // 🔹 enable background fill
-                      fillColor: Colors.white, // 🔹 set background to white
-                      prefixIconConstraints: const BoxConstraints(
-                        minWidth: 24, // 🔹 narrower prefix space
-                        minHeight: 24,
-                      ),
-                      prefixIcon: const Padding(
-                        padding: EdgeInsets.only(left: 4, right: 4),
-                        child: Text(
-                          '₱',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(
-              height: 2,
-            ),
+            // Visibility(
+            //   visible: jobRepo.selectedPaidPartialCash,
+            //   child: Column(
+            //     crossAxisAlignment: CrossAxisAlignment.start,
+            //     children: [
+            //       // Label (not indented)
+            //       const Padding(
+            //         padding: EdgeInsets.only(left: 4, bottom: 4),
+            //         child: Text(
+            //           'Partial Cash Amount',
+            //           style: TextStyle(
+            //             fontSize: 10,
+            //             fontWeight: FontWeight.w500,
+            //           ),
+            //         ),
+            //       ),
+            //       TextFormField(
+            //         controller: jobRepo.partialCashAmountVar,
+            //         keyboardType:
+            //             const TextInputType.numberWithOptions(decimal: true),
+            //         textAlign: TextAlign.center,
+            //         inputFormatters: [
+            //           FilteringTextInputFormatter.allow(
+            //               RegExp(r'\d+(\.\d{0,2})?')),
+            //         ],
+            //         style: const TextStyle(fontSize: 12), // shrink text size
+            //         decoration: InputDecoration(
+            //           isDense: true, // 🔹 makes the field more compact
+            //           contentPadding: const EdgeInsets.symmetric(
+            //               horizontal: 8, vertical: 6),
+            //           hintText: '0.00',
+            //           hintStyle: const TextStyle(fontSize: 12),
+            //           border: const OutlineInputBorder(),
+            //           filled: true, // 🔹 enable background fill
+            //           fillColor: Colors.white, // 🔹 set background to white
+            //           prefixIconConstraints: const BoxConstraints(
+            //             minWidth: 24, // 🔹 narrower prefix space
+            //             minHeight: 24,
+            //           ),
+            //           prefixIcon: const Padding(
+            //             padding: EdgeInsets.only(left: 4, right: 4),
+            //             child: Text(
+            //               '₱',
+            //               style: TextStyle(
+            //                 fontSize: 12,
+            //                 fontWeight: FontWeight.w600,
+            //               ),
+            //             ),
+            //           ),
+            //         ),
+            //       ),
+            //     ],
+            //   ),
+            // ),
+            // SizedBox(
+            //   height: 2,
+            // ),
             //Partial GCash Amount
-            Visibility(
-              visible: jobRepo.selectedPaidPartialGCash,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Label (not indented)
-                  const Padding(
-                    padding: EdgeInsets.only(left: 4, bottom: 4),
-                    child: Text(
-                      'Partial GCash Amount',
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                  TextFormField(
-                    controller: jobRepo.partialGCashAmountVar,
-                    keyboardType:
-                        const TextInputType.numberWithOptions(decimal: true),
-                    textAlign: TextAlign.center,
-                    inputFormatters: [
-                      FilteringTextInputFormatter.allow(
-                          RegExp(r'\d+(\.\d{0,2})?')),
-                    ],
-                    style: const TextStyle(fontSize: 12), // shrink text size
-                    decoration: InputDecoration(
-                      isDense: true, // 🔹 makes the field more compact
-                      contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 6),
-                      hintText: '0.00',
-                      hintStyle: const TextStyle(fontSize: 12),
-                      border: const OutlineInputBorder(),
-                      filled: true, // 🔹 enable background fill
-                      fillColor: Colors.white, // 🔹 set background to white
-                      prefixIconConstraints: const BoxConstraints(
-                        minWidth: 24, // 🔹 narrower prefix space
-                        minHeight: 24,
-                      ),
-                      prefixIcon: const Padding(
-                        padding: EdgeInsets.only(left: 4, right: 4),
-                        child: Text(
-                          '₱',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            // Visibility(
+            //   visible: jobRepo.selectedPaidPartialGCash,
+            //   child: Column(
+            //     crossAxisAlignment: CrossAxisAlignment.start,
+            //     children: [
+            //       // Label (not indented)
+            //       const Padding(
+            //         padding: EdgeInsets.only(left: 4, bottom: 4),
+            //         child: Text(
+            //           'Partial GCash Amount',
+            //           style: TextStyle(
+            //             fontSize: 10,
+            //             fontWeight: FontWeight.w500,
+            //           ),
+            //         ),
+            //       ),
+            //       TextFormField(
+            //         controller: jobRepo.partialGCashAmountVar,
+            //         keyboardType:
+            //             const TextInputType.numberWithOptions(decimal: true),
+            //         textAlign: TextAlign.center,
+            //         inputFormatters: [
+            //           FilteringTextInputFormatter.allow(
+            //               RegExp(r'\d+(\.\d{0,2})?')),
+            //         ],
+            //         style: const TextStyle(fontSize: 12), // shrink text size
+            //         decoration: InputDecoration(
+            //           isDense: true, // 🔹 makes the field more compact
+            //           contentPadding: const EdgeInsets.symmetric(
+            //               horizontal: 8, vertical: 6),
+            //           hintText: '0.00',
+            //           hintStyle: const TextStyle(fontSize: 12),
+            //           border: const OutlineInputBorder(),
+            //           filled: true, // 🔹 enable background fill
+            //           fillColor: Colors.white, // 🔹 set background to white
+            //           prefixIconConstraints: const BoxConstraints(
+            //             minWidth: 24, // 🔹 narrower prefix space
+            //             minHeight: 24,
+            //           ),
+            //           prefixIcon: const Padding(
+            //             padding: EdgeInsets.only(left: 4, right: 4),
+            //             child: Text(
+            //               '₱',
+            //               style: TextStyle(
+            //                 fontSize: 12,
+            //                 fontWeight: FontWeight.w600,
+            //               ),
+            //             ),
+            //           ),
+            //         ),
+            //       ),
+            //     ],
+            //   ),
+            // ),
           ],
         ),
       ),

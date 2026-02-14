@@ -25,11 +25,6 @@ void showGCashTransactions(BuildContext context, JobModelRepository jobRepo) {
     menuOthUniqIdCashOut,
   ];
 
-  final List<int> fundTypeCodes3rdLayer = [
-    menuOthUniqIdFundsIn,
-    menuOthUniqIdFundsOut,
-  ];
-
   String fundTypeCaptionMulti() {
     switch (selectedFundCode) {
       case menuOthLaundryPayment:

@@ -315,7 +315,7 @@ void setSelectedToRepository(JobModelRepository jobRepo) {
   }
 
   //list other items
-  if (listAddedOtherItemModel.isNotEmpty) {
+  if (jobRepo.listSelectedItemModel.isNotEmpty) {
     jobRepo.items = jobRepo.listSelectedItemModel;
   }
 
