@@ -1,5 +1,5 @@
-import 'package:laundry_firebase/models/otheritemmodel.dart';
-import 'package:laundry_firebase/variables/variables.dart';
+import 'package:laundry_firebase/models/newmodels/otheritemmodel.dart';
+import 'package:laundry_firebase/variables/newvariables/variables.dart';
 
 List<OtherItemModel> listFabItems = [];
 

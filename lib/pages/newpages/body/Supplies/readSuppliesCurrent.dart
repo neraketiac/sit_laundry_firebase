@@ -1,12 +1,12 @@
 //########################### Supplies Current ###############################
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:laundry_firebase/models/suppliesmodelhist.dart';
-import 'package:laundry_firebase/services/database_supplies_current.dart';
-import 'package:laundry_firebase/variables/variables.dart';
-import 'package:laundry_firebase/variables/variables_det.dart';
-import 'package:laundry_firebase/variables/variables_fab.dart';
-import 'package:laundry_firebase/variables/variables_supplies.dart';
+import 'package:laundry_firebase/models/newmodels/suppliesmodelhist.dart';
+import 'package:laundry_firebase/services/newservices/database_supplies_current.dart';
+import 'package:laundry_firebase/variables/newvariables/variables.dart';
+import 'package:laundry_firebase/variables/newvariables/variables_det.dart';
+import 'package:laundry_firebase/variables/newvariables/variables_fab.dart';
+import 'package:laundry_firebase/variables/newvariables/variables_supplies.dart';
 
 Widget readDataSuppliesCurrent() {
   bool bHeader = true;

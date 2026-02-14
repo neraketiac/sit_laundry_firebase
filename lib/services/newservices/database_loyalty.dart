@@ -1,7 +1,7 @@
 import 'dart:ui';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:laundry_firebase/models/loyaltymodel.dart';
+import 'package:laundry_firebase/models/newmodels/loyaltymodel.dart';
 
 const String LOYALTY_REF = "loyalty";
 const Color _gcButtons = Color.fromRGBO(134, 218, 252, 0.733);

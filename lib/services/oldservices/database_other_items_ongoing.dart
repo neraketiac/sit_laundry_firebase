@@ -1,8 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:laundry_firebase/models/otheritemmodel.dart';
-import 'package:laundry_firebase/services/navigator_key.dart';
-import 'package:laundry_firebase/variables/variables.dart';
+import 'package:laundry_firebase/models/newmodels/otheritemmodel.dart';
+import 'package:laundry_firebase/services/oldservices/navigator_key.dart';
+import 'package:laundry_firebase/variables/newvariables/variables.dart';
 
 const String COLLECTION_REF = "JobsOnGoing";
 const String SUB_COLLECTION_REF = "OtherItems";

@@ -1,10 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:laundry_firebase/models/jobsonqueuemodel.dart';
-import 'package:laundry_firebase/models/otheritemmodel.dart';
-import 'package:laundry_firebase/services/database_other_items.dart';
-import 'package:laundry_firebase/variables/variables.dart';
-import 'package:laundry_firebase/variables/variables_jobsongoing.dart';
+import 'package:laundry_firebase/models/oldmodels/jobsonqueuemodel.dart';
+import 'package:laundry_firebase/models/newmodels/otheritemmodel.dart';
+import 'package:laundry_firebase/services/oldservices/database_other_items.dart';
+import 'package:laundry_firebase/variables/newvariables/variables.dart';
+import 'package:laundry_firebase/variables/oldvariables/variables_jobsongoing.dart';
 
 const String JOBS_DONE_REF = "JobsDone";
 const Color _gcButtons = Color.fromRGBO(134, 218, 252, 0.733);

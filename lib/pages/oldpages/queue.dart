@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:laundry_firebase/models/otheritemmodel.dart';
-import 'package:laundry_firebase/models/suppliesmodelhist.dart';
-import 'package:laundry_firebase/pages/queue_mobile.dart';
-import 'package:laundry_firebase/variables/vairables_jobsonqueue.dart';
-import 'package:laundry_firebase/variables/variables.dart';
-import 'package:laundry_firebase/variables/variables_det.dart';
-import 'package:laundry_firebase/variables/variables_fab.dart';
-import 'package:laundry_firebase/variables/variables_ble.dart';
-import 'package:laundry_firebase/variables/variables_oth.dart';
-import 'package:laundry_firebase/variables/variables_supplies.dart';
+import 'package:laundry_firebase/models/newmodels/otheritemmodel.dart';
+import 'package:laundry_firebase/models/newmodels/suppliesmodelhist.dart';
+import 'package:laundry_firebase/pages/oldpages/queue_mobile.dart';
+import 'package:laundry_firebase/variables/oldvariables/vairables_jobsonqueue.dart';
+import 'package:laundry_firebase/variables/newvariables/variables.dart';
+import 'package:laundry_firebase/variables/newvariables/variables_det.dart';
+import 'package:laundry_firebase/variables/newvariables/variables_fab.dart';
+import 'package:laundry_firebase/variables/newvariables/variables_ble.dart';
+import 'package:laundry_firebase/variables/newvariables/variables_oth.dart';
+import 'package:laundry_firebase/variables/newvariables/variables_supplies.dart';
 
 class MyQueue extends StatefulWidget {
   final String empid;

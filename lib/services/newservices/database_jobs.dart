@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:laundry_firebase/models/jobmodel.dart';
+import 'package:laundry_firebase/models/newmodels/jobmodel.dart';
 
 /// 🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦
 /// 🔹 COLLECTION REFERENCES
@@ -18,7 +18,7 @@ class DatabaseJobsQueue {
       _firestore.collection(JOBS_QUEUE_REF);
 
   /// ➕ Add job to queue
-  Future<bool> add(JobsModel job) async {
+  Future<bool> add(JobModel job) async {
     bool bSuccess = false;
     final docRef = _ref.doc(); // auto-generate ID
     job.docId = docRef.id; // store the ID in your model
@@ -36,16 +36,16 @@ class DatabaseJobsQueue {
   }
 
   /// 📥 Get single job
-  Future<JobsModel?> get(String docId) async {
+  Future<JobModel?> get(String docId) async {
     final doc = await _ref.doc(docId).get();
     if (!doc.exists || doc.data() == null) return null;
-    return JobsModel.fromJson(doc.data()!);
+    return JobModel.fromJson(doc.data()!);
   }
 
   /// 🔄 Stream all queued jobs
-  Stream<List<JobsModel>> streamAll() {
-    return _ref.orderBy('A00_JobsId').snapshots().map(
-          (s) => s.docs.map((d) => JobsModel.fromJson(d.data())).toList(),
+  Stream<List<JobModel>> streamAll() {
+    return _ref.orderBy('A00_JobId').snapshots().map(
+          (s) => s.docs.map((d) => JobModel.fromJson(d.data())).toList(),
         );
   }
 
@@ -60,15 +60,15 @@ class DatabaseJobsQueue {
 
   Future<void> updateJobId(String docId, int jobId) async {
     await _ref.doc(docId).update({
-      'A00_JobsId': jobId,
+      'A00_JobId': jobId,
     });
   }
 
-  Future<void> updatePaidUnpaid(JobsModel jM) async {
+  Future<void> updatePaidUnpaid(JobModel jM) async {
     await _ref.doc(jM.docId).update(jM.toJson());
   }
 
-  Future<bool> update(JobsModel jM) async {
+  Future<bool> update(JobModel jM) async {
     bool bSuccess = false;
     await _ref
         .doc(jM.docId)
@@ -96,9 +96,9 @@ class DatabaseJobsOngoing {
       _firestore.collection(JOBS_ONGOING_REF);
 
   /// 🔄 Stream all ongoing jobs
-  Stream<List<JobsModel>> streamAll() {
+  Stream<List<JobModel>> streamAll() {
     return _ref.snapshots().map(
-          (s) => s.docs.map((d) => JobsModel.fromJson(d.data())).toList(),
+          (s) => s.docs.map((d) => JobModel.fromJson(d.data())).toList(),
         );
   }
 
@@ -121,9 +121,9 @@ class DatabaseJobsDone {
       _firestore.collection(JOBS_DONE_REF);
 
   /// 🔄 Stream completed jobs
-  Stream<List<JobsModel>> streamAll() {
+  Stream<List<JobModel>> streamAll() {
     return _ref.snapshots().map(
-          (s) => s.docs.map((d) => JobsModel.fromJson(d.data())).toList(),
+          (s) => s.docs.map((d) => JobModel.fromJson(d.data())).toList(),
         );
   }
 }

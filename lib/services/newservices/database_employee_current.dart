@@ -1,8 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:laundry_firebase/models/employeemodel.dart';
-import 'package:laundry_firebase/services/database_employee_hist.dart';
-import 'package:laundry_firebase/variables/variables.dart';
+import 'package:laundry_firebase/models/newmodels/employeemodel.dart';
+import 'package:laundry_firebase/services/newservices/database_employee_hist.dart';
+import 'package:laundry_firebase/variables/newvariables/variables.dart';
 
 const String EMPLOYEE_CURR_REF = "EmployeeCurr";
 

@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:laundry_firebase/models/jobmodel.dart';
-import 'package:laundry_firebase/pages/updatedpages/body/JobsOnQueue/showJobsOnQueueComplete.dart';
-import 'package:laundry_firebase/pages/updatedpages/body/JobsOnQueue/showPaidUnpaid.dart';
-import 'package:laundry_firebase/pages/updatedpages/sharedmethods/sharedMethodAndVariable.dart';
-import 'package:laundry_firebase/services/database_jobs.dart';
-import 'package:laundry_firebase/variables/variables.dart';
-import 'package:laundry_firebase/variables/variables_oth.dart';
+import 'package:laundry_firebase/models/newmodels/jobmodel.dart';
+import 'package:laundry_firebase/pages/newpages/body/JobOnQueue/showJobOnQueueComplete.dart';
+import 'package:laundry_firebase/pages/newpages/body/JobOnQueue/showPaidUnpaid.dart';
+import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedMethodAndVariable.dart';
+import 'package:laundry_firebase/services/newservices/database_jobs.dart';
+import 'package:laundry_firebase/variables/newvariables/variables.dart';
+import 'package:laundry_firebase/variables/newvariables/variables_oth.dart';
 
 Widget readDataJobsOnQueue() {
   DatabaseJobsQueue databaseJobsQueue = DatabaseJobsQueue();
   int? selectedIndex;
 
-  IconData statusIcon(JobsModel jM) {
+  IconData statusIcon(JobModel jM) {
     if (jM.forSorting) {
       return Icons.sort_by_alpha_outlined;
     }
@@ -21,7 +21,7 @@ Widget readDataJobsOnQueue() {
     return Icons.pause;
   }
 
-  Color backGroundStatusColor(JobsModel jM) {
+  Color backGroundStatusColor(JobModel jM) {
     if (jM.forSorting) {
       return Colors.green.shade300;
       ;
@@ -32,7 +32,7 @@ Widget readDataJobsOnQueue() {
     return Colors.grey;
   }
 
-  String processStatusJobsOnQueue(JobsModel jM) {
+  String processStatusJobsOnQueue(JobModel jM) {
     if (jM.forSorting) {
       return 'For Sorting';
     }
@@ -48,7 +48,7 @@ Widget readDataJobsOnQueue() {
     menuOthXS: 'xS',
   };
 
-  String afterNameStatuses(JobsModel jM) {
+  String afterNameStatuses(JobModel jM) {
     final List<String> parts = [];
 
     if (jM.basket > 0) parts.add('${jM.basket}B');
@@ -58,7 +58,7 @@ Widget readDataJobsOnQueue() {
     return parts.join(' ');
   }
 
-  String belowNameStatuses(JobsModel jM) {
+  String belowNameStatuses(JobModel jM) {
     final List<String> parts = [];
 
     /// 🔁 Group item names and count
@@ -96,7 +96,7 @@ Widget readDataJobsOnQueue() {
     return name.length > 7 ? name.substring(0, 7) : name;
   }
 
-  return StreamBuilder<List<JobsModel>>(
+  return StreamBuilder<List<JobModel>>(
     stream: databaseJobsQueue.streamAll(),
     builder: (context, snapshot) {
       if (snapshot.hasError) {
@@ -151,7 +151,7 @@ Widget readDataJobsOnQueue() {
                         setState(() {
                           selectedIndex = index;
                         });
-                        showJobsOnQueueComplete(context, job);
+                        showJobOnQueueComplete(context, job);
                       },
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 250),

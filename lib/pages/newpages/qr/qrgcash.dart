@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:laundry_firebase/pages/updatedpages/sharedmethods/sharedMethodAndVariable.dart';
-import 'package:laundry_firebase/variables/updatedvariables/supplies_hist_repository.dart';
-import 'package:laundry_firebase/variables/variables.dart';
-import 'package:laundry_firebase/variables/variables_supplies.dart';
+import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedMethodAndVariable.dart';
+import 'package:laundry_firebase/variables/newvariables/supplies_hist_repository.dart';
+import 'package:laundry_firebase/variables/newvariables/variables.dart';
+import 'package:laundry_firebase/variables/newvariables/variables_supplies.dart';
 
 class QRCash extends StatefulWidget {
   const QRCash({Key? key}) : super(key: key);

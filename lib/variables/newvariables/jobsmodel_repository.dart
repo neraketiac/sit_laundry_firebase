@@ -1,19 +1,19 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:laundry_firebase/models/jobmodel.dart';
-import 'package:laundry_firebase/models/otheritemmodel.dart';
-import 'package:laundry_firebase/variables/variables.dart';
+import 'package:laundry_firebase/models/newmodels/jobmodel.dart';
+import 'package:laundry_firebase/models/newmodels/otheritemmodel.dart';
+import 'package:laundry_firebase/variables/newvariables/variables.dart';
 
 class JobsModelRepository {
   JobsModelRepository._();
   static final JobsModelRepository instance = JobsModelRepository._();
 
   /// Single job (nullable until set)
-  JobsModel? jobsModel;
+  JobModel? jobsModel;
 
   Future<void> reset() async {
-    jobsModel = JobsModel(
+    jobsModel = JobModel(
         docId: '',
-        jobsId: 0,
+        jobId: 0,
         dateQ: timestamp1900,
         needOn: timestamp1900,
         dateO: timestamp1900,
@@ -58,11 +58,11 @@ class JobsModelRepository {
 
   // JobsModel getJobsModel() => jobsModel;
 
-  JobsModel? getJobsModel() {
+  JobModel? getJobsModel() {
     return jobsModel;
   }
 
-  void setJobModel(JobsModel value) {
+  void setJobModel(JobModel value) {
     jobsModel = value;
   }
 
@@ -103,7 +103,7 @@ class JobsModelRepository {
   }
 
   int getJobsId() {
-    return jobsModel!.jobsId;
+    return jobsModel!.jobId;
   }
 
   int getFinalPrice() {
@@ -155,7 +155,7 @@ class JobsModelRepository {
   }
 
   set setDocId(String value) => jobsModel!.docId = value;
-  set setJobsId(int value) => jobsModel!.jobsId = value;
+  set setJobsId(int value) => jobsModel!.jobId = value;
   set setDateQ(Timestamp value) => jobsModel!.dateQ = value;
   set setNeedOn(Timestamp value) => jobsModel!.needOn = value;
   set setDateO(Timestamp value) => jobsModel!.dateO = value;

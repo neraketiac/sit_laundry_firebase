@@ -1,4 +1,4 @@
-import 'package:laundry_firebase/models/jobsonqueuemodel.dart';
+import 'package:laundry_firebase/models/oldmodels/jobsonqueuemodel.dart';
 
 class JobsOnQueueRepository {
   JobsOnQueueRepository._();

@@ -1,10 +1,10 @@
 //########################### Employee ###############################
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:laundry_firebase/models/employeemodel.dart';
-import 'package:laundry_firebase/services/database_employee_current.dart';
-import 'package:laundry_firebase/variables/variables.dart';
-import 'package:laundry_firebase/variables/variables_supplies.dart';
+import 'package:laundry_firebase/models/newmodels/employeemodel.dart';
+import 'package:laundry_firebase/services/newservices/database_employee_current.dart';
+import 'package:laundry_firebase/variables/newvariables/variables.dart';
+import 'package:laundry_firebase/variables/newvariables/variables_supplies.dart';
 
 Widget readDataEmployeeCurr() {
   bool bHeader = true;

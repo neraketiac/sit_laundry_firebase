@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:laundry_firebase/models/employeesetupmodel.dart';
-import 'package:laundry_firebase/variables/variables.dart';
+import 'package:laundry_firebase/models/oldmodels/employeesetupmodel.dart';
+import 'package:laundry_firebase/variables/newvariables/variables.dart';
 
 const String EMPLOYEE_SETUP_REF = "EmployeeSetup";
 

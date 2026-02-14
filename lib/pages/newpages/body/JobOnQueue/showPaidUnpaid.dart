@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:laundry_firebase/models/jobmodel.dart';
-import 'package:laundry_firebase/pages/updatedpages/sharedmethods/sharedMethodAndVariable.dart';
-import 'package:laundry_firebase/variables/updatedvariables/jobsmodel_repository.dart';
-import 'package:laundry_firebase/variables/variables.dart';
-import 'package:laundry_firebase/variables/variables_supplies.dart';
+import 'package:laundry_firebase/models/newmodels/jobmodel.dart';
+import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedMethodAndVariable.dart';
+import 'package:laundry_firebase/variables/newvariables/jobsmodel_repository.dart';
+import 'package:laundry_firebase/variables/newvariables/variables.dart';
+import 'package:laundry_firebase/variables/newvariables/variables_supplies.dart';
 
 //reuse showJobsOnQueue removed dont needed.
 
-void showPaidUnpaid(BuildContext context, JobsModel jM) {
+void showPaidUnpaid(BuildContext context, JobModel jM) {
   void syncThisShowToSelected() {
     customerNameVar.text = jM.customerName;
     //payment status

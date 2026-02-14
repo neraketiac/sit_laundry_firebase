@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:laundry_firebase/variables/variables.dart';
+import 'package:laundry_firebase/variables/newvariables/variables.dart';
 
 class ResponsiveLayout extends StatelessWidget {
   final Widget mobileBody;
   final Widget desktopBody;
 
-  const ResponsiveLayout({super.key, required this.mobileBody, required this.desktopBody});
+  const ResponsiveLayout(
+      {super.key, required this.mobileBody, required this.desktopBody});
 
   @override
   Widget build(BuildContext context) {

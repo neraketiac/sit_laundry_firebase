@@ -3,11 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:laundry_firebase/pages/responsive_layout.dart';
 import 'package:laundry_firebase/pages/supplies_desktop.dart';
 import 'package:laundry_firebase/pages/supplies_mobile.dart';
-import 'package:laundry_firebase/variables/variables.dart';
-import 'package:laundry_firebase/variables/variables_det.dart';
-import 'package:laundry_firebase/variables/variables_fab.dart';
-import 'package:laundry_firebase/variables/variables_ble.dart';
-import 'package:laundry_firebase/variables/variables_oth.dart';
+import 'package:laundry_firebase/variables/newvariables/variables.dart';
+import 'package:laundry_firebase/variables/newvariables/variables_det.dart';
+import 'package:laundry_firebase/variables/newvariables/variables_fab.dart';
+import 'package:laundry_firebase/variables/newvariables/variables_ble.dart';
+import 'package:laundry_firebase/variables/newvariables/variables_oth.dart';
 
 class MyHome extends StatefulWidget {
   const MyHome({super.key});

@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:laundry_firebase/pages/updatedpages/body/main_laundry_body.dart';
-import 'package:laundry_firebase/pages/updatedpages/header/Funds/showCalendarDialog.dart';
-import 'package:laundry_firebase/pages/updatedpages/header/Funds/showFundsInFundsOut.dart';
-import 'package:laundry_firebase/pages/updatedpages/header/Funds/showGCashTransactions.dart';
-import 'package:laundry_firebase/pages/updatedpages/header/Funds/showFundCheck.dart';
-import 'package:laundry_firebase/pages/updatedpages/header/JobsOnQueue/showJobsOnQueue.dart';
-import 'package:laundry_firebase/pages/updatedpages/header/Employee/showSalaryMaintenance.dart';
-import 'package:laundry_firebase/variables/updatedvariables/jobsmodel_repository.dart';
-import 'package:laundry_firebase/variables/updatedvariables/supplies_hist_repository.dart';
-import 'package:laundry_firebase/variables/variables.dart';
-import 'package:laundry_firebase/variables/variables_supplies.dart';
+import 'package:laundry_firebase/pages/newpages/body/main_laundry_body.dart';
+import 'package:laundry_firebase/pages/newpages/header/Funds/showCalendarDialog.dart';
+import 'package:laundry_firebase/pages/newpages/header/Funds/showFundsInFundsOut.dart';
+import 'package:laundry_firebase/pages/newpages/header/Funds/showGCashTransactions.dart';
+import 'package:laundry_firebase/pages/newpages/header/Funds/showFundCheck.dart';
+import 'package:laundry_firebase/pages/newpages/header/JobOnQueue/showJobOnQueue.dart';
+import 'package:laundry_firebase/pages/newpages/header/Employee/showSalaryMaintenance.dart';
+import 'package:laundry_firebase/variables/newvariables/jobsmodel_repository.dart';
+import 'package:laundry_firebase/variables/newvariables/supplies_hist_repository.dart';
+import 'package:laundry_firebase/variables/newvariables/variables.dart';
+import 'package:laundry_firebase/variables/newvariables/variables_supplies.dart';
 
 /*
 cd C:\Users\haali\Documents\GIT_SIT\sit_laundry_firebase
@@ -138,7 +138,7 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
                 icon: Icons.local_laundry_service,
                 bottom: _isOpen ? base : base,
                 right: _isOpen ? base + step * 3 : base,
-                onTap: () => showJobsOnQueue(context),
+                onTap: () => showJobOnQueue(context),
                 backgroundColor: cJobsOnQueue),
 
             _fab(

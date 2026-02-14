@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:laundry_firebase/models/customermodel.dart';
-import 'package:laundry_firebase/models/jobmodel.dart';
-import 'package:laundry_firebase/variables/updatedvariables/customer_repository.dart';
-import 'package:laundry_firebase/variables/updatedvariables/jobsmodel_repository.dart';
-import 'package:laundry_firebase/variables/updatedvariables/supplies_hist_repository.dart';
-import 'package:laundry_firebase/variables/variables.dart';
+import 'package:laundry_firebase/models/oldmodels/customermodel.dart';
+import 'package:laundry_firebase/models/newmodels/jobmodel.dart';
+import 'package:laundry_firebase/variables/newvariables/customer_repository.dart';
+import 'package:laundry_firebase/variables/newvariables/jobsmodel_repository.dart';
+import 'package:laundry_firebase/variables/newvariables/supplies_hist_repository.dart';
+import 'package:laundry_firebase/variables/newvariables/variables.dart';
 
 class AutoCompleteCustomer extends StatelessWidget {
   AutoCompleteCustomer({super.key});

@@ -1,17 +1,18 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:laundry_firebase/models/jobmodel.dart';
-import 'package:laundry_firebase/models/otheritemmodel.dart';
-import 'package:laundry_firebase/pages/updatedpages/sharedmethods/sharedMethodAndVariable.dart';
-import 'package:laundry_firebase/variables/updatedvariables/jobsmodel_repository.dart';
-import 'package:laundry_firebase/variables/variables.dart';
-import 'package:laundry_firebase/variables/variables_ble.dart';
-import 'package:laundry_firebase/variables/variables_det.dart';
-import 'package:laundry_firebase/variables/variables_fab.dart';
-import 'package:laundry_firebase/variables/variables_oth.dart';
-import 'package:laundry_firebase/variables/variables_supplies.dart';
+import 'package:laundry_firebase/models/newmodels/otheritemmodel.dart';
+import 'package:laundry_firebase/pages/newpages/sharedmethods/autocompletecustomer.dart';
+import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedMethodAndVariable.dart';
+import 'package:laundry_firebase/variables/newvariables/jobsmodel_repository.dart';
+import 'package:laundry_firebase/variables/newvariables/variables.dart';
+import 'package:laundry_firebase/variables/newvariables/variables_ble.dart';
+import 'package:laundry_firebase/variables/newvariables/variables_det.dart';
+import 'package:laundry_firebase/variables/newvariables/variables_fab.dart';
+import 'package:laundry_firebase/variables/newvariables/variables_oth.dart';
+import 'package:laundry_firebase/variables/newvariables/variables_supplies.dart';
 
-void showJobsOnQueueComplete(BuildContext context, JobsModel jM) {
+void showJobOnQueue(BuildContext context) {
   final List<int> listOthersDropDown = [
     menuOthDVal,
     menuDetDVal,
@@ -30,81 +31,47 @@ void showJobsOnQueueComplete(BuildContext context, JobsModel jM) {
     othersPackage,
   ];
 
-  void syncThisShowToSelected() {
-    //admin
-    jM.currentEmpId = empIdGlobal;
-
-    customerNameVar.text = jM.customerName;
-
-    //initial status
-    //riderpickup can be true and forsorting is true, but always display the forSorting. meaning pickup is done.
-    //if pickup is false, it went to forsorting but never in pickup.
-    if (jM.riderPickup) selectedRiderPickup = riderPickup;
-    if (jM.forSorting) selectedRiderPickup = forSorting;
-
+  void resetSelected() {
+    successInsertFB = false;
+    selectedRiderPickup = forSorting;
     //package status
-    if (jM.regular) selectedPackage = regularPackage;
-    if (jM.sayosabon) selectedPackage = sayoSabonPackage;
-    if (jM.addOn) selectedPackage = othersPackage;
+    selectedPackage = regularPackage;
 
     //prices
-    if (jM.addOn) {
-      totalPriceOthers = jM.finalPrice;
-      totalPriceRegSS = 0;
-    } else {
-      totalPriceRegSS = jM.finalPrice;
-      totalPriceOthers = 0;
-    }
+    totalPriceRegSS = 155;
+    totalPriceOthers = 0;
 
     //payment status
-    if (jM.unpaid) selectedPaidUnpaid = unpaid;
-    if (jM.paidCash) selectedPaidUnpaid = paidCash;
-    if (jM.paidGCash) selectedPaidUnpaid = paidGCash;
-    selectedPaidPartialCash = jM.partialPaidCash;
-    selectedPaidPartialGCash = jM.partialPaidGCash;
-    partialCashAmountVar.text = jM.partialPaidCashAmount.toString();
-    partialGCashAmountVar.text = jM.partialPaidGCashAmount.toString();
+    selectedPaidUnpaid = unpaid;
+
+    selectedPaidPartialCash = false;
+    selectedPaidPartialGCash = false;
+    partialCashAmountVar.text = '';
+    partialGCashAmountVar.text = '';
 
     //verified gcash
-    selectedPaidGCashVerified = jM.paidGCashverified;
+    selectedPaidGCashVerified = false;
 
     //weight status
-    if (jM.perKilo) isPerKg = true;
-    if (jM.perLoad) isPerKg = false;
+    isPerKg = true;
 
-    quantityKg = jM.finalKilo;
-    quantityLoad = jM.finalLoad;
-    remarksSuppliesVar.text = jM.remarks;
+    quantityKg = 8;
+    quantityLoad = 1;
+    remarksSuppliesVar.text = '';
 
     //list other items
-    listAddedOtherItemModel = jM.items;
+    listAddedOtherItemModel.clear();
 
     //other options
-    selectedFold = jM.fold;
-    selectedMix = jM.mix;
-    basketCount = jM.basket;
-    ecoBagCount = jM.ebag;
-    sakoCount = jM.sako;
-
-    if (selectedPackage != othersPackage) {
-      addFabCount = listAddedOtherItemModel
-          .where((e) => e.itemUniqueId == addFabAnyItemModel.itemUniqueId)
-          .length;
-      addExtraDryCount = listAddedOtherItemModel
-          .where((e) => e.itemUniqueId == xDItemModel.itemUniqueId)
-          .length;
-      addExtraWashCount = listAddedOtherItemModel
-          .where((e) => e.itemUniqueId == xWashItemModel.itemUniqueId)
-          .length;
-      addExtraSpinCount = listAddedOtherItemModel
-          .where((e) => e.itemUniqueId == xSpinItemModel.itemUniqueId)
-          .length;
-    } else {
-      addFabCount = 0;
-      addExtraDryCount = 0;
-      addExtraWashCount = 0;
-      addExtraSpinCount = 0;
-    }
+    selectedFold = true;
+    selectedMix = true;
+    basketCount = 0;
+    ecoBagCount = 0;
+    sakoCount = 0;
+    addFabCount = 0;
+    addExtraDryCount = 0;
+    addExtraWashCount = 0;
+    addExtraSpinCount = 0;
   }
 
   Visibility visCustomerName(Function setState) {
@@ -123,34 +90,17 @@ void showJobsOnQueueComplete(BuildContext context, JobsModel jM) {
                 children: [],
               ),
             ),
-            TextFormField(
-              controller: customerNameVar,
-              readOnly: true, // 👈 prevents editing
-              textAlign: TextAlign.center,
-              decoration: InputDecoration(
-                labelText: 'Customer Name',
-                labelStyle: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey[700],
-                ),
-                hintText: 'Search Name',
-                hintStyle: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey[700],
-                ),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: Colors.grey),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: Colors.blue, width: 2),
-                ),
-              ),
-              onFieldSubmitted: (_) {}, // optional / can remove
+            AutoCompleteCustomer(),
+            SizedBox(
+              height: 5,
+            ),
+            MaterialButton(
+              color: cButtons,
+              onPressed: () {
+                Navigator.pop(context);
+                allCardsVar(context);
+              },
+              child: Text("New Account"),
             ),
             SizedBox(
               height: 5,
@@ -237,8 +187,6 @@ void showJobsOnQueueComplete(BuildContext context, JobsModel jM) {
                       barrierDismissible: false,
                       builder: (context) {
                         return AlertDialog(
-                          icon: const Icon(Icons.warning,
-                              color: Colors.redAccent),
                           title: const Text('Confirm'),
                           content: const Text(
                             'Added items in All Services\nwill be delete?',
@@ -1729,18 +1677,21 @@ void showJobsOnQueueComplete(BuildContext context, JobsModel jM) {
   }
 
   Future<void> saveButtonSetRepository() async {
-    //reuse the repository.
-    JobsModelRepository.instance.jobsModel = jM;
+//dates
+    /// 🟣 Dates
+    JobsModelRepository.instance.setDateQ = Timestamp.now();
+
+    //admin
+    JobsModelRepository.instance.setCreatedBy = empIdGlobal;
 
     setSelectedToRepository();
 
-    //should be update
-    await callDatabaseJobsQueueUpdate(
-        context, JobsModelRepository.instance.getJobsModel()!);
+    await callDatabaseJobsQueueAdd(context);
     //await setRepositoryLaundryPayment(context, 'Show Jobs OnQueue');
   }
 
-  syncThisShowToSelected();
+  //reset only when submit, so that when user opens the popup again, their previous selections are still there until they decide to save or cancel. This is more user-friendly as it prevents accidental loss of input if they open the popup multiple times.
+  //resetSelected();
   showDialog(
     context: context,
     builder: (BuildContext context) {
@@ -1759,7 +1710,7 @@ void showJobsOnQueueComplete(BuildContext context, JobsModel jM) {
             vertical: 5,
           ),
           title: Text(
-            "Jobs On Queue",
+            "Enter Laundry",
             textAlign: TextAlign.center,
           ),
           content: SingleChildScrollView(
@@ -1809,58 +1760,6 @@ void showJobsOnQueueComplete(BuildContext context, JobsModel jM) {
           actions: [
             TextButton(
               onPressed: () {
-                showDialog<bool>(
-                  context: context,
-                  barrierDismissible: false,
-                  builder: (context) {
-                    return AlertDialog(
-                      icon: const Icon(Icons.warning, color: Colors.redAccent),
-                      title: const Text('Confirm'),
-                      content: const Text(
-                        'Are you sure you want to delete this job?',
-                        textAlign: TextAlign.center,
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () {
-                            setState(() {});
-                            Navigator.pop(context, false);
-                          },
-                          child: const Text('No'),
-                        ),
-                        ElevatedButton(
-                          onPressed: () {
-                            setState(() {});
-                            Navigator.pop(context, true);
-                          },
-                          child: const Text('Yes'),
-                        ),
-                      ],
-                    );
-                  },
-                );
-              },
-              style: TextButton.styleFrom(
-                backgroundColor: Colors.lightBlueAccent.shade100,
-                textStyle: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              child: const Text(
-                'Delete',
-                style: TextStyle(color: Colors.black),
-              ),
-            ),
-            TextButton(
-              style: TextButton.styleFrom(
-                backgroundColor: Colors.lightBlueAccent.shade100,
-                textStyle: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              onPressed: () {
                 Navigator.pop(context); // close popup
               },
               child: const Text(
@@ -1868,18 +1767,20 @@ void showJobsOnQueueComplete(BuildContext context, JobsModel jM) {
                 style: TextStyle(color: Colors.black),
               ),
             ),
-            SizedBox(
-              width: 8,
-            ),
             ElevatedButton(
               onPressed: () async {
-                await saveButtonSetRepository();
-                Navigator.pop(context);
+                if (JobsModelRepository.instance.getCustomerId() == 0) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                        content: Text('Please select customer name.')),
+                  );
+                } else {
+                  await saveButtonSetRepository();
+                  if (successInsertFB) resetSelected();
+                  Navigator.pop(context);
+                }
               },
-              child: const Text('Update'),
-            ),
-            SizedBox(
-              width: 1,
+              child: const Text('Save'),
             ),
           ],
         );

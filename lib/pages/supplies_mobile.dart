@@ -2,11 +2,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 //import 'package:laundry_firebase/variables/item_count_helper.dart';
-import 'package:laundry_firebase/variables/variables.dart';
-import 'package:laundry_firebase/variables/variables_det.dart';
-import 'package:laundry_firebase/variables/variables_fab.dart';
-import 'package:laundry_firebase/variables/variables_ble.dart';
-import 'package:laundry_firebase/variables/variables_oth.dart';
+import 'package:laundry_firebase/variables/newvariables/variables.dart';
+import 'package:laundry_firebase/variables/newvariables/variables_det.dart';
+import 'package:laundry_firebase/variables/newvariables/variables_fab.dart';
+import 'package:laundry_firebase/variables/newvariables/variables_ble.dart';
+import 'package:laundry_firebase/variables/newvariables/variables_oth.dart';
 
 class MySuppliesMobile extends StatefulWidget {
   const MySuppliesMobile({super.key});

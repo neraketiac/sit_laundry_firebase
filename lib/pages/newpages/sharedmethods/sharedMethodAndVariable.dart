@@ -1,19 +1,19 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:laundry_firebase/models/customermodel.dart';
-import 'package:laundry_firebase/models/employeemodel.dart';
-import 'package:laundry_firebase/models/jobmodel.dart';
-import 'package:laundry_firebase/models/otheritemmodel.dart';
-import 'package:laundry_firebase/models/suppliesmodelhist.dart';
-import 'package:laundry_firebase/services/database_employee_current.dart';
-import 'package:laundry_firebase/services/database_jobs.dart';
-import 'package:laundry_firebase/services/database_supplies_current.dart';
-import 'package:laundry_firebase/variables/updatedvariables/jobsmodel_repository.dart';
-import 'package:laundry_firebase/variables/updatedvariables/supplies_hist_repository.dart';
-import 'package:laundry_firebase/variables/variables.dart';
-import 'package:laundry_firebase/variables/variables_oth.dart';
-import 'package:laundry_firebase/variables/variables_supplies.dart';
+import 'package:laundry_firebase/models/oldmodels/customermodel.dart';
+import 'package:laundry_firebase/models/newmodels/employeemodel.dart';
+import 'package:laundry_firebase/models/newmodels/jobmodel.dart';
+import 'package:laundry_firebase/models/newmodels/otheritemmodel.dart';
+import 'package:laundry_firebase/models/newmodels/suppliesmodelhist.dart';
+import 'package:laundry_firebase/services/newservices/database_employee_current.dart';
+import 'package:laundry_firebase/services/newservices/database_jobs.dart';
+import 'package:laundry_firebase/services/newservices/database_supplies_current.dart';
+import 'package:laundry_firebase/variables/newvariables/jobsmodel_repository.dart';
+import 'package:laundry_firebase/variables/newvariables/supplies_hist_repository.dart';
+import 'package:laundry_firebase/variables/newvariables/variables.dart';
+import 'package:laundry_firebase/variables/newvariables/variables_oth.dart';
+import 'package:laundry_firebase/variables/newvariables/variables_supplies.dart';
 
 //
 double quantityKg = 8;
@@ -564,7 +564,7 @@ Future<void> revertLaundryPaymentSuppliesHistory(
 }
 
 Future<void> callDatabaseJobsQueueUpdate(
-    BuildContext context, JobsModel jM) async {
+    BuildContext context, JobModel jM) async {
   DatabaseJobsQueue databaseJobsQueue = DatabaseJobsQueue();
 
   if (await databaseJobsQueue.update(jM)) {

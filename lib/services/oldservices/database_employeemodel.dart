@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:laundry_firebase/models/employeemodel.dart';
+import 'package:laundry_firebase/models/newmodels/employeemodel.dart';
 
 const String _employeeModelRef = "CustomerFBM";
 const Color _gcButtons = Color.fromRGBO(134, 218, 252, 0.733);

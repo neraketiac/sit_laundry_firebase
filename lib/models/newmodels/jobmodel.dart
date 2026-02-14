@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:laundry_firebase/models/otheritemmodel.dart';
+import 'package:laundry_firebase/models/newmodels/otheritemmodel.dart';
 
 // /// 🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦
 // /// 🔹 JOB ITEM MODEL
@@ -39,10 +39,10 @@ import 'package:laundry_firebase/models/otheritemmodel.dart';
 /// 🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩
 /// 🔹 JOBS MODEL (RECOMMENDED)
 /// 🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩
-class JobsModel {
+class JobModel {
   /// 🔵 Identity
   String docId;
-  int jobsId;
+  int jobId;
 
   /// 🟣 Dates
   Timestamp dateQ;
@@ -109,9 +109,9 @@ class JobsModel {
   bool forDisposal;
   bool disposed;
 
-  JobsModel({
+  JobModel({
     required this.docId,
-    required this.jobsId,
+    required this.jobId,
     required this.dateQ,
     required this.needOn,
     required this.dateO,
@@ -154,10 +154,10 @@ class JobsModel {
     required this.disposed,
   });
 
-  factory JobsModel.makeEmpty() {
-    return JobsModel(
+  factory JobModel.makeEmpty() {
+    return JobModel(
       docId: '',
-      jobsId: 0,
+      jobId: 0,
       dateQ: Timestamp.now(),
       needOn: Timestamp.now(),
       dateO: Timestamp.now(),
@@ -202,7 +202,7 @@ class JobsModel {
   }
 
   /// 🟦 COPY WITH
-  JobsModel copyWith({
+  JobModel copyWith({
     String? docId,
     int? jobsId,
     Timestamp? dateQ,
@@ -246,9 +246,9 @@ class JobsModel {
     bool? forDisposal,
     bool? disposed,
   }) {
-    return JobsModel(
+    return JobModel(
       docId: docId ?? this.docId,
-      jobsId: jobsId ?? this.jobsId,
+      jobId: jobsId ?? this.jobId,
       dateQ: dateQ ?? this.dateQ,
       needOn: needOn ?? this.needOn,
       dateO: dateO ?? this.dateO,
@@ -295,9 +295,9 @@ class JobsModel {
   }
 
   /// 🟩 FROM FIRESTORE
-  factory JobsModel.fromJson(Map<String, dynamic> json) => JobsModel(
+  factory JobModel.fromJson(Map<String, dynamic> json) => JobModel(
         docId: json['A00_DocId'],
-        jobsId: json['A00_JobsId'],
+        jobId: json['A00_JobId'],
         dateQ: json['A01_DateQ'],
         createdBy: json['A10_CreatedBy'],
         currentEmpId: json['A12_CurrentEmpId'],
@@ -345,7 +345,7 @@ class JobsModel {
   /// 🟧 TO FIRESTORE
   Map<String, dynamic> toJson() => {
         'A00_DocId': docId,
-        'A00_JobsId': jobsId,
+        'A00_JobId': jobId,
         'A01_DateQ': dateQ,
         'A10_CreatedBy': createdBy,
         'A12_CurrentEmpId': currentEmpId,

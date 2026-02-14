@@ -8,9 +8,9 @@ import 'package:laundry_firebase/pages/loyalty_single.dart';
 import 'package:laundry_firebase/pages/menu/menu_constants.dart';
 import 'package:laundry_firebase/pages/menu/menu_main.dart';
 import 'package:laundry_firebase/pages/save_text.dart';
-import 'package:laundry_firebase/pages/updatedpages/header/main_laundry_header.dart';
-import 'package:laundry_firebase/variables/updatedvariables/customer_repository.dart';
-import 'package:laundry_firebase/variables/variables.dart';
+import 'package:laundry_firebase/pages/newpages/header/main_laundry_header.dart';
+import 'package:laundry_firebase/variables/newvariables/customer_repository.dart';
+import 'package:laundry_firebase/variables/newvariables/variables.dart';
 
 import 'package:web/web.dart' as web;
 

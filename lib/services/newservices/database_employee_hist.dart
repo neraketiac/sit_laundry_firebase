@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:laundry_firebase/models/employeemodel.dart';
-import 'package:laundry_firebase/variables/variables.dart';
+import 'package:laundry_firebase/models/newmodels/employeemodel.dart';
+import 'package:laundry_firebase/variables/newvariables/variables.dart';
 
 const String EMPLOYEE_HIST_REF = "EmployeeHist";
 
@@ -20,7 +20,10 @@ class DatabaseEmployeeHist {
 
   Stream<QuerySnapshot> getEmployeeHistory() {
     if (empIdGlobal == 'Ket' || empIdGlobal == 'DonF') {
-      return _employeeHistRef.orderBy('LogDate', descending: true).limit(100).snapshots();
+      return _employeeHistRef
+          .orderBy('LogDate', descending: true)
+          .limit(100)
+          .snapshots();
     } else {
       return _employeeHistRef
           .where('EmpId', isEqualTo: empNameToId[empIdGlobal])
