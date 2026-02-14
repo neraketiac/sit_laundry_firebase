@@ -18,6 +18,95 @@ import 'package:laundry_firebase/variables/newvariables/variables_supplies.dart'
 
 //SHARED METHODS ###########################################################
 
+// 🔢 Price formatter
+final formatter = NumberFormat.currency(
+  locale: 'en_PH',
+  symbol: '₱ ',
+  decimalDigits: 2,
+);
+
+int get grandTotal {
+  int total = 0;
+  qtyMap.forEach((denom, qty) {
+    total += denom * qty;
+  });
+  return total;
+}
+
+String showHowMany155or125Set(int total, bool bSeparate) {
+  if (JobModelRepository.instance.getAddOn()) {
+    return '';
+  } else {
+//int base = pricePerSet;
+    List<int> extras = [
+      pricePerSet + tier1Increase,
+      pricePerSet + tier2Increase
+    ];
+
+    // Base single
+    if (total == pricePerSet) return ' $pricePerSet';
+
+    // Extras alone
+    if (extras.contains(total)) return ' $total';
+
+    for (final extra in [0, ...extras]) {
+      final remaining = total - extra;
+
+      if (remaining <= 0) continue;
+      if (remaining % pricePerSet != 0) continue;
+
+      final multiplier = remaining ~/ pricePerSet;
+
+      if (multiplier == 1 && extra == 0) {
+        return ' $pricePerSet';
+      }
+
+      if (multiplier == 1 && extra != 0) {
+        return ' $pricePerSet\n + $extra';
+      }
+
+      if (multiplier > 1 && extra == 0) {
+        return ' ($pricePerSet * $multiplier)';
+      }
+
+      if (multiplier > 1 && extra != 0) {
+        if (bSeparate) {
+          return ' ($pricePerSet * $multiplier)\n + $extra';
+        } else {
+          return ' ($pricePerSet * $multiplier) + $extra';
+        }
+      }
+    }
+  }
+
+  // Fallback if it doesn't match the pattern
+  return ' $total';
+}
+
+// 💰 Tiered price computation
+int computeTotalPrice(double q) {
+  int counter = (q / 8).floor(); // how many full 8s
+  counter = (counter == 0 ? 1 : counter);
+
+  int remainingPrice = 0;
+
+  if (q > 8) {
+    double remaining = double.parse((q % 8).toStringAsFixed(1));
+    if (remaining <= 0) {
+      remainingPrice = 0;
+    } else if (remaining > 0 && remaining <= 0.9) {
+      remainingPrice = tier1Increase;
+    } else if (remaining < maxPartial) {
+      remainingPrice = tier2Increase;
+    } else if (remaining >= maxPartial) {
+      remainingPrice = pricePerSet;
+    }
+    debugPrint('c=$counter rP=$remainingPrice r=$remaining');
+  }
+
+  return (counter * pricePerSet) + remainingPrice;
+}
+
 // 🔘 Reusable button
 Widget boxButton({
   required String label,
@@ -131,88 +220,6 @@ Widget boxButton2label({
       ),
     ),
   );
-}
-
-int get grandTotal {
-  int total = 0;
-  qtyMap.forEach((denom, qty) {
-    total += denom * qty;
-  });
-  return total;
-}
-
-String showHowMany155or125Set(int total, bool bSeparate) {
-  if (JobModelRepository.instance.getAddOn()) {
-    return '';
-  } else {
-//int base = pricePerSet;
-    List<int> extras = [
-      pricePerSet + tier1Increase,
-      pricePerSet + tier2Increase
-    ];
-
-    // Base single
-    if (total == pricePerSet) return ' $pricePerSet';
-
-    // Extras alone
-    if (extras.contains(total)) return ' $total';
-
-    for (final extra in [0, ...extras]) {
-      final remaining = total - extra;
-
-      if (remaining <= 0) continue;
-      if (remaining % pricePerSet != 0) continue;
-
-      final multiplier = remaining ~/ pricePerSet;
-
-      if (multiplier == 1 && extra == 0) {
-        return ' $pricePerSet';
-      }
-
-      if (multiplier == 1 && extra != 0) {
-        return ' $pricePerSet\n + $extra';
-      }
-
-      if (multiplier > 1 && extra == 0) {
-        return ' ($pricePerSet * $multiplier)';
-      }
-
-      if (multiplier > 1 && extra != 0) {
-        if (bSeparate) {
-          return ' ($pricePerSet * $multiplier)\n + $extra';
-        } else {
-          return ' ($pricePerSet * $multiplier) + $extra';
-        }
-      }
-    }
-  }
-
-  // Fallback if it doesn't match the pattern
-  return ' $total';
-}
-
-// 💰 Tiered price computation
-int computeTotalPrice(double q) {
-  int counter = (q / 8).floor(); // how many full 8s
-  counter = (counter == 0 ? 1 : counter);
-
-  int remainingPrice = 0;
-
-  if (q > 8) {
-    double remaining = double.parse((q % 8).toStringAsFixed(1));
-    if (remaining <= 0) {
-      remainingPrice = 0;
-    } else if (remaining > 0 && remaining <= 0.9) {
-      remainingPrice = tier1Increase;
-    } else if (remaining < maxPartial) {
-      remainingPrice = tier2Increase;
-    } else if (remaining >= maxPartial) {
-      remainingPrice = pricePerSet;
-    }
-    debugPrint('c=$counter rP=$remainingPrice r=$remaining');
-  }
-
-  return (counter * pricePerSet) + remainingPrice;
 }
 
 void resetAfterInsert() {
@@ -505,7 +512,7 @@ Future<void> revertLaundryPaymentSuppliesHistory(
   }
 }
 
-Future<void> callDatabaseJobsQueueUpdate(
+Future<void> callDatabaseJobQueueUpdate(
     BuildContext context, JobModel jM) async {
   DatabaseJobsQueue databaseJobsQueue = DatabaseJobsQueue();
 

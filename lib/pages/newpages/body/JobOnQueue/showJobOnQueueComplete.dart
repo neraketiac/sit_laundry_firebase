@@ -1736,7 +1736,7 @@ void showJobOnQueueComplete(BuildContext context, JobModel jM) {
     setSelectedToRepository();
 
     //should be update
-    await callDatabaseJobsQueueUpdate(
+    await callDatabaseJobQueueUpdate(
         context, JobModelRepository.instance.getJobsModel()!);
     //await setRepositoryLaundryPayment(context, 'Show Jobs OnQueue');
   }

@@ -361,7 +361,7 @@ void showPaidUnpaid(BuildContext context, JobModel jM) {
     JobModelRepository.instance.setPaidGCashVerified =
         selectedPaidGCashVerified;
 
-    await callDatabaseJobsQueueUpdate(
+    await callDatabaseJobQueueUpdate(
         context, JobModelRepository.instance.getJobsModel()!);
     //await setRepositoryLaundryPayment(context, 'Show Jobs OnQueue');
   }
