@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:laundry_firebase/models/jobsmodel.dart';
+import 'package:laundry_firebase/models/jobmodel.dart';
 import 'package:laundry_firebase/pages/updatedpages/body/JobsOnQueue/showJobsOnQueueComplete.dart';
 import 'package:laundry_firebase/pages/updatedpages/body/JobsOnQueue/showPaidUnpaid.dart';
 import 'package:laundry_firebase/pages/updatedpages/sharedmethods/sharedMethodAndVariable.dart';

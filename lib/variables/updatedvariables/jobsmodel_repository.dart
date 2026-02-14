@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:laundry_firebase/models/jobsmodel.dart';
+import 'package:laundry_firebase/models/jobmodel.dart';
 import 'package:laundry_firebase/models/otheritemmodel.dart';
 import 'package:laundry_firebase/variables/variables.dart';
 

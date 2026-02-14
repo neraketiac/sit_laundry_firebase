@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:laundry_firebase/models/customermodel.dart';
 import 'package:laundry_firebase/models/employeemodel.dart';
-import 'package:laundry_firebase/models/jobsmodel.dart';
+import 'package:laundry_firebase/models/jobmodel.dart';
 import 'package:laundry_firebase/models/otheritemmodel.dart';
 import 'package:laundry_firebase/models/suppliesmodelhist.dart';
 import 'package:laundry_firebase/services/database_employee_current.dart';

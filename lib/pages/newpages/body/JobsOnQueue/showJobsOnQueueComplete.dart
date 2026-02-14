@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:laundry_firebase/models/jobsmodel.dart';
+import 'package:laundry_firebase/models/jobmodel.dart';
 import 'package:laundry_firebase/models/otheritemmodel.dart';
 import 'package:laundry_firebase/pages/updatedpages/sharedmethods/sharedMethodAndVariable.dart';
 import 'package:laundry_firebase/variables/updatedvariables/jobsmodel_repository.dart';

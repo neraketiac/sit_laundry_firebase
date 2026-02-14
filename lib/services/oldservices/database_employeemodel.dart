@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:laundry_firebase/models/customerfirebasemodel.dart';
 import 'package:laundry_firebase/models/employeemodel.dart';
 
 const String _employeeModelRef = "CustomerFBM";
