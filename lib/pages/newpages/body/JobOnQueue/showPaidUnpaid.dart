@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:laundry_firebase/models/newmodels/jobmodel.dart';
+import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedConstantsFinal.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedMethodAndVariable.dart';
 import 'package:laundry_firebase/variables/newvariables/jobsmodel_repository.dart';
 import 'package:laundry_firebase/variables/newvariables/variables.dart';
@@ -342,26 +343,26 @@ void showPaidUnpaid(BuildContext context, JobModel jM) {
 
   Future<void> saveButtonSetRepository() async {
     //reuse the repository.
-    JobsModelRepository.instance.jobsModel = jM;
+    JobModelRepository.instance.jobsModel = jM;
     //payment status
-    JobsModelRepository.instance.setUnpaid = unpaid == selectedPaidUnpaid;
-    JobsModelRepository.instance.setPaidCash = paidCash == selectedPaidUnpaid;
-    JobsModelRepository.instance.setPaidGCash = paidGCash == selectedPaidUnpaid;
-    JobsModelRepository.instance.setPartialPaidCash = selectedPaidPartialCash;
-    JobsModelRepository.instance.setPartialPaidGCash = selectedPaidPartialGCash;
-    JobsModelRepository.instance.setPartialPaidCashAmount =
+    JobModelRepository.instance.setUnpaid = unpaid == selectedPaidUnpaid;
+    JobModelRepository.instance.setPaidCash = paidCash == selectedPaidUnpaid;
+    JobModelRepository.instance.setPaidGCash = paidGCash == selectedPaidUnpaid;
+    JobModelRepository.instance.setPartialPaidCash = selectedPaidPartialCash;
+    JobModelRepository.instance.setPartialPaidGCash = selectedPaidPartialGCash;
+    JobModelRepository.instance.setPartialPaidCashAmount =
         int.tryParse(partialCashAmountVar.text) ?? 0;
-    JobsModelRepository.instance.setPartialPaidGCashAmount =
+    JobModelRepository.instance.setPartialPaidGCashAmount =
         int.tryParse(partialGCashAmountVar.text) ?? 0;
 
     if (unpaid != selectedPaidUnpaid) {
-      JobsModelRepository.instance.setPaymentReceivedBy = empIdGlobal;
+      JobModelRepository.instance.setPaymentReceivedBy = empIdGlobal;
     }
-    JobsModelRepository.instance.setPaidGCashVerified =
+    JobModelRepository.instance.setPaidGCashVerified =
         selectedPaidGCashVerified;
 
     await callDatabaseJobsQueueUpdate(
-        context, JobsModelRepository.instance.getJobsModel()!);
+        context, JobModelRepository.instance.getJobsModel()!);
     //await setRepositoryLaundryPayment(context, 'Show Jobs OnQueue');
   }
 

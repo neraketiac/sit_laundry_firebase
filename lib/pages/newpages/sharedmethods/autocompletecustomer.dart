@@ -65,8 +65,8 @@ class AutoCompleteCustomer extends StatelessWidget {
       onSelected: (CustomerModel selectedModel) {
         autocompleteSelected = selectedModel;
         SuppliesHistRepository.instance.setCustomerName(selectedModel.name);
-        JobsModelRepository.instance.setCustomerName(selectedModel.name);
-        JobsModelRepository.instance.setCustomerId(selectedModel.customerId);
+        JobModelRepository.instance.setCustomerName(selectedModel.name);
+        JobModelRepository.instance.setCustomerId(selectedModel.customerId);
         bCustomerName = true;
         debugPrint(
             'You just selected ${_displayStringForOption(selectedModel)}');

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:laundry_firebase/models/newmodels/otheritemmodel.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/autocompletecustomer.dart';
+import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedConstantsFinal.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedMethodAndVariable.dart';
 import 'package:laundry_firebase/variables/newvariables/jobsmodel_repository.dart';
 import 'package:laundry_firebase/variables/newvariables/variables.dart';
@@ -1679,10 +1680,10 @@ void showJobOnQueue(BuildContext context) {
   Future<void> saveButtonSetRepository() async {
 //dates
     /// 🟣 Dates
-    JobsModelRepository.instance.setDateQ = Timestamp.now();
+    JobModelRepository.instance.setDateQ = Timestamp.now();
 
     //admin
-    JobsModelRepository.instance.setCreatedBy = empIdGlobal;
+    JobModelRepository.instance.setCreatedBy = empIdGlobal;
 
     setSelectedToRepository();
 
@@ -1769,7 +1770,7 @@ void showJobOnQueue(BuildContext context) {
             ),
             ElevatedButton(
               onPressed: () async {
-                if (JobsModelRepository.instance.getCustomerId() == 0) {
+                if (JobModelRepository.instance.getCustomerId() == 0) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                         content: Text('Please select customer name.')),

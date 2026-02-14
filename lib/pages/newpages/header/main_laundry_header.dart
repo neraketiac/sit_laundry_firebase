@@ -61,7 +61,7 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
       isAdmin = false;
     }
     SuppliesHistRepository.instance.reset();
-    JobsModelRepository.instance.reset();
+    JobModelRepository.instance.reset();
 
     //*show JobsOnQueue
 

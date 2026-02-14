@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:laundry_firebase/models/newmodels/jobmodel.dart';
 import 'package:laundry_firebase/models/newmodels/otheritemmodel.dart';
+import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedConstantsFinal.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedMethodAndVariable.dart';
 import 'package:laundry_firebase/variables/newvariables/jobsmodel_repository.dart';
 import 'package:laundry_firebase/variables/newvariables/variables.dart';
@@ -1730,13 +1731,13 @@ void showJobOnQueueComplete(BuildContext context, JobModel jM) {
 
   Future<void> saveButtonSetRepository() async {
     //reuse the repository.
-    JobsModelRepository.instance.jobsModel = jM;
+    JobModelRepository.instance.jobsModel = jM;
 
     setSelectedToRepository();
 
     //should be update
     await callDatabaseJobsQueueUpdate(
-        context, JobsModelRepository.instance.getJobsModel()!);
+        context, JobModelRepository.instance.getJobsModel()!);
     //await setRepositoryLaundryPayment(context, 'Show Jobs OnQueue');
   }
 

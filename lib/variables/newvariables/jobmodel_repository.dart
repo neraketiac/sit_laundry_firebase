@@ -3,9 +3,9 @@ import 'package:laundry_firebase/models/newmodels/jobmodel.dart';
 import 'package:laundry_firebase/models/newmodels/otheritemmodel.dart';
 import 'package:laundry_firebase/variables/newvariables/variables.dart';
 
-class JobsModelRepository {
-  JobsModelRepository._();
-  static final JobsModelRepository instance = JobsModelRepository._();
+class JobModelRepository {
+  JobModelRepository._();
+  static final JobModelRepository instance = JobModelRepository._();
 
   /// Single job (nullable until set)
   JobModel? jobsModel;

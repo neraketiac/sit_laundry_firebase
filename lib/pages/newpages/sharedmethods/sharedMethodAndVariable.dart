@@ -6,6 +6,7 @@ import 'package:laundry_firebase/models/newmodels/employeemodel.dart';
 import 'package:laundry_firebase/models/newmodels/jobmodel.dart';
 import 'package:laundry_firebase/models/newmodels/otheritemmodel.dart';
 import 'package:laundry_firebase/models/newmodels/suppliesmodelhist.dart';
+import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedConstantsFinal.dart';
 import 'package:laundry_firebase/services/newservices/database_employee_current.dart';
 import 'package:laundry_firebase/services/newservices/database_jobs.dart';
 import 'package:laundry_firebase/services/newservices/database_supplies_current.dart';
@@ -14,64 +15,6 @@ import 'package:laundry_firebase/variables/newvariables/supplies_hist_repository
 import 'package:laundry_firebase/variables/newvariables/variables.dart';
 import 'package:laundry_firebase/variables/newvariables/variables_oth.dart';
 import 'package:laundry_firebase/variables/newvariables/variables_supplies.dart';
-
-//
-double quantityKg = 8;
-int quantityLoad = 1;
-bool isGcashCredit = false;
-const double fieldIndentWidth = 40;
-TextEditingController customerNameVar = TextEditingController();
-TextEditingController customerNumberVar = TextEditingController();
-TextEditingController customerAmountVar = TextEditingController();
-TextEditingController partialCashAmountVar = TextEditingController();
-TextEditingController partialGCashAmountVar = TextEditingController();
-int selectedRiderPickup = forSorting;
-int selectedPackage = regularPackage;
-int selectedPackagePrev = regularPackage;
-int selectedOthers = menuOthDVal;
-int totalPriceRegSS = 155;
-int totalPriceShortCutRegSS = 0;
-OtherItemModel selectedItemModel = reg125ItemModel;
-int selectedOthersShortCut = menuOth155;
-int selectedPaidUnpaid = unpaid;
-bool selectedPaidPartialCash = false;
-bool selectedPaidPartialGCash = false;
-bool selectedPaidGCashVerified = false;
-bool selectedFold = true;
-bool selectedMix = true;
-int basketCount = 0;
-int ecoBagCount = 0;
-int sakoCount = 0;
-int addFabCount = 0;
-int addExtraDryCount = 0;
-int addExtraWashCount = 0;
-int addExtraSpinCount = 0;
-bool isMaxFab = false;
-int totalPriceOthers = 0;
-bool isPerKg = true;
-final int tier1Increase = 35;
-final int tier2Increase = 105;
-int pricePerSet = 0;
-int maxPartial = 0;
-bool successInsertFB = false;
-
-final NumberFormat pesoFormat = NumberFormat('#,##0', 'en_PH');
-
-//end of day
-final List<int> denominations = [1000, 500, 200, 100, 50, 20, 10, 5, 1];
-
-final Map<int, int> qtyMap = {
-  for (final d in [1000, 500, 200, 100, 50, 20, 10, 5, 1]) d: 0,
-};
-
-// 🔢 Price formatter
-final formatter = NumberFormat.currency(
-  locale: 'en_PH',
-  symbol: '₱ ',
-  decimalDigits: 2,
-);
-
-int? selectedFundCode; // = menuOthLaundryPayment;
 
 //SHARED METHODS ###########################################################
 
@@ -199,7 +142,7 @@ int get grandTotal {
 }
 
 String showHowMany155or125Set(int total, bool bSeparate) {
-  if (JobsModelRepository.instance.getAddOn()) {
+  if (JobModelRepository.instance.getAddOn()) {
     return '';
   } else {
 //int base = pricePerSet;
@@ -308,76 +251,75 @@ void setSelectedToRepository() {
     return wholeEight + lastCounter;
   }
 
-  JobsModelRepository.instance.setCurrentEmpId = empIdGlobal;
+  JobModelRepository.instance.setCurrentEmpId = empIdGlobal;
 
   //initial status
-  JobsModelRepository.instance.setForSorting =
-      forSorting == selectedRiderPickup;
-  JobsModelRepository.instance.setRiderPickup =
+  JobModelRepository.instance.setForSorting = forSorting == selectedRiderPickup;
+  JobModelRepository.instance.setRiderPickup =
       riderPickup == selectedRiderPickup;
 
   //package status
-  JobsModelRepository.instance.setRegular = regularPackage == selectedPackage;
-  JobsModelRepository.instance.setSayosabon =
+  JobModelRepository.instance.setRegular = regularPackage == selectedPackage;
+  JobModelRepository.instance.setSayosabon =
       sayoSabonPackage == selectedPackage;
-  JobsModelRepository.instance.setAddOn = othersPackage == selectedPackage;
+  JobModelRepository.instance.setAddOn = othersPackage == selectedPackage;
 
   //prices
   if (selectedPackage == othersPackage) {
-    JobsModelRepository.instance.setFinalPrice = totalPriceOthers;
+    JobModelRepository.instance.setFinalPrice = totalPriceOthers;
   } else {
-    JobsModelRepository.instance.setFinalPrice = totalPriceRegSS;
+    JobModelRepository.instance.setFinalPrice = totalPriceRegSS;
   }
 
   //payment status
-  JobsModelRepository.instance.setUnpaid = unpaid == selectedPaidUnpaid;
-  JobsModelRepository.instance.setPaidCash = paidCash == selectedPaidUnpaid;
-  JobsModelRepository.instance.setPaidGCash = paidGCash == selectedPaidUnpaid;
-  JobsModelRepository.instance.setPartialPaidCash = selectedPaidPartialCash;
-  JobsModelRepository.instance.setPartialPaidGCash = selectedPaidPartialGCash;
-  JobsModelRepository.instance.setPartialPaidCashAmount =
+  JobModelRepository.instance.setUnpaid = unpaid == selectedPaidUnpaid;
+  JobModelRepository.instance.setPaidCash = paidCash == selectedPaidUnpaid;
+  JobModelRepository.instance.setPaidGCash = paidGCash == selectedPaidUnpaid;
+  JobModelRepository.instance.setPartialPaidCash = selectedPaidPartialCash;
+  JobModelRepository.instance.setPartialPaidGCash = selectedPaidPartialGCash;
+  JobModelRepository.instance.setPartialPaidCashAmount =
       int.tryParse(partialCashAmountVar.text) ?? 0;
-  JobsModelRepository.instance.setPartialPaidGCashAmount =
+  JobModelRepository.instance.setPartialPaidGCashAmount =
       int.tryParse(partialGCashAmountVar.text) ?? 0;
 
   if (unpaid != selectedPaidUnpaid) {
-    JobsModelRepository.instance.setPaymentReceivedBy = empIdGlobal;
+    JobModelRepository.instance.setPaymentReceivedBy = empIdGlobal;
   }
 
   //verified gcash
-  JobsModelRepository.instance.setPaidGCashVerified = selectedPaidGCashVerified;
+  JobModelRepository.instance.setPaidGCashVerified = selectedPaidGCashVerified;
 
   //weight status
-  JobsModelRepository.instance.setPerKilo = false;
-  JobsModelRepository.instance.setPerLoad = false;
+  JobModelRepository.instance.setPerKilo = false;
+  JobModelRepository.instance.setPerLoad = false;
 
   if (isPerKg) {
-    JobsModelRepository.instance.setPerKilo = true;
-    JobsModelRepository.instance.setFinalKilo = quantityKg;
-    JobsModelRepository.instance.setFinalLoad = computeLoadForKg(quantityKg);
-    JobsModelRepository.instance.setPromoCounter = promoCounter;
-    JobsModelRepository.instance.setPricingSetup =
+    JobModelRepository.instance.setPerKilo = true;
+    JobModelRepository.instance.setFinalKilo = quantityKg;
+    JobModelRepository.instance.setFinalLoad = computeLoadForKg(quantityKg);
+    JobModelRepository.instance.setPromoCounter = promoCounter;
+    JobModelRepository.instance.setPricingSetup =
         showHowMany155or125Set(computeTotalPrice(quantityKg), false);
-    JobsModelRepository.instance.setRemarks = remarksSuppliesVar.text;
+    JobModelRepository.instance.setRemarks = remarksSuppliesVar.text;
   } else {
-    JobsModelRepository.instance.setPerLoad = true;
-    JobsModelRepository.instance.setFinalLoad = quantityLoad;
-    JobsModelRepository.instance.setPromoCounter = quantityLoad;
-    JobsModelRepository.instance.setPricingSetup = 'Load(s): $quantityLoad';
-    JobsModelRepository.instance.setRemarks = remarksSuppliesVar.text;
+    JobModelRepository.instance.setPerLoad = true;
+    JobModelRepository.instance.setFinalLoad = quantityLoad;
+    JobModelRepository.instance.setPromoCounter = quantityLoad;
+    JobModelRepository.instance.setPricingSetup = 'Load(s): $quantityLoad';
+    JobModelRepository.instance.setRemarks = remarksSuppliesVar.text;
   }
 
   //list other items
   if (listAddedOtherItemModel.isNotEmpty) {
-    JobsModelRepository.instance.setItems = listAddedOtherItemModel;
+    JobModelRepository.instance.setItems = listAddedOtherItemModel;
   }
 
   //other options
-  JobsModelRepository.instance.setFold = selectedFold;
-  JobsModelRepository.instance.setMix = selectedMix;
-  JobsModelRepository.instance.setBasket = basketCount;
-  JobsModelRepository.instance.setEbag = ecoBagCount;
-  JobsModelRepository.instance.setSako = sakoCount;
+  JobModelRepository.instance.setFold = selectedFold;
+  JobModelRepository.instance.setMix = selectedMix;
+  JobModelRepository.instance.setBasket = basketCount;
+  JobModelRepository.instance.setEbag = ecoBagCount;
+  JobModelRepository.instance.setSako = sakoCount;
 }
 
 Future<void> setSuppliesRepository(BuildContext context) async {
@@ -497,7 +439,7 @@ Future<void> callDatabaseJobsQueueAdd(BuildContext context) async {
   DatabaseJobsQueue databaseJobsQueue = DatabaseJobsQueue();
 
   if (await databaseJobsQueue
-      .add(JobsModelRepository.instance.getJobsModel()!)) {
+      .add(JobModelRepository.instance.getJobsModel()!)) {
     successInsertFB = true;
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Insert on Queue done.')),
@@ -515,8 +457,8 @@ Future<void> setRepositoryLaundryPayment(
     BuildContext context, String viaJobs) async {
   //generate only when funds received ( paidCash, partialPaidCash )
   //only PaidCash or PartialPaidCash
-  if (JobsModelRepository.instance.getPaidCash() ||
-      JobsModelRepository.instance.getPartialPaidCash()) {
+  if (JobModelRepository.instance.getPaidCash() ||
+      JobModelRepository.instance.getPartialPaidCash()) {
     //auto generated for Laundry payment, once user tag job to paid.
     SuppliesHistRepository.instance.setItemName(getItemNameOnly(
         menuOthCashInOutFunds, menuOthLaundryPayment)); //cash laundry payment
@@ -525,12 +467,12 @@ Future<void> setRepositoryLaundryPayment(
         .setItemUniqueId(menuOthLaundryPayment); //cash laundry payment
     SuppliesHistRepository.instance.setRemarks('auto via $viaJobs paid');
 
-    if (JobsModelRepository.instance.getPartialPaidCash()) {
+    if (JobModelRepository.instance.getPartialPaidCash()) {
       SuppliesHistRepository.instance.setCurrentCounter(
-          JobsModelRepository.instance.getPartialPaidCashAmount());
+          JobModelRepository.instance.getPartialPaidCashAmount());
     } else {
       SuppliesHistRepository.instance
-          .setCurrentCounter(JobsModelRepository.instance.getFinalPrice());
+          .setCurrentCounter(JobModelRepository.instance.getFinalPrice());
     }
 
     await setSuppliesRepository(context);
@@ -542,7 +484,7 @@ Future<void> revertLaundryPaymentSuppliesHistory(
     BuildContext context, String viaJobs) async {
   //generate only when funds received and needs to revert ( paidCash, partialPaidCash )
   //only PaidCash or PartialPaidCash
-  if (JobsModelRepository.instance.getUnpaid()) {
+  if (JobModelRepository.instance.getUnpaid()) {
     //auto generated for Laundry payment, once user tag job to paid, reverted as funds out
     SuppliesHistRepository.instance.setItemName(getItemNameOnly(
         menuOthCashInOutFunds, menuOthUniqIdFundsOut)); //funds out
@@ -551,12 +493,12 @@ Future<void> revertLaundryPaymentSuppliesHistory(
         .setItemUniqueId(menuOthUniqIdFundsOut); //funds out
     SuppliesHistRepository.instance.setRemarks('auto via $viaJobs unpaid');
 
-    if (JobsModelRepository.instance.getPartialPaidCashAmount() > 0) {
+    if (JobModelRepository.instance.getPartialPaidCashAmount() > 0) {
       SuppliesHistRepository.instance.setCurrentCounter(
-          JobsModelRepository.instance.getPartialPaidCashAmount());
+          JobModelRepository.instance.getPartialPaidCashAmount());
     } else {
       SuppliesHistRepository.instance
-          .setCurrentCounter(JobsModelRepository.instance.getFinalPrice());
+          .setCurrentCounter(JobModelRepository.instance.getFinalPrice());
     }
 
     await setSuppliesRepository(context);
