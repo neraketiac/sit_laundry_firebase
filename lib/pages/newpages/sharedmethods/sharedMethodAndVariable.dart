@@ -10,7 +10,7 @@ import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedConstantsFin
 import 'package:laundry_firebase/services/newservices/database_employee_current.dart';
 import 'package:laundry_firebase/services/newservices/database_jobs.dart';
 import 'package:laundry_firebase/services/newservices/database_supplies_current.dart';
-import 'package:laundry_firebase/variables/newvariables/jobsmodel_repository.dart';
+import 'package:laundry_firebase/variables/newvariables/jobmodel_repository.dart';
 import 'package:laundry_firebase/variables/newvariables/supplies_hist_repository.dart';
 import 'package:laundry_firebase/variables/newvariables/variables.dart';
 import 'package:laundry_firebase/variables/newvariables/variables_oth.dart';

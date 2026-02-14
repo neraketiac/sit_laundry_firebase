@@ -5,7 +5,7 @@ import 'package:laundry_firebase/models/newmodels/otheritemmodel.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/autocompletecustomer.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedConstantsFinal.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedMethodAndVariable.dart';
-import 'package:laundry_firebase/variables/newvariables/jobsmodel_repository.dart';
+import 'package:laundry_firebase/variables/newvariables/jobmodel_repository.dart';
 import 'package:laundry_firebase/variables/newvariables/variables.dart';
 import 'package:laundry_firebase/variables/newvariables/variables_ble.dart';
 import 'package:laundry_firebase/variables/newvariables/variables_det.dart';

@@ -9,8 +9,6 @@ class SuppliesHistRepository {
   /// Single job (nullable until set)
   SuppliesModelHist? suppliesModelHist;
 
-  bool _loaded = false;
-
   Future<void> reset() async {
     clear();
     // if (_loaded) return;

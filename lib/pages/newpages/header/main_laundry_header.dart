@@ -6,7 +6,7 @@ import 'package:laundry_firebase/pages/newpages/header/Funds/showGCashTransactio
 import 'package:laundry_firebase/pages/newpages/header/Funds/showFundCheck.dart';
 import 'package:laundry_firebase/pages/newpages/header/JobOnQueue/showJobOnQueue.dart';
 import 'package:laundry_firebase/pages/newpages/header/Employee/showSalaryMaintenance.dart';
-import 'package:laundry_firebase/variables/newvariables/jobsmodel_repository.dart';
+import 'package:laundry_firebase/variables/newvariables/jobmodel_repository.dart';
 import 'package:laundry_firebase/variables/newvariables/supplies_hist_repository.dart';
 import 'package:laundry_firebase/variables/newvariables/variables.dart';
 import 'package:laundry_firebase/variables/newvariables/variables_supplies.dart';
