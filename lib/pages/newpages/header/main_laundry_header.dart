@@ -45,6 +45,9 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
 //*showJobsOnQueue
 //*showJobsOnQueue
 
+  late JobModelRepository jobRepoBQ;
+  late JobModelRepository jobRepoNonJob;
+
   late String _sEmpId;
 
   bool _isOpen = false;
@@ -61,7 +64,11 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
       isAdmin = false;
     }
     SuppliesHistRepository.instance.reset();
-    JobModelRepository.instance.reset();
+
+    jobRepoBQ = JobModelRepository();
+    jobRepoNonJob = JobModelRepository();
+
+    //JobModelRepository.instance.reset();
 
     //*show JobsOnQueue
 
@@ -110,7 +117,7 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
                 icon: Icons.g_mobiledata,
                 bottom: _isOpen ? base + step + step : base,
                 right: _isOpen ? base + step : base,
-                onTap: () => showGCashTransactions(context),
+                onTap: () => showGCashTransactions(context, jobRepoNonJob),
                 backgroundColor: cShowGCash),
 
             //2nd floor
@@ -120,7 +127,7 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
                 icon: Icons.attach_money_outlined,
                 bottom: _isOpen ? base + step : base,
                 right: _isOpen ? base + step * 2 : base,
-                onTap: () => showFundsInFundsOut(context),
+                onTap: () => showFundsInFundsOut(context, jobRepoNonJob),
                 backgroundColor: cFundsInFundsOut),
 
             _fab(
@@ -138,7 +145,7 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
                 icon: Icons.local_laundry_service,
                 bottom: _isOpen ? base : base,
                 right: _isOpen ? base + step * 3 : base,
-                onTap: () => showJobOnQueue(context),
+                onTap: () => showJobOnQueue(context, jobRepoBQ),
                 backgroundColor: cJobsOnQueue),
 
             _fab(
@@ -146,7 +153,7 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
                 icon: Icons.savings,
                 bottom: _isOpen ? base : base,
                 right: _isOpen ? base + step * 2 : base,
-                onTap: () => showSalaryMaintenance(context),
+                onTap: () => showSalaryMaintenance(context, jobRepoNonJob),
                 backgroundColor: cEmployeeMaintenance),
 
             _fab(

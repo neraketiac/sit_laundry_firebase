@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:laundry_firebase/models/oldmodels/customermodel.dart';
-import 'package:laundry_firebase/models/newmodels/jobmodel.dart';
 import 'package:laundry_firebase/variables/newvariables/customer_repository.dart';
 import 'package:laundry_firebase/variables/newvariables/jobmodel_repository.dart';
 import 'package:laundry_firebase/variables/newvariables/supplies_hist_repository.dart';
 import 'package:laundry_firebase/variables/newvariables/variables.dart';
 
 class AutoCompleteCustomer extends StatelessWidget {
-  AutoCompleteCustomer({super.key});
+  late JobModelRepository jobRepo;
+  AutoCompleteCustomer({required this.jobRepo, super.key});
   late TextEditingValue inputName;
   late TextFormField inputNameTFF;
 
@@ -65,8 +65,8 @@ class AutoCompleteCustomer extends StatelessWidget {
       onSelected: (CustomerModel selectedModel) {
         autocompleteSelected = selectedModel;
         SuppliesHistRepository.instance.setCustomerName(selectedModel.name);
-        JobModelRepository.instance.setCustomerName(selectedModel.name);
-        JobModelRepository.instance.setCustomerId(selectedModel.customerId);
+        jobRepo.customerName = selectedModel.name;
+        jobRepo.customerId = selectedModel.customerId;
         bCustomerName = true;
         debugPrint(
             'You just selected ${_displayStringForOption(selectedModel)}');

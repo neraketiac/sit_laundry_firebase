@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:laundry_firebase/models/newmodels/jobmodel.dart';
-import 'package:laundry_firebase/pages/newpages/body/JobOnQueue/showJobOnQueueComplete.dart';
 import 'package:laundry_firebase/pages/newpages/body/JobOnQueue/showPaidUnpaid.dart';
-import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedMethodAndVariable.dart';
 import 'package:laundry_firebase/services/newservices/database_jobs.dart';
+import 'package:laundry_firebase/variables/newvariables/jobmodel_repository.dart';
 import 'package:laundry_firebase/variables/newvariables/variables.dart';
 import 'package:laundry_firebase/variables/newvariables/variables_oth.dart';
 
@@ -133,6 +132,9 @@ Widget readDataJobsOnQueue() {
             },
             children: List.generate(jobs.length, (index) {
               final job = jobs[index];
+              JobModelRepository jobRepo = JobModelRepository();
+
+              jobRepo.setJobModel(job);
 
               final progress = 0;
               final isRunning = progress > 0 && progress < 1;
@@ -151,7 +153,7 @@ Widget readDataJobsOnQueue() {
                         setState(() {
                           selectedIndex = index;
                         });
-                        showJobOnQueueComplete(context, job);
+                        //showJobOnQueueComplete(context, job);
                       },
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 250),
@@ -286,7 +288,7 @@ Widget readDataJobsOnQueue() {
                             /// 💰 Price
                             InkWell(
                               onTap: (() {
-                                showPaidUnpaid(context, job);
+                                showPaidUnpaid(context, jobRepo);
                               }),
                               child: Column(
                                 children: [

@@ -2,25 +2,27 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:laundry_firebase/models/newmodels/jobmodel.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedConstantsFinal.dart';
-import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedMethodAndVariable.dart';
+import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedMethods.dart';
 import 'package:laundry_firebase/variables/newvariables/jobmodel_repository.dart';
 import 'package:laundry_firebase/variables/newvariables/variables.dart';
 import 'package:laundry_firebase/variables/newvariables/variables_supplies.dart';
 
 //reuse showJobsOnQueue removed dont needed.
 
-void showPaidUnpaid(BuildContext context, JobModel jM) {
+void showPaidUnpaid(BuildContext context, JobModelRepository jobRepo) {
   void syncThisShowToSelected() {
-    customerNameVar.text = jM.customerName;
+    jobRepo.customerNameVar.text = jobRepo.customerName;
     //payment status
-    if (jM.unpaid) selectedPaidUnpaid = unpaid;
-    if (jM.paidCash) selectedPaidUnpaid = paidCash;
-    if (jM.paidGCash) selectedPaidUnpaid = paidGCash;
-    selectedPaidPartialCash = jM.partialPaidCash;
-    selectedPaidPartialGCash = jM.partialPaidGCash;
-    partialCashAmountVar.text = jM.partialPaidCashAmount.toString();
-    partialGCashAmountVar.text = jM.partialPaidGCashAmount.toString();
-    selectedPaidGCashVerified = jM.paidGCashverified;
+    if (jobRepo.unpaid) jobRepo.selectedPaidUnpaid = unpaid;
+    if (jobRepo.paidCash) jobRepo.selectedPaidUnpaid = paidCash;
+    if (jobRepo.paidGCash) jobRepo.selectedPaidUnpaid = paidGCash;
+    jobRepo.selectedPaidPartialCash = jobRepo.partialPaidCash;
+    jobRepo.selectedPaidPartialGCash = jobRepo.partialPaidGCash;
+    jobRepo.partialCashAmountVar.text =
+        jobRepo.partialPaidCashAmount.toString();
+    jobRepo.partialGCashAmountVar.text =
+        jobRepo.partialPaidGCashAmount.toString();
+    jobRepo.selectedPaidGCashVerified = jobRepo.paidGCashVerified;
   }
 
   Visibility visCustomerName(Function setState) {
@@ -40,7 +42,7 @@ void showPaidUnpaid(BuildContext context, JobModel jM) {
               ),
             ),
             TextFormField(
-              controller: customerNameVar,
+              controller: jobRepo.customerNameVar,
               readOnly: true, // 👈 prevents editing
               textAlign: TextAlign.center,
               decoration: InputDecoration(
@@ -101,14 +103,14 @@ void showPaidUnpaid(BuildContext context, JobModel jM) {
             ToggleButtons(
               isSelected: List.generate(
                 listPaidUnpaid.length,
-                (i) => selectedPaidUnpaid == listPaidUnpaid[i],
+                (i) => jobRepo.selectedPaidUnpaid == listPaidUnpaid[i],
               ),
               onPressed: (index) {
                 setState(() {
-                  if (selectedPaidUnpaid == listPaidUnpaid[index]) {
-                    selectedPaidUnpaid = 0;
+                  if (jobRepo.selectedPaidUnpaid == listPaidUnpaid[index]) {
+                    jobRepo.selectedPaidUnpaid = 0;
                   } else {
-                    selectedPaidUnpaid = listPaidUnpaid[index];
+                    jobRepo.selectedPaidUnpaid = listPaidUnpaid[index];
                   }
                 });
               },
@@ -144,10 +146,10 @@ void showPaidUnpaid(BuildContext context, JobModel jM) {
                     Transform.scale(
                       scale: 0.7, // shrink the checkbox itself
                       child: Checkbox(
-                        value: selectedPaidPartialCash,
+                        value: jobRepo.selectedPaidPartialCash,
                         onChanged: (bool? value) {
                           setState(() {
-                            selectedPaidPartialCash = value ?? false;
+                            jobRepo.selectedPaidPartialCash = value ?? false;
                           });
                         },
                         visualDensity: VisualDensity(
@@ -172,10 +174,10 @@ void showPaidUnpaid(BuildContext context, JobModel jM) {
                     Transform.scale(
                       scale: 0.7, // shrink the checkbox itself
                       child: Checkbox(
-                        value: selectedPaidPartialGCash,
+                        value: jobRepo.selectedPaidPartialGCash,
                         onChanged: (bool? value) {
                           setState(() {
-                            selectedPaidPartialGCash = value ?? false;
+                            jobRepo.selectedPaidPartialGCash = value ?? false;
                           });
                         },
                         visualDensity: VisualDensity(
@@ -203,10 +205,10 @@ void showPaidUnpaid(BuildContext context, JobModel jM) {
                     Transform.scale(
                       scale: 0.7, // shrink the checkbox itself
                       child: Checkbox(
-                        value: selectedPaidGCashVerified,
+                        value: jobRepo.selectedPaidGCashVerified,
                         onChanged: (bool? value) {
                           setState(() {
-                            selectedPaidGCashVerified = value ?? false;
+                            jobRepo.selectedPaidGCashVerified = value ?? false;
                           });
                         },
                         visualDensity: VisualDensity(
@@ -224,7 +226,7 @@ void showPaidUnpaid(BuildContext context, JobModel jM) {
             ),
             //Partial Cash Amount
             Visibility(
-              visible: selectedPaidPartialCash,
+              visible: jobRepo.selectedPaidPartialCash,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -240,7 +242,7 @@ void showPaidUnpaid(BuildContext context, JobModel jM) {
                     ),
                   ),
                   TextFormField(
-                    controller: partialCashAmountVar,
+                    controller: jobRepo.partialCashAmountVar,
                     keyboardType:
                         const TextInputType.numberWithOptions(decimal: true),
                     textAlign: TextAlign.center,
@@ -282,7 +284,7 @@ void showPaidUnpaid(BuildContext context, JobModel jM) {
             ),
             //Partial GCash Amount
             Visibility(
-              visible: selectedPaidPartialGCash,
+              visible: jobRepo.selectedPaidPartialGCash,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -298,7 +300,7 @@ void showPaidUnpaid(BuildContext context, JobModel jM) {
                     ),
                   ),
                   TextFormField(
-                    controller: partialGCashAmountVar,
+                    controller: jobRepo.partialGCashAmountVar,
                     keyboardType:
                         const TextInputType.numberWithOptions(decimal: true),
                     textAlign: TextAlign.center,
@@ -343,26 +345,23 @@ void showPaidUnpaid(BuildContext context, JobModel jM) {
 
   Future<void> saveButtonSetRepository() async {
     //reuse the repository.
-    JobModelRepository.instance.jobsModel = jM;
     //payment status
-    JobModelRepository.instance.setUnpaid = unpaid == selectedPaidUnpaid;
-    JobModelRepository.instance.setPaidCash = paidCash == selectedPaidUnpaid;
-    JobModelRepository.instance.setPaidGCash = paidGCash == selectedPaidUnpaid;
-    JobModelRepository.instance.setPartialPaidCash = selectedPaidPartialCash;
-    JobModelRepository.instance.setPartialPaidGCash = selectedPaidPartialGCash;
-    JobModelRepository.instance.setPartialPaidCashAmount =
-        int.tryParse(partialCashAmountVar.text) ?? 0;
-    JobModelRepository.instance.setPartialPaidGCashAmount =
-        int.tryParse(partialGCashAmountVar.text) ?? 0;
+    jobRepo.unpaid = unpaid == jobRepo.selectedPaidUnpaid;
+    jobRepo.paidCash = paidCash == jobRepo.selectedPaidUnpaid;
+    jobRepo.paidGCash = paidGCash == jobRepo.selectedPaidUnpaid;
+    jobRepo.partialPaidCash = jobRepo.selectedPaidPartialCash;
+    jobRepo.partialPaidGCash = jobRepo.selectedPaidPartialGCash;
+    jobRepo.partialPaidCashAmount =
+        int.tryParse(jobRepo.partialCashAmountVar.text) ?? 0;
+    jobRepo.partialPaidGCashAmount =
+        int.tryParse(jobRepo.partialGCashAmountVar.text) ?? 0;
 
-    if (unpaid != selectedPaidUnpaid) {
-      JobModelRepository.instance.setPaymentReceivedBy = empIdGlobal;
+    if (unpaid != jobRepo.selectedPaidUnpaid) {
+      jobRepo.paymentReceivedBy = empIdGlobal;
     }
-    JobModelRepository.instance.setPaidGCashVerified =
-        selectedPaidGCashVerified;
+    jobRepo.paidGCashVerified = jobRepo.selectedPaidGCashVerified;
 
-    await callDatabaseJobQueueUpdate(
-        context, JobModelRepository.instance.getJobsModel()!);
+    await callDatabaseJobQueueUpdate(context, jobRepo.getJobsModel()!);
     //await setRepositoryLaundryPayment(context, 'Show Jobs OnQueue');
   }
 

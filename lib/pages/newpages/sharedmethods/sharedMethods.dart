@@ -4,7 +4,6 @@ import 'package:intl/intl.dart';
 import 'package:laundry_firebase/models/oldmodels/customermodel.dart';
 import 'package:laundry_firebase/models/newmodels/employeemodel.dart';
 import 'package:laundry_firebase/models/newmodels/jobmodel.dart';
-import 'package:laundry_firebase/models/newmodels/otheritemmodel.dart';
 import 'package:laundry_firebase/models/newmodels/suppliesmodelhist.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedConstantsFinal.dart';
 import 'package:laundry_firebase/services/newservices/database_employee_current.dart';
@@ -33,18 +32,19 @@ int get grandTotal {
   return total;
 }
 
-String showHowMany155or125Set(int total, bool bSeparate) {
-  if (JobModelRepository.instance.getAddOn()) {
+String showHowMany155or125Set(
+    int total, bool bSeparate, JobModelRepository jobRepo) {
+  if (jobRepo.addOn) {
     return '';
   } else {
 //int base = pricePerSet;
     List<int> extras = [
-      pricePerSet + tier1Increase,
-      pricePerSet + tier2Increase
+      jobRepo.pricePerSet + tier1Increase,
+      jobRepo.pricePerSet + tier2Increase
     ];
 
     // Base single
-    if (total == pricePerSet) return ' $pricePerSet';
+    if (total == jobRepo.pricePerSet) return ' ${jobRepo.pricePerSet}}';
 
     // Extras alone
     if (extras.contains(total)) return ' $total';
@@ -53,27 +53,27 @@ String showHowMany155or125Set(int total, bool bSeparate) {
       final remaining = total - extra;
 
       if (remaining <= 0) continue;
-      if (remaining % pricePerSet != 0) continue;
+      if (remaining % jobRepo.pricePerSet != 0) continue;
 
-      final multiplier = remaining ~/ pricePerSet;
+      final multiplier = remaining ~/ jobRepo.pricePerSet;
 
       if (multiplier == 1 && extra == 0) {
-        return ' $pricePerSet';
+        return ' ${jobRepo.pricePerSet}';
       }
 
       if (multiplier == 1 && extra != 0) {
-        return ' $pricePerSet\n + $extra';
+        return ' ${jobRepo.pricePerSet}\n + $extra';
       }
 
       if (multiplier > 1 && extra == 0) {
-        return ' ($pricePerSet * $multiplier)';
+        return ' (${jobRepo.pricePerSet} * $multiplier)';
       }
 
       if (multiplier > 1 && extra != 0) {
         if (bSeparate) {
-          return ' ($pricePerSet * $multiplier)\n + $extra';
+          return ' (${jobRepo.pricePerSet} * $multiplier)\n + $extra';
         } else {
-          return ' ($pricePerSet * $multiplier) + $extra';
+          return ' (${jobRepo.pricePerSet} * $multiplier) + $extra';
         }
       }
     }
@@ -84,7 +84,7 @@ String showHowMany155or125Set(int total, bool bSeparate) {
 }
 
 // 💰 Tiered price computation
-int computeTotalPrice(double q) {
+int computeTotalPrice(double q, JobModelRepository jobRepo) {
   int counter = (q / 8).floor(); // how many full 8s
   counter = (counter == 0 ? 1 : counter);
 
@@ -96,15 +96,15 @@ int computeTotalPrice(double q) {
       remainingPrice = 0;
     } else if (remaining > 0 && remaining <= 0.9) {
       remainingPrice = tier1Increase;
-    } else if (remaining < maxPartial) {
+    } else if (remaining < jobRepo.maxPartial) {
       remainingPrice = tier2Increase;
-    } else if (remaining >= maxPartial) {
-      remainingPrice = pricePerSet;
+    } else if (remaining >= jobRepo.maxPartial) {
+      remainingPrice = jobRepo.pricePerSet;
     }
     debugPrint('c=$counter rP=$remainingPrice r=$remaining');
   }
 
-  return (counter * pricePerSet) + remainingPrice;
+  return (counter * jobRepo.pricePerSet) + remainingPrice;
 }
 
 // 🔘 Reusable button
@@ -238,8 +238,8 @@ void resetAfterInsert() {
 }
 
 //set selected to repository
-void setSelectedToRepository() {
-  int promoCounter = 0;
+void setSelectedToRepository(JobModelRepository jobRepo) {
+  int computePromoCounter = 0;
   int computeLoadForKg(double kg) {
     double remainder = kg % 8;
     int wholeEight = kg ~/ 8;
@@ -250,83 +250,81 @@ void setSelectedToRepository() {
       lastCounter = 1;
     }
     if (remainder >= 3) {
-      promoCounter = wholeEight + 1;
+      computePromoCounter = wholeEight + 1;
     } else {
-      promoCounter = wholeEight;
+      computePromoCounter = wholeEight;
     }
 
     return wholeEight + lastCounter;
   }
 
-  JobModelRepository.instance.setCurrentEmpId = empIdGlobal;
+  jobRepo.currentEmpId = empIdGlobal;
 
   //initial status
-  JobModelRepository.instance.setForSorting = forSorting == selectedRiderPickup;
-  JobModelRepository.instance.setRiderPickup =
-      riderPickup == selectedRiderPickup;
+  jobRepo.forSorting = forSorting == jobRepo.selectedRiderPickup;
+  jobRepo.riderPickup = riderPickup == jobRepo.selectedRiderPickup;
 
   //package status
-  JobModelRepository.instance.setRegular = regularPackage == selectedPackage;
-  JobModelRepository.instance.setSayosabon =
-      sayoSabonPackage == selectedPackage;
-  JobModelRepository.instance.setAddOn = othersPackage == selectedPackage;
+  jobRepo.regular = regularPackage == jobRepo.selectedPackage;
+  jobRepo.sayosabon = sayoSabonPackage == jobRepo.selectedPackage;
+  jobRepo.addOn = othersPackage == jobRepo.selectedPackage;
 
   //prices
-  if (selectedPackage == othersPackage) {
-    JobModelRepository.instance.setFinalPrice = totalPriceOthers;
+  if (jobRepo.selectedPackage == othersPackage) {
+    jobRepo.finalPrice = jobRepo.totalPriceOthers;
   } else {
-    JobModelRepository.instance.setFinalPrice = totalPriceRegSS;
+    jobRepo.finalPrice = jobRepo.totalPriceRegSS;
   }
 
   //payment status
-  JobModelRepository.instance.setUnpaid = unpaid == selectedPaidUnpaid;
-  JobModelRepository.instance.setPaidCash = paidCash == selectedPaidUnpaid;
-  JobModelRepository.instance.setPaidGCash = paidGCash == selectedPaidUnpaid;
-  JobModelRepository.instance.setPartialPaidCash = selectedPaidPartialCash;
-  JobModelRepository.instance.setPartialPaidGCash = selectedPaidPartialGCash;
-  JobModelRepository.instance.setPartialPaidCashAmount =
-      int.tryParse(partialCashAmountVar.text) ?? 0;
-  JobModelRepository.instance.setPartialPaidGCashAmount =
-      int.tryParse(partialGCashAmountVar.text) ?? 0;
+  jobRepo.unpaid = unpaid == jobRepo.selectedPaidUnpaid;
+  jobRepo.paidCash = paidCash == jobRepo.selectedPaidUnpaid;
+  jobRepo.paidGCash = paidGCash == jobRepo.selectedPaidUnpaid;
+  jobRepo.partialPaidCash = jobRepo.selectedPaidPartialCash;
+  jobRepo.partialPaidGCash = jobRepo.selectedPaidPartialGCash;
+  jobRepo.partialPaidCashAmount =
+      int.tryParse(jobRepo.partialCashAmountVar.text) ?? 0;
+  jobRepo.partialPaidGCashAmount =
+      int.tryParse(jobRepo.partialGCashAmountVar.text) ?? 0;
 
-  if (unpaid != selectedPaidUnpaid) {
-    JobModelRepository.instance.setPaymentReceivedBy = empIdGlobal;
+  if (unpaid != jobRepo.selectedPaidUnpaid) {
+    jobRepo.paymentReceivedBy = empIdGlobal;
   }
 
   //verified gcash
-  JobModelRepository.instance.setPaidGCashVerified = selectedPaidGCashVerified;
+  jobRepo.paidGCashVerified = jobRepo.selectedPaidGCashVerified;
 
   //weight status
-  JobModelRepository.instance.setPerKilo = false;
-  JobModelRepository.instance.setPerLoad = false;
+  jobRepo.perKilo = false;
+  jobRepo.perLoad = false;
 
-  if (isPerKg) {
-    JobModelRepository.instance.setPerKilo = true;
-    JobModelRepository.instance.setFinalKilo = quantityKg;
-    JobModelRepository.instance.setFinalLoad = computeLoadForKg(quantityKg);
-    JobModelRepository.instance.setPromoCounter = promoCounter;
-    JobModelRepository.instance.setPricingSetup =
-        showHowMany155or125Set(computeTotalPrice(quantityKg), false);
-    JobModelRepository.instance.setRemarks = remarksSuppliesVar.text;
+  if (jobRepo.isPerKg) {
+    jobRepo.perKilo = true;
+    jobRepo.finalKilo = jobRepo.quantityKg;
+    jobRepo.finalLoad = computeLoadForKg(jobRepo.quantityKg);
+    jobRepo.promoCounter = computePromoCounter;
+    jobRepo.pricingSetup = showHowMany155or125Set(
+        computeTotalPrice(jobRepo.quantityKg, jobRepo), false, jobRepo);
+    jobRepo.remarks = jobRepo.remarksVar.text;
   } else {
-    JobModelRepository.instance.setPerLoad = true;
-    JobModelRepository.instance.setFinalLoad = quantityLoad;
-    JobModelRepository.instance.setPromoCounter = quantityLoad;
-    JobModelRepository.instance.setPricingSetup = 'Load(s): $quantityLoad';
-    JobModelRepository.instance.setRemarks = remarksSuppliesVar.text;
+    jobRepo.perLoad = true;
+    jobRepo.finalLoad = jobRepo.quantityLoad;
+    jobRepo.promoCounter = jobRepo.quantityLoad;
+    jobRepo.pricingSetup = 'Load(s): ${jobRepo.quantityLoad}';
+    jobRepo.remarks = jobRepo.remarksVar.text;
   }
 
   //list other items
   if (listAddedOtherItemModel.isNotEmpty) {
-    JobModelRepository.instance.setItems = listAddedOtherItemModel;
+    jobRepo.items = jobRepo.listSelectedItemModel;
   }
 
   //other options
-  JobModelRepository.instance.setFold = selectedFold;
-  JobModelRepository.instance.setMix = selectedMix;
-  JobModelRepository.instance.setBasket = basketCount;
-  JobModelRepository.instance.setEbag = ecoBagCount;
-  JobModelRepository.instance.setSako = sakoCount;
+  jobRepo.fold = jobRepo.selectedFold;
+  jobRepo.mix = jobRepo.selectedMix;
+  jobRepo.basket = jobRepo.basketCount;
+  jobRepo.ebag = jobRepo.ecoBagCount;
+  jobRepo.sako = jobRepo.sakoCount;
 }
 
 Future<void> setSuppliesRepository(BuildContext context) async {
@@ -442,11 +440,11 @@ Future<bool> _callDatabaseSuppliesCurrentAdd(SuppliesModelHist sMH) async {
   // return false;
 }
 
-Future<void> callDatabaseJobsQueueAdd(BuildContext context) async {
+Future<void> callDatabaseJobsQueueAdd(
+    BuildContext context, JobModelRepository jobRepo) async {
   DatabaseJobsQueue databaseJobsQueue = DatabaseJobsQueue();
 
-  if (await databaseJobsQueue
-      .add(JobModelRepository.instance.getJobsModel()!)) {
+  if (await databaseJobsQueue.add(jobRepo.jobModel)) {
     successInsertFB = true;
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Insert on Queue done.')),
@@ -461,11 +459,10 @@ Future<void> callDatabaseJobsQueueAdd(BuildContext context) async {
 
 //laundry payment
 Future<void> setRepositoryLaundryPayment(
-    BuildContext context, String viaJobs) async {
+    BuildContext context, String viaJobs, JobModelRepository jobRepo) async {
   //generate only when funds received ( paidCash, partialPaidCash )
   //only PaidCash or PartialPaidCash
-  if (JobModelRepository.instance.getPaidCash() ||
-      JobModelRepository.instance.getPartialPaidCash()) {
+  if (jobRepo.paidCash || jobRepo.partialPaidCash) {
     //auto generated for Laundry payment, once user tag job to paid.
     SuppliesHistRepository.instance.setItemName(getItemNameOnly(
         menuOthCashInOutFunds, menuOthLaundryPayment)); //cash laundry payment
@@ -474,12 +471,11 @@ Future<void> setRepositoryLaundryPayment(
         .setItemUniqueId(menuOthLaundryPayment); //cash laundry payment
     SuppliesHistRepository.instance.setRemarks('auto via $viaJobs paid');
 
-    if (JobModelRepository.instance.getPartialPaidCash()) {
-      SuppliesHistRepository.instance.setCurrentCounter(
-          JobModelRepository.instance.getPartialPaidCashAmount());
-    } else {
+    if (jobRepo.partialPaidCash) {
       SuppliesHistRepository.instance
-          .setCurrentCounter(JobModelRepository.instance.getFinalPrice());
+          .setCurrentCounter(jobRepo.partialPaidCashAmount);
+    } else {
+      SuppliesHistRepository.instance.setCurrentCounter(jobRepo.finalPrice);
     }
 
     await setSuppliesRepository(context);
@@ -488,10 +484,10 @@ Future<void> setRepositoryLaundryPayment(
 
 //revert laundry payment
 Future<void> revertLaundryPaymentSuppliesHistory(
-    BuildContext context, String viaJobs) async {
+    BuildContext context, String viaJobs, JobModelRepository jobRepo) async {
   //generate only when funds received and needs to revert ( paidCash, partialPaidCash )
   //only PaidCash or PartialPaidCash
-  if (JobModelRepository.instance.getUnpaid()) {
+  if (jobRepo.paidCash) {
     //auto generated for Laundry payment, once user tag job to paid, reverted as funds out
     SuppliesHistRepository.instance.setItemName(getItemNameOnly(
         menuOthCashInOutFunds, menuOthUniqIdFundsOut)); //funds out
@@ -500,12 +496,11 @@ Future<void> revertLaundryPaymentSuppliesHistory(
         .setItemUniqueId(menuOthUniqIdFundsOut); //funds out
     SuppliesHistRepository.instance.setRemarks('auto via $viaJobs unpaid');
 
-    if (JobModelRepository.instance.getPartialPaidCashAmount() > 0) {
-      SuppliesHistRepository.instance.setCurrentCounter(
-          JobModelRepository.instance.getPartialPaidCashAmount());
-    } else {
+    if (jobRepo.partialPaidCashAmount > 0) {
       SuppliesHistRepository.instance
-          .setCurrentCounter(JobModelRepository.instance.getFinalPrice());
+          .setCurrentCounter(jobRepo.partialPaidCashAmount);
+    } else {
+      SuppliesHistRepository.instance.setCurrentCounter(jobRepo.finalPrice);
     }
 
     await setSuppliesRepository(context);

@@ -1,9 +1,10 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:laundry_firebase/models/newmodels/jobmodel.dart';
 import 'package:laundry_firebase/models/newmodels/otheritemmodel.dart';
+import 'package:laundry_firebase/pages/newpages/sharedmethods/autocompletecustomer.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedConstantsFinal.dart';
-import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedMethodAndVariable.dart';
+import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedMethods.dart';
 import 'package:laundry_firebase/variables/newvariables/jobmodel_repository.dart';
 import 'package:laundry_firebase/variables/newvariables/variables.dart';
 import 'package:laundry_firebase/variables/newvariables/variables_ble.dart';
@@ -12,99 +13,83 @@ import 'package:laundry_firebase/variables/newvariables/variables_fab.dart';
 import 'package:laundry_firebase/variables/newvariables/variables_oth.dart';
 import 'package:laundry_firebase/variables/newvariables/variables_supplies.dart';
 
-void showJobOnQueueComplete(BuildContext context, JobModel jM) {
-  final List<int> listOthersDropDown = [
-    menuOthDVal,
-    menuDetDVal,
-    menuFabDVal,
-    menuBleDVal,
-  ];
-  final List<int> listOthersDropDownShortCuts = [
-    menuOth155,
-    menuOth125,
-    menuOthXD,
-    menuFabWKLDValAny8ml,
-  ];
-  final List<int> listPackage = [
-    regularPackage,
-    sayoSabonPackage,
-    othersPackage,
-  ];
-
+void showJobOnQueue(BuildContext context, JobModelRepository jobRepo) {
   void syncThisShowToSelected() {
     //admin
-    jM.currentEmpId = empIdGlobal;
+    jobRepo.currentEmpId = empIdGlobal;
 
-    customerNameVar.text = jM.customerName;
+    jobRepo.customerNameVar.text = jobRepo.customerName;
 
     //initial status
     //riderpickup can be true and forsorting is true, but always display the forSorting. meaning pickup is done.
     //if pickup is false, it went to forsorting but never in pickup.
-    if (jM.riderPickup) selectedRiderPickup = riderPickup;
-    if (jM.forSorting) selectedRiderPickup = forSorting;
+    if (jobRepo.riderPickup) jobRepo.selectedRiderPickup = riderPickup;
+    if (jobRepo.forSorting) jobRepo.selectedRiderPickup = forSorting;
 
     //package status
-    if (jM.regular) selectedPackage = regularPackage;
-    if (jM.sayosabon) selectedPackage = sayoSabonPackage;
-    if (jM.addOn) selectedPackage = othersPackage;
+    if (jobRepo.regular) jobRepo.selectedPackage = regularPackage;
+    if (jobRepo.sayosabon) jobRepo.selectedPackage = sayoSabonPackage;
+    if (jobRepo.addOn) jobRepo.selectedPackage = othersPackage;
 
     //prices
-    if (jM.addOn) {
-      totalPriceOthers = jM.finalPrice;
-      totalPriceRegSS = 0;
+    if (jobRepo.addOn) {
+      jobRepo.totalPriceOthers = jobRepo.finalPrice;
+      jobRepo.totalPriceRegSS = 0;
     } else {
-      totalPriceRegSS = jM.finalPrice;
-      totalPriceOthers = 0;
+      jobRepo.totalPriceRegSS = jobRepo.finalPrice;
+      jobRepo.totalPriceOthers = 0;
     }
 
     //payment status
-    if (jM.unpaid) selectedPaidUnpaid = unpaid;
-    if (jM.paidCash) selectedPaidUnpaid = paidCash;
-    if (jM.paidGCash) selectedPaidUnpaid = paidGCash;
-    selectedPaidPartialCash = jM.partialPaidCash;
-    selectedPaidPartialGCash = jM.partialPaidGCash;
-    partialCashAmountVar.text = jM.partialPaidCashAmount.toString();
-    partialGCashAmountVar.text = jM.partialPaidGCashAmount.toString();
+    if (jobRepo.unpaid) jobRepo.selectedPaidUnpaid = unpaid;
+    if (jobRepo.paidCash) jobRepo.selectedPaidUnpaid = paidCash;
+    if (jobRepo.paidGCash) jobRepo.selectedPaidUnpaid = paidGCash;
+    jobRepo.selectedPaidPartialCash = jobRepo.partialPaidCash;
+    jobRepo.selectedPaidPartialGCash = jobRepo.partialPaidGCash;
+    jobRepo.partialCashAmountVar.text =
+        jobRepo.partialPaidCashAmount.toString();
+    jobRepo.partialGCashAmountVar.text =
+        jobRepo.partialPaidGCashAmount.toString();
 
     //verified gcash
-    selectedPaidGCashVerified = jM.paidGCashverified;
+    jobRepo.selectedPaidGCashVerified = jobRepo.paidGCashVerified;
 
     //weight status
-    if (jM.perKilo) isPerKg = true;
-    if (jM.perLoad) isPerKg = false;
+    if (jobRepo.perKilo) jobRepo.isPerKg = true;
+    if (jobRepo.perLoad) jobRepo.isPerKg = false;
 
-    quantityKg = jM.finalKilo;
-    quantityLoad = jM.finalLoad;
-    remarksSuppliesVar.text = jM.remarks;
+    jobRepo.quantityKg = jobRepo.finalKilo;
+    jobRepo.quantityLoad = jobRepo.finalLoad;
+    jobRepo.remarksVar.text = jobRepo.remarks;
 
     //list other items
-    listAddedOtherItemModel = jM.items;
+    jobRepo.listSelectedItemModel = jobRepo.items;
 
     //other options
-    selectedFold = jM.fold;
-    selectedMix = jM.mix;
-    basketCount = jM.basket;
-    ecoBagCount = jM.ebag;
-    sakoCount = jM.sako;
+    jobRepo.selectedFold = jobRepo.fold;
+    jobRepo.selectedMix = jobRepo.mix;
+    jobRepo.basketCount = jobRepo.basket;
+    jobRepo.ecoBagCount = jobRepo.ebag;
+    jobRepo.sakoCount = jobRepo.sako;
 
-    if (selectedPackage != othersPackage) {
-      addFabCount = listAddedOtherItemModel
+    if (jobRepo.selectedPackage != othersPackage) {
+      jobRepo.addFabCount = jobRepo.listSelectedItemModel
           .where((e) => e.itemUniqueId == addFabAnyItemModel.itemUniqueId)
           .length;
-      addExtraDryCount = listAddedOtherItemModel
+      jobRepo.addExtraDryCount = jobRepo.listSelectedItemModel
           .where((e) => e.itemUniqueId == xDItemModel.itemUniqueId)
           .length;
-      addExtraWashCount = listAddedOtherItemModel
+      jobRepo.addExtraWashCount = jobRepo.listSelectedItemModel
           .where((e) => e.itemUniqueId == xWashItemModel.itemUniqueId)
           .length;
-      addExtraSpinCount = listAddedOtherItemModel
+      jobRepo.addExtraSpinCount = jobRepo.listSelectedItemModel
           .where((e) => e.itemUniqueId == xSpinItemModel.itemUniqueId)
           .length;
     } else {
-      addFabCount = 0;
-      addExtraDryCount = 0;
-      addExtraWashCount = 0;
-      addExtraSpinCount = 0;
+      jobRepo.addFabCount = 0;
+      jobRepo.addExtraDryCount = 0;
+      jobRepo.addExtraWashCount = 0;
+      jobRepo.addExtraSpinCount = 0;
     }
   }
 
@@ -124,34 +109,19 @@ void showJobOnQueueComplete(BuildContext context, JobModel jM) {
                 children: [],
               ),
             ),
-            TextFormField(
-              controller: customerNameVar,
-              readOnly: true, // 👈 prevents editing
-              textAlign: TextAlign.center,
-              decoration: InputDecoration(
-                labelText: 'Customer Name',
-                labelStyle: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey[700],
-                ),
-                hintText: 'Search Name',
-                hintStyle: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey[700],
-                ),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: Colors.grey),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: Colors.blue, width: 2),
-                ),
-              ),
-              onFieldSubmitted: (_) {}, // optional / can remove
+            AutoCompleteCustomer(
+              jobRepo: jobRepo,
+            ),
+            SizedBox(
+              height: 5,
+            ),
+            MaterialButton(
+              color: cButtons,
+              onPressed: () {
+                Navigator.pop(context);
+                allCardsVar(context);
+              },
+              child: Text("New Account"),
             ),
             SizedBox(
               height: 5,
@@ -163,10 +133,6 @@ void showJobOnQueueComplete(BuildContext context, JobModel jM) {
   }
 
   Visibility visRiderPickup(Function setState) {
-    final List<int> listRiderPickup = [
-      forSorting,
-      riderPickup,
-    ];
     return Visibility(
       visible: true,
       child: Container(
@@ -183,11 +149,11 @@ void showJobOnQueueComplete(BuildContext context, JobModel jM) {
             ToggleButtons(
               isSelected: List.generate(
                 listRiderPickup.length,
-                (i) => selectedRiderPickup == listRiderPickup[i],
+                (i) => jobRepo.selectedRiderPickup == listRiderPickup[i],
               ),
               onPressed: (index) {
                 setState(() {
-                  selectedRiderPickup = listRiderPickup[index];
+                  jobRepo.selectedRiderPickup = listRiderPickup[index];
                 });
               },
               borderRadius: BorderRadius.circular(8),
@@ -227,19 +193,17 @@ void showJobOnQueueComplete(BuildContext context, JobModel jM) {
             ToggleButtons(
               isSelected: List.generate(
                 listPackage.length,
-                (i) => selectedPackage == listPackage[i],
+                (i) => jobRepo.selectedPackage == listPackage[i],
               ),
               onPressed: (index) {
                 setState(() {
-                  if (selectedPackagePrev == othersPackage &&
-                      listAddedOtherItemModel.isNotEmpty) {
+                  if (jobRepo.selectedPackagePrev == othersPackage &&
+                      jobRepo.listSelectedItemModel.isNotEmpty) {
                     showDialog<bool>(
                       context: context,
                       barrierDismissible: false,
                       builder: (context) {
                         return AlertDialog(
-                          icon: const Icon(Icons.warning,
-                              color: Colors.redAccent),
                           title: const Text('Confirm'),
                           content: const Text(
                             'Added items in All Services\nwill be delete?',
@@ -249,7 +213,7 @@ void showJobOnQueueComplete(BuildContext context, JobModel jM) {
                             TextButton(
                               onPressed: () {
                                 setState(() {
-                                  selectedPackage = othersPackage;
+                                  jobRepo.selectedPackage = othersPackage;
                                 });
 
                                 Navigator.pop(context, false);
@@ -259,10 +223,11 @@ void showJobOnQueueComplete(BuildContext context, JobModel jM) {
                             ElevatedButton(
                               onPressed: () {
                                 setState(() {
-                                  selectedPackage = listPackage[index];
-                                  selectedPackagePrev = listPackage[index];
-                                  listAddedOtherItemModel.clear();
-                                  totalPriceOthers = 0;
+                                  jobRepo.selectedPackage = listPackage[index];
+                                  jobRepo.selectedPackagePrev =
+                                      listPackage[index];
+                                  jobRepo.listSelectedItemModel.clear();
+                                  jobRepo.totalPriceOthers = 0;
                                 });
 
                                 Navigator.pop(context, true);
@@ -275,10 +240,10 @@ void showJobOnQueueComplete(BuildContext context, JobModel jM) {
                     );
                   } else {
                     setState(() {
-                      selectedPackage = listPackage[index];
-                      selectedPackagePrev = listPackage[index];
-                      if (selectedPackage == othersPackage) {
-                        selectedItemModel = listOthItems[0];
+                      jobRepo.selectedPackage = listPackage[index];
+                      jobRepo.selectedPackagePrev = listPackage[index];
+                      if (jobRepo.selectedPackage == othersPackage) {
+                        jobRepo.selectedItemModel = listOthItems[0];
                       }
                     });
                   }
@@ -309,51 +274,43 @@ void showJobOnQueueComplete(BuildContext context, JobModel jM) {
   }
 
   Visibility visAmountRegSSPerKg(Function setState) {
-    const maxPartialOptions = {
-      regularPackage: 3,
-      sayoSabonPackage: 2,
-      othersPackage: 2,
-    };
-
-    const prices = {
-      regularPackage: 155,
-      sayoSabonPackage: 125,
-      othersPackage: 0,
-    };
-
-    pricePerSet = prices[selectedPackage] ?? 155;
-    maxPartial = maxPartialOptions[selectedPackage] ?? 3;
+    jobRepo.pricePerSet = prices[jobRepo.selectedPackage] ?? 155;
+    jobRepo.maxPartial = maxPartialOptions[jobRepo.selectedPackage] ?? 3;
     // 🧠 UI rules
 
-    final bool showPointOne = quantityKg >= 8 && (quantityKg % 8) < maxPartial;
+    final bool showPointOne = jobRepo.quantityKg >= 8 &&
+        (jobRepo.quantityKg % 8) < jobRepo.maxPartial;
 
-    totalPriceRegSS = computeTotalPrice(quantityKg) + totalPriceShortCutRegSS;
+    jobRepo.totalPriceRegSS = computeTotalPrice(jobRepo.quantityKg, jobRepo) +
+        jobRepo.totalPriceShortCutRegSS;
 
     // ➕➖ handlers
     void incrementOne() {
       setState(() {
-        quantityKg += 1;
-        quantityKg = quantityKg.floorToDouble();
+        jobRepo.quantityKg += 1;
+        jobRepo.quantityKg = jobRepo.quantityKg.floorToDouble();
       });
     }
 
     void incrementPointOne() {
       setState(() {
-        quantityKg = double.parse((quantityKg + 0.1).toStringAsFixed(1));
+        jobRepo.quantityKg =
+            double.parse((jobRepo.quantityKg + 0.1).toStringAsFixed(1));
         //if (quantityKg > 11.0) quantityKg = 11.0;
       });
     }
 
     void decrementOne() {
       setState(() {
-        quantityKg -= 1;
-        if (quantityKg < 1) quantityKg = 1;
-        quantityKg = quantityKg.floorToDouble();
+        jobRepo.quantityKg -= 1;
+        if (jobRepo.quantityKg < 1) jobRepo.quantityKg = 1;
+        jobRepo.quantityKg = jobRepo.quantityKg.floorToDouble();
       });
     }
 
     return Visibility(
-      visible: (selectedPackage == othersPackage ? false : isPerKg),
+      visible:
+          (jobRepo.selectedPackage == othersPackage ? false : jobRepo.isPerKg),
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
@@ -387,7 +344,9 @@ void showJobOnQueueComplete(BuildContext context, JobModel jM) {
                         maintainState: true,
                         child: Text(
                           showHowMany155or125Set(
-                              computeTotalPrice(quantityKg), true),
+                              computeTotalPrice(jobRepo.quantityKg, jobRepo),
+                              true,
+                              jobRepo),
                           style: TextStyle(fontSize: 10),
                         ),
                       ),
@@ -402,7 +361,7 @@ void showJobOnQueueComplete(BuildContext context, JobModel jM) {
                         child: Column(
                           children: [
                             Text(
-                              formatter.format(totalPriceRegSS),
+                              formatter.format(jobRepo.totalPriceRegSS),
                               style: const TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.w600,
@@ -425,7 +384,9 @@ void showJobOnQueueComplete(BuildContext context, JobModel jM) {
                       ),
                       Text(
                         showHowMany155or125Set(
-                            computeTotalPrice(quantityKg), true),
+                            computeTotalPrice(jobRepo.quantityKg, jobRepo),
+                            true,
+                            jobRepo),
                         style: TextStyle(fontSize: 10),
                       ),
                     ],
@@ -445,8 +406,8 @@ void showJobOnQueueComplete(BuildContext context, JobModel jM) {
                     child: Column(
                       children: [
                         Text(
-                          '${quantityKg.toStringAsFixed(
-                            quantityKg % 1 == 0 ? 0 : 1,
+                          '${jobRepo.quantityKg.toStringAsFixed(
+                            jobRepo.quantityKg % 1 == 0 ? 0 : 1,
                           )} kg',
                           style: const TextStyle(
                             fontSize: 14,
@@ -468,7 +429,7 @@ void showJobOnQueueComplete(BuildContext context, JobModel jM) {
                             boldLabel2: false,
                             onTap: () {
                               setState(() {
-                                isPerKg = false;
+                                jobRepo.isPerKg = false;
                               });
                             },
                           ),
@@ -493,7 +454,7 @@ void showJobOnQueueComplete(BuildContext context, JobModel jM) {
                   ),
                   boxButton(
                     label: '−1',
-                    disabled: quantityKg <= 1,
+                    disabled: jobRepo.quantityKg <= 1,
                     onTap: decrementOne,
                   ),
 
@@ -550,26 +511,28 @@ void showJobOnQueueComplete(BuildContext context, JobModel jM) {
       othersPackage: 0,
     };
 
-    pricePerSet = prices[selectedPackage] ?? 155;
+    jobRepo.pricePerSet = prices[jobRepo.selectedPackage] ?? 155;
     // 🧠 UI rules
 
-    totalPriceRegSS = (pricePerSet * quantityLoad) + totalPriceShortCutRegSS;
+    jobRepo.totalPriceRegSS = (jobRepo.pricePerSet * jobRepo.quantityLoad) +
+        jobRepo.totalPriceShortCutRegSS;
 
     // ➕➖ handlers
     void incrementOne() {
       setState(() {
-        quantityLoad += 1;
+        jobRepo.quantityLoad += 1;
       });
     }
 
     void decrementOne() {
       setState(() {
-        quantityLoad -= 1;
+        jobRepo.quantityLoad -= 1;
       });
     }
 
     return Visibility(
-      visible: (selectedPackage == othersPackage ? false : !isPerKg),
+      visible:
+          (jobRepo.selectedPackage == othersPackage ? false : !jobRepo.isPerKg),
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
@@ -607,7 +570,7 @@ void showJobOnQueueComplete(BuildContext context, JobModel jM) {
                         child: Column(
                           children: [
                             Text(
-                              formatter.format(totalPriceRegSS),
+                              formatter.format(jobRepo.totalPriceRegSS),
                               style: const TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.w600,
@@ -656,7 +619,7 @@ void showJobOnQueueComplete(BuildContext context, JobModel jM) {
                     child: Column(
                       children: [
                         Text(
-                          '$quantityLoad load',
+                          '${jobRepo.quantityLoad} load',
                           style: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w700,
@@ -677,7 +640,7 @@ void showJobOnQueueComplete(BuildContext context, JobModel jM) {
                             boldLabel2: true,
                             onTap: () {
                               setState(() {
-                                isPerKg = true;
+                                jobRepo.isPerKg = true;
                               });
                             },
                           ),
@@ -702,7 +665,7 @@ void showJobOnQueueComplete(BuildContext context, JobModel jM) {
                   ),
                   boxButton(
                     label: '−1',
-                    disabled: quantityLoad <= 1,
+                    disabled: jobRepo.quantityLoad <= 1,
                     onTap: decrementOne,
                   ),
                   const SizedBox(width: 6),
@@ -741,12 +704,12 @@ void showJobOnQueueComplete(BuildContext context, JobModel jM) {
 
   Visibility visAmountOthersOnly(Function setState) {
     void addOtherItem(OtherItemModel item) {
-      listAddedOtherItemModel.add(item);
-      totalPriceOthers += item.itemPrice;
+      jobRepo.listSelectedItemModel.add(item);
+      jobRepo.totalPriceOthers += item.itemPrice;
     }
 
     return Visibility(
-      visible: (selectedPackage == othersPackage),
+      visible: (jobRepo.selectedPackage == othersPackage),
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
@@ -766,7 +729,7 @@ void showJobOnQueueComplete(BuildContext context, JobModel jM) {
               child: Column(
                 children: [
                   Text(
-                    formatter.format(totalPriceOthers),
+                    formatter.format(jobRepo.totalPriceOthers),
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
@@ -803,23 +766,24 @@ void showJobOnQueueComplete(BuildContext context, JobModel jM) {
                     isSelected: List.generate(
                       listOthersDropDownShortCuts.length,
                       (i) =>
-                          selectedOthersShortCut ==
+                          jobRepo.selectedOthersShortCut ==
                           listOthersDropDownShortCuts[i],
                     ),
                     onPressed: (index) {
                       setState(() {
-                        selectedOthersShortCut =
+                        jobRepo.selectedOthersShortCut =
                             listOthersDropDownShortCuts[index];
-                        if (selectedOthersShortCut == menuOth155) {
+                        if (jobRepo.selectedOthersShortCut == menuOth155) {
                           addOtherItem(reg155ItemModel);
                         }
-                        if (selectedOthersShortCut == menuOth125) {
+                        if (jobRepo.selectedOthersShortCut == menuOth125) {
                           addOtherItem(reg125ItemModel);
                         }
-                        if (selectedOthersShortCut == menuOthXD) {
+                        if (jobRepo.selectedOthersShortCut == menuOthXD) {
                           addOtherItem(xDItemModel);
                         }
-                        if (selectedOthersShortCut == menuFabWKLDValAny8ml) {
+                        if (jobRepo.selectedOthersShortCut ==
+                            menuFabWKLDValAny8ml) {
                           addOtherItem(addFabAnyItemModel);
                         }
                       });
@@ -856,18 +820,20 @@ void showJobOnQueueComplete(BuildContext context, JobModel jM) {
                   ToggleButtons(
                     isSelected: List.generate(
                       listOthersDropDown.length,
-                      (i) => selectedOthers == listOthersDropDown[i],
+                      (i) => jobRepo.selectedOthers == listOthersDropDown[i],
                     ),
                     onPressed: (index) {
                       setState(() {
-                        selectedOthers = listOthersDropDown[index];
-                        (selectedOthers == menuOthDVal
-                            ? selectedItemModel = listOthItems[0]
-                            : selectedOthers == menuDetDVal
-                                ? selectedItemModel = listDetItems[0]
-                                : selectedOthers == menuFabDVal
-                                    ? selectedItemModel = listFabItems[0]
-                                    : selectedItemModel = listBleItems[0]);
+                        jobRepo.selectedOthers = listOthersDropDown[index];
+                        (jobRepo.selectedOthers == menuOthDVal
+                            ? jobRepo.selectedItemModel = listOthItems[0]
+                            : jobRepo.selectedOthers == menuDetDVal
+                                ? jobRepo.selectedItemModel = listDetItems[0]
+                                : jobRepo.selectedOthers == menuFabDVal
+                                    ? jobRepo.selectedItemModel =
+                                        listFabItems[0]
+                                    : jobRepo.selectedItemModel =
+                                        listBleItems[0]);
                       });
                     },
                     borderRadius: BorderRadius.circular(8),
@@ -923,18 +889,18 @@ void showJobOnQueueComplete(BuildContext context, JobModel jM) {
                               'Select supply',
                               style: TextStyle(fontSize: 12),
                             ),
-                            initialValue: (selectedOthers == menuOthDVal
+                            initialValue: (jobRepo.selectedOthers == menuOthDVal
                                 ? listOthItems[0]
-                                : selectedOthers == menuDetDVal
+                                : jobRepo.selectedOthers == menuDetDVal
                                     ? listDetItems[0]
-                                    : selectedOthers == menuFabDVal
+                                    : jobRepo.selectedOthers == menuFabDVal
                                         ? listFabItems[0]
                                         : listBleItems[0]),
-                            items: (selectedOthers == menuOthDVal
+                            items: (jobRepo.selectedOthers == menuOthDVal
                                     ? listOthItems
-                                    : selectedOthers == menuDetDVal
+                                    : jobRepo.selectedOthers == menuDetDVal
                                         ? listDetItems
-                                        : selectedOthers == menuFabDVal
+                                        : jobRepo.selectedOthers == menuFabDVal
                                             ? listFabItems
                                             : listBleItems)
                                 .map(
@@ -949,7 +915,7 @@ void showJobOnQueueComplete(BuildContext context, JobModel jM) {
                                 )
                                 .toList(),
                             onChanged: (val) {
-                              setState(() => selectedItemModel = val!);
+                              setState(() => jobRepo.selectedItemModel = val!);
                             },
                           ),
                         ),
@@ -960,7 +926,7 @@ void showJobOnQueueComplete(BuildContext context, JobModel jM) {
                         child: ElevatedButton(
                           onPressed: () {
                             setState(() {
-                              addOtherItem(selectedItemModel);
+                              addOtherItem(jobRepo.selectedItemModel);
                             });
                           },
                           style: ElevatedButton.styleFrom(
@@ -978,7 +944,7 @@ void showJobOnQueueComplete(BuildContext context, JobModel jM) {
 
                   /// 🧾 Selected Items Preview
                   Column(
-                    children: listAddedOtherItemModel.map((e) {
+                    children: jobRepo.listSelectedItemModel.map((e) {
                       return Container(
                         decoration: decoPinkAccent(),
                         padding: const EdgeInsets.symmetric(horizontal: 50),
@@ -992,8 +958,8 @@ void showJobOnQueueComplete(BuildContext context, JobModel jM) {
                               ),
                               onPressed: () {
                                 setState(() {
-                                  totalPriceOthers -= e.itemPrice;
-                                  listAddedOtherItemModel.remove(e);
+                                  jobRepo.totalPriceOthers -= e.itemPrice;
+                                  jobRepo.listSelectedItemModel.remove(e);
                                 });
                               },
                             ),
@@ -1056,14 +1022,14 @@ void showJobOnQueueComplete(BuildContext context, JobModel jM) {
             ToggleButtons(
               isSelected: List.generate(
                 listPaidUnpaid.length,
-                (i) => selectedPaidUnpaid == listPaidUnpaid[i],
+                (i) => jobRepo.selectedPaidUnpaid == listPaidUnpaid[i],
               ),
               onPressed: (index) {
                 setState(() {
-                  if (selectedPaidUnpaid == listPaidUnpaid[index]) {
-                    selectedPaidUnpaid = 0;
+                  if (jobRepo.selectedPaidUnpaid == listPaidUnpaid[index]) {
+                    jobRepo.selectedPaidUnpaid = 0;
                   } else {
-                    selectedPaidUnpaid = listPaidUnpaid[index];
+                    jobRepo.selectedPaidUnpaid = listPaidUnpaid[index];
                   }
                 });
               },
@@ -1099,10 +1065,10 @@ void showJobOnQueueComplete(BuildContext context, JobModel jM) {
                     Transform.scale(
                       scale: 0.7, // shrink the checkbox itself
                       child: Checkbox(
-                        value: selectedPaidPartialCash,
+                        value: jobRepo.selectedPaidPartialCash,
                         onChanged: (bool? value) {
                           setState(() {
-                            selectedPaidPartialCash = value ?? false;
+                            jobRepo.selectedPaidPartialCash = value ?? false;
                           });
                         },
                         visualDensity: VisualDensity(
@@ -1127,10 +1093,10 @@ void showJobOnQueueComplete(BuildContext context, JobModel jM) {
                     Transform.scale(
                       scale: 0.7, // shrink the checkbox itself
                       child: Checkbox(
-                        value: selectedPaidPartialGCash,
+                        value: jobRepo.selectedPaidPartialGCash,
                         onChanged: (bool? value) {
                           setState(() {
-                            selectedPaidPartialGCash = value ?? false;
+                            jobRepo.selectedPaidPartialGCash = value ?? false;
                           });
                         },
                         visualDensity: VisualDensity(
@@ -1158,10 +1124,10 @@ void showJobOnQueueComplete(BuildContext context, JobModel jM) {
                     Transform.scale(
                       scale: 0.7, // shrink the checkbox itself
                       child: Checkbox(
-                        value: selectedPaidGCashVerified,
+                        value: jobRepo.selectedPaidGCashVerified,
                         onChanged: (bool? value) {
                           setState(() {
-                            selectedPaidGCashVerified = value ?? false;
+                            jobRepo.selectedPaidGCashVerified = value ?? false;
                           });
                         },
                         visualDensity: VisualDensity(
@@ -1179,7 +1145,7 @@ void showJobOnQueueComplete(BuildContext context, JobModel jM) {
             ),
             //Partial Cash Amount
             Visibility(
-              visible: selectedPaidPartialCash,
+              visible: jobRepo.selectedPaidPartialCash,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -1195,7 +1161,7 @@ void showJobOnQueueComplete(BuildContext context, JobModel jM) {
                     ),
                   ),
                   TextFormField(
-                    controller: partialCashAmountVar,
+                    controller: jobRepo.partialCashAmountVar,
                     keyboardType:
                         const TextInputType.numberWithOptions(decimal: true),
                     textAlign: TextAlign.center,
@@ -1237,7 +1203,7 @@ void showJobOnQueueComplete(BuildContext context, JobModel jM) {
             ),
             //Partial GCash Amount
             Visibility(
-              visible: selectedPaidPartialGCash,
+              visible: jobRepo.selectedPaidPartialGCash,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -1253,7 +1219,7 @@ void showJobOnQueueComplete(BuildContext context, JobModel jM) {
                     ),
                   ),
                   TextFormField(
-                    controller: partialGCashAmountVar,
+                    controller: jobRepo.partialGCashAmountVar,
                     keyboardType:
                         const TextInputType.numberWithOptions(decimal: true),
                     textAlign: TextAlign.center,
@@ -1298,7 +1264,7 @@ void showJobOnQueueComplete(BuildContext context, JobModel jM) {
 
   Visibility visFold(Function setState) {
     return Visibility(
-      visible: (selectedPackage == othersPackage ? false : true),
+      visible: (jobRepo.selectedPackage == othersPackage ? false : true),
       child: Container(
         alignment: Alignment.center,
         padding: const EdgeInsets.all(1.0),
@@ -1308,13 +1274,13 @@ void showJobOnQueueComplete(BuildContext context, JobModel jM) {
           children: [
             ToggleButtons(
               isSelected: [
-                selectedFold, // Fold
-                !selectedFold, // No Fold
+                jobRepo.selectedFold, // Fold
+                !jobRepo.selectedFold, // No Fold
               ],
               onPressed: (index) {
                 setState(() {
                   // single source of truth
-                  selectedFold = index == 0;
+                  jobRepo.selectedFold = index == 0;
                 });
               },
               borderRadius: BorderRadius.circular(8),
@@ -1339,7 +1305,7 @@ void showJobOnQueueComplete(BuildContext context, JobModel jM) {
 
   Visibility visMix(Function setState) {
     return Visibility(
-      visible: (selectedPackage == othersPackage ? false : true),
+      visible: (jobRepo.selectedPackage == othersPackage ? false : true),
       child: Container(
         alignment: Alignment.center,
         padding: const EdgeInsets.all(1.0),
@@ -1349,13 +1315,13 @@ void showJobOnQueueComplete(BuildContext context, JobModel jM) {
           children: [
             ToggleButtons(
               isSelected: [
-                selectedMix, // Fold
-                !selectedMix, // No Fold
+                jobRepo.selectedMix, // Fold
+                !jobRepo.selectedMix, // No Fold
               ],
               onPressed: (index) {
                 setState(() {
                   // single source of truth
-                  selectedMix = index == 0;
+                  jobRepo.selectedMix = index == 0;
                 });
               },
               borderRadius: BorderRadius.circular(8),
@@ -1382,13 +1348,13 @@ void showJobOnQueueComplete(BuildContext context, JobModel jM) {
     // ➕➖ handlers
     void incrementOne() {
       setState(() {
-        basketCount += 1;
+        jobRepo.basketCount += 1;
       });
     }
 
     void decrementOne() {
       setState(() {
-        basketCount -= 1;
+        jobRepo.basketCount -= 1;
       });
     }
 
@@ -1397,19 +1363,22 @@ void showJobOnQueueComplete(BuildContext context, JobModel jM) {
       child: Container(
         alignment: Alignment.center,
         padding: const EdgeInsets.all(6.0),
-        decoration: (basketCount > 0 ? decoGreenAccent2() : decoLightBlue()),
+        decoration:
+            (jobRepo.basketCount > 0 ? decoGreenAccent2() : decoLightBlue()),
         child: Row(
           mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             // ➖ -1
             boxButton(
-                label: '-1', disabled: basketCount <= 0, onTap: decrementOne),
+                label: '-1',
+                disabled: jobRepo.basketCount <= 0,
+                onTap: decrementOne),
             const SizedBox(width: 12),
 
             // 🧺 basket : x
             Text(
-              'Basket : $basketCount pc',
+              'Basket : ${jobRepo.basketCount} pc',
               style: const TextStyle(
                 fontWeight: FontWeight.w600,
               ),
@@ -1427,13 +1396,13 @@ void showJobOnQueueComplete(BuildContext context, JobModel jM) {
     // ➕➖ handlers
     void incrementOne() {
       setState(() {
-        ecoBagCount += 1;
+        jobRepo.ecoBagCount += 1;
       });
     }
 
     void decrementOne() {
       setState(() {
-        ecoBagCount -= 1;
+        jobRepo.ecoBagCount -= 1;
       });
     }
 
@@ -1442,19 +1411,22 @@ void showJobOnQueueComplete(BuildContext context, JobModel jM) {
       child: Container(
         alignment: Alignment.center,
         padding: const EdgeInsets.all(6.0),
-        decoration: (ecoBagCount > 0 ? decoGreenAccent2() : decoLightBlue()),
+        decoration:
+            (jobRepo.ecoBagCount > 0 ? decoGreenAccent2() : decoLightBlue()),
         child: Row(
           mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             // ➖ -1
             boxButton(
-                label: '-1', disabled: ecoBagCount <= 0, onTap: decrementOne),
+                label: '-1',
+                disabled: jobRepo.ecoBagCount <= 0,
+                onTap: decrementOne),
 
             const SizedBox(width: 12),
 
             Text(
-              'EcoBag : $ecoBagCount pc',
+              'EcoBag : ${jobRepo.ecoBagCount} pc',
               style: const TextStyle(
                 fontWeight: FontWeight.w600,
               ),
@@ -1474,13 +1446,13 @@ void showJobOnQueueComplete(BuildContext context, JobModel jM) {
     // ➕➖ handlers
     void incrementOne() {
       setState(() {
-        sakoCount += 1;
+        jobRepo.sakoCount += 1;
       });
     }
 
     void decrementOne() {
       setState(() {
-        sakoCount -= 1;
+        jobRepo.sakoCount -= 1;
       });
     }
 
@@ -1489,19 +1461,22 @@ void showJobOnQueueComplete(BuildContext context, JobModel jM) {
       child: Container(
         alignment: Alignment.center,
         padding: const EdgeInsets.all(6.0),
-        decoration: (sakoCount > 0 ? decoGreenAccent2() : decoLightBlue()),
+        decoration:
+            (jobRepo.sakoCount > 0 ? decoGreenAccent2() : decoLightBlue()),
         child: Row(
           mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             // ➖ -1
             boxButton(
-                label: '-1', disabled: sakoCount <= 0, onTap: decrementOne),
+                label: '-1',
+                disabled: jobRepo.sakoCount <= 0,
+                onTap: decrementOne),
 
             const SizedBox(width: 12),
 
             Text(
-              'Sako : $sakoCount pc',
+              'Sako : ${jobRepo.sakoCount} pc',
               style: const TextStyle(
                 fontWeight: FontWeight.w600,
               ),
@@ -1521,38 +1496,41 @@ void showJobOnQueueComplete(BuildContext context, JobModel jM) {
     // ➕➖ handlers
     void incrementOne() {
       setState(() {
-        addFabCount += 1;
-        listAddedOtherItemModel.add(addFabAnyItemModel);
-        totalPriceShortCutRegSS += addFabAnyItemModel.itemPrice;
+        jobRepo.addFabCount += 1;
+        jobRepo.listSelectedItemModel.add(addFabAnyItemModel);
+        jobRepo.totalPriceShortCutRegSS += addFabAnyItemModel.itemPrice;
       });
     }
 
     void decrementOne() {
       setState(() {
-        addFabCount -= 1;
-        listAddedOtherItemModel.remove(addFabAnyItemModel);
-        totalPriceShortCutRegSS -= addFabAnyItemModel.itemPrice;
+        jobRepo.addFabCount -= 1;
+        jobRepo.listSelectedItemModel.remove(addFabAnyItemModel);
+        jobRepo.totalPriceShortCutRegSS -= addFabAnyItemModel.itemPrice;
       });
     }
 
     return Visibility(
-      visible: (selectedPackage == othersPackage ? false : true),
+      visible: (jobRepo.selectedPackage == othersPackage ? false : true),
       child: Container(
         alignment: Alignment.center,
         padding: const EdgeInsets.all(6.0),
-        decoration: (addFabCount > 0 ? decoOtherItems() : decoLightBlue()),
+        decoration:
+            (jobRepo.addFabCount > 0 ? decoOtherItems() : decoLightBlue()),
         child: Row(
           mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             // ➖ -1
             boxButtonOtherItems(
-                label: '-1', disabled: addFabCount <= 0, onTap: decrementOne),
+                label: '-1',
+                disabled: jobRepo.addFabCount <= 0,
+                onTap: decrementOne),
 
             const SizedBox(width: 12),
 
             Text(
-              '+Fab(₱${addFabAnyItemModel.itemPrice}): $addFabCount pc',
+              '+Fab(₱${addFabAnyItemModel.itemPrice}): ${jobRepo.addFabCount} pc',
               style: const TextStyle(
                 fontWeight: FontWeight.w600,
               ),
@@ -1572,26 +1550,27 @@ void showJobOnQueueComplete(BuildContext context, JobModel jM) {
     // ➕➖ handlers
     void incrementOne() {
       setState(() {
-        addExtraDryCount += 1;
-        listAddedOtherItemModel.add(xDItemModel);
-        totalPriceShortCutRegSS += xDItemModel.itemPrice;
+        jobRepo.addExtraDryCount += 1;
+        jobRepo.listSelectedItemModel.add(xDItemModel);
+        jobRepo.totalPriceShortCutRegSS += xDItemModel.itemPrice;
       });
     }
 
     void decrementOne() {
       setState(() {
-        addExtraDryCount -= 1;
-        listAddedOtherItemModel.remove(xDItemModel);
-        totalPriceShortCutRegSS -= xDItemModel.itemPrice;
+        jobRepo.addExtraDryCount -= 1;
+        jobRepo.listSelectedItemModel.remove(xDItemModel);
+        jobRepo.totalPriceShortCutRegSS -= xDItemModel.itemPrice;
       });
     }
 
     return Visibility(
-      visible: (selectedPackage == othersPackage ? false : true),
+      visible: (jobRepo.selectedPackage == othersPackage ? false : true),
       child: Container(
         alignment: Alignment.center,
         padding: const EdgeInsets.all(6.0),
-        decoration: (addExtraDryCount > 0 ? decoOtherItems() : decoLightBlue()),
+        decoration:
+            (jobRepo.addExtraDryCount > 0 ? decoOtherItems() : decoLightBlue()),
         child: Row(
           mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -1599,13 +1578,13 @@ void showJobOnQueueComplete(BuildContext context, JobModel jM) {
             // ➖ -1
             boxButtonOtherItems(
                 label: '-1',
-                disabled: addExtraDryCount <= 0,
+                disabled: jobRepo.addExtraDryCount <= 0,
                 onTap: decrementOne),
 
             const SizedBox(width: 12),
 
             Text(
-              '+Dry(₱${xDItemModel.itemPrice}): $addExtraDryCount pc',
+              '+Dry(₱${xDItemModel.itemPrice}): ${jobRepo.addExtraDryCount} pc',
               style: const TextStyle(
                 fontWeight: FontWeight.w600,
               ),
@@ -1625,27 +1604,28 @@ void showJobOnQueueComplete(BuildContext context, JobModel jM) {
     // ➕➖ handlers
     void incrementOne() {
       setState(() {
-        addExtraWashCount += 1;
-        listAddedOtherItemModel.add(xWashItemModel);
-        totalPriceShortCutRegSS += xWashItemModel.itemPrice;
+        jobRepo.addExtraWashCount += 1;
+        jobRepo.listSelectedItemModel.add(xWashItemModel);
+        jobRepo.totalPriceShortCutRegSS += xWashItemModel.itemPrice;
       });
     }
 
     void decrementOne() {
       setState(() {
-        addExtraWashCount -= 1;
-        listAddedOtherItemModel.remove(xWashItemModel);
-        totalPriceShortCutRegSS -= xWashItemModel.itemPrice;
+        jobRepo.addExtraWashCount -= 1;
+        jobRepo.listSelectedItemModel.remove(xWashItemModel);
+        jobRepo.totalPriceShortCutRegSS -= xWashItemModel.itemPrice;
       });
     }
 
     return Visibility(
-      visible: (selectedPackage == othersPackage ? false : true),
+      visible: (jobRepo.selectedPackage == othersPackage ? false : true),
       child: Container(
         alignment: Alignment.center,
         padding: const EdgeInsets.all(6.0),
-        decoration:
-            (addExtraWashCount > 0 ? decoOtherItems() : decoLightBlue()),
+        decoration: (jobRepo.addExtraWashCount > 0
+            ? decoOtherItems()
+            : decoLightBlue()),
         child: Row(
           mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -1653,13 +1633,13 @@ void showJobOnQueueComplete(BuildContext context, JobModel jM) {
             // ➖ -1
             boxButtonOtherItems(
                 label: '-1',
-                disabled: addExtraWashCount <= 0,
+                disabled: jobRepo.addExtraWashCount <= 0,
                 onTap: decrementOne),
 
             const SizedBox(width: 12),
 
             Text(
-              '+Wash(₱${xWashItemModel.itemPrice}): $addExtraWashCount pc',
+              '+Wash(₱${xWashItemModel.itemPrice}): ${jobRepo.addExtraWashCount} pc',
               style: const TextStyle(
                 fontWeight: FontWeight.w600,
               ),
@@ -1679,27 +1659,28 @@ void showJobOnQueueComplete(BuildContext context, JobModel jM) {
     // ➕➖ handlers
     void incrementOne() {
       setState(() {
-        addExtraSpinCount += 1;
-        listAddedOtherItemModel.add(xSpinItemModel);
-        totalPriceShortCutRegSS += xSpinItemModel.itemPrice;
+        jobRepo.addExtraSpinCount += 1;
+        jobRepo.listSelectedItemModel.add(xSpinItemModel);
+        jobRepo.totalPriceShortCutRegSS += xSpinItemModel.itemPrice;
       });
     }
 
     void decrementOne() {
       setState(() {
-        addExtraSpinCount -= 1;
-        listAddedOtherItemModel.remove(xSpinItemModel);
-        totalPriceShortCutRegSS -= xSpinItemModel.itemPrice;
+        jobRepo.addExtraSpinCount -= 1;
+        jobRepo.listSelectedItemModel.remove(xSpinItemModel);
+        jobRepo.totalPriceShortCutRegSS -= xSpinItemModel.itemPrice;
       });
     }
 
     return Visibility(
-      visible: (selectedPackage == othersPackage ? false : true),
+      visible: (jobRepo.selectedPackage == othersPackage ? false : true),
       child: Container(
         alignment: Alignment.center,
         padding: const EdgeInsets.all(6.0),
-        decoration:
-            (addExtraSpinCount > 0 ? decoOtherItems() : decoLightBlue()),
+        decoration: (jobRepo.addExtraSpinCount > 0
+            ? decoOtherItems()
+            : decoLightBlue()),
         child: Row(
           mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -1707,13 +1688,13 @@ void showJobOnQueueComplete(BuildContext context, JobModel jM) {
             // ➖ -1
             boxButtonOtherItems(
                 label: '-1',
-                disabled: addExtraSpinCount <= 0,
+                disabled: jobRepo.addExtraSpinCount <= 0,
                 onTap: decrementOne),
 
             const SizedBox(width: 12),
 
             Text(
-              '+Spin(₱${xSpinItemModel.itemPrice}): $addExtraSpinCount pc',
+              '+Spin(₱${xSpinItemModel.itemPrice}): ${jobRepo.addExtraSpinCount} pc',
               style: const TextStyle(
                 fontWeight: FontWeight.w600,
               ),
@@ -1729,15 +1710,30 @@ void showJobOnQueueComplete(BuildContext context, JobModel jM) {
     );
   }
 
+  Container conRemarks(Function setState) {
+    return Container(
+      padding: EdgeInsets.all(1.0),
+      decoration: decoAmber(),
+      child: TextFormField(
+        textCapitalization: TextCapitalization.words,
+        textAlign: TextAlign.start,
+        controller: jobRepo.remarksVar,
+        decoration: InputDecoration(labelText: 'Remarks', hintText: 'Notes'),
+        validator: (val) {
+          jobRepo.remarksVar.text = val!;
+        },
+      ),
+    );
+  }
+
   Future<void> saveButtonSetRepository() async {
-    //reuse the repository.
-    JobModelRepository.instance.jobsModel = jM;
+//dates
+    /// 🟣 Dates
+    jobRepo.dateQ = Timestamp.now();
 
-    setSelectedToRepository();
+    setSelectedToRepository(jobRepo);
 
-    //should be update
-    await callDatabaseJobQueueUpdate(
-        context, JobModelRepository.instance.getJobsModel()!);
+    await callDatabaseJobQueueUpdate(context, jobRepo.getJobsModel()!);
     //await setRepositoryLaundryPayment(context, 'Show Jobs OnQueue');
   }
 
@@ -1760,7 +1756,7 @@ void showJobOnQueueComplete(BuildContext context, JobModel jM) {
             vertical: 5,
           ),
           title: Text(
-            "Jobs On Queue",
+            "Enter Laundry",
             textAlign: TextAlign.center,
           ),
           content: SingleChildScrollView(
@@ -1777,7 +1773,7 @@ void showJobOnQueueComplete(BuildContext context, JobModel jM) {
                     visCustomerName(setState),
                     visRiderPickup(setState),
                     visSelectPackage(setState),
-                    (isPerKg
+                    (jobRepo.isPerKg
                         ? visAmountRegSSPerKg(setState)
                         : visAmountRegSSPerLoad(setState)),
                     visAmountOthersOnly(setState),
@@ -1799,7 +1795,7 @@ void showJobOnQueueComplete(BuildContext context, JobModel jM) {
                     visAddFab(setState),
                     visAddWash(setState),
                     visAddSpin(setState),
-                    conRemarksSuppliesVar(setState),
+                    conRemarks(setState),
                   ],
                 ),
               ),
@@ -1810,58 +1806,6 @@ void showJobOnQueueComplete(BuildContext context, JobModel jM) {
           actions: [
             TextButton(
               onPressed: () {
-                showDialog<bool>(
-                  context: context,
-                  barrierDismissible: false,
-                  builder: (context) {
-                    return AlertDialog(
-                      icon: const Icon(Icons.warning, color: Colors.redAccent),
-                      title: const Text('Confirm'),
-                      content: const Text(
-                        'Are you sure you want to delete this job?',
-                        textAlign: TextAlign.center,
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () {
-                            setState(() {});
-                            Navigator.pop(context, false);
-                          },
-                          child: const Text('No'),
-                        ),
-                        ElevatedButton(
-                          onPressed: () {
-                            setState(() {});
-                            Navigator.pop(context, true);
-                          },
-                          child: const Text('Yes'),
-                        ),
-                      ],
-                    );
-                  },
-                );
-              },
-              style: TextButton.styleFrom(
-                backgroundColor: Colors.lightBlueAccent.shade100,
-                textStyle: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              child: const Text(
-                'Delete',
-                style: TextStyle(color: Colors.black),
-              ),
-            ),
-            TextButton(
-              style: TextButton.styleFrom(
-                backgroundColor: Colors.lightBlueAccent.shade100,
-                textStyle: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              onPressed: () {
                 Navigator.pop(context); // close popup
               },
               child: const Text(
@@ -1869,18 +1813,12 @@ void showJobOnQueueComplete(BuildContext context, JobModel jM) {
                 style: TextStyle(color: Colors.black),
               ),
             ),
-            SizedBox(
-              width: 8,
-            ),
             ElevatedButton(
               onPressed: () async {
                 await saveButtonSetRepository();
                 Navigator.pop(context);
               },
-              child: const Text('Update'),
-            ),
-            SizedBox(
-              width: 1,
+              child: const Text('Save'),
             ),
           ],
         );

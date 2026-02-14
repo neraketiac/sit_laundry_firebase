@@ -1410,7 +1410,7 @@ Container conEnterCustomer(BuildContext context, Function setState) {
           'Enter Customer Name',
           style: TextStyle(fontSize: 10),
         ),
-        AutoCompleteCustomer(),
+        //AutoCompleteCustomer(),
         SizedBox(
           height: 5,
         ),

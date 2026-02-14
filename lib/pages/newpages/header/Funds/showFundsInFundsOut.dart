@@ -3,13 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/autocompletecustomer.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedConstantsFinal.dart';
-import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedMethodAndVariable.dart';
+import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedMethods.dart';
+import 'package:laundry_firebase/variables/newvariables/jobmodel_repository.dart';
 import 'package:laundry_firebase/variables/newvariables/supplies_hist_repository.dart';
 import 'package:laundry_firebase/variables/newvariables/variables.dart';
 import 'package:laundry_firebase/variables/newvariables/variables_oth.dart';
 import 'package:laundry_firebase/variables/newvariables/variables_supplies.dart';
 
-void showFundsInFundsOut(BuildContext context) {
+void showFundsInFundsOut(BuildContext context, JobModelRepository jobRepo) {
   // if (selectedFundCode == menuOthSalaryPayment) {
   //   selectedFundCode = menuOthLaundryPayment;
   // }
@@ -153,7 +154,7 @@ void showFundsInFundsOut(BuildContext context) {
                 children: [],
               ),
             ),
-            AutoCompleteCustomer(),
+            AutoCompleteCustomer(jobRepo: jobRepo),
             SizedBox(
               height: 5,
             ),
