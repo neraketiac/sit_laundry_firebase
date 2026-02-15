@@ -58,6 +58,9 @@ final List<int> listRiderPickup = [
 
 TextEditingController customerAmountVar = TextEditingController();
 
+const String titlePaymentStatus = 'Payment Status';
+String actualPaymentStatus = 'Unpaid';
+
 //for repo
 
 // TextEditingController customerNameVar = TextEditingController();

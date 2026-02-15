@@ -42,7 +42,7 @@ void showFundsInFundsOut(BuildContext context, JobModelRepository jobRepo) {
           mainAxisSize: MainAxisSize.min,
           children: [
             const SizedBox(height: 1),
-            Text('For Staff'),
+            Text('For Staff only'),
             // 🔹 THIRD ROW
             ToggleButtons(
               isSelected: List.generate(
@@ -255,8 +255,15 @@ void showFundsInFundsOut(BuildContext context, JobModelRepository jobRepo) {
                         content: Text('Please select transaction type.')),
                   );
                 } else {
-                  await saveButtonSetRepository();
-                  Navigator.pop(context);
+                  if (fundTypeCodes3rdLayer.contains(selectedFundCode)) {
+                    await saveButtonSetRepository();
+                    Navigator.pop(context);
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                          content: Text('Please select transaction type.')),
+                    );
+                  }
                 }
               },
               child: const Text('Save'),

@@ -237,6 +237,15 @@ void resetAfterInsert() {
   selectedFundCode = null;
 }
 
+//reset payment
+void resetPaymentStatus(JobModelRepository jobRepo) {
+  jobRepo.unpaid = true;
+  jobRepo.paidCash = false;
+  jobRepo.paidGCash = false;
+  jobRepo.partialCashAmountVar.text = '';
+  jobRepo.partialGCashAmountVar.text = '';
+}
+
 //set selected to repository
 void setSelectedToRepository(JobModelRepository jobRepo) {
   int computePromoCounter = 0;

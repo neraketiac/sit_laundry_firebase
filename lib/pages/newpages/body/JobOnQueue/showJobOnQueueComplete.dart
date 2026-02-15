@@ -13,7 +13,7 @@ import 'package:laundry_firebase/variables/newvariables/variables_fab.dart';
 import 'package:laundry_firebase/variables/newvariables/variables_oth.dart';
 import 'package:laundry_firebase/variables/newvariables/variables_supplies.dart';
 
-void showJobOnQueue(BuildContext context, JobModelRepository jobRepo) {
+void showJobOnQueueComplete(BuildContext context, JobModelRepository jobRepo) {
   void syncThisShowToSelected() {
     //admin
     jobRepo.currentEmpId = empIdGlobal;

@@ -1,7 +1,6 @@
 //floating button new record  ###########################################################
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:laundry_firebase/pages/newpages/sharedmethods/autocompletecustomer.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedConstantsFinal.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedMethods.dart';
 import 'package:laundry_firebase/variables/newvariables/jobmodel_repository.dart';
@@ -10,31 +9,28 @@ import 'package:laundry_firebase/variables/newvariables/variables.dart';
 import 'package:laundry_firebase/variables/newvariables/variables_oth.dart';
 import 'package:laundry_firebase/variables/newvariables/variables_supplies.dart';
 
-void showGCashTransactions(BuildContext context, JobModelRepository jobRepo) {
-  // if (selectedFundCode == menuOthSalaryPayment) {
-  //   selectedFundCode = menuOthLaundryPayment;
-  // }
-
+void showGCashOnly(BuildContext context, JobModelRepository jobRepo) {
   final List<int> fundTypeCodes1stLayer = [
-    menuOthLaundryPayment,
-    menuOthUniqIdLoad,
-  ];
-
-  final List<int> fundTypeCodes2ndLayer = [
     menuOthUniqIdCashIn,
+    menuOthUniqIdLoad,
     menuOthUniqIdCashOut,
   ];
+
+  if (fundTypeCodes1stLayer.contains(selectedFundCode)) {
+  } else {
+    selectedFundCode = menuOthUniqIdCashIn;
+  }
 
   String fundTypeCaptionMulti() {
     switch (selectedFundCode) {
       case menuOthLaundryPayment:
         return 'Bayad sa pina-laundry.\nadd funds';
       case menuOthUniqIdCashIn:
-        return 'Bayad sa pa-cash-in.\nadd funds';
+        return 'Bayad sa pa-cash-in.\nadd funds\nuse funds-in for employee';
       case menuOthUniqIdLoad:
-        return 'Bayad sa pina-load.\nadd funds';
+        return 'Bayad sa pina-load.\nadd funds\n';
       case menuOthUniqIdCashOut:
-        return 'Pa-cash-out si customer.\nbawas funds';
+        return 'Pa-cash-out si customer.\nbawas funds\nuse funds-out for employee';
       default:
         return '';
     }
@@ -50,7 +46,7 @@ void showGCashTransactions(BuildContext context, JobModelRepository jobRepo) {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('For Customer'),
+            Text('For Customer Only'),
             // 🔹 FIRST ROW
             ToggleButtons(
               isSelected: List.generate(
@@ -68,8 +64,8 @@ void showGCashTransactions(BuildContext context, JobModelRepository jobRepo) {
               fillColor: Colors.blue,
               color: Colors.black,
               constraints: const BoxConstraints(
-                minWidth: 110,
-                minHeight: 40,
+                minWidth: 70,
+                minHeight: 30,
               ),
               children: List.generate(fundTypeCodes1stLayer.length, (index) {
                 return GestureDetector(
@@ -86,40 +82,13 @@ void showGCashTransactions(BuildContext context, JobModelRepository jobRepo) {
                     // You can add any double-tap specific logic here
                   },
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 0),
                     child: Text(
-                      ['LPayment', 'Load'][index],
+                      ['Cash-in', 'Load', 'Cash-Out'][index],
                     ),
                   ),
                 );
               }),
-            ),
-
-            const Divider(height: 1),
-            // 🔹 SECOND ROW
-            ToggleButtons(
-              isSelected: List.generate(
-                fundTypeCodes2ndLayer.length,
-                (i) => selectedFundCode == fundTypeCodes2ndLayer[i],
-              ),
-              onPressed: (index) {
-                setState(() {
-                  selectedFundCode = fundTypeCodes2ndLayer[index];
-                });
-              },
-              borderRadius: BorderRadius.circular(8),
-              selectedColor: Colors.white,
-              borderColor: Colors.blue,
-              fillColor: Colors.blue,
-              color: Colors.black,
-              constraints: const BoxConstraints(
-                minWidth: 110,
-                minHeight: 40,
-              ),
-              children: const [
-                Text('Cash In'),
-                Text('Cash Out'),
-              ],
             ),
             const SizedBox(height: 1),
             // 🔹 CAPTION
@@ -191,55 +160,6 @@ void showGCashTransactions(BuildContext context, JobModelRepository jobRepo) {
     );
   }
 
-  Visibility customerName(Function setState) {
-    return Visibility(
-      visible: true,
-      child: Container(
-        padding: const EdgeInsets.all(1.0),
-        decoration: decoAmber(),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            // 🔹 Label + Checkbox on same row
-            Padding(
-              padding: const EdgeInsets.only(left: 4, bottom: 4),
-              child: Row(
-                children: [],
-              ),
-            ),
-
-            // 🔹 Input Field (disabled if employee is checked)
-            // TextFormField(
-            //   controller: customerNameVar,
-            //   focusNode: nameFocusNode,
-            //   textCapitalization: TextCapitalization.words,
-            //   decoration: const InputDecoration(
-            //     hintText: 'Enter Name',
-            //     prefixIcon: SizedBox(width: _fieldIndentWidth),
-            //     border: OutlineInputBorder(),
-            //   ),
-            // ),
-            AutoCompleteCustomer(jobRepo: jobRepo),
-            SizedBox(
-              height: 5,
-            ),
-            MaterialButton(
-              color: cButtons,
-              onPressed: () {
-                Navigator.pop(context);
-                allCardsVar(context);
-              },
-              child: Text("New Account"),
-            ),
-            SizedBox(
-              height: 5,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Future<void> saveButtonSetRepository() async {
     SuppliesHistRepository.instance
         .setItemName(getItemNameOnly(menuOthCashInOutFunds, selectedFundCode!));
@@ -269,7 +189,7 @@ void showGCashTransactions(BuildContext context, JobModelRepository jobRepo) {
             vertical: 5,
           ),
           title: Text(
-            "Cash Funds",
+            "GCash",
             textAlign: TextAlign.center,
           ),
           content: SingleChildScrollView(
@@ -283,7 +203,6 @@ void showGCashTransactions(BuildContext context, JobModelRepository jobRepo) {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    customerName(setState),
                     customerAmount(setState),
                     fundTypeToggle(setState),
                     conRemarksSuppliesVar(setState),
@@ -331,8 +250,15 @@ void showGCashTransactions(BuildContext context, JobModelRepository jobRepo) {
                         content: Text('Please select transaction type.')),
                   );
                 } else {
-                  await saveButtonSetRepository();
-                  Navigator.pop(context);
+                  if (fundTypeCodes1stLayer.contains(selectedFundCode)) {
+                    await saveButtonSetRepository();
+                    Navigator.pop(context);
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                          content: Text('Please select transaction type.')),
+                    );
+                  }
                 }
               },
               child: const Text('Save'),

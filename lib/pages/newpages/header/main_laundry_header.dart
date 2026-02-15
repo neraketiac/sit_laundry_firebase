@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:laundry_firebase/pages/newpages/body/main_laundry_body.dart';
 import 'package:laundry_firebase/pages/newpages/header/Funds/showCalendarDialog.dart';
 import 'package:laundry_firebase/pages/newpages/header/Funds/showFundsInFundsOut.dart';
-import 'package:laundry_firebase/pages/newpages/header/Funds/showGCashTransactions.dart';
+import 'package:laundry_firebase/pages/newpages/header/Funds/showGCashOnly.dart';
+import 'package:laundry_firebase/pages/newpages/header/Funds/showLaundryPayment.dart';
 import 'package:laundry_firebase/pages/newpages/header/Funds/showFundCheck.dart';
 import 'package:laundry_firebase/pages/newpages/header/JobOnQueue/showJobOnQueue.dart';
 import 'package:laundry_firebase/pages/newpages/header/Employee/showSalaryMaintenance.dart';
@@ -117,14 +118,22 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
                 icon: Icons.g_mobiledata,
                 bottom: _isOpen ? base + step + step : base,
                 right: _isOpen ? base + step : base,
-                onTap: () => showGCashTransactions(context, jobRepoNonJob),
+                onTap: () => showGCashOnly(context, jobRepoNonJob),
+                backgroundColor: cShowGCash),
+
+            _fab(
+                hero: 'Laundry Payment',
+                icon: Icons.payments_outlined,
+                bottom: _isOpen ? base + step + step : base,
+                right: _isOpen ? base : base,
+                onTap: () => showLaundryPayment(context, jobRepoNonJob),
                 backgroundColor: cShowGCash),
 
             //2nd floor
 
             _fab(
                 hero: 'Funds In Funds Out',
-                icon: Icons.attach_money_outlined,
+                icon: Icons.accessibility_new_rounded,
                 bottom: _isOpen ? base + step : base,
                 right: _isOpen ? base + step * 2 : base,
                 onTap: () => showFundsInFundsOut(context, jobRepoNonJob),

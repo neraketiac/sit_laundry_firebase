@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:laundry_firebase/models/newmodels/jobmodel.dart';
+import 'package:laundry_firebase/pages/newpages/body/JobOnQueue/showJobOnQueueComplete.dart';
 import 'package:laundry_firebase/pages/newpages/body/JobOnQueue/showPaidUnpaid.dart';
 import 'package:laundry_firebase/services/newservices/database_jobs.dart';
 import 'package:laundry_firebase/variables/newvariables/jobmodel_repository.dart';
@@ -153,7 +154,7 @@ Widget readDataJobsOnQueue() {
                         setState(() {
                           selectedIndex = index;
                         });
-                        //showJobOnQueueComplete(context, job);
+                        showJobOnQueueComplete(context, jobRepo);
                       },
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 250),
