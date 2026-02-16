@@ -18,8 +18,9 @@ void showJobOnQueue(BuildContext context, JobModelRepository jobRepo) {
     jobRepo.totalPriceOthers = 0;
 
     //payment status
-    jobRepo.selectedPaidUnpaid = unpaid;
-
+    jobRepo.unpaid = true;
+    jobRepo.paidCash = false;
+    jobRepo.paidGCash = false;
     jobRepo.selectedPaidPartialCash = false;
     jobRepo.selectedPaidPartialGCash = false;
     jobRepo.partialCashAmountVar.text = '';

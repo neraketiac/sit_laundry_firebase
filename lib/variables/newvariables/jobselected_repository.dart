@@ -25,7 +25,7 @@ class JobselectedRepository {
   OtherItemModel selectedItemModel = reg125ItemModel;
   List<OtherItemModel> listSelectedItemModel = [];
   int selectedOthersShortCut = menuOth155;
-  int selectedPaidUnpaid = unpaid;
+  //int selectedPaidUnpaid = unpaid;
   bool selectedPaidPartialCash = false;
   bool selectedPaidPartialGCash = false;
   bool selectedPaidGCashVerified = false;

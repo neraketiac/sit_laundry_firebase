@@ -1,19 +1,43 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedMethods.dart';
+import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedVisibility.dart';
 import 'package:laundry_firebase/variables/newvariables/jobmodel_repository.dart';
 import 'package:laundry_firebase/variables/newvariables/variables.dart';
-import 'package:laundry_firebase/variables/newvariables/variables_supplies.dart';
-
-//reuse showJobsOnQueue removed dont needed.
+import 'package:laundry_firebase/variables/newvariables/variables_fab.dart';
+import 'package:laundry_firebase/variables/newvariables/variables_oth.dart';
 
 void showPaidUnpaid(BuildContext context, JobModelRepository jobRepo) {
-  void syncThisShowToSelected() {
+  void syncRepoToSelected() {
+    //admin
+    jobRepo.currentEmpId = empIdGlobal;
+
     jobRepo.customerNameVar.text = jobRepo.customerName;
+
+    //initial status
+    //riderpickup can be true and forsorting is true, but always display the forSorting. meaning pickup is done.
+    //if pickup is false, it went to forsorting but never in pickup.
+    if (jobRepo.riderPickup) jobRepo.selectedRiderPickup = riderPickup;
+    if (jobRepo.forSorting) jobRepo.selectedRiderPickup = forSorting;
+
+    //package status
+    if (jobRepo.regular) jobRepo.selectedPackage = regularPackage;
+    if (jobRepo.sayosabon) jobRepo.selectedPackage = sayoSabonPackage;
+    if (jobRepo.addOn) {
+      jobRepo.selectedPackage = othersPackage;
+      jobRepo.selectedPackagePrev = othersPackage;
+    }
+
+    //prices
+    if (jobRepo.addOn) {
+      jobRepo.totalPriceOthers = jobRepo.finalPrice;
+      jobRepo.totalPriceRegSS = 0;
+    } else {
+      jobRepo.totalPriceRegSS = jobRepo.finalPrice;
+      jobRepo.totalPriceOthers = 0;
+    }
+
     //payment status
-    if (jobRepo.unpaid) jobRepo.selectedPaidUnpaid = unpaid;
-    if (jobRepo.paidCash) jobRepo.selectedPaidUnpaid = paidCash;
-    if (jobRepo.paidGCash) jobRepo.selectedPaidUnpaid = paidGCash;
     jobRepo.selectedPaidPartialCash = jobRepo.partialPaidCash;
     jobRepo.selectedPaidPartialGCash = jobRepo.partialPaidGCash;
     jobRepo.partialCashAmountVar.text =
@@ -21,350 +45,65 @@ void showPaidUnpaid(BuildContext context, JobModelRepository jobRepo) {
     jobRepo.partialGCashAmountVar.text =
         jobRepo.partialPaidGCashAmount.toString();
     jobRepo.selectedPaidGCashVerified = jobRepo.paidGCashVerified;
-  }
 
-  Visibility visCustomerName(Function setState) {
-    return Visibility(
-      visible: true,
-      child: Container(
-        padding: const EdgeInsets.all(1.0),
-        decoration: decoAmber(),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            // 🔹 Label + Checkbox on same row
-            Padding(
-              padding: const EdgeInsets.only(left: 4, bottom: 4),
-              child: Row(
-                children: [],
-              ),
-            ),
-            TextFormField(
-              controller: jobRepo.customerNameVar,
-              readOnly: true, // 👈 prevents editing
-              textAlign: TextAlign.center,
-              decoration: InputDecoration(
-                labelText: 'Customer Name',
-                labelStyle: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey[700],
-                ),
-                hintText: 'Search Name',
-                hintStyle: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey[700],
-                ),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: Colors.grey),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: Colors.blue, width: 2),
-                ),
-              ),
-              onFieldSubmitted: (_) {}, // optional / can remove
-            ),
-            SizedBox(
-              height: 5,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+    jobRepo.remarksVar.text = jobRepo.remarks;
 
-  Visibility visPaidUnPaid(Function setState) {
-    final List<int> listPaidUnpaid = [
-      unpaid,
-      paidCash,
-      paidGCash,
-    ];
+    //weight status
+    if (jobRepo.perKilo) jobRepo.isPerKg = true;
+    if (jobRepo.perLoad) jobRepo.isPerKg = false;
 
-    return Visibility(
-      visible: true,
-      child: Container(
-        alignment: Alignment.center,
-        padding: const EdgeInsets.all(1.0),
-        decoration: decoLightBlue(),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          spacing: 0,
-          children: [
-            Text(
-              'Payment Status',
-              style: TextStyle(fontSize: 11),
-            ),
-            ToggleButtons(
-              isSelected: List.generate(
-                listPaidUnpaid.length,
-                (i) => jobRepo.selectedPaidUnpaid == listPaidUnpaid[i],
-              ),
-              onPressed: (index) {
-                setState(() {
-                  if (jobRepo.selectedPaidUnpaid == listPaidUnpaid[index]) {
-                    jobRepo.selectedPaidUnpaid = 0;
-                  } else {
-                    jobRepo.selectedPaidUnpaid = listPaidUnpaid[index];
-                  }
-                });
-              },
-              borderRadius: BorderRadius.circular(8),
-              selectedColor: Colors.black,
-              fillColor: Colors.greenAccent,
-              color: Colors.black,
-              borderColor: cSalaryOut,
-              constraints: const BoxConstraints(
-                minWidth: 60,
-                minHeight: 25,
-              ),
-              children: const [
-                Text('Unpaid', style: TextStyle(fontSize: 11)),
-                Text('Paid Cash', style: TextStyle(fontSize: 11)),
-                Text('Paid GCash', style: TextStyle(fontSize: 10)),
-              ],
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      'Partial\ncash?',
-                      style: const TextStyle(
-                        fontSize: 7,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(width: 2), // tiny gap
-                    Transform.scale(
-                      scale: 0.7, // shrink the checkbox itself
-                      child: Checkbox(
-                        value: jobRepo.selectedPaidPartialCash,
-                        onChanged: (bool? value) {
-                          setState(() {
-                            jobRepo.selectedPaidPartialCash = value ?? false;
-                          });
-                        },
-                        visualDensity: VisualDensity(
-                            horizontal: -4, vertical: -4), // tighter
-                        materialTapTargetSize: MaterialTapTargetSize
-                            .shrinkWrap, // no extra padding
-                      ),
-                    ),
-                  ],
-                ),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      'Partial\nGCash?',
-                      style: const TextStyle(
-                        fontSize: 7,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(width: 2), // tiny gap
-                    Transform.scale(
-                      scale: 0.7, // shrink the checkbox itself
-                      child: Checkbox(
-                        value: jobRepo.selectedPaidPartialGCash,
-                        onChanged: (bool? value) {
-                          setState(() {
-                            jobRepo.selectedPaidPartialGCash = value ?? false;
-                          });
-                        },
-                        visualDensity: VisualDensity(
-                            horizontal: -4, vertical: -4), // tighter
-                        materialTapTargetSize: MaterialTapTargetSize
-                            .shrinkWrap, // no extra padding
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(
-                  width: 2,
-                ),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      'GCash\nverified?',
-                      style: const TextStyle(
-                        fontSize: 7,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(width: 2), // tiny gap
-                    Transform.scale(
-                      scale: 0.7, // shrink the checkbox itself
-                      child: Checkbox(
-                        value: jobRepo.selectedPaidGCashVerified,
-                        onChanged: (bool? value) {
-                          setState(() {
-                            jobRepo.selectedPaidGCashVerified = value ?? false;
-                          });
-                        },
-                        visualDensity: VisualDensity(
-                            horizontal: -4, vertical: -4), // tighter
-                        materialTapTargetSize: MaterialTapTargetSize
-                            .shrinkWrap, // no extra padding
-                      ),
-                    ),
-                  ],
-                )
-              ],
-            ),
-            SizedBox(
-              height: 4,
-            ),
-            //Partial Cash Amount
-            Visibility(
-              visible: jobRepo.selectedPaidPartialCash,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Label (not indented)
-                  const Padding(
-                    padding: EdgeInsets.only(left: 4, bottom: 4),
-                    child: Text(
-                      'Partial Cash Amount',
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                  TextFormField(
-                    controller: jobRepo.partialCashAmountVar,
-                    keyboardType:
-                        const TextInputType.numberWithOptions(decimal: true),
-                    textAlign: TextAlign.center,
-                    inputFormatters: [
-                      FilteringTextInputFormatter.allow(
-                          RegExp(r'\d+(\.\d{0,2})?')),
-                    ],
-                    style: const TextStyle(fontSize: 12), // shrink text size
-                    decoration: InputDecoration(
-                      isDense: true, // 🔹 makes the field more compact
-                      contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 6),
-                      hintText: '0.00',
-                      hintStyle: const TextStyle(fontSize: 12),
-                      border: const OutlineInputBorder(),
-                      filled: true, // 🔹 enable background fill
-                      fillColor: Colors.white, // 🔹 set background to white
-                      prefixIconConstraints: const BoxConstraints(
-                        minWidth: 24, // 🔹 narrower prefix space
-                        minHeight: 24,
-                      ),
-                      prefixIcon: const Padding(
-                        padding: EdgeInsets.only(left: 4, right: 4),
-                        child: Text(
-                          '₱',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(
-              height: 2,
-            ),
-            //Partial GCash Amount
-            Visibility(
-              visible: jobRepo.selectedPaidPartialGCash,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Label (not indented)
-                  const Padding(
-                    padding: EdgeInsets.only(left: 4, bottom: 4),
-                    child: Text(
-                      'Partial GCash Amount',
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                  TextFormField(
-                    controller: jobRepo.partialGCashAmountVar,
-                    keyboardType:
-                        const TextInputType.numberWithOptions(decimal: true),
-                    textAlign: TextAlign.center,
-                    inputFormatters: [
-                      FilteringTextInputFormatter.allow(
-                          RegExp(r'\d+(\.\d{0,2})?')),
-                    ],
-                    style: const TextStyle(fontSize: 12), // shrink text size
-                    decoration: InputDecoration(
-                      isDense: true, // 🔹 makes the field more compact
-                      contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 6),
-                      hintText: '0.00',
-                      hintStyle: const TextStyle(fontSize: 12),
-                      border: const OutlineInputBorder(),
-                      filled: true, // 🔹 enable background fill
-                      fillColor: Colors.white, // 🔹 set background to white
-                      prefixIconConstraints: const BoxConstraints(
-                        minWidth: 24, // 🔹 narrower prefix space
-                        minHeight: 24,
-                      ),
-                      prefixIcon: const Padding(
-                        padding: EdgeInsets.only(left: 4, right: 4),
-                        child: Text(
-                          '₱',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+    jobRepo.quantityKg = jobRepo.finalKilo;
+    jobRepo.quantityLoad = jobRepo.finalLoad;
+    jobRepo.remarksVar.text = jobRepo.remarks;
+
+    //list other items
+    if (jobRepo.selectedPackage == othersPackage) {
+      jobRepo.listSelectedItemModel = List.from(jobRepo.items);
+    }
+
+    //other options
+    jobRepo.selectedFold = jobRepo.fold;
+    jobRepo.selectedMix = jobRepo.mix;
+    jobRepo.basketCount = jobRepo.basket;
+    jobRepo.ecoBagCount = jobRepo.ebag;
+    jobRepo.sakoCount = jobRepo.sako;
+
+    if (jobRepo.selectedPackage != othersPackage) {
+      jobRepo.addFabCount = jobRepo.items
+          .where((e) => e.itemUniqueId == addFabAnyItemModel.itemUniqueId)
+          .length;
+      jobRepo.addExtraDryCount = jobRepo.items
+          .where((e) => e.itemUniqueId == xDItemModel.itemUniqueId)
+          .length;
+      jobRepo.addExtraWashCount = jobRepo.items
+          .where((e) => e.itemUniqueId == xWashItemModel.itemUniqueId)
+          .length;
+      jobRepo.addExtraSpinCount = jobRepo.items
+          .where((e) => e.itemUniqueId == xSpinItemModel.itemUniqueId)
+          .length;
+    } else {
+      jobRepo.addFabCount = 0;
+      jobRepo.addExtraDryCount = 0;
+      jobRepo.addExtraWashCount = 0;
+      jobRepo.addExtraSpinCount = 0;
+    }
   }
 
   Future<void> saveButtonSetRepository() async {
-    //reuse the repository.
-    //payment status
-    jobRepo.unpaid = unpaid == jobRepo.selectedPaidUnpaid;
-    jobRepo.paidCash = paidCash == jobRepo.selectedPaidUnpaid;
-    jobRepo.paidGCash = paidGCash == jobRepo.selectedPaidUnpaid;
-    jobRepo.partialPaidCash = jobRepo.selectedPaidPartialCash;
-    jobRepo.partialPaidGCash = jobRepo.selectedPaidPartialGCash;
-    jobRepo.partialPaidCashAmount =
-        int.tryParse(jobRepo.partialCashAmountVar.text) ?? 0;
-    jobRepo.partialPaidGCashAmount =
-        int.tryParse(jobRepo.partialGCashAmountVar.text) ?? 0;
+//dates
+    /// 🟣 Dates
+    jobRepo.dateQ = Timestamp.now();
 
-    if (unpaid != jobRepo.selectedPaidUnpaid) {
-      jobRepo.paymentReceivedBy = empIdGlobal;
-    }
-    jobRepo.paidGCashVerified = jobRepo.selectedPaidGCashVerified;
+    //admin
+    jobRepo.createdBy = empIdGlobal;
+
+    setSelectedToRepository(jobRepo);
 
     await callDatabaseJobQueueUpdate(context, jobRepo.getJobsModel()!);
     //await setRepositoryLaundryPayment(context, 'Show Jobs OnQueue');
   }
 
-  syncThisShowToSelected();
-
+  syncRepoToSelected();
   showDialog(
     context: context,
     builder: (BuildContext context) {
@@ -383,7 +122,7 @@ void showPaidUnpaid(BuildContext context, JobModelRepository jobRepo) {
             vertical: 5,
           ),
           title: Text(
-            "Change Payment\nStatus",
+            "Enter Laundry",
             textAlign: TextAlign.center,
           ),
           content: SingleChildScrollView(
@@ -395,14 +134,11 @@ void showPaidUnpaid(BuildContext context, JobModelRepository jobRepo) {
               child: Form(
                 //key: _formKey,
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    visCustomerName(setState),
-                    SizedBox(
-                      height: 8,
-                    ),
-                    visPaidUnPaid(setState),
+                    visCustomerNameNoAutoComplete(context, setState, jobRepo),
+                    visPaidUnPaid(context, setState, jobRepo),
+                    conRemarks(context, setState, jobRepo),
                   ],
                 ),
               ),
@@ -413,6 +149,10 @@ void showPaidUnpaid(BuildContext context, JobModelRepository jobRepo) {
           actions: [
             TextButton(
               onPressed: () {
+                setState(() {
+                  syncRepoToSelected();
+                });
+
                 Navigator.pop(context); // close popup
               },
               child: const Text(
@@ -422,8 +162,15 @@ void showPaidUnpaid(BuildContext context, JobModelRepository jobRepo) {
             ),
             ElevatedButton(
               onPressed: () async {
-                await saveButtonSetRepository();
-                Navigator.pop(context);
+                if (jobRepo.customerId == 0) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                        content: Text('Please select customer name.')),
+                  );
+                } else {
+                  await saveButtonSetRepository();
+                  Navigator.pop(context);
+                }
               },
               child: const Text('Save'),
             ),

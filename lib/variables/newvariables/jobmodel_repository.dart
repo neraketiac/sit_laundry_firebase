@@ -264,8 +264,8 @@ class JobModelRepository {
       jobselectedRepository.selectedItemModel = value;
   set selectedOthersShortCut(int value) =>
       jobselectedRepository.selectedOthersShortCut = value;
-  set selectedPaidUnpaid(int value) =>
-      jobselectedRepository.selectedPaidUnpaid = value;
+  // set selectedPaidUnpaid(int value) =>
+  //     jobselectedRepository.selectedPaidUnpaid = value;
   set selectedPaidPartialCash(bool value) =>
       jobselectedRepository.selectedPaidPartialCash = value;
   set selectedPaidPartialGCash(bool value) =>
@@ -328,7 +328,7 @@ class JobModelRepository {
       jobselectedRepository.selectedItemModel;
   int get selectedOthersShortCut =>
       jobselectedRepository.selectedOthersShortCut;
-  int get selectedPaidUnpaid => jobselectedRepository.selectedPaidUnpaid;
+  //int get selectedPaidUnpaid => jobselectedRepository.selectedPaidUnpaid;
   bool get selectedPaidPartialCash =>
       jobselectedRepository.selectedPaidPartialCash;
   bool get selectedPaidPartialGCash =>

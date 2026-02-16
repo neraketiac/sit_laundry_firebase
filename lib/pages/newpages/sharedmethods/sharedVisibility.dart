@@ -52,6 +52,61 @@ Visibility visCustomerName(
   );
 }
 
+Visibility visCustomerNameNoAutoComplete(
+    BuildContext context, Function setState, JobModelRepository jobRepo) {
+  return Visibility(
+    visible: true,
+    child: Container(
+      padding: const EdgeInsets.all(1.0),
+      decoration: decoAmber(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          // 🔹 Label + Checkbox on same row
+          Padding(
+            padding: const EdgeInsets.only(left: 4, bottom: 4),
+            child: Row(
+              children: [],
+            ),
+          ),
+          TextFormField(
+            controller: jobRepo.customerNameVar,
+            readOnly: true, // 👈 prevents editing
+            textAlign: TextAlign.center,
+            decoration: InputDecoration(
+              labelText: 'Customer Name',
+              labelStyle: TextStyle(
+                fontSize: 12,
+                color: Colors.grey[700],
+              ),
+              hintText: 'Search Name',
+              hintStyle: TextStyle(
+                fontSize: 12,
+                color: Colors.grey[700],
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(color: Colors.grey),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(color: Colors.blue, width: 2),
+              ),
+            ),
+            onFieldSubmitted: (_) {}, // optional / can remove
+          ),
+          SizedBox(
+            height: 5,
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
 Visibility visRiderPickup(
     BuildContext context, Function setState, JobModelRepository jobRepo) {
   return Visibility(
@@ -932,58 +987,64 @@ Visibility visPaidUnPaid(
   //   paidGCash,
   // ];
 
-  String returnPaymentStatusDuringToggle(bool paidCash, bool paidGCash) {
-    if (paidCash && paidGCash) {
+  String returnPaymentStatusDuringToggle() {
+    void resetPartialAmount() {
       jobRepo.partialCashAmountVar.text = '';
       jobRepo.partialGCashAmountVar.text = '';
+    }
+
+    void setPartialAmount(TextEditingController controller) {
+      if (jobRepo.selectedPackage == othersPackage) {
+        if ((int.tryParse(controller.text) ?? 0) < jobRepo.totalPriceOthers) {
+          controller.text = jobRepo.totalPriceOthers.toString();
+        }
+      } else {
+        if ((int.tryParse(controller.text) ?? 0) < jobRepo.totalPriceRegSS) {
+          controller.text = jobRepo.totalPriceRegSS.toString();
+        }
+      }
+    }
+
+    if (jobRepo.paidCash && jobRepo.paidGCash) {
+      resetPartialAmount();
       return 'Split payment';
-    }
-    if (paidCash) {
-      jobRepo.partialGCashAmountVar.text = '';
-      if (jobRepo.selectedPackage == othersPackage) {
-        jobRepo.partialCashAmountVar.text = jobRepo.totalPriceOthers.toString();
-      } else {
-        jobRepo.partialCashAmountVar.text = jobRepo.totalPriceRegSS.toString();
-      }
-      //since this is auto match price, only on this case it will unpaid false.
-      //true(unpaid) again once someone change the amount paid.
-      jobRepo.unpaid = false;
+    } else if (jobRepo.paidCash) {
+      setPartialAmount(jobRepo.partialCashAmountVar);
       return 'Paid Cash';
-    }
-    if (paidGCash) {
-      jobRepo.partialCashAmountVar.text = '';
-      if (jobRepo.selectedPackage == othersPackage) {
-        jobRepo.partialGCashAmountVar.text =
-            jobRepo.totalPriceOthers.toString();
-      } else {
-        jobRepo.partialGCashAmountVar.text = jobRepo.totalPriceRegSS.toString();
-      }
+    } else if (jobRepo.paidGCash) {
+      setPartialAmount(jobRepo.partialGCashAmountVar);
       return 'Paid GCash';
     }
-    jobRepo.partialCashAmountVar.text = '';
-    jobRepo.partialGCashAmountVar.text = '';
-    jobRepo.unpaid = true;
+    resetPartialAmount();
     return 'Unpaid';
   }
 
   void validatePaymentWhenVarChange() {
-    jobRepo.unpaid = true;
-    if (jobRepo.paidCash &&
-        jobRepo.paidGCash &&
-        jobRepo.finalPrice <
-            (int.parse(jobRepo.partialCashAmountVar.text) +
-                int.parse(jobRepo.partialCashAmountVar.text))) {
-      actualPaymentStatus = 'Unpaid(Kulang)';
-    } else if (jobRepo.paidCash &&
-        jobRepo.finalPrice < int.parse(jobRepo.partialCashAmountVar.text)) {
-      actualPaymentStatus = 'Unpaid(Kulang)';
-    } else if (jobRepo.paidGCash &&
-        jobRepo.finalPrice < int.parse(jobRepo.partialGCashAmountVar.text)) {
-      actualPaymentStatus = 'Unpaid(Kulang)';
-    } else {
-      jobRepo.unpaid = false;
-    }
+    final int valueCash = int.tryParse(jobRepo.partialCashAmountVar.text) ?? 0;
+    final int valueGCash =
+        int.tryParse(jobRepo.partialGCashAmountVar.text) ?? 0;
+    final int tempFinalPrice = (jobRepo.selectedPackage == othersPackage
+        ? jobRepo.totalPriceOthers
+        : jobRepo.totalPriceRegSS);
+
+    // debugPrint(
+    //     'valueCash=$valueCash valueGCash=$valueGCash finaPrice=$tempFinalPrice');
+
+    int totalPaid = (jobRepo.paidCash ? valueCash : 0) +
+        (jobRepo.paidGCash ? valueGCash : 0);
+
+    bool isFullyPaid = totalPaid >= tempFinalPrice;
+
+    actualPaymentStatus = !isFullyPaid
+        ? 'Unpaid (Kulang)'
+        : (jobRepo.paidCash && jobRepo.paidGCash)
+            ? 'Paid (Split)'
+            : 'Paid';
+
+    jobRepo.unpaid = !isFullyPaid;
   }
+
+  actualPaymentStatus = returnPaymentStatusDuringToggle();
 
   return Visibility(
     visible: true,
@@ -1017,14 +1078,14 @@ Visibility visPaidUnPaid(
                   ),
                   const SizedBox(width: 2), // tiny gap
                   Transform.scale(
-                    scale: 0.7, // shrink the checkbox itself
+                    scale: 0.8, // shrink the checkbox itself
                     child: Checkbox(
                       value: jobRepo.paidCash,
                       onChanged: (bool? value) {
                         setState(() {
                           jobRepo.paidCash = value ?? false;
-                          actualPaymentStatus = returnPaymentStatusDuringToggle(
-                              jobRepo.paidCash, jobRepo.paidGCash);
+                          actualPaymentStatus =
+                              returnPaymentStatusDuringToggle();
                         });
                       },
                       visualDensity: VisualDensity(
@@ -1047,14 +1108,14 @@ Visibility visPaidUnPaid(
                   ),
                   const SizedBox(width: 2), // tiny gap
                   Transform.scale(
-                    scale: 0.7, // shrink the checkbox itself
+                    scale: 0.8, // shrink the checkbox itself
                     child: Checkbox(
                       value: jobRepo.paidGCash,
                       onChanged: (bool? value) {
                         setState(() {
                           jobRepo.paidGCash = value ?? false;
-                          actualPaymentStatus = returnPaymentStatusDuringToggle(
-                              jobRepo.paidCash, jobRepo.paidGCash);
+                          actualPaymentStatus =
+                              returnPaymentStatusDuringToggle();
                         });
                       },
                       visualDensity: VisualDensity(
@@ -1092,11 +1153,11 @@ Visibility visPaidUnPaid(
                           key: const ValueKey('cash'),
                           padding: const EdgeInsets.only(right: 4),
                           child: TextFormField(
-                            onEditingComplete: (() {
+                            onChanged: (value) => {
                               setState(() {
                                 validatePaymentWhenVarChange();
-                              });
-                            }),
+                              })
+                            },
                             controller: jobRepo.partialCashAmountVar,
                             keyboardType: const TextInputType.numberWithOptions(
                                 decimal: true),
@@ -1140,11 +1201,11 @@ Visibility visPaidUnPaid(
                           key: const ValueKey('gcash'),
                           padding: const EdgeInsets.only(left: 4),
                           child: TextFormField(
-                            onEditingComplete: (() {
+                            onChanged: (value) => {
                               setState(() {
                                 validatePaymentWhenVarChange();
-                              });
-                            }),
+                              })
+                            },
                             controller: jobRepo.partialGCashAmountVar,
                             keyboardType: const TextInputType.numberWithOptions(
                                 decimal: true),
@@ -1182,7 +1243,7 @@ Visibility visPaidUnPaid(
               ),
               const SizedBox(width: 2), // tiny gap
               Transform.scale(
-                scale: 0.7, // shrink the checkbox itself
+                scale: 0.8, // shrink the checkbox itself
                 child: Checkbox(
                   value: jobRepo.selectedPaidGCashVerified,
                   onChanged: (bool? value) {

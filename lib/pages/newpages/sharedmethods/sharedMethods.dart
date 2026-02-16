@@ -286,9 +286,6 @@ void setSelectedToRepository(JobModelRepository jobRepo) {
   }
 
   //payment status
-  jobRepo.unpaid = unpaid == jobRepo.selectedPaidUnpaid;
-  jobRepo.paidCash = paidCash == jobRepo.selectedPaidUnpaid;
-  jobRepo.paidGCash = paidGCash == jobRepo.selectedPaidUnpaid;
   jobRepo.partialPaidCash = jobRepo.selectedPaidPartialCash;
   jobRepo.partialPaidGCash = jobRepo.selectedPaidPartialGCash;
   jobRepo.partialPaidCashAmount =
@@ -296,7 +293,7 @@ void setSelectedToRepository(JobModelRepository jobRepo) {
   jobRepo.partialPaidGCashAmount =
       int.tryParse(jobRepo.partialGCashAmountVar.text) ?? 0;
 
-  if (unpaid != jobRepo.selectedPaidUnpaid) {
+  if (jobRepo.paidCash || jobRepo.paidGCash) {
     jobRepo.paymentReceivedBy = empIdGlobal;
   }
 
@@ -324,8 +321,9 @@ void setSelectedToRepository(JobModelRepository jobRepo) {
   }
 
   //list other items
-  if (jobRepo.listSelectedItemModel.isNotEmpty) {
-    jobRepo.items = jobRepo.listSelectedItemModel;
+  if (jobRepo.listSelectedItemModel.isNotEmpty &&
+      jobRepo.selectedPackage == othersPackage) {
+    jobRepo.items = List.from(jobRepo.listSelectedItemModel);
   }
 
   //other options

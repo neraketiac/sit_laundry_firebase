@@ -10,7 +10,6 @@ import 'package:laundry_firebase/pages/newpages/header/Employee/showSalaryMainte
 import 'package:laundry_firebase/variables/newvariables/jobmodel_repository.dart';
 import 'package:laundry_firebase/variables/newvariables/supplies_hist_repository.dart';
 import 'package:laundry_firebase/variables/newvariables/variables.dart';
-import 'package:laundry_firebase/variables/newvariables/variables_supplies.dart';
 
 /*
 cd C:\Users\haali\Documents\GIT_SIT\sit_laundry_firebase
