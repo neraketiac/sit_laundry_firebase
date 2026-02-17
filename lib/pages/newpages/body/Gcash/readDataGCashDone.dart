@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:laundry_firebase/models/newmodels/suppliesmodelhist.dart';
+import 'package:laundry_firebase/models/newmodels/gcashmodel.dart';
+import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedMethods.dart';
 import 'package:laundry_firebase/services/newservices/database_gcash.dart';
 import 'package:laundry_firebase/variables/newvariables/gcash_repository.dart';
 
@@ -8,7 +9,7 @@ Widget readDataGCashDone() {
   DatabaseGCashDone dbGCashDone = DatabaseGCashDone();
   int? selectedIndex;
 
-  return StreamBuilder<List<SuppliesModelHist>>(
+  return StreamBuilder<List<GCashModel>>(
     stream: dbGCashDone.streamAll(),
     builder: (context, snapshot) {
       if (snapshot.hasError) {
@@ -43,6 +44,9 @@ Widget readDataGCashDone() {
                   onTap: () {
                     setState(() {
                       selectedIndex = index;
+                      if (gRepo.imageUrl != null) {
+                        showImagePreview(context, gRepo.imageUrl!);
+                      }
                     });
                     //showJobOnQueueComplete(context, jobRepo);
                   },

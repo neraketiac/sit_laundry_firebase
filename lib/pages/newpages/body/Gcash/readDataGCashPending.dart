@@ -1,7 +1,12 @@
+import 'dart:io';
+
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
-import 'package:laundry_firebase/models/newmodels/suppliesmodelhist.dart';
+import 'package:laundry_firebase/models/newmodels/gcashmodel.dart';
+import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedMethods.dart';
 import 'package:laundry_firebase/services/newservices/database_gcash.dart';
 import 'package:laundry_firebase/variables/newvariables/gcash_repository.dart';
 
@@ -9,7 +14,7 @@ Widget readDataGCashPending() {
   DatabaseGCashPending dbGCashPending = DatabaseGCashPending();
   int? selectedIndex;
 
-  return StreamBuilder<List<SuppliesModelHist>>(
+  return StreamBuilder<List<GCashModel>>(
     stream: dbGCashPending.streamAll(),
     builder: (context, snapshot) {
       if (snapshot.hasError) {
@@ -44,6 +49,14 @@ Widget readDataGCashPending() {
                   onTap: () {
                     setState(() {
                       selectedIndex = index;
+
+                      if (gRepo.imageUrl != null &&
+                          gRepo.imageUrl!.isNotEmpty &&
+                          gRepo.imageUrl!.startsWith('http')) {
+                        showImagePreview(context, gRepo.imageUrl!);
+                      } else {
+                        callDatabaseSaveImage(context, gRepo.getModel()!);
+                      }
                     });
                     //showJobOnQueueComplete(context, jobRepo);
                   },
@@ -121,7 +134,12 @@ Widget readDataGCashPending() {
                                   value: (double.tryParse(
                                               gRepo.currentStocks.toString()) ??
                                           0.0) +
-                                      0.5, // removed Tween animation value
+                                      (gRepo.imageUrl != null &&
+                                              gRepo.imageUrl!.isNotEmpty &&
+                                              gRepo.imageUrl!.startsWith('http')
+                                          ? 0.75
+                                          : 0.25), // added imageUrl check for progress value
+                                  // removed Tween animation value
                                   strokeWidth: 6,
                                   // backgroundColor:
                                   //     backGroundStatusColor(job),

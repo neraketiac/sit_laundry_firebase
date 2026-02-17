@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:laundry_firebase/models/newmodels/gcashmodel.dart';
 import 'package:laundry_firebase/models/oldmodels/customermodel.dart';
 import 'package:laundry_firebase/models/newmodels/employeemodel.dart';
 import 'package:laundry_firebase/models/oldmodels/jobsonqueuemodel.dart';
@@ -12,6 +13,7 @@ import 'package:laundry_firebase/pages/loyalty_admin.dart';
 import 'package:laundry_firebase/pages/oldpages/queue.dart';
 import 'package:laundry_firebase/services/oldservices/database_jobsonqueue.dart';
 import 'package:laundry_firebase/services/oldservices/database_other_items.dart';
+import 'package:laundry_firebase/variables/newvariables/gcash_repository.dart';
 import 'package:laundry_firebase/variables/oldvariables/vairables_jobsonqueue.dart';
 import 'package:laundry_firebase/variables/newvariables/variables_ble.dart';
 import 'package:laundry_firebase/variables/newvariables/variables_det.dart';
@@ -43,7 +45,7 @@ const bool allowPayment = true;
 late int alwaysTheLatestFunds;
 
 late JobsOnQueueModel jobsOnQueueModelGlobal;
-final SuppliesModelHist finalInitialSuppliesModelHistGlobal = SuppliesModelHist(
+final GCashModel finalGCashModel = GCashModel(
     docId: "",
     countId: 0,
     itemId: selectedSupVar.itemId,
@@ -55,7 +57,8 @@ final SuppliesModelHist finalInitialSuppliesModelHistGlobal = SuppliesModelHist(
     empId: empIdGlobal,
     customerId: 1,
     customerName: '',
-    remarks: "");
+    remarks: "",
+    imageUrl: "");
 late SuppliesModelHist suppliesModelHistGlobal;
 late SuppliesModelHist sMHGLaundryPayment;
 late SuppliesModelHist sMHGLaundryPaymentDonP;

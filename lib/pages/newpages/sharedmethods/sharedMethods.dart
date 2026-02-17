@@ -1,6 +1,10 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:laundry_firebase/models/newmodels/gcashmodel.dart';
 import 'package:laundry_firebase/models/oldmodels/customermodel.dart';
 import 'package:laundry_firebase/models/newmodels/employeemodel.dart';
 import 'package:laundry_firebase/models/newmodels/jobmodel.dart';
@@ -113,6 +117,30 @@ int computeTotalPrice(double q, JobModelRepository jobRepo) {
   }
 
   return (counter * jobRepo.pricePerSet) + remainingPrice;
+}
+
+void showImagePreview(BuildContext context, String imageUrl) {
+  showDialog(
+    context: context,
+    barrierColor: Colors.black87,
+    builder: (_) {
+      return Dialog(
+        backgroundColor: Colors.transparent,
+        child: GestureDetector(
+          onTap: () => Navigator.pop(context),
+          child: InteractiveViewer(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Image.network(
+                imageUrl,
+                fit: BoxFit.contain,
+              ),
+            ),
+          ),
+        ),
+      );
+    },
+  );
 }
 
 //########################################################################//
@@ -614,10 +642,10 @@ Future<void> callDatabaseJobsQueueAdd(
 }
 
 Future<void> callDatabaseGCashPendingAdd(
-    BuildContext context, SuppliesModelHist sMH) async {
+    BuildContext context, GCashModel gM) async {
   DatabaseGCashPending databaseGCashPending = DatabaseGCashPending();
 
-  if (await databaseGCashPending.addBool(sMH)) {
+  if (await databaseGCashPending.addBool(gM)) {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Insert on GCash Pending done.')),
     );
@@ -691,4 +719,22 @@ Future<void> callDatabaseJobQueueUpdate(
       const SnackBar(content: Text('Error update Jobs On Queue.')),
     );
   }
+}
+
+Future<void> callDatabaseSaveImage(BuildContext context, GCashModel gM) async {
+  DatabaseGCashPending databaseGCashPending = DatabaseGCashPending();
+
+  final ImagePicker _picker = ImagePicker();
+
+  Future<XFile?> pickImage() async {
+    return await _picker.pickImage(
+      source: ImageSource.gallery,
+    );
+  }
+
+  XFile? file = await pickImage();
+
+  if (file == null) return;
+
+  await databaseGCashPending.saveImageWeb(gM, file);
 }

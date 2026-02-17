@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:laundry_firebase/models/newmodels/gcashmodel.dart';
 import 'package:laundry_firebase/models/newmodels/suppliesmodelhist.dart';
 import 'package:laundry_firebase/variables/newvariables/gcashselected_repository.dart';
 import 'package:laundry_firebase/variables/newvariables/variables.dart';
@@ -16,16 +17,15 @@ class GCashRepository {
   // ? - verified cash out    .5
   // 1 - done cash out        1
 
-  late SuppliesModelHist sMHGCash;
-  late GCashSelectedRepository gCashSelectedRepository =
-      GCashSelectedRepository();
+  late GCashModel gM;
+  late GCashSelectedRepository gCashSelectedRepo = GCashSelectedRepository();
 
   GCashRepository() {
     reset();
   }
 
   Future<void> reset() async {
-    sMHGCash = finalInitialSuppliesModelHistGlobal;
+    gM = finalGCashModel;
   }
 
 /////////////////////////////////////////////////////////////
@@ -33,74 +33,75 @@ class GCashRepository {
 //                          MODEL                          //
 /////////////////////////////////////////////////////////////
 
-  SuppliesModelHist? getModel() {
-    return sMHGCash;
+  GCashModel? getModel() {
+    return gM;
   }
 
-  SuppliesModelHist get sMHGCashData => sMHGCash;
+  GCashModel get gMData => gM;
 
-  String get docId => sMHGCash.docId;
-  int get countId => sMHGCash.countId;
-  int get itemId => sMHGCash.itemId;
-  int get itemUniqueId => sMHGCash.itemUniqueId;
-  String get itemName => sMHGCash.itemName;
-  int get currentCounter => sMHGCash.currentCounter;
-  int get currentStocks => sMHGCash.currentStocks;
-  Timestamp get logDate => sMHGCash.logDate;
-  String get empId => sMHGCash.empId;
-  int get customerId => sMHGCash.customerId;
-  String get customerName => sMHGCash.customerName;
-  String get remarks => sMHGCash.remarks;
+  String get docId => gM.docId;
+  int get countId => gM.countId;
+  int get itemId => gM.itemId;
+  int get itemUniqueId => gM.itemUniqueId;
+  String get itemName => gM.itemName;
+  int get currentCounter => gM.currentCounter;
+  int get currentStocks => gM.currentStocks;
+  Timestamp get logDate => gM.logDate;
+  String get empId => gM.empId;
+  int get customerId => gM.customerId;
+  String get customerName => gM.customerName;
+  String get remarks => gM.remarks;
+  String? get imageUrl => gM.imageUrl;
 
   /////////////////////////////////////////////////////////////
   //                          SETTER                         //
   //                          JOBMODEL                       //
   /////////////////////////////////////////////////////////////
 
-  void setModel(SuppliesModelHist value) {
-    sMHGCash = value;
+  void setModel(GCashModel value) {
+    gM = value;
   }
 
-  set docId(String value) => sMHGCash.docId = value;
-  set countId(int value) => sMHGCash.countId = value;
-  set itemId(int value) => sMHGCash.itemId = value;
-  set itemUniqueId(int value) => sMHGCash.itemUniqueId = value;
-  set itemName(String value) => sMHGCash.itemName = value;
-  set currentCounter(int value) => sMHGCash.currentCounter = value;
-  set currentStocks(int value) => sMHGCash.currentStocks = value;
-  set logDate(Timestamp value) => sMHGCash.logDate = value;
-  set empId(String value) => sMHGCash.empId = value;
-  set customerId(int value) => sMHGCash.customerId = value;
-  set customerName(String value) => sMHGCash.customerName = value;
-  set remarks(String value) => sMHGCash.remarks = value;
+  set docId(String value) => gM.docId = value;
+  set countId(int value) => gM.countId = value;
+  set itemId(int value) => gM.itemId = value;
+  set itemUniqueId(int value) => gM.itemUniqueId = value;
+  set itemName(String value) => gM.itemName = value;
+  set currentCounter(int value) => gM.currentCounter = value;
+  set currentStocks(int value) => gM.currentStocks = value;
+  set logDate(Timestamp value) => gM.logDate = value;
+  set empId(String value) => gM.empId = value;
+  set customerId(int value) => gM.customerId = value;
+  set customerName(String value) => gM.customerName = value;
+  set remarks(String value) => gM.remarks = value;
+  set imageUrl(String? value) => gM.imageUrl = value;
 
   /////////////////////////////////////////////////////////////
   //                          SETTER                         //
   //                          SELECTED                       //
   /////////////////////////////////////////////////////////////
   TextEditingController get customerNameVar =>
-      gCashSelectedRepository.customerNameVar;
+      gCashSelectedRepo.customerNameVar;
 
   TextEditingController get customerAmountVar =>
-      gCashSelectedRepository.customerAmountVar;
+      gCashSelectedRepo.customerAmountVar;
 
-  TextEditingController get remarksVar => gCashSelectedRepository.remarksVar;
+  TextEditingController get remarksVar => gCashSelectedRepo.remarksVar;
 
-  int get selectedFundCode => gCashSelectedRepository.selectedFundCode;
+  int get selectedFundCode => gCashSelectedRepo.selectedFundCode;
 
   /////////////////////////////////////////////////////////////
   //                          GETTER                         //
   //                          SELECTED                       //
   /////////////////////////////////////////////////////////////
   set customerNameVar(TextEditingController value) =>
-      gCashSelectedRepository.customerNameVar = value;
+      gCashSelectedRepo.customerNameVar = value;
 
   set customerAmountVar(TextEditingController value) =>
-      gCashSelectedRepository.customerAmountVar = value;
+      gCashSelectedRepo.customerAmountVar = value;
 
   set remarksVar(TextEditingController value) =>
-      gCashSelectedRepository.remarksVar = value;
+      gCashSelectedRepo.remarksVar = value;
 
-  set selectedFundCode(int value) =>
-      gCashSelectedRepository.selectedFundCode = value;
+  set selectedFundCode(int value) => gCashSelectedRepo.selectedFundCode = value;
 }
