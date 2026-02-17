@@ -266,7 +266,7 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
           children: [
             _animatedPanel(
               visible: empSetup.showFundsHistory,
-              width: 320,
+              width: 350,
               child: Column(
                 children: [
                   const SizedBox(height: 1),

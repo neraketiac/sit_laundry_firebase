@@ -110,11 +110,6 @@ void showGCashPending(BuildContext context) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Please enter amount.')),
                   );
-                } else if (gRepo.remarksVar.text == '') {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                        content: Text('Remarks is required for Funds Out.')),
-                  );
                 } else if (gRepo.selectedFundCode == null) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(

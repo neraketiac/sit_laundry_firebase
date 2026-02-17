@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:laundry_firebase/models/newmodels/suppliesmodelhist.dart';
 import 'package:laundry_firebase/services/newservices/database_gcash.dart';
 import 'package:laundry_firebase/variables/newvariables/gcash_repository.dart';
@@ -138,6 +139,26 @@ Widget readDataGCashDone() {
                                   Expanded(
                                     child: Text(
                                       (gRepo.itemName),
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        color: isSelected
+                                            ? Colors.deepPurple
+                                            : Colors.black,
+                                        fontSize: 10,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(width: 3),
+                              //Date and Time
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      DateFormat('MM/dd hh:mm a')
+                                          .format(gRepo.logDate.toDate()),
                                       style: TextStyle(
                                         fontWeight: FontWeight.w600,
                                         color: isSelected

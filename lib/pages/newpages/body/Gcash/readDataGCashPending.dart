@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 import 'package:laundry_firebase/models/newmodels/suppliesmodelhist.dart';
 import 'package:laundry_firebase/services/newservices/database_gcash.dart';
 import 'package:laundry_firebase/variables/newvariables/gcash_repository.dart';
@@ -67,7 +68,48 @@ Widget readDataGCashPending() {
                       children: [
                         const SizedBox(width: 10),
                         InkWell(
-                          onTap: () {},
+                          onTap: () async {
+                            final result = await showDialog<bool>(
+                              context: context,
+                              builder: (context) {
+                                return AlertDialog(
+                                  title: const Text(
+                                    'Comfirmation',
+                                    style: TextStyle(fontSize: 14),
+                                  ),
+                                  content: const Text(
+                                    'Select Complete or Delete?\nTap outside to cancel.',
+                                    style: TextStyle(fontSize: 12),
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () async {
+                                        await dbGCashPending
+                                            .deleteVoid(gRepo.getModel()!);
+                                        Navigator.pop(context, false); // NO
+                                      },
+                                      child: const Text('Delete'),
+                                    ),
+                                    ElevatedButton(
+                                      onPressed: () async {
+                                        await moveToNext(gRepo.docId);
+                                        Navigator.pop(context, true); // YES
+                                      },
+                                      child: const Text('Complete'),
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
+
+                            if (result == true) {
+                              // USER PRESSED YES
+                              print('User selected YES');
+                            } else {
+                              // USER PRESSED NO or dismissed
+                              print('User selected NO');
+                            }
+                          },
                           child: Stack(
                             alignment: Alignment.center,
                             children: [
@@ -175,107 +217,25 @@ Widget readDataGCashPending() {
                                       overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
-                                  const SizedBox(width: 6),
-                                  IconButton(
-                                    icon: const Icon(
-                                      Icons.delete_forever_outlined,
-                                      size: 18,
+                                ],
+                              ),
+                              const SizedBox(width: 3),
+                              //Date and Time
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      DateFormat('MM/dd hh:mm a')
+                                          .format(gRepo.logDate.toDate()),
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        color: isSelected
+                                            ? Colors.deepPurple
+                                            : Colors.black,
+                                        fontSize: 10,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
                                     ),
-                                    padding: EdgeInsets.zero,
-                                    constraints: const BoxConstraints(),
-                                    splashRadius: 18,
-                                    color: isSelected
-                                        ? Colors.deepPurple
-                                        : Colors.grey,
-                                    onPressed: () async {
-                                      final result = await showDialog<bool>(
-                                        context: context,
-                                        builder: (context) {
-                                          return AlertDialog(
-                                            title: const Text('Confirmation'),
-                                            content: const Text('Delete?'),
-                                            actions: [
-                                              TextButton(
-                                                onPressed: () {
-                                                  Navigator.pop(
-                                                      context, false); // NO
-                                                },
-                                                child: const Text('No'),
-                                              ),
-                                              ElevatedButton(
-                                                onPressed: () async {
-                                                  await dbGCashPending
-                                                      .deleteVoid(
-                                                          gRepo.getModel()!);
-                                                  Navigator.pop(
-                                                      context, true); // YES
-                                                },
-                                                child: const Text('Yes'),
-                                              ),
-                                            ],
-                                          );
-                                        },
-                                      );
-
-                                      if (result == true) {
-                                        // USER PRESSED YES
-                                        print('User selected YES');
-                                      } else {
-                                        // USER PRESSED NO or dismissed
-                                        print('User selected NO');
-                                      }
-                                    },
-                                  ),
-                                  SizedBox(
-                                    width: 5,
-                                  ),
-                                  IconButton(
-                                    icon: const Icon(
-                                      Icons.indeterminate_check_box,
-                                      size: 18,
-                                    ),
-                                    padding: EdgeInsets.zero,
-                                    constraints: const BoxConstraints(),
-                                    splashRadius: 18,
-                                    color: isSelected
-                                        ? Colors.deepPurple
-                                        : Colors.grey,
-                                    onPressed: () async {
-                                      final result = await showDialog<bool>(
-                                        context: context,
-                                        builder: (context) {
-                                          return AlertDialog(
-                                            title: const Text('Confirmation'),
-                                            content: const Text('Complete?'),
-                                            actions: [
-                                              TextButton(
-                                                onPressed: () {
-                                                  Navigator.pop(
-                                                      context, false); // NO
-                                                },
-                                                child: const Text('No'),
-                                              ),
-                                              ElevatedButton(
-                                                onPressed: () async {
-                                                  await moveToNext(gRepo.docId);
-                                                  Navigator.pop(
-                                                      context, true); // YES
-                                                },
-                                                child: const Text('Yes'),
-                                              ),
-                                            ],
-                                          );
-                                        },
-                                      );
-
-                                      if (result == true) {
-                                        // USER PRESSED YES
-                                        print('User selected YES');
-                                      } else {
-                                        // USER PRESSED NO or dismissed
-                                        print('User selected NO');
-                                      }
-                                    },
                                   ),
                                 ],
                               ),

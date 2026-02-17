@@ -135,14 +135,15 @@ Future<void> moveToNext(String docId) async {
 
     final data = snapshot.data()!;
 
-    final currentRemarks = (data['Remarks'] ?? '').toString().trim();
-    final updatedRemarks =
-        currentRemarks.isEmpty ? 'Done' : '$currentRemarks Done';
+    // final currentRemarks = (data['Remarks'] ?? '').toString().trim();
+    // final updatedRemarks =
+    //     currentRemarks.isEmpty ? 'Done' : '$currentRemarks Done';
 
     tx.set(ongoingRef, {
       ...data,
-      'Remarks': updatedRemarks,
+      // 'Remarks': updatedRemarks,
       'CurrentStocks': 1,
+      'LogDate': Timestamp.now(),
     });
 
     tx.delete(queueRef);
