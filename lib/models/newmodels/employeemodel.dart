@@ -5,7 +5,6 @@ class EmployeeModel {
   int countId;
   String empId;
   String empName;
-  //int    balCurr;           //* (+) need to pay in WKL, (-) need to give to customer, (0) no balance
   int currentCounter;
   int currentStocks;
   int itemId;

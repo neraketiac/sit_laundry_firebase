@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/autocompletecustomer.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedConstantsFinal.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedMethods.dart';
+import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedVisibility.dart';
 import 'package:laundry_firebase/variables/newvariables/jobmodel_repository.dart';
 import 'package:laundry_firebase/variables/newvariables/supplies_hist_repository.dart';
 import 'package:laundry_firebase/variables/newvariables/variables.dart';
@@ -108,60 +109,6 @@ void showSalaryMaintenance(BuildContext context, JobModelRepository jobRepo) {
     );
   }
 
-  Visibility customerAmount(Function setState) {
-    return Visibility(
-      visible: true,
-      child: Container(
-        padding: const EdgeInsets.all(1.0),
-        decoration: decoAmber(),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Label (not indented)
-            const Padding(
-              padding: EdgeInsets.only(left: 4, bottom: 4),
-              child: Text(
-                'Amount',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-
-            // Amount field
-            TextFormField(
-              controller: customerAmountVar,
-              keyboardType:
-                  const TextInputType.numberWithOptions(decimal: true),
-              inputFormatters: [
-                FilteringTextInputFormatter.allow(
-                  RegExp(r'\d+(\.\d{0,2})?'),
-                ),
-              ],
-              decoration: InputDecoration(
-                hintText: '0.00',
-                border: const OutlineInputBorder(),
-                prefixIcon: SizedBox(
-                  width: fieldIndentWidth,
-                  child: const Center(
-                    child: Text(
-                      '₱',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Visibility customerName(Function setState) {
     return Visibility(
       visible: true,
@@ -249,7 +196,7 @@ void showSalaryMaintenance(BuildContext context, JobModelRepository jobRepo) {
                   children: [
                     customerName(setState),
                     fundTypeToggle(setState),
-                    customerAmount(setState),
+                    customerAmount(context, setState, customerAmountVar),
                     conRemarksSuppliesVar(setState),
                   ],
                 ),

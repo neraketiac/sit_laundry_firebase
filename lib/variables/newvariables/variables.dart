@@ -43,6 +43,19 @@ const bool allowPayment = true;
 late int alwaysTheLatestFunds;
 
 late JobsOnQueueModel jobsOnQueueModelGlobal;
+final SuppliesModelHist finalInitialSuppliesModelHistGlobal = SuppliesModelHist(
+    docId: "",
+    countId: 0,
+    itemId: selectedSupVar.itemId,
+    itemUniqueId: selectedSupVar.itemUniqueId,
+    itemName: selectedSupVar.itemName,
+    currentCounter: 0,
+    currentStocks: 0,
+    logDate: Timestamp.now(),
+    empId: empIdGlobal,
+    customerId: 1,
+    customerName: '',
+    remarks: "");
 late SuppliesModelHist suppliesModelHistGlobal;
 late SuppliesModelHist sMHGLaundryPayment;
 late SuppliesModelHist sMHGLaundryPaymentDonP;
@@ -482,6 +495,7 @@ final Color cWaitRiderDelivery = Color.fromRGBO(62, 255, 45, 1); //rider
 final Color cNasaCustomerNa = Color.fromRGBO(92, 91, 91, 1);
 final Color cRiderOnDelivery = Color.fromRGBO(62, 255, 45, 1); //rider
 
+final Color cAdmin = Colors.blueGrey;
 final Color cShowGCash = Colors.lightBlueAccent;
 final Color cFundsInFundsOut = Colors.amberAccent;
 final Color cFundsCheck = Colors.lightGreenAccent;

@@ -7,50 +7,6 @@ import 'package:laundry_firebase/variables/newvariables/jobmodel_repository.dart
 import 'package:laundry_firebase/variables/newvariables/variables.dart';
 
 void showJobOnQueue(BuildContext context, JobModelRepository jobRepo) {
-  void resetSelected() {
-    successInsertFB = false;
-    jobRepo.selectedRiderPickup = forSorting;
-    //package status
-    jobRepo.selectedPackage = regularPackage;
-
-    //prices
-    jobRepo.totalPriceRegSS = 155;
-    jobRepo.totalPriceOthers = 0;
-
-    //payment status
-    jobRepo.unpaid = true;
-    jobRepo.paidCash = false;
-    jobRepo.paidGCash = false;
-    jobRepo.selectedPaidPartialCash = false;
-    jobRepo.selectedPaidPartialGCash = false;
-    jobRepo.partialCashAmountVar.text = '';
-    jobRepo.partialGCashAmountVar.text = '';
-
-    //verified gcash
-    jobRepo.selectedPaidGCashVerified = false;
-
-    //weight status
-    jobRepo.isPerKg = true;
-
-    jobRepo.quantityKg = 8;
-    jobRepo.quantityLoad = 1;
-    jobRepo.remarksVar.text = '';
-
-    //list other items
-    jobRepo.clearListSelectedItemModel();
-
-    //other options
-    jobRepo.selectedFold = true;
-    jobRepo.selectedMix = true;
-    jobRepo.basketCount = 0;
-    jobRepo.ecoBagCount = 0;
-    jobRepo.sakoCount = 0;
-    jobRepo.addFabCount = 0;
-    jobRepo.addExtraDryCount = 0;
-    jobRepo.addExtraWashCount = 0;
-    jobRepo.addExtraSpinCount = 0;
-  }
-
   Future<void> saveButtonSetRepository() async {
 //dates
     /// 🟣 Dates
@@ -124,7 +80,7 @@ void showJobOnQueue(BuildContext context, JobModelRepository jobRepo) {
                     visAddFab(context, setState, jobRepo),
                     visAddWash(context, setState, jobRepo),
                     visAddSpin(context, setState, jobRepo),
-                    conRemarks(context, setState, jobRepo),
+                    conRemarks(context, setState, jobRepo.remarksVar),
                   ],
                 ),
               ),
@@ -151,7 +107,7 @@ void showJobOnQueue(BuildContext context, JobModelRepository jobRepo) {
                   );
                 } else {
                   await saveButtonSetRepository();
-                  if (successInsertFB) resetSelected();
+                  if (successInsertFB) resetSelected(jobRepo);
                   Navigator.pop(context);
                 }
               },

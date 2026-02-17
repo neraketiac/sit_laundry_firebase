@@ -3,6 +3,7 @@ import 'package:laundry_firebase/pages/newpages/body/main_laundry_body.dart';
 import 'package:laundry_firebase/pages/newpages/header/Funds/showCalendarDialog.dart';
 import 'package:laundry_firebase/pages/newpages/header/Funds/showFundsInFundsOut.dart';
 import 'package:laundry_firebase/pages/newpages/header/Funds/showGCashOnly.dart';
+import 'package:laundry_firebase/pages/newpages/header/Funds/showGCashPending.dart';
 import 'package:laundry_firebase/pages/newpages/header/Funds/showLaundryPayment.dart';
 import 'package:laundry_firebase/pages/newpages/header/Funds/showFundCheck.dart';
 import 'package:laundry_firebase/pages/newpages/header/JobOnQueue/showJobOnQueue.dart';
@@ -111,14 +112,24 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
         child: Stack(
           clipBehavior: Clip.none,
           children: [
+            //4th floor
+            _fab(
+                hero: 'GCash Pending',
+                icon: Icons.g_mobiledata,
+                bottom: _isOpen ? base + step + step + step : base,
+                right: _isOpen ? base : base,
+                onTap: () => showGCashPending(context),
+                backgroundColor: cShowGCash),
+
             //3rd floor
+
             _fab(
                 hero: 'Gcash',
-                icon: Icons.g_mobiledata,
+                icon: Icons.attach_money_sharp,
                 bottom: _isOpen ? base + step + step : base,
                 right: _isOpen ? base + step : base,
                 onTap: () => showGCashOnly(context, jobRepoNonJob),
-                backgroundColor: cShowGCash),
+                backgroundColor: cAdmin),
 
             _fab(
                 hero: 'Laundry Payment',
@@ -126,7 +137,7 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
                 bottom: _isOpen ? base + step + step : base,
                 right: _isOpen ? base : base,
                 onTap: () => showLaundryPayment(context, jobRepoNonJob),
-                backgroundColor: cShowGCash),
+                backgroundColor: cAdmin),
 
             //2nd floor
 

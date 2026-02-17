@@ -5,6 +5,8 @@ import 'package:laundry_firebase/models/oldmodels/employeesetupmodel.dart';
 import 'package:laundry_firebase/pages/enterloyaltycode.dart';
 import 'package:laundry_firebase/pages/newpages/body/Employee/readDataEmployeeCurr.dart';
 import 'package:laundry_firebase/pages/newpages/body/Employee/readDataEmployeeHist.dart';
+import 'package:laundry_firebase/pages/newpages/body/Gcash/readDataGCashDone.dart';
+import 'package:laundry_firebase/pages/newpages/body/Gcash/readDataGCashPending.dart';
 import 'package:laundry_firebase/pages/newpages/body/JobOnQueue/readDataJobsOnQueue.dart';
 import 'package:laundry_firebase/pages/newpages/body/Supplies/readSuppliesCurrent.dart';
 import 'package:laundry_firebase/pages/newpages/body/Supplies/readSuppliesHist.dart';
@@ -219,8 +221,16 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
               child: Row(
                 children: [
                   _buildCheckBoxContainer(
+                    color: Colors.grey,
+                    title: 'Gcash',
+                    value: empSetup.showFundsHistory,
+                    onChanged: (v) => _updateSetup(
+                      empSetup.copyWith(showFundsHistory: v ?? false),
+                    ),
+                  ),
+                  _buildCheckBoxContainer(
                     color: Colors.lightBlueAccent[700]!,
-                    title: 'Laundry',
+                    title: 'Ldy',
                     value: empSetup.showLaundry,
                     onChanged: (v) => _updateSetup(
                       empSetup.copyWith(showLaundry: v ?? false),
@@ -232,14 +242,6 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                     value: empSetup.showFunds,
                     onChanged: (v) => _updateSetup(
                       empSetup.copyWith(showFunds: v ?? false),
-                    ),
-                  ),
-                  _buildCheckBoxContainer(
-                    color: Colors.grey,
-                    title: 'History',
-                    value: empSetup.showFundsHistory,
-                    onChanged: (v) => _updateSetup(
-                      empSetup.copyWith(showFundsHistory: v ?? false),
                     ),
                   ),
                   _buildCheckBoxContainer(
@@ -263,6 +265,17 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _animatedPanel(
+              visible: empSetup.showFundsHistory,
+              width: 320,
+              child: Column(
+                children: [
+                  const SizedBox(height: 1),
+                  readDataGCashPending(),
+                  readDataGCashDone(),
+                ],
+              ),
+            ),
+            _animatedPanel(
               visible: empSetup.showLaundry,
               width: 320,
               child: readDataJobsOnQueue(),
@@ -273,7 +286,7 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
               child: readDataSuppliesCurrent(),
             ),
             _animatedPanel(
-              visible: empSetup.showFundsHistory,
+              visible: empSetup.showFunds,
               width: 600,
               child: readDataSuppliesHistory(),
             ),

@@ -8,87 +8,6 @@ import 'package:laundry_firebase/variables/newvariables/variables_fab.dart';
 import 'package:laundry_firebase/variables/newvariables/variables_oth.dart';
 
 void showJobOnQueueComplete(BuildContext context, JobModelRepository jobRepo) {
-  void syncRepoToSelected() {
-    //admin
-    jobRepo.currentEmpId = empIdGlobal;
-
-    jobRepo.customerNameVar.text = jobRepo.customerName;
-
-    //initial status
-    //riderpickup can be true and forsorting is true, but always display the forSorting. meaning pickup is done.
-    //if pickup is false, it went to forsorting but never in pickup.
-    if (jobRepo.riderPickup) jobRepo.selectedRiderPickup = riderPickup;
-    if (jobRepo.forSorting) jobRepo.selectedRiderPickup = forSorting;
-
-    //package status
-    if (jobRepo.regular) jobRepo.selectedPackage = regularPackage;
-    if (jobRepo.sayosabon) jobRepo.selectedPackage = sayoSabonPackage;
-    if (jobRepo.addOn) {
-      jobRepo.selectedPackage = othersPackage;
-      jobRepo.selectedPackagePrev = othersPackage;
-    }
-
-    //prices
-    if (jobRepo.addOn) {
-      jobRepo.totalPriceOthers = jobRepo.finalPrice;
-      jobRepo.totalPriceRegSS = 0;
-    } else {
-      jobRepo.totalPriceRegSS = jobRepo.finalPrice;
-      jobRepo.totalPriceOthers = 0;
-    }
-
-    //payment status
-    jobRepo.selectedPaidPartialCash = jobRepo.partialPaidCash;
-    jobRepo.selectedPaidPartialGCash = jobRepo.partialPaidGCash;
-    jobRepo.partialCashAmountVar.text =
-        jobRepo.partialPaidCashAmount.toString();
-    jobRepo.partialGCashAmountVar.text =
-        jobRepo.partialPaidGCashAmount.toString();
-    jobRepo.selectedPaidGCashVerified = jobRepo.paidGCashVerified;
-
-    jobRepo.remarksVar.text = jobRepo.remarks;
-
-    //weight status
-    if (jobRepo.perKilo) jobRepo.isPerKg = true;
-    if (jobRepo.perLoad) jobRepo.isPerKg = false;
-
-    jobRepo.quantityKg = jobRepo.finalKilo;
-    jobRepo.quantityLoad = jobRepo.finalLoad;
-    jobRepo.remarksVar.text = jobRepo.remarks;
-
-    //list other items
-    if (jobRepo.selectedPackage == othersPackage) {
-      jobRepo.listSelectedItemModel = List.from(jobRepo.items);
-    }
-
-    //other options
-    jobRepo.selectedFold = jobRepo.fold;
-    jobRepo.selectedMix = jobRepo.mix;
-    jobRepo.basketCount = jobRepo.basket;
-    jobRepo.ecoBagCount = jobRepo.ebag;
-    jobRepo.sakoCount = jobRepo.sako;
-
-    if (jobRepo.selectedPackage != othersPackage) {
-      jobRepo.addFabCount = jobRepo.items
-          .where((e) => e.itemUniqueId == addFabAnyItemModel.itemUniqueId)
-          .length;
-      jobRepo.addExtraDryCount = jobRepo.items
-          .where((e) => e.itemUniqueId == xDItemModel.itemUniqueId)
-          .length;
-      jobRepo.addExtraWashCount = jobRepo.items
-          .where((e) => e.itemUniqueId == xWashItemModel.itemUniqueId)
-          .length;
-      jobRepo.addExtraSpinCount = jobRepo.items
-          .where((e) => e.itemUniqueId == xSpinItemModel.itemUniqueId)
-          .length;
-    } else {
-      jobRepo.addFabCount = 0;
-      jobRepo.addExtraDryCount = 0;
-      jobRepo.addExtraWashCount = 0;
-      jobRepo.addExtraSpinCount = 0;
-    }
-  }
-
   Future<void> saveButtonSetRepository() async {
 //dates
     /// 🟣 Dates
@@ -103,7 +22,7 @@ void showJobOnQueueComplete(BuildContext context, JobModelRepository jobRepo) {
     //await setRepositoryLaundryPayment(context, 'Show Jobs OnQueue');
   }
 
-  syncRepoToSelected();
+  syncRepoToSelected(jobRepo);
   showDialog(
     context: context,
     builder: (BuildContext context) {
@@ -161,7 +80,7 @@ void showJobOnQueueComplete(BuildContext context, JobModelRepository jobRepo) {
                     visAddFab(context, setState, jobRepo),
                     visAddWash(context, setState, jobRepo),
                     visAddSpin(context, setState, jobRepo),
-                    conRemarks(context, setState, jobRepo),
+                    conRemarks(context, setState, jobRepo.remarksVar),
                   ],
                 ),
               ),
@@ -173,7 +92,7 @@ void showJobOnQueueComplete(BuildContext context, JobModelRepository jobRepo) {
             TextButton(
               onPressed: () {
                 setState(() {
-                  syncRepoToSelected();
+                  syncRepoToSelected(jobRepo);
                 });
 
                 Navigator.pop(context); // close popup

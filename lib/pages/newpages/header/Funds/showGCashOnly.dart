@@ -1,8 +1,8 @@
 //floating button new record  ###########################################################
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedConstantsFinal.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedMethods.dart';
+import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedVisibility.dart';
 import 'package:laundry_firebase/variables/newvariables/jobmodel_repository.dart';
 import 'package:laundry_firebase/variables/newvariables/supplies_hist_repository.dart';
 import 'package:laundry_firebase/variables/newvariables/variables.dart';
@@ -36,7 +36,7 @@ void showGCashOnly(BuildContext context, JobModelRepository jobRepo) {
     }
   }
 
-  Visibility fundTypeToggle(Function setState) {
+  Visibility _fundTypeToggle(Function setState) {
     return Visibility(
       visible: true,
       child: Container(
@@ -106,60 +106,6 @@ void showGCashOnly(BuildContext context, JobModelRepository jobRepo) {
     );
   }
 
-  Visibility customerAmount(Function setState) {
-    return Visibility(
-      visible: true,
-      child: Container(
-        padding: const EdgeInsets.all(1.0),
-        decoration: decoAmber(),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Label (not indented)
-            const Padding(
-              padding: EdgeInsets.only(left: 4, bottom: 4),
-              child: Text(
-                'Amount',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-
-            // Amount field
-            TextFormField(
-              controller: customerAmountVar,
-              keyboardType:
-                  const TextInputType.numberWithOptions(decimal: true),
-              inputFormatters: [
-                FilteringTextInputFormatter.allow(
-                  RegExp(r'\d+(\.\d{0,2})?'),
-                ),
-              ],
-              decoration: InputDecoration(
-                hintText: '0.00',
-                border: const OutlineInputBorder(),
-                prefixIcon: SizedBox(
-                  width: fieldIndentWidth,
-                  child: const Center(
-                    child: Text(
-                      '₱',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Future<void> saveButtonSetRepository() async {
     SuppliesHistRepository.instance
         .setItemName(getItemNameOnly(menuOthCashInOutFunds, selectedFundCode!));
@@ -189,7 +135,7 @@ void showGCashOnly(BuildContext context, JobModelRepository jobRepo) {
             vertical: 5,
           ),
           title: Text(
-            "GCash",
+            "GCash FundsIn/Out",
             textAlign: TextAlign.center,
           ),
           content: SingleChildScrollView(
@@ -203,9 +149,9 @@ void showGCashOnly(BuildContext context, JobModelRepository jobRepo) {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    customerAmount(setState),
-                    fundTypeToggle(setState),
-                    conRemarksSuppliesVar(setState),
+                    customerAmount(context, setState, customerAmountVar),
+                    _fundTypeToggle(setState),
+                    conRemarks(context, setState, remarksSuppliesVar),
                   ],
                 ),
               ),

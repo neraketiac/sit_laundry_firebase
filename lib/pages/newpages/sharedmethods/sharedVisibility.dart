@@ -4,6 +4,7 @@ import 'package:laundry_firebase/models/newmodels/otheritemmodel.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/autocompletecustomer.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedConstantsFinal.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedMethods.dart';
+import 'package:laundry_firebase/variables/newvariables/gcash_repository.dart';
 import 'package:laundry_firebase/variables/newvariables/jobmodel_repository.dart';
 import 'package:laundry_firebase/variables/newvariables/variables.dart';
 import 'package:laundry_firebase/variables/newvariables/variables_ble.dart';
@@ -11,6 +12,41 @@ import 'package:laundry_firebase/variables/newvariables/variables_det.dart';
 import 'package:laundry_firebase/variables/newvariables/variables_fab.dart';
 import 'package:laundry_firebase/variables/newvariables/variables_oth.dart';
 import 'package:laundry_firebase/variables/newvariables/variables_supplies.dart';
+
+class PHPhoneFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue, TextEditingValue newValue) {
+    // Remove all spaces
+    String digits = newValue.text.replaceAll(' ', '');
+
+    // Allow digits only
+    digits = digits.replaceAll(RegExp(r'[^0-9]'), '');
+
+    // Limit to 11 digits
+    if (digits.length > 11) {
+      digits = digits.substring(0, 11);
+    }
+
+    String formatted = '';
+
+    for (int i = 0; i < digits.length; i++) {
+      formatted += digits[i];
+
+      // Add spaces after 2, 4, and 7 digits
+      if (i == 1 || i == 3 || i == 6) {
+        if (i != digits.length - 1) {
+          formatted += ' ';
+        }
+      }
+    }
+
+    return TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(offset: formatted.length),
+    );
+  }
+}
 
 Visibility visCustomerName(
     BuildContext context, Function setState, JobModelRepository jobRepo) {
@@ -1720,19 +1756,208 @@ Visibility visAddSpin(
   );
 }
 
-Container conRemarks(
-    BuildContext context, Function setState, JobModelRepository jobRepo) {
+Container conRemarks(BuildContext context, Function setState,
+    TextEditingController valueController) {
   return Container(
     padding: EdgeInsets.all(1.0),
     decoration: decoAmber(),
     child: TextFormField(
       textCapitalization: TextCapitalization.words,
       textAlign: TextAlign.start,
-      controller: jobRepo.remarksVar,
+      controller: valueController,
       decoration: InputDecoration(labelText: 'Remarks', hintText: 'Notes'),
       validator: (val) {
-        jobRepo.remarksVar.text = val!;
+        valueController.text = val!;
       },
+    ),
+  );
+}
+
+Visibility customerAmount(BuildContext context, Function setState,
+    TextEditingController valueController) {
+  return Visibility(
+    visible: true,
+    child: Container(
+      padding: const EdgeInsets.all(1.0),
+      decoration: decoAmber(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Label (not indented)
+          const Padding(
+            padding: EdgeInsets.only(left: 4, bottom: 4),
+            child: Text(
+              'Amount',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+
+          // Amount field
+          TextFormField(
+            textAlign: TextAlign.center,
+            controller: valueController,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(
+                RegExp(r'\d+(\.\d{0,2})?'),
+              ),
+            ],
+            decoration: InputDecoration(
+              hintText: '0.00',
+              border: const OutlineInputBorder(),
+              prefixIcon: SizedBox(
+                width: fieldIndentWidth,
+                child: const Center(
+                  child: Text(
+                    '₱',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+Visibility customerNumber(BuildContext context, Function setState,
+    TextEditingController valueController) {
+  return Visibility(
+    visible: true,
+    child: Container(
+      padding: const EdgeInsets.all(1.0),
+      decoration: decoAmber(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Label (not indented)
+          const Padding(
+            padding: EdgeInsets.only(left: 4, bottom: 4),
+            child: Text(
+              'Mobile Number',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+
+          // Amount field
+          TextFormField(
+            textAlign: TextAlign.center,
+            controller: valueController,
+            keyboardType: TextInputType.phone,
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+              LengthLimitingTextInputFormatter(11),
+              PHPhoneFormatter(),
+            ],
+            decoration: const InputDecoration(
+              hintText: '09 XX XXX XXXX',
+              border: OutlineInputBorder(),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+Container conRemarksGcash(BuildContext context, Function setState,
+    TextEditingController valueController) {
+  return Container(
+    padding: EdgeInsets.all(1.0),
+    decoration: decoAmber(),
+    child: TextFormField(
+      textCapitalization: TextCapitalization.words,
+      textAlign: TextAlign.start,
+      controller: valueController,
+      decoration: InputDecoration(
+          labelText: 'Name + Remarks', hintText: 'Name, notes, etc'),
+      validator: (val) {
+        valueController.text = val!;
+      },
+    ),
+  );
+}
+
+Visibility fundTypeToggle(
+  Function setState,
+  List<int> listIntToSelect,
+  GCashRepository gRepo,
+  String captionHere,
+) {
+  return Visibility(
+    visible: true,
+    child: Container(
+      alignment: Alignment.center,
+      padding: const EdgeInsets.all(1.0),
+      decoration: decoLightBlue(),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text('For Customer Only'),
+          // 🔹 FIRST ROW
+          ToggleButtons(
+            isSelected: List.generate(
+              listIntToSelect.length,
+              (i) => gRepo.selectedFundCode == listIntToSelect[i],
+            ),
+            onPressed: (index) {
+              setState(() {
+                gRepo.selectedFundCode = listIntToSelect[index];
+              });
+            },
+            borderRadius: BorderRadius.circular(8),
+            selectedColor: Colors.white,
+            borderColor: Colors.blue,
+            fillColor: Colors.blue,
+            color: Colors.black,
+            constraints: const BoxConstraints(
+              minWidth: 70,
+              minHeight: 30,
+            ),
+            children: List.generate(listIntToSelect.length, (index) {
+              return GestureDetector(
+                onDoubleTap: () {
+                  setState(() {
+                    if (listIntToSelect[index] == menuOthLaundryPayment) {
+                      customerAmountVar.text =
+                          (int.parse(customerAmountVar.text) + 155).toString();
+                    }
+                  });
+
+                  // You can add any double-tap specific logic here
+                },
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 0),
+                  child: Text(
+                    ['Cash-in', 'Load', 'Cash-Out'][index],
+                  ),
+                ),
+              );
+            }),
+          ),
+          const SizedBox(height: 1),
+          // 🔹 CAPTION
+          Text(
+            captionHere,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 12,
+              color: Colors.black54,
+            ),
+          ),
+        ],
+      ),
     ),
   );
 }
