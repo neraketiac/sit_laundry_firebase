@@ -25,6 +25,7 @@ Widget readDataGCashDone() {
         builder: (context, setState) {
           return ListView.builder(
             shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
             itemCount: snapshotDatas.length,
             itemBuilder: (context, index) {
               final snapshotData = snapshotDatas[index];

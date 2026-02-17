@@ -113,6 +113,7 @@ Widget readDataJobsOnQueue() {
         builder: (context, setState) {
           return ReorderableListView(
             shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
             onReorder: (oldIndex, newIndex) {
               setState(() {
                 if (newIndex > oldIndex) newIndex -= 1;
