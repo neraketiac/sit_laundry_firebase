@@ -2,8 +2,9 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:dio/dio.dart';
+
 import 'package:laundry_firebase/models/newmodels/gcashmodel.dart';
+import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedMethods.dart';
 
 /// 🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦
 /// 🔹 COLLECTION REFERENCES
@@ -115,33 +116,11 @@ class DatabaseGCashPending {
     return bSuccess;
   }
 
-  Future<String?> uploadToCloudinaryBytes(Uint8List bytes) async {
-    const cloudName = 'dxdskr55w';
-    const uploadPreset = 'gcash_unsigned';
-
-    final dio = Dio();
-
-    final url = 'https://api.cloudinary.com/v1_1/$cloudName/image/upload';
-
-    FormData formData = FormData.fromMap({
-      "file": MultipartFile.fromBytes(
-        bytes,
-        filename: "upload.jpg",
-      ),
-      "upload_preset": uploadPreset,
-    });
-
-    final response = await dio.post(url, data: formData);
-
-    if (response.statusCode == 200) {
-      return response.data['secure_url'];
-    }
-
-    return null;
-  }
-
   Future<void> saveImageBytes(GCashModel model, Uint8List bytes) async {
-    String? imageUrl = await uploadToCloudinaryBytes(bytes);
+    // 🔥 compress first
+    Uint8List compressedBytes = await compressImage(bytes);
+
+    String? imageUrl = await uploadToCloudinaryBytes(compressedBytes);
 
     if (imageUrl == null) {
       throw Exception("Image upload failed");

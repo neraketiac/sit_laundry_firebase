@@ -1,7 +1,8 @@
 import 'dart:io';
-
+import 'package:dio/dio.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:laundry_firebase/models/newmodels/gcashmodel.dart';
@@ -760,6 +761,17 @@ Future<Uint8List?> pickImageUniversal() async {
   }
 }
 
+Future<Uint8List> compressImage(Uint8List bytes) async {
+  final compressed = await FlutterImageCompress.compressWithList(
+    bytes,
+    minWidth: 900, // resize width
+    quality: 65, // 0–100 (65 is good balance)
+    format: CompressFormat.jpeg,
+  );
+
+  return compressed;
+}
+
 Future<void> callDatabaseSaveImage(BuildContext context, GCashModel gM) async {
   DatabaseGCashPending databaseGCashPending = DatabaseGCashPending();
 
@@ -768,6 +780,31 @@ Future<void> callDatabaseSaveImage(BuildContext context, GCashModel gM) async {
   if (bytes == null) return;
 
   await databaseGCashPending.saveImageBytes(gM, bytes);
+}
+
+Future<String?> uploadToCloudinaryBytes(Uint8List bytes) async {
+  const cloudName = 'dxdskr55w';
+  const uploadPreset = 'gcash_unsigned';
+
+  final dio = Dio();
+
+  final url = 'https://api.cloudinary.com/v1_1/$cloudName/image/upload';
+
+  FormData formData = FormData.fromMap({
+    "file": MultipartFile.fromBytes(
+      bytes,
+      filename: "upload.jpg",
+    ),
+    "upload_preset": uploadPreset,
+  });
+
+  final response = await dio.post(url, data: formData);
+
+  if (response.statusCode == 200) {
+    return response.data['secure_url'];
+  }
+
+  return null;
 }
 
 // NOTIFICATIONS //
