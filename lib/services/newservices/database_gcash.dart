@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:laundry_firebase/models/newmodels/gcashmodel.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedMethods.dart';
+import 'package:laundry_firebase/variables/newvariables/variables_oth.dart';
 
 /// 🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦
 /// 🔹 COLLECTION REFERENCES
@@ -116,7 +117,7 @@ class DatabaseGCashPending {
     return bSuccess;
   }
 
-  Future<void> saveImageBytes(GCashModel model, Uint8List bytes) async {
+  Future<void> saveImageUrl(GCashModel model, Uint8List bytes) async {
     // 🔥 compress first
     Uint8List compressedBytes = await compressImage(bytes);
 
@@ -126,12 +127,23 @@ class DatabaseGCashPending {
       throw Exception("Image upload failed");
     }
 
-    await FirebaseFirestore.instance
-        .collection(GCASH_PENDING_REF)
-        .doc(model.docId)
-        .update({
-      'ImageUrl': imageUrl,
-    });
+    if (model.itemUniqueId == menuOthUniqIdCashOut) {
+      await FirebaseFirestore.instance
+          .collection(GCASH_PENDING_REF)
+          .doc(model.docId)
+          .update({
+        'CashOutImageUrl': imageUrl,
+        'GCashStatus': 0.5,
+      });
+    } else {
+      await FirebaseFirestore.instance
+          .collection(GCASH_PENDING_REF)
+          .doc(model.docId)
+          .update({
+        'CashInImageUrl': imageUrl,
+        'GCashStatus': 0.75,
+      });
+    }
   }
 }
 
@@ -145,7 +157,7 @@ class DatabaseGCashDone {
 
   /// 🔄 Stream all ongoing modelValues
   Stream<List<GCashModel>> streamAll() {
-    return _ref.orderBy('LogDate', descending: true).snapshots().map(
+    return _ref.orderBy('CompleteDate', descending: true).snapshots().map(
           (s) => s.docs.map((d) => GCashModel.fromJson(d.data())).toList(),
         );
   }
@@ -175,8 +187,8 @@ Future<void> moveToNext(String docId) async {
     tx.set(ongoingRef, {
       ...data,
       // 'Remarks': updatedRemarks,
-      'CurrentStocks': 1,
-      'LogDate': Timestamp.now(),
+      'GCashStatus': 1,
+      'CompleteDate': Timestamp.now(),
     });
 
     tx.delete(queueRef);

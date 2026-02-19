@@ -3,96 +3,115 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class GCashModel {
   String docId;
   int countId;
-  int itemId;
-  int itemUniqueId; //if itemUniqueId below 10,000 then no security is needed, if equal or above, need to check if has access, cannot view in table
-  String itemName;
-  int currentCounter; // -1 or +1 or -2 or +2, indicates to subtract or add in stocksCount
-  int currentStocks; // ex. 50 if -1 counter, 49 currentStocks
   Timestamp logDate;
-  String empId;
+  String logBy;
+  Timestamp completeDate;
+  int itemId;
+  int itemUniqueId;
+  String itemName;
+  int customerAmount;
+  double gCashStatus;
+  // cash in status   0.25-pending                    0.75-picture provided, can mark complete 1.0 go to gcash done.
+  // cash out status  0.25-pending 0.5 with picture   0.75-go signal to give money, can mark complete 1.0 go to gcash done.
   int customerId;
   String customerName;
+  String customerNumber; //so that i can save 09 99 999 9999
   String remarks;
-  String? imageUrl;
+  String cashInImageUrl;
+  String cashOutImageUrl;
 
-  GCashModel({
-    required this.docId,
-    required this.countId,
-    required this.itemId,
-    required this.itemUniqueId,
-    required this.itemName,
-    required this.currentCounter,
-    required this.currentStocks,
-    required this.logDate,
-    required this.empId,
-    required this.customerId,
-    required this.customerName,
-    required this.remarks,
-    this.imageUrl,
-  });
+  GCashModel(
+      {required this.docId,
+      required this.countId,
+      required this.logDate,
+      required this.logBy,
+      required this.completeDate,
+      required this.itemId,
+      required this.itemUniqueId,
+      required this.itemName,
+      required this.customerAmount,
+      required this.gCashStatus,
+      required this.customerId,
+      required this.customerName,
+      required this.customerNumber,
+      required this.remarks,
+      required this.cashInImageUrl,
+      required this.cashOutImageUrl});
 
   GCashModel.fromJson(Map<String, dynamic> json)
       : this(
           docId: json['DocId']! as String,
           countId: json['CountId']! as int,
+          logDate: json['LogDate']! as Timestamp,
+          logBy: json['LogBy']! as String,
+          completeDate: json['CompleteDate']! as Timestamp,
           itemId: json['ItemId']! as int,
           itemUniqueId: json['ItemUniqueId']! as int,
           itemName: json['ItemName']! as String,
-          currentCounter: json['CurrentCounter']! as int,
-          currentStocks: json['CurrentStocks']! as int,
-          logDate: json['LogDate']! as Timestamp,
-          empId: json['EmpId']! as String,
+          customerAmount: json['CustomerAmount']! as int,
+          gCashStatus: json['GCashStatus']! as double,
           customerId: json['CustomerId']! as int,
           customerName: json['CustomerName']! as String,
+          customerNumber: json['CustomerNumber']! as String,
           remarks: json['Remarks']! as String,
-          imageUrl: json['ImageUrl'] as String?,
+          cashInImageUrl: json['CashInImageUrl'] as String,
+          cashOutImageUrl: json['CashOutImageUrl'] as String,
         );
 
   GCashModel copyWith({
     String? docId,
     int? countId,
+    Timestamp? logDate,
+    String? logBy,
+    Timestamp? completeDate,
     int? itemId,
     int? itemUniqueId,
     String? itemName,
-    int? currentCounter,
-    int? currentStocks,
-    Timestamp? logDate,
-    String? empId,
+    int? customerAmount,
+    double? gCashStatus,
     int? customerId,
     String? customerName,
+    String? customerNumber,
     String? remarks,
-    String? imageUrl,
+    String? cashInImageUrl,
+    String? cashOutImageUrl,
   }) {
     return GCashModel(
       docId: docId ?? this.docId,
       countId: countId ?? this.countId,
+      logDate: logDate ?? this.logDate,
+      logBy: logBy ?? this.logBy,
+      completeDate: completeDate ?? this.completeDate,
       itemId: itemId ?? this.itemId,
       itemUniqueId: itemUniqueId ?? this.itemUniqueId,
       itemName: itemName ?? this.itemName,
-      currentCounter: currentCounter ?? this.currentCounter,
-      currentStocks: currentStocks ?? this.currentStocks,
-      logDate: logDate ?? this.logDate,
-      empId: empId ?? this.empId,
+      customerAmount: customerAmount ?? this.customerAmount,
+      gCashStatus: gCashStatus ?? this.gCashStatus,
       customerId: customerId ?? this.customerId,
       customerName: customerName ?? this.customerName,
+      customerNumber: customerNumber ?? this.customerNumber,
       remarks: remarks ?? this.remarks,
-      imageUrl: imageUrl,
+      cashInImageUrl: cashInImageUrl ?? this.cashInImageUrl,
+      cashOutImageUrl: cashOutImageUrl ?? this.cashOutImageUrl,
     );
   }
 
   Map<String, dynamic> toJson() => {
         'DocId': docId,
         'CountId': countId,
+        'LogDate': logDate,
+        'LogBy': logBy,
+        'CompleteDate': completeDate,
         'ItemId': itemId,
         'ItemUniqueId': itemUniqueId,
         'ItemName': itemName,
-        'CurrentCounter': currentCounter,
-        'CurrentStocks': currentStocks,
-        'LogDate': logDate,
-        'EmpId': empId,
+        'CustomerAmount': customerAmount,
+        'GCashStatus': gCashStatus,
         'CustomerId': customerId,
         'CustomerName': customerName,
+        'CustomerNumber': customerNumber,
         'Remarks': remarks,
-        'ImageUrl': imageUrl,
+        'CashInImageUrl': cashInImageUrl,
+        'CashOutImageUrl': cashOutImageUrl,
       };
 }

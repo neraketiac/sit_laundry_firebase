@@ -13,7 +13,6 @@ import 'package:laundry_firebase/pages/loyalty_admin.dart';
 import 'package:laundry_firebase/pages/oldpages/queue.dart';
 import 'package:laundry_firebase/services/oldservices/database_jobsonqueue.dart';
 import 'package:laundry_firebase/services/oldservices/database_other_items.dart';
-import 'package:laundry_firebase/variables/newvariables/gcash_repository.dart';
 import 'package:laundry_firebase/variables/oldvariables/vairables_jobsonqueue.dart';
 import 'package:laundry_firebase/variables/newvariables/variables_ble.dart';
 import 'package:laundry_firebase/variables/newvariables/variables_det.dart';
@@ -49,17 +48,20 @@ late JobsOnQueueModel jobsOnQueueModelGlobal;
 final GCashModel finalGCashModel = GCashModel(
     docId: "",
     countId: 0,
+    logDate: Timestamp.now(),
+    logBy: empIdGlobal,
+    completeDate: Timestamp.now(),
     itemId: selectedSupVar.itemId,
     itemUniqueId: selectedSupVar.itemUniqueId,
     itemName: selectedSupVar.itemName,
-    currentCounter: 0,
-    currentStocks: 0,
-    logDate: Timestamp.now(),
-    empId: empIdGlobal,
+    customerAmount: 0,
+    gCashStatus: 0.25,
     customerId: 1,
     customerName: '',
+    customerNumber: '',
     remarks: "",
-    imageUrl: "");
+    cashInImageUrl: "",
+    cashOutImageUrl: "");
 late SuppliesModelHist suppliesModelHistGlobal;
 late SuppliesModelHist sMHGLaundryPayment;
 late SuppliesModelHist sMHGLaundryPaymentDonP;

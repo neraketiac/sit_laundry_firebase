@@ -1,14 +1,13 @@
-import 'dart:io';
-
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:laundry_firebase/models/newmodels/gcashmodel.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedMethods.dart';
+import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedVisibility.dart';
 import 'package:laundry_firebase/services/newservices/database_gcash.dart';
 import 'package:laundry_firebase/variables/newvariables/gcash_repository.dart';
+import 'package:laundry_firebase/variables/newvariables/variables.dart';
+import 'package:laundry_firebase/variables/newvariables/variables_oth.dart';
 
 Widget readDataGCashPending() {
   DatabaseGCashPending dbGCashPending = DatabaseGCashPending();
@@ -46,20 +45,6 @@ Widget readDataGCashPending() {
               return MouseRegion(
                 cursor: SystemMouseCursors.click,
                 child: InkWell(
-                  onTap: () {
-                    setState(() {
-                      selectedIndex = index;
-
-                      if (gRepo.imageUrl != null &&
-                          gRepo.imageUrl!.isNotEmpty &&
-                          gRepo.imageUrl!.startsWith('http')) {
-                        showImagePreview(context, gRepo.imageUrl!);
-                      } else {
-                        callDatabaseSaveImage(context, gRepo.getModel()!);
-                      }
-                    });
-                    //showJobOnQueueComplete(context, jobRepo);
-                  },
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 250),
                     margin: const EdgeInsets.symmetric(vertical: 10),
@@ -91,26 +76,45 @@ Widget readDataGCashPending() {
                                     'Comfirmation',
                                     style: TextStyle(fontSize: 14),
                                   ),
-                                  content: const Text(
-                                    'Select Complete or Delete?\nTap outside to cancel.',
+                                  content: Text(
+                                    'Select available options.\nTap outside to cancel.',
                                     style: TextStyle(fontSize: 12),
                                   ),
                                   actions: [
-                                    TextButton(
-                                      onPressed: () async {
-                                        await dbGCashPending
-                                            .deleteVoid(gRepo.getModel()!);
-                                        Navigator.pop(context, false); // NO
-                                      },
-                                      child: const Text('Delete'),
-                                    ),
-                                    ElevatedButton(
-                                      onPressed: () async {
-                                        await moveToNext(gRepo.docId);
-                                        Navigator.pop(context, true); // YES
-                                      },
-                                      child: const Text('Complete'),
-                                    ),
+                                    if (gRepo.gCashStatus <= 0.5)
+                                      boxButtonElevated(
+                                        context: context,
+                                        label: 'Delete',
+                                        onPressed: () async {
+                                          await dbGCashPending
+                                              .deleteVoid(gRepo.getModel()!);
+                                        },
+                                      ),
+                                    if (isAdmin &&
+                                        gRepo.itemUniqueId ==
+                                            menuOthUniqIdCashOut &&
+                                        gRepo.gCashStatus <= 0.5)
+                                      boxButtonElevated(
+                                        context: context,
+                                        label: 'BigayCashOut',
+                                        onPressed: () async {
+                                          gRepo.remarks = (gRepo.remarks == ''
+                                              ? 'Bigay CashOut'
+                                              : '${gRepo.remarks}-BigayCashOut');
+                                          gRepo.gCashStatus = 0.75;
+                                          await dbGCashPending
+                                              .updateVoid(gRepo.getModel()!);
+                                        },
+                                      ),
+                                    if (gRepo.gCashStatus > 0.5)
+                                      boxButtonElevated(
+                                        context: context,
+                                        label: 'Complete',
+                                        onPressed: () async {
+                                          gRepo.gCashStatus = 1.0;
+                                          await moveToNext(gRepo.docId);
+                                        },
+                                      ),
                                   ],
                                 );
                               },
@@ -131,14 +135,8 @@ Widget readDataGCashPending() {
                                 width: 38,
                                 height: 38,
                                 child: CircularProgressIndicator(
-                                  value: (double.tryParse(
-                                              gRepo.currentStocks.toString()) ??
-                                          0.0) +
-                                      (gRepo.imageUrl != null &&
-                                              gRepo.imageUrl!.isNotEmpty &&
-                                              gRepo.imageUrl!.startsWith('http')
-                                          ? 0.75
-                                          : 0.25), // added imageUrl check for progress value
+                                  value: gRepo
+                                      .gCashStatus, // added imageUrl check for progress value
                                   // removed Tween animation value
                                   strokeWidth: 6,
                                   // backgroundColor:
@@ -167,12 +165,11 @@ Widget readDataGCashPending() {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              //Customer Name (actually a number)
                               Row(
                                 children: [
                                   Expanded(
                                     child: Text(
-                                      gRepo.customerName,
+                                      gRepo.customerNumber,
                                       style: TextStyle(
                                         fontWeight: FontWeight.w600,
                                         color: isSelected
@@ -191,8 +188,10 @@ Widget readDataGCashPending() {
                                     onPressed: () async {
                                       await Clipboard.setData(
                                         ClipboardData(
-                                            text: gRepo.customerName.replaceAll(
-                                                    RegExp(r'[^0-9]'), '') ??
+                                            text: gRepo.customerNumber
+                                                    .replaceAll(
+                                                        RegExp(r'[^0-9]'),
+                                                        '') ??
                                                 ''),
                                       );
 
@@ -209,17 +208,6 @@ Widget readDataGCashPending() {
                                 ],
                               ),
                               const SizedBox(width: 3),
-                              //Customer Name + Remarks
-                              Text(
-                                'Dtl: ${gRepo.remarks}',
-                                style: TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    color: isSelected
-                                        ? Colors.deepPurple
-                                        : Colors.black,
-                                    fontSize: 10),
-                              ),
-                              const SizedBox(width: 3),
                               //Item Name
                               Row(
                                 children: [
@@ -231,13 +219,28 @@ Widget readDataGCashPending() {
                                         color: isSelected
                                             ? Colors.deepPurple
                                             : Colors.black,
-                                        fontSize: 10,
+                                        fontSize: 12,
                                       ),
                                       overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
                                 ],
                               ),
+                              if (gRepo.customerName.isNotEmpty ||
+                                  gRepo.remarks.isNotEmpty)
+                                const SizedBox(width: 3),
+                              //Remarks
+                              if (gRepo.customerName.isNotEmpty ||
+                                  gRepo.remarks.isNotEmpty)
+                                Text(
+                                  '${gRepo.customerName}: ${gRepo.remarks}',
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      color: isSelected
+                                          ? Colors.deepPurple
+                                          : Colors.black,
+                                      fontSize: 10),
+                                ),
                               const SizedBox(width: 3),
                               //Date and Time
                               Row(
@@ -264,21 +267,21 @@ Widget readDataGCashPending() {
                         SizedBox(
                           width: 5,
                         ),
-                        InkWell(
-                          onTap: (() {
-                            //showPaidUnpaid(context, jobRepo);
-                          }),
-                          child: Column(
-                            children: [
-                              Text(
-                                '₱ ${gRepo.currentCounter}',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.deepPurple,
-                                ),
+                        Column(
+                          children: [
+                            Text(
+                              '₱ ${gRepo.customerAmount}',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.deepPurple,
                               ),
-                            ],
-                          ),
+                            ),
+                            showUploadedImage(
+                              context,
+                              setState,
+                              gRepo,
+                            ),
+                          ],
                         ),
                         const SizedBox(width: 20),
                       ],

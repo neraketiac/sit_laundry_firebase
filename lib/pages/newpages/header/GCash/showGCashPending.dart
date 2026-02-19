@@ -1,4 +1,5 @@
 //floating button new record  ###########################################################
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedMethods.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedVisibility.dart';
@@ -36,6 +37,7 @@ void showGCashPending(BuildContext context) {
   }
 
   Future<void> saveButtonSetRepository() async {
+    gRepo.customerNumber = gRepo.customerNumberVar.text;
     gRepo.customerName = gRepo.customerNameVar.text;
     //.replaceAll(RegExp(r'[^0-9]'), '');
 
@@ -44,8 +46,10 @@ void showGCashPending(BuildContext context) {
     gRepo.itemId = (menuOthCashInOutFunds);
     gRepo.itemUniqueId = (gRepo.selectedFundCode);
     gRepo.remarks = (gRepo.remarksVar.text);
-    gRepo.currentCounter =
+    gRepo.customerAmount =
         int.parse(gRepo.customerAmountVar.text.replaceAll(',', ''));
+    gRepo.logDate = Timestamp.now();
+    gRepo.logBy = empIdGlobal;
 
     await callDatabaseGCashPendingAdd(context, gRepo.getModel()!);
   }
@@ -82,11 +86,15 @@ void showGCashPending(BuildContext context) {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    customerNumber(context, setState, gRepo.customerNameVar),
-                    conRemarksGcash(context, setState, gRepo.remarksVar),
+                    customerNumber(context, setState, gRepo.customerNumberVar),
                     customerAmount(context, setState, gRepo.customerAmountVar),
-                    fundTypeToggle(setState, fundTypeCodes1stLayer, gRepo,
-                        captionHere(gRepo.selectedFundCode)),
+                    customerNameGCash(context, setState, gRepo.customerNameVar),
+                    conRemarks(context, setState, gRepo.remarksVar),
+                    fundTypeToggle(
+                      setState,
+                      fundTypeCodes1stLayer,
+                      gRepo,
+                    ),
                   ],
                 ),
               ),
@@ -104,7 +112,9 @@ void showGCashPending(BuildContext context) {
                 style: TextStyle(color: Colors.black),
               ),
             ),
-            ElevatedButton(
+            boxButtonElevated(
+              context: context,
+              label: 'Save',
               onPressed: () async {
                 if (gRepo.customerAmountVar.text == '') {
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -118,7 +128,6 @@ void showGCashPending(BuildContext context) {
                 } else {
                   if (fundTypeCodes1stLayer.contains(gRepo.selectedFundCode)) {
                     await saveButtonSetRepository();
-                    Navigator.pop(context);
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
@@ -127,8 +136,32 @@ void showGCashPending(BuildContext context) {
                   }
                 }
               },
-              child: const Text('Save'),
             ),
+            // ElevatedButton(
+            //   onPressed: () async {
+            //     if (gRepo.customerAmountVar.text == '') {
+            //       ScaffoldMessenger.of(context).showSnackBar(
+            //         const SnackBar(content: Text('Please enter amount.')),
+            //       );
+            //     } else if (gRepo.selectedFundCode == null) {
+            //       ScaffoldMessenger.of(context).showSnackBar(
+            //         const SnackBar(
+            //             content: Text('Please select transaction type.')),
+            //       );
+            //     } else {
+            //       if (fundTypeCodes1stLayer.contains(gRepo.selectedFundCode)) {
+            //         await saveButtonSetRepository();
+            //         Navigator.pop(context);
+            //       } else {
+            //         ScaffoldMessenger.of(context).showSnackBar(
+            //           const SnackBar(
+            //               content: Text('Please select transaction type.')),
+            //         );
+            //       }
+            //     }
+            //   },
+            //   child: const Text('Save'),
+            // ),
           ],
         );
       });

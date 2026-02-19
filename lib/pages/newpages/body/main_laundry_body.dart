@@ -16,38 +16,6 @@ import 'package:laundry_firebase/services/newservices/database_employee_setup.da
 import 'package:laundry_firebase/variables/newvariables/variables.dart';
 import 'package:web/web.dart' as web;
 
-// Future<void> registerWebToken(String userId) async {
-//   try {
-//     NotificationSettings settings =
-//         await FirebaseMessaging.instance.requestPermission();
-
-//     if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-//       print("Notification permission granted");
-
-//       final token = await FirebaseMessaging.instance.getToken(
-//         vapidKey:
-//             'BA9ojQB79PiK84UardJeRfsk_okHsBHG763k_TgqbdF7cMkh_qnxKwrv84byD2XjU3sGLF4PHgaR-yjb_gfn4Zs',
-//       );
-
-//       print("FCM TOKEN: $token");
-
-//       if (token != null) {
-//         await FirebaseFirestore.instance
-//             .collection('users')
-//             .doc(userId) // employeeId / contactNumber
-//             .set({
-//           'fcmToken': token,
-//           'updatedAt': Timestamp.now(),
-//         }, SetOptions(merge: true));
-//       }
-//     } else {
-//       print("Notification permission denied");
-//     }
-//   } catch (e) {
-//     print("FCM INIT ERROR: $e");
-//   }
-// }
-
 class MyMainLaundryBody extends StatefulWidget {
   final String empidClass;
 

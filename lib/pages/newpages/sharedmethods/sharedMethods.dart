@@ -15,6 +15,7 @@ import 'package:laundry_firebase/services/newservices/database_employee_current.
 import 'package:laundry_firebase/services/newservices/database_gcash.dart';
 import 'package:laundry_firebase/services/newservices/database_jobs.dart';
 import 'package:laundry_firebase/services/newservices/database_supplies_current.dart';
+import 'package:laundry_firebase/variables/newvariables/gcash_repository.dart';
 import 'package:laundry_firebase/variables/newvariables/jobmodel_repository.dart';
 import 'package:laundry_firebase/variables/newvariables/supplies_hist_repository.dart';
 import 'package:laundry_firebase/variables/newvariables/variables.dart';
@@ -269,6 +270,41 @@ Widget boxButton2label({
         textAlign: TextAlign.center,
       ),
     ),
+  );
+}
+
+ElevatedButton boxButtonElevated({
+  required BuildContext context,
+  required String label,
+  required Future<void> Function()? onPressed,
+  bool disabled = false,
+}) {
+  return ElevatedButton(
+    onPressed: disabled || onPressed == null
+        ? null
+        : () async {
+            // Show loading
+            showDialog(
+              context: context,
+              barrierDismissible: false,
+              builder: (_) => const Center(
+                child: CircularProgressIndicator(),
+              ),
+            );
+
+            try {
+              await onPressed(); // 👈 EXECUTES PASSED LOGIC
+            } catch (e) {
+              print(e);
+            }
+
+            // Close loading
+            Navigator.of(context).pop();
+
+            // Close confirmation dialog
+            Navigator.of(context).pop(true);
+          },
+    child: Text(label),
   );
 }
 
@@ -660,8 +696,8 @@ Future<void> callDatabaseGCashPendingAdd(
 
     notifyAllUsers(
       title: gM.itemName,
-      body: "${gM.customerName} ₱${gM.currentCounter}",
-      url: "https://wash-ko-lang-sit.web.app/#/scan?empId=${gM.empId}",
+      body: "${gM.customerName} ₱${gM.customerAmount}",
+      url: "https://wash-ko-lang-sit.web.app/#/scan?empId=${gM.logBy}",
     );
   } else {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -772,14 +808,14 @@ Future<Uint8List> compressImage(Uint8List bytes) async {
   return compressed;
 }
 
-Future<void> callDatabaseSaveImage(BuildContext context, GCashModel gM) async {
-  DatabaseGCashPending databaseGCashPending = DatabaseGCashPending();
-
+Future<void> callPickImageUniversal(
+    BuildContext context, GCashModel gM, bool bCashIn) async {
   final bytes = await pickImageUniversal();
 
   if (bytes == null) return;
 
-  await databaseGCashPending.saveImageBytes(gM, bytes);
+  DatabaseGCashPending databaseGCashPending = DatabaseGCashPending();
+  await databaseGCashPending.saveImageUrl(gM, bytes);
 }
 
 Future<String?> uploadToCloudinaryBytes(Uint8List bytes) async {

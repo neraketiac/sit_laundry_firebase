@@ -1871,7 +1871,7 @@ Visibility customerNumber(BuildContext context, Function setState,
   );
 }
 
-Container conRemarksGcash(BuildContext context, Function setState,
+Container customerNameGCash(BuildContext context, Function setState,
     TextEditingController valueController) {
   return Container(
     padding: EdgeInsets.all(1.0),
@@ -1881,7 +1881,7 @@ Container conRemarksGcash(BuildContext context, Function setState,
       textAlign: TextAlign.start,
       controller: valueController,
       decoration: InputDecoration(
-          labelText: 'Name + Remarks', hintText: 'Name, notes, etc'),
+          labelText: 'Customer Name', hintText: 'Customer Name'),
       validator: (val) {
         valueController.text = val!;
       },
@@ -1893,7 +1893,6 @@ Visibility fundTypeToggle(
   Function setState,
   List<int> listIntToSelect,
   GCashRepository gRepo,
-  String captionHere,
 ) {
   return Visibility(
     visible: true,
@@ -1946,17 +1945,49 @@ Visibility fundTypeToggle(
               );
             }),
           ),
-          const SizedBox(height: 1),
-          // 🔹 CAPTION
-          Text(
-            captionHere,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontSize: 12,
-              color: Colors.black54,
-            ),
-          ),
         ],
+      ),
+    ),
+  );
+}
+
+Visibility showUploadedImage(
+    BuildContext context, Function setState, GCashRepository gRepo) {
+  return Visibility(
+    visible: true,
+    child: InkWell(
+      onTap: (() {
+        debugPrint(
+            'gRepo.itemUniqueId: ${gRepo.itemUniqueId} / ${gRepo.cashInImageUrl} / ${gRepo.cashOutImageUrl}');
+        if (gRepo.itemUniqueId == menuOthUniqIdCashOut) {
+          if (gRepo.cashOutImageUrl == '') {
+            callPickImageUniversal(context, gRepo.getModel()!, false);
+          } else {
+            showImagePreview(context, gRepo.cashOutImageUrl);
+          }
+        } else {
+          if (gRepo.cashInImageUrl == '') {
+            callPickImageUniversal(context, gRepo.getModel()!, true);
+          } else {
+            showImagePreview(context, gRepo.cashInImageUrl);
+          }
+        }
+      }),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(6),
+        child: Image.network(
+          (gRepo.itemUniqueId == menuOthUniqIdCashOut
+              ? gRepo.cashOutImageUrl
+              : gRepo.cashInImageUrl)!,
+          width: 20,
+          height: 30,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => Icon(
+              (gRepo.itemUniqueId == menuOthUniqIdCashOut
+                  ? Icons.logout
+                  : Icons.login),
+              size: 25),
+        ),
       ),
     ),
   );

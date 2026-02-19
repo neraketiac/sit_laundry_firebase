@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:laundry_firebase/models/newmodels/gcashmodel.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedMethods.dart';
+import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedVisibility.dart';
 import 'package:laundry_firebase/services/newservices/database_gcash.dart';
 import 'package:laundry_firebase/variables/newvariables/gcash_repository.dart';
 
@@ -44,11 +45,6 @@ Widget readDataGCashDone() {
                   onTap: () {
                     setState(() {
                       selectedIndex = index;
-                      if (gRepo.imageUrl != null &&
-                          gRepo.imageUrl!.isNotEmpty &&
-                          gRepo.imageUrl!.startsWith('http')) {
-                        showImagePreview(context, gRepo.imageUrl!);
-                      }
                     });
                     //showJobOnQueueComplete(context, jobRepo);
                   },
@@ -82,9 +78,8 @@ Widget readDataGCashDone() {
                                 width: 38,
                                 height: 38,
                                 child: CircularProgressIndicator(
-                                  value: double.tryParse(
-                                          gRepo.currentStocks.toString()) ??
-                                      0.0, // removed Tween animation value
+                                  value: gRepo
+                                      .gCashStatus, // removed Tween animation value
                                   strokeWidth: 6,
                                   // backgroundColor:
                                   //     backGroundStatusColor(job),
@@ -117,7 +112,7 @@ Widget readDataGCashDone() {
                                 children: [
                                   Expanded(
                                     child: Text(
-                                      gRepo.customerName,
+                                      gRepo.customerNumber,
                                       style: TextStyle(
                                         fontWeight: FontWeight.w600,
                                         color: isSelected
@@ -128,17 +123,7 @@ Widget readDataGCashDone() {
                                   ),
                                 ],
                               ),
-                              const SizedBox(width: 3),
-                              //Customer Name + Remarks
-                              Text(
-                                'Dtl: ${gRepo.remarks}',
-                                style: TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    color: isSelected
-                                        ? Colors.deepPurple
-                                        : Colors.black,
-                                    fontSize: 10),
-                              ),
+
                               const SizedBox(width: 3),
                               //Item Name
                               Row(
@@ -158,6 +143,21 @@ Widget readDataGCashDone() {
                                   ),
                                 ],
                               ),
+                              if (gRepo.customerName.isNotEmpty ||
+                                  gRepo.remarks.isNotEmpty)
+                                const SizedBox(width: 3),
+                              //Remarks
+                              if (gRepo.customerName.isNotEmpty ||
+                                  gRepo.remarks.isNotEmpty)
+                                Text(
+                                  '${gRepo.customerName}: ${gRepo.remarks}',
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      color: isSelected
+                                          ? Colors.deepPurple
+                                          : Colors.black,
+                                      fontSize: 10),
+                                ),
                               const SizedBox(width: 3),
                               //Date and Time
                               Row(
@@ -184,21 +184,21 @@ Widget readDataGCashDone() {
                         SizedBox(
                           width: 5,
                         ),
-                        InkWell(
-                          onTap: (() {
-                            //showPaidUnpaid(context, jobRepo);
-                          }),
-                          child: Column(
-                            children: [
-                              Text(
-                                '₱ ${gRepo.currentCounter}',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.deepPurple,
-                                ),
+                        Column(
+                          children: [
+                            Text(
+                              '₱ ${gRepo.customerAmount}',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.deepPurple,
                               ),
-                            ],
-                          ),
+                            ),
+                            showUploadedImage(
+                              context,
+                              setState,
+                              gRepo,
+                            ),
+                          ],
                         ),
                         const SizedBox(width: 20),
                       ],

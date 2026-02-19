@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:laundry_firebase/models/newmodels/gcashmodel.dart';
-import 'package:laundry_firebase/models/newmodels/suppliesmodelhist.dart';
 import 'package:laundry_firebase/variables/newvariables/gcashselected_repository.dart';
 import 'package:laundry_firebase/variables/newvariables/variables.dart';
 
@@ -43,15 +42,18 @@ class GCashRepository {
   int get countId => gM.countId;
   int get itemId => gM.itemId;
   int get itemUniqueId => gM.itemUniqueId;
-  String get itemName => gM.itemName;
-  int get currentCounter => gM.currentCounter;
-  int get currentStocks => gM.currentStocks;
   Timestamp get logDate => gM.logDate;
-  String get empId => gM.empId;
+  String get logBy => gM.logBy;
+  Timestamp get completeDate => gM.completeDate;
+  String get itemName => gM.itemName;
+  int get customerAmount => gM.customerAmount;
+  double get gCashStatus => gM.gCashStatus;
   int get customerId => gM.customerId;
   String get customerName => gM.customerName;
+  String get customerNumber => gM.customerNumber;
   String get remarks => gM.remarks;
-  String? get imageUrl => gM.imageUrl;
+  String get cashInImageUrl => gM.cashInImageUrl;
+  String get cashOutImageUrl => gM.cashOutImageUrl;
 
   /////////////////////////////////////////////////////////////
   //                          SETTER                         //
@@ -60,21 +62,30 @@ class GCashRepository {
 
   void setModel(GCashModel value) {
     gM = value;
+    selectedFundCode = value.itemUniqueId;
+    selectedFundCode = value.itemUniqueId;
+    customerNumberVar.text = value.customerNumber;
+    customerNameVar.text = value.customerName;
+    customerAmountVar.text = value.customerAmount.toString();
+    remarksVar.text = value.remarks;
   }
 
   set docId(String value) => gM.docId = value;
   set countId(int value) => gM.countId = value;
   set itemId(int value) => gM.itemId = value;
+  set logDate(Timestamp value) => gM.logDate = value;
+  set logBy(String value) => gM.logBy = value;
+  set completeDate(Timestamp value) => gM.completeDate = value;
   set itemUniqueId(int value) => gM.itemUniqueId = value;
   set itemName(String value) => gM.itemName = value;
-  set currentCounter(int value) => gM.currentCounter = value;
-  set currentStocks(int value) => gM.currentStocks = value;
-  set logDate(Timestamp value) => gM.logDate = value;
-  set empId(String value) => gM.empId = value;
+  set customerAmount(int value) => gM.customerAmount = value;
+  set gCashStatus(double value) => gM.gCashStatus = value;
   set customerId(int value) => gM.customerId = value;
   set customerName(String value) => gM.customerName = value;
+  set customerNumber(String value) => gM.customerNumber = value;
   set remarks(String value) => gM.remarks = value;
-  set imageUrl(String? value) => gM.imageUrl = value;
+  set cashInImageUrl(String value) => gM.cashInImageUrl = value;
+  set cashOutImageUrl(String value) => gM.cashOutImageUrl = value;
 
   /////////////////////////////////////////////////////////////
   //                          SETTER                         //
@@ -82,6 +93,9 @@ class GCashRepository {
   /////////////////////////////////////////////////////////////
   TextEditingController get customerNameVar =>
       gCashSelectedRepo.customerNameVar;
+
+  TextEditingController get customerNumberVar =>
+      gCashSelectedRepo.customerNumberVar;
 
   TextEditingController get customerAmountVar =>
       gCashSelectedRepo.customerAmountVar;
@@ -96,6 +110,9 @@ class GCashRepository {
   /////////////////////////////////////////////////////////////
   set customerNameVar(TextEditingController value) =>
       gCashSelectedRepo.customerNameVar = value;
+
+  set customerNumberVar(TextEditingController value) =>
+      gCashSelectedRepo.customerNumberVar = value;
 
   set customerAmountVar(TextEditingController value) =>
       gCashSelectedRepo.customerAmountVar = value;
