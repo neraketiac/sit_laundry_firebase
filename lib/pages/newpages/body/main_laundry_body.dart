@@ -68,6 +68,7 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
   @override
   void initState() {
     super.initState();
+    putEntries();
 
     empIdGlobal = widget.empidClass;
 
@@ -81,6 +82,9 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
       print("Token refreshed: $newToken");
       await saveTokenToFirestore(empIdGlobal, newToken);
     });
+
+    databaseEmployeeSetup = DatabaseEmployeeSetup();
+    _loadEmployeeSetup();
   }
 
   Future<void> registerWebToken(String empId) async {
@@ -115,7 +119,7 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
 
       print("FCM TOKEN: $token");
 
-      await saveTokenToFirestore(empId, token);
+      saveTokenToFirestore(empId, token);
     } catch (e) {
       print("FCM INIT ERROR: $e");
     }
