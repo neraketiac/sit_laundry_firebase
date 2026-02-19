@@ -1,4 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:laundry_firebase/models/oldmodels/employeesetupmodel.dart';
@@ -14,6 +16,38 @@ import 'package:laundry_firebase/services/newservices/database_employee_setup.da
 import 'package:laundry_firebase/variables/newvariables/variables.dart';
 import 'package:web/web.dart' as web;
 
+// Future<void> registerWebToken(String userId) async {
+//   try {
+//     NotificationSettings settings =
+//         await FirebaseMessaging.instance.requestPermission();
+
+//     if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+//       print("Notification permission granted");
+
+//       final token = await FirebaseMessaging.instance.getToken(
+//         vapidKey:
+//             'BA9ojQB79PiK84UardJeRfsk_okHsBHG763k_TgqbdF7cMkh_qnxKwrv84byD2XjU3sGLF4PHgaR-yjb_gfn4Zs',
+//       );
+
+//       print("FCM TOKEN: $token");
+
+//       if (token != null) {
+//         await FirebaseFirestore.instance
+//             .collection('users')
+//             .doc(userId) // employeeId / contactNumber
+//             .set({
+//           'fcmToken': token,
+//           'updatedAt': Timestamp.now(),
+//         }, SetOptions(merge: true));
+//       }
+//     } else {
+//       print("Notification permission denied");
+//     }
+//   } catch (e) {
+//     print("FCM INIT ERROR: $e");
+//   }
+// }
+
 class MyMainLaundryBody extends StatefulWidget {
   final String empidClass;
 
@@ -28,15 +62,92 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
   late EmployeeSetupModel empSetup;
   bool isLoading = true;
 
+  String? _cachedToken;
+  final FirebaseMessaging _messaging = FirebaseMessaging.instance;
+
   @override
   void initState() {
     super.initState();
-    empIdGlobal = widget.empidClass;
-    putEntries(); // only to use getItemNameOnly()
 
-    databaseEmployeeSetup = DatabaseEmployeeSetup();
-    _loadEmployeeSetup();
+    empIdGlobal = widget.empidClass;
+
+    // Register token once after widget is mounted
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      registerWebToken(empIdGlobal);
+    });
+
+    // Listen for token refresh (important for web)
+    _messaging.onTokenRefresh.listen((newToken) async {
+      print("Token refreshed: $newToken");
+      await saveTokenToFirestore(empIdGlobal, newToken);
+    });
   }
+
+  Future<void> registerWebToken(String empId) async {
+    try {
+      if (!kIsWeb) return; // Only needed for Web
+
+      // Ask permission
+      NotificationSettings settings = await _messaging.requestPermission();
+
+      if (settings.authorizationStatus != AuthorizationStatus.authorized) {
+        print("Notification permission not granted");
+        return;
+      }
+
+      print("Notification permission granted");
+
+      // Get token
+      final token = await _messaging.getToken(
+        vapidKey:
+            "BA9ojQB79PiK84UardJeRfsk_okHsBHG763k_TgqbdF7cMkh_qnxKwrv84byD2XjU3sGLF4PHgaR-yjb_gfn4Zs",
+      );
+
+      if (token == null) return;
+
+      // Prevent duplicate saves
+      if (_cachedToken == token) {
+        print("Token unchanged. Skipping update.");
+        return;
+      }
+
+      _cachedToken = token;
+
+      print("FCM TOKEN: $token");
+
+      await saveTokenToFirestore(empId, token);
+    } catch (e) {
+      print("FCM INIT ERROR: $e");
+    }
+  }
+
+  Future<void> saveTokenToFirestore(String empId, String token) async {
+    await FirebaseFirestore.instance.collection("employees").doc(empId).set({
+      "fcmToken": token,
+      "updatedAt": FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));
+
+    print("Token saved to Firestore");
+  }
+
+  // @override
+  // Future<void> initState() async {
+  //   super.initState();
+  //   empIdGlobal = widget.empidClass;
+  //   putEntries(); // only to use getItemNameOnly()
+
+  //   // final cleanUrl = Uri.base.toString().split('#').last;
+  //   // final uri = Uri.parse(cleanUrl);
+  //   // final empId = uri.queryParameters['empId'];
+
+  //   // if (empId != null && empId.isNotEmpty) {
+  //   registerWebToken(empIdGlobal);
+
+  //   // }
+
+  //   databaseEmployeeSetup = DatabaseEmployeeSetup();
+  //   _loadEmployeeSetup();
+  // }
 
   Widget _checkBox({
     required String title,

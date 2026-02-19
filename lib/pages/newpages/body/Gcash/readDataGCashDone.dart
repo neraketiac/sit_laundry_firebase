@@ -44,7 +44,9 @@ Widget readDataGCashDone() {
                   onTap: () {
                     setState(() {
                       selectedIndex = index;
-                      if (gRepo.imageUrl != null) {
+                      if (gRepo.imageUrl != null &&
+                          gRepo.imageUrl!.isNotEmpty &&
+                          gRepo.imageUrl!.startsWith('http')) {
                         showImagePreview(context, gRepo.imageUrl!);
                       }
                     });

@@ -1,48 +1,50 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:laundry_firebase/pages/enterloyaltycode.dart';
+import 'firebase_options.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // Initialize Firebase
 
   await Firebase.initializeApp(
-    // Replace with your actual values
-    options: const FirebaseOptions(
-        apiKey: "AIzaSyASvVM-bX6W7-r1-O_u8fbrn5CaFnxVzWQ",
-        authDomain: "wash-ko-lang-sit.firebaseapp.com",
-        projectId: "wash-ko-lang-sit",
-        storageBucket: "wash-ko-lang-sit.appspot.com",
-        messagingSenderId: "248306194923",
-        appId: "1:248306194923:web:4484ca74bbc01546b7a1ae"),
+    options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  print("Firebase initialized properly");
+
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-
-      // Works with Flutter Web hash routing
       onGenerateRoute: (settings) {
-        // Clean the URL (handles #/scan)
         final cleanUrl = Uri.base.toString().split('#').last;
         final uri = Uri.parse(cleanUrl);
 
         final contactNumber = uri.queryParameters['contactNumber'];
 
-        // ✅ IF contactNumber EXISTS → show contactNumber page
         if (contactNumber != null && contactNumber.isNotEmpty) {
           return MaterialPageRoute(
             builder: (_) => ScanPage(),
           );
         }
 
-        // ❌ IF NO contactNumber → show EnterLoyaltyCode
         return MaterialPageRoute(
           builder: (_) => const EnterLoyaltyCode(),
         );

@@ -21,6 +21,13 @@ import 'package:laundry_firebase/variables/newvariables/variables_fab.dart';
 import 'package:laundry_firebase/variables/newvariables/variables_oth.dart';
 import 'package:laundry_firebase/variables/newvariables/variables_supplies.dart';
 
+import 'package:flutter/foundation.dart';
+// ignore: avoid_web_libraries_in_flutter
+import 'dart:html' as html;
+
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
 //SHARED METHODS ###########################################################
 
 //########################################################################//
@@ -649,6 +656,12 @@ Future<void> callDatabaseGCashPendingAdd(
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Insert on GCash Pending done.')),
     );
+
+    notifyAllUsers(
+      title: gM.itemName,
+      body: "${gM.customerName} ₱${gM.currentCounter}",
+      url: "https://wash-ko-lang-sit.web.app/#/scan?empId=${gM.empId}",
+    );
   } else {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Error insert GCash Pending.')),
@@ -721,20 +734,80 @@ Future<void> callDatabaseJobQueueUpdate(
   }
 }
 
+Future<Uint8List?> pickImageUniversal() async {
+  if (kIsWeb) {
+    final uploadInput = html.FileUploadInputElement();
+    uploadInput.accept = 'image/*';
+    uploadInput.click();
+
+    await uploadInput.onChange.first;
+
+    final file = uploadInput.files?.first;
+    if (file == null) return null;
+
+    final reader = html.FileReader();
+    reader.readAsArrayBuffer(file);
+    await reader.onLoad.first;
+
+    return reader.result as Uint8List;
+  } else {
+    final ImagePicker picker = ImagePicker();
+    final XFile? picked = await picker.pickImage(source: ImageSource.gallery);
+
+    if (picked == null) return null;
+
+    return await picked.readAsBytes();
+  }
+}
+
 Future<void> callDatabaseSaveImage(BuildContext context, GCashModel gM) async {
   DatabaseGCashPending databaseGCashPending = DatabaseGCashPending();
 
-  final ImagePicker _picker = ImagePicker();
+  final bytes = await pickImageUniversal();
 
-  Future<XFile?> pickImage() async {
-    return await _picker.pickImage(
-      source: ImageSource.gallery,
-    );
+  if (bytes == null) return;
+
+  await databaseGCashPending.saveImageBytes(gM, bytes);
+}
+
+// NOTIFICATIONS //
+Future<void> notifyAllUsers({
+  required String title,
+  required String body,
+  required String url,
+}) async {
+  final snap = await FirebaseFirestore.instance.collection('users').get();
+
+  List<String> tokens = [];
+
+  for (var user in snap.docs) {
+    final data = user.data();
+    final token = data['fcmToken'];
+
+    if (token != null && token is String) {
+      tokens.add(token);
+    }
   }
 
-  XFile? file = await pickImage();
+  if (tokens.isEmpty) {
+    print("No tokens found. Skipping notification.");
+    return;
+  }
 
-  if (file == null) return;
+  final response = await http.post(
+    Uri.parse("https://laundry-push-server.onrender.com/send"),
+    headers: {'Content-Type': 'application/json'},
+    body: jsonEncode({
+      'tokens': tokens,
+      'title': title,
+      'body': body,
+      'url': url,
+    }),
+  );
 
-  await databaseGCashPending.saveImageWeb(gM, file);
+  if (response.statusCode == 200) {
+    print("Push sent successfully");
+  } else {
+    print("Push failed: ${response.body}");
+  }
 }

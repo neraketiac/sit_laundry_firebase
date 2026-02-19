@@ -1,8 +1,8 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dio/dio.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:laundry_firebase/models/newmodels/gcashmodel.dart';
 
 /// 🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦
@@ -20,22 +20,34 @@ class DatabaseGCashPending {
       _firestore.collection(GCASH_PENDING_REF);
 
   /// ➕ Add modelValue
+  // Future<bool> addBool(GCashModel modelValue) async {
+  //   bool bSuccess = false;
+  //   final docRef = _ref.doc(); // auto-generate ID
+  //   modelValue.docId = docRef.id; // store the ID in your model
+  //   await docRef
+  //       .set(modelValue.toJson())
+  //       .then((value) => {
+  //             print("GCash Pending insert done."),
+  //             bSuccess = true,
+  //           })
+  //       .catchError((error) => {
+  //             print(
+  //                 "Failed insert GCash Pending : $error ${modelValue.customerName}"),
+  //             bSuccess = false,
+  //           });
+  //   return bSuccess;
+  // }
+
   Future<bool> addBool(GCashModel modelValue) async {
-    bool bSuccess = false;
-    final docRef = _ref.doc(); // auto-generate ID
-    modelValue.docId = docRef.id; // store the ID in your model
-    await docRef
-        .set(modelValue.toJson())
-        .then((value) => {
-              print("GCash Pending insert done."),
-              bSuccess = true,
-            })
-        .catchError((error) => {
-              print(
-                  "Failed insert GCash Pending : $error ${modelValue.customerName}"),
-              bSuccess = false,
-            });
-    return bSuccess;
+    final docRef = _ref.doc();
+    modelValue.docId = docRef.id;
+
+    try {
+      await docRef.set(modelValue.toJson());
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 
   /// 📥 Get single modelValue
@@ -103,7 +115,7 @@ class DatabaseGCashPending {
     return bSuccess;
   }
 
-  Future<String?> uploadToCloudinaryWeb(XFile file) async {
+  Future<String?> uploadToCloudinaryBytes(Uint8List bytes) async {
     const cloudName = 'dxdskr55w';
     const uploadPreset = 'gcash_unsigned';
 
@@ -111,12 +123,10 @@ class DatabaseGCashPending {
 
     final url = 'https://api.cloudinary.com/v1_1/$cloudName/image/upload';
 
-    final bytes = await file.readAsBytes();
-
     FormData formData = FormData.fromMap({
       "file": MultipartFile.fromBytes(
         bytes,
-        filename: file.name,
+        filename: "upload.jpg",
       ),
       "upload_preset": uploadPreset,
     });
@@ -130,20 +140,17 @@ class DatabaseGCashPending {
     return null;
   }
 
-  Future<void> saveImageWeb(GCashModel model, XFile imageFile) async {
-    String? imageUrl = await uploadToCloudinaryWeb(imageFile);
+  Future<void> saveImageBytes(GCashModel model, Uint8List bytes) async {
+    String? imageUrl = await uploadToCloudinaryBytes(bytes);
 
     if (imageUrl == null) {
       throw Exception("Image upload failed");
     }
 
-    // 👇 Use existing docId
-    final docRef = FirebaseFirestore.instance
+    await FirebaseFirestore.instance
         .collection(GCASH_PENDING_REF)
-        .doc(model.docId);
-
-    // 👇 Only update imageUrl field
-    await docRef.update({
+        .doc(model.docId)
+        .update({
       'ImageUrl': imageUrl,
     });
   }

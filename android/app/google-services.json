@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "248306194923",
+    "project_id": "wash-ko-lang-sit",
+    "storage_bucket": "wash-ko-lang-sit.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:248306194923:android:246830746ad13f22b7a1ae",
+        "android_client_info": {
+          "package_name": "com.example.laundry_firebase"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyABXoKDWC1JUR1FwE4es4O-glGHGpDFbI8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

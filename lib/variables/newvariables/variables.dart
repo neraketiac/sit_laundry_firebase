@@ -23,6 +23,7 @@ import 'package:laundry_firebase/variables/oldvariables/variables_jobsongoing.da
 import 'package:laundry_firebase/variables/newvariables/variables_oth.dart';
 import 'package:laundry_firebase/variables/newvariables/variables_supplies.dart';
 
+bool bFirebaseInitialized = false;
 const String storageKey = 'customer_code';
 
 bool loading = true;
