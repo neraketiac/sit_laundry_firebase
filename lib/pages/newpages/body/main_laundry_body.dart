@@ -94,7 +94,7 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
   }
 
   Future<void> saveTokenToFirestore(String empId, String token) async {
-    await FirebaseFirestore.instance.collection("employees").doc(empId).set({
+    await FirebaseFirestore.instance.collection("users").doc(empId).set({
       "fcmToken": token,
       "updatedAt": FieldValue.serverTimestamp(),
     }, SetOptions(merge: true));
