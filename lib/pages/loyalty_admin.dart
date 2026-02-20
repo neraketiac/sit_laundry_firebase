@@ -25,9 +25,11 @@ class _LoyaltyAdminState extends State<LoyaltyAdmin> {
   TextEditingController remarksController = TextEditingController();
   TextEditingController countController = TextEditingController();
   final ScrollController scrollController = ScrollController();
+  int nextId = 1000; // default if empty collection
 
   @override
   Widget build(BuildContext context) {
+    getMaxId();
     return Scaffold(
       backgroundColor: Colors.blueAccent,
       appBar: AppBar(
@@ -67,15 +69,47 @@ class _LoyaltyAdminState extends State<LoyaltyAdmin> {
       ),
       */
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Random random = Random();
-          randomNum = random.nextInt(90) + 10;
-          docIdFbController.text = (int.parse(docIdMax) + randomNum).toString();
+        onPressed: () async {
+          docIdFbController.text = nextId.toString();
+          docIdMax = nextId.toString();
+
           openNewCustomerBox();
         },
         child: const Icon(Icons.add_circle_outline_rounded),
       ),
     );
+  }
+
+  Future<void> migrateLoyaltyCollection() async {
+    final collection = FirebaseFirestore.instance.collection('loyalty');
+
+    final snapshot = await collection.get();
+
+    for (var doc in snapshot.docs) {
+      int? docIdAsInt = int.tryParse(doc.id);
+
+      if (docIdAsInt != null && !doc.data().containsKey('cardNumber')) {
+        await collection.doc(doc.id).update({
+          'cardNumber': docIdAsInt,
+          'logDate': Timestamp.now(),
+        });
+      }
+    }
+
+    print("Safe loyalty migration completed");
+  }
+
+  Future<void> getMaxId() async {
+    final snapshot = await FirebaseFirestore.instance
+        .collection('loyalty')
+        .orderBy('cardNumber', descending: true)
+        .limit(1)
+        .get();
+
+    final maxNumber =
+        snapshot.docs.isNotEmpty ? snapshot.docs.first.get('cardNumber') : 1000;
+
+    nextId = maxNumber + (Random().nextInt(90) + 10);
   }
 
   void openNewCustomerBox() {
@@ -434,6 +468,8 @@ class _LoyaltyAdminState extends State<LoyaltyAdmin> {
           'Contact': contactController.text,
           'Address': addressController.text,
           'C5_Remarks': remarksController.text,
+          'cardNumber': nextId,
+          'logDate': Timestamp.now(),
           //'cotime': DateTime.now(),
         })
         .then((value) => {
@@ -442,6 +478,7 @@ class _LoyaltyAdminState extends State<LoyaltyAdmin> {
               contactController.clear(),
               addressController.clear(),
               remarksController.clear(),
+              getMaxId(),
               showMessage(context, "New Customer Added"),
             })
         // ignore: invalid_return_type_for_catch_error
