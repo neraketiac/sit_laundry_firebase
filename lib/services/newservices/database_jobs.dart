@@ -151,6 +151,49 @@ Future<int> getMaxJobId() async {
   return (maxNumber + 1);
 }
 
+Future<int> getNextJobId() async {
+  final firestore = FirebaseFirestore.instance;
+  final counterRef = firestore.collection('counters').doc('jobQueue');
+
+  return firestore.runTransaction<int>((transaction) async {
+    // 1️⃣ Get counter
+    final counterSnap = await transaction.get(counterRef);
+
+    int current = 0;
+
+    if (!counterSnap.exists) {
+      transaction.set(counterRef, {'current': 0});
+    } else {
+      current = counterSnap.get('current') ?? 0;
+    }
+
+    // 2️⃣ Get all existing JobIds in range 1–25
+    final snapshot = await firestore
+        .collection(JOBS_ONGOING_REF)
+        .where('A00_JobId', isGreaterThanOrEqualTo: 1)
+        .where('A00_JobId', isLessThanOrEqualTo: 25)
+        .get();
+
+    final usedIds =
+        snapshot.docs.map((doc) => doc.get('A00_JobId') as int).toSet();
+
+    // 3️⃣ Try up to 25 slots
+    for (int i = 0; i < 25; i++) {
+      int next = current >= 25 ? 1 : current + 1;
+
+      if (!usedIds.contains(next)) {
+        transaction.update(counterRef, {'current': next});
+        return next;
+      }
+
+      current = next;
+    }
+
+    // 4️⃣ If all numbers are used
+    throw Exception("Queue is full. All 25 JobIds are currently used.");
+  });
+}
+
 /// ▶ Queue → Ongoing (start washing)
 Future<void> moveQueueToOngoing(String docId, int nextJobId) async {
   final firestore = FirebaseFirestore.instance;

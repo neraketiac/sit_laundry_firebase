@@ -86,8 +86,17 @@ void showMoveToOnGoing(BuildContext context, JobModelRepository jobRepo) {
                           content: Text('Please select customer name.')),
                     );
                   } else {
-                    final nextJobId = await getMaxJobId();
-                    moveQueueToOngoing(jobRepo.docId, nextJobId);
+                    final nextJobId = await getNextJobId();
+
+                    if (nextJobId == 0) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                            content: Text(
+                                'Jobs OnGoing is full, please clean jobs first')),
+                      );
+                    } else {
+                      moveQueueToOngoing(jobRepo.docId, nextJobId);
+                    }
                   }
                 }),
           ],
