@@ -212,34 +212,33 @@ void showSalaryMaintenance(BuildContext context) {
               },
               child: const Text('Cancel'),
             ),
-            ElevatedButton(
-              onPressed: () async {
-                if (empNameToId.containsKey(autocompleteSelected.name)) {
-                  if (fundTypeCodesEmployeeLayer.contains(selectedFundCode)) {
-                    isGcashCredit = true;
-                    await saveButtonSetRepository();
-                    Navigator.pop(context);
-                  } else {
+            boxButtonElevated(
+                context: context,
+                label: 'Save',
+                onPressed: () async {
+                  if (empNameToId.containsKey(autocompleteSelected.name)) {
+                    if (fundTypeCodesEmployeeLayer.contains(selectedFundCode)) {
+                      isGcashCredit = true;
+                      await saveButtonSetRepository();
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                            content: Text('Please select transaction type.')),
+                      );
+                    }
+                  } else if (selectedFundCode == null) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                           content: Text('Please select transaction type.')),
                     );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                          content:
+                              Text('Name must be a staff for Salary Payment.')),
+                    );
                   }
-                } else if (selectedFundCode == null) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                        content: Text('Please select transaction type.')),
-                  );
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                        content:
-                            Text('Name must be a staff for Salary Payment.')),
-                  );
-                }
-              },
-              child: const Text('Save'),
-            ),
+                }),
           ],
         );
       });

@@ -14,13 +14,13 @@ void showPaidUnpaid(BuildContext context, JobModelRepository jobRepo) {
     //admin
     jobRepo.createdBy = empIdGlobal;
 
-    setSelectedToRepository(jobRepo);
+    setSelectedToRepositoryBeforeSave(jobRepo);
 
     await callDatabaseJobQueueUpdate(context, jobRepo.getJobsModel()!);
     //await setRepositoryLaundryPayment(context, 'Show Jobs OnQueue');
   }
 
-  syncRepoToSelected(jobRepo);
+  syncRepoToSelectedBeforePopup(jobRepo);
   showDialog(
     context: context,
     builder: (BuildContext context) {
@@ -67,7 +67,7 @@ void showPaidUnpaid(BuildContext context, JobModelRepository jobRepo) {
             TextButton(
               onPressed: () {
                 setState(() {
-                  syncRepoToSelected(jobRepo);
+                  syncRepoToSelectedBeforePopup(jobRepo);
                 });
 
                 Navigator.pop(context); // close popup
@@ -77,20 +77,19 @@ void showPaidUnpaid(BuildContext context, JobModelRepository jobRepo) {
                 style: TextStyle(color: Colors.black),
               ),
             ),
-            ElevatedButton(
-              onPressed: () async {
-                if (jobRepo.customerId == 0) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                        content: Text('Please select customer name.')),
-                  );
-                } else {
-                  await saveButtonSetRepository();
-                  Navigator.pop(context);
-                }
-              },
-              child: const Text('Save'),
-            ),
+            boxButtonElevated(
+                context: context,
+                label: 'Save',
+                onPressed: () async {
+                  if (jobRepo.customerId == 0) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                          content: Text('Please select customer name.')),
+                    );
+                  } else {
+                    await saveButtonSetRepository();
+                  }
+                }),
           ],
         );
       });

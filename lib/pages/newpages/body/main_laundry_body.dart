@@ -7,6 +7,7 @@ import 'package:laundry_firebase/pages/newpages/body/Employee/readDataEmployeeCu
 import 'package:laundry_firebase/pages/newpages/body/Employee/readDataEmployeeHist.dart';
 import 'package:laundry_firebase/pages/newpages/body/Gcash/readDataGCashDone.dart';
 import 'package:laundry_firebase/pages/newpages/body/Gcash/readDataGCashPending.dart';
+import 'package:laundry_firebase/pages/newpages/body/JobOnGoing/readDataJobsOnGoing.dart';
 import 'package:laundry_firebase/pages/newpages/body/JobOnQueue/readDataJobsOnQueue.dart';
 import 'package:laundry_firebase/pages/newpages/body/Supplies/readSuppliesCurrent.dart';
 import 'package:laundry_firebase/pages/newpages/body/Supplies/readSuppliesHist.dart';
@@ -214,6 +215,16 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
             },
             menuChildren: [
               MenuItemButton(
+                style: ButtonStyle(
+                  backgroundColor: WidgetStateProperty.resolveWith<Color?>(
+                    (states) {
+                      if (empSetup.showFundsHistory) {
+                        return Colors.green.shade200; // your active color
+                      }
+                      return null; // default color
+                    },
+                  ),
+                ),
                 child: const Text('💳 GCash'),
                 onPressed: () {
                   updateEmployeeSetup(
@@ -224,6 +235,16 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                 },
               ),
               MenuItemButton(
+                style: ButtonStyle(
+                  backgroundColor: WidgetStateProperty.resolveWith<Color?>(
+                    (states) {
+                      if (empSetup.showLaundry) {
+                        return Colors.green.shade200; // your active color
+                      }
+                      return null; // default color
+                    },
+                  ),
+                ),
                 child: const Text('🧺 Laundry'),
                 onPressed: () {
                   updateEmployeeSetup(
@@ -234,6 +255,16 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                 },
               ),
               MenuItemButton(
+                style: ButtonStyle(
+                  backgroundColor: WidgetStateProperty.resolveWith<Color?>(
+                    (states) {
+                      if (empSetup.showFunds) {
+                        return Colors.green.shade200; // your active color
+                      }
+                      return null; // default color
+                    },
+                  ),
+                ),
                 child: const Text('💰 Funds'),
                 onPressed: () {
                   updateEmployeeSetup(
@@ -244,6 +275,16 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                 },
               ),
               MenuItemButton(
+                style: ButtonStyle(
+                  backgroundColor: WidgetStateProperty.resolveWith<Color?>(
+                    (states) {
+                      if (empSetup.showEmployee) {
+                        return Colors.green.shade200; // your active color
+                      }
+                      return null; // default color
+                    },
+                  ),
+                ),
                 child: const Text("🪪 Id"),
                 onPressed: () {
                   updateEmployeeSetup(
@@ -278,6 +319,11 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
               visible: empSetup.showLaundry,
               width: 320,
               child: readDataJobsOnQueue(),
+            ),
+            animatedPanel(
+              visible: empSetup.showLaundry,
+              width: 320,
+              child: readDataJobsOnGoing(),
             ),
             animatedPanel(
               visible: empSetup.showFunds,

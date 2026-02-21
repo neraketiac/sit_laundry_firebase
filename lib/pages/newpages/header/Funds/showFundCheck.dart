@@ -258,16 +258,15 @@ void showFundCheck(BuildContext context) {
               },
               child: const Text('Reset'),
             ),
-            ElevatedButton(
-              onPressed: () async {
-                saveButtonSetRepository();
-                setState(() {
-                  resetAllQty();
-                });
-                Navigator.pop(context);
-              },
-              child: const Text('Save'),
-            ),
+            boxButtonElevated(
+                context: context,
+                label: 'Save',
+                onPressed: () async {
+                  saveButtonSetRepository();
+                  setState(() {
+                    resetAllQty();
+                  });
+                }),
           ],
         );
       });

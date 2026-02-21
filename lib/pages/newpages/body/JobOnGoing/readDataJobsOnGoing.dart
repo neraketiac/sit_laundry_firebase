@@ -8,9 +8,10 @@ import 'package:laundry_firebase/variables/newvariables/jobmodel_repository.dart
 import 'package:laundry_firebase/variables/newvariables/variables.dart';
 import 'package:laundry_firebase/variables/newvariables/variables_oth.dart';
 
-Widget readDataJobsOnQueue() {
-  DatabaseJobsQueue databaseJobsQueue = DatabaseJobsQueue();
+Widget readDataJobsOnGoing() {
+  DatabaseJobsOngoing databaseJobsGoing = DatabaseJobsOngoing();
   int? selectedIndex;
+  int? blockedIndex;
 
   IconData statusIcon(JobModel jM) {
     if (jM.forSorting) {
@@ -98,7 +99,7 @@ Widget readDataJobsOnQueue() {
   }
 
   return StreamBuilder<List<JobModel>>(
-    stream: databaseJobsQueue.streamAll(),
+    stream: databaseJobsGoing.streamAll(),
     builder: (context, snapshot) {
       if (snapshot.hasError) {
         return const Center(child: Text('Error loading jobs'));
@@ -115,28 +116,69 @@ Widget readDataJobsOnQueue() {
           return ReorderableListView(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            onReorder: (oldIndex, newIndex) {
+            buildDefaultDragHandles: false, // disable default drag handles
+
+            onReorder: (oldIndex, newIndex) async {
+              if (newIndex > oldIndex) newIndex -= 1;
+
+              final draggedJob = jobs[oldIndex];
+
+              // 🚫 1. Cannot drag washing
+              if (draggedJob.processStep == 'washing') {
+                return;
+              }
+
+              // 🔒 Collect washing indexes
+              final washingIndexes = <int>[];
+              for (int i = 0; i < jobs.length; i++) {
+                if (jobs[i].processStep == 'washing') {
+                  washingIndexes.add(i);
+                }
+              }
+
+              // 🔍 Simulate reorder
+              final tempList = List.of(jobs);
+              final item = tempList.removeAt(oldIndex);
+              tempList.insert(newIndex, item);
+
+              // 🚫 If washing index changes → BLOCK
+              for (int index in washingIndexes) {
+                if (tempList[index].processStep != 'washing') {
+                  // 🔥 Show red flash
+                  setState(() {
+                    blockedIndex = index;
+                  });
+
+                  await Future.delayed(const Duration(milliseconds: 400));
+
+                  setState(() {
+                    blockedIndex = null;
+                  });
+
+                  return;
+                }
+              }
+
+              // ✅ Safe reorder
               setState(() {
-                if (newIndex > oldIndex) newIndex -= 1;
-                final item = jobs.removeAt(oldIndex);
-                jobs.insert(newIndex, item);
+                jobs.removeAt(oldIndex);
+                jobs.insert(newIndex, draggedJob);
 
                 if (selectedIndex == oldIndex) {
                   selectedIndex = newIndex;
                 }
               });
-              //save changes of order
-              for (int i = 0; i < jobs.length; i++) {
-                final job = jobs[i];
 
-                databaseJobsQueue.updateJobId(job.docId, i);
+              for (int i = 0; i < jobs.length; i++) {
+                databaseJobsGoing.updateJobId(jobs[i].docId, i);
               }
-              //save changes of order
             },
+
             children: List.generate(jobs.length, (index) {
               final job = jobs[index];
-              JobModelRepository jobRepo = JobModelRepository();
+              final isWashing = job.processStep == 'washing';
 
+              JobModelRepository jobRepo = JobModelRepository();
               jobRepo.setJobModel(job);
 
               final progress = 0;
@@ -163,35 +205,39 @@ Widget readDataJobsOnQueue() {
                         margin: const EdgeInsets.symmetric(vertical: 10),
                         padding: const EdgeInsets.all(14),
                         decoration: BoxDecoration(
-                          color: isSelected
-                              ? Colors.deepPurple.shade100
-                              : Colors.deepPurple.shade50,
+                          color: blockedIndex == index
+                              ? Colors.red.shade200 // 🔥 flash red
+                              : isSelected
+                                  ? Colors.deepPurple.shade100
+                                  : Colors.deepPurple.shade50,
                           borderRadius: BorderRadius.circular(18),
                           boxShadow: [
                             if (isSelected)
-                              BoxShadow(
+                              const BoxShadow(
                                 color: Colors.deepPurple,
                                 blurRadius: 12,
-                                offset: const Offset(0, 6),
+                                offset: Offset(0, 6),
                               ),
                           ],
                         ),
                         child: Row(
                           children: [
-                            /// 🔘 Drag handle
-                            ReorderableDragStartListener(
-                              index: index,
-                              child: MouseRegion(
-                                cursor: SystemMouseCursors.grab,
-                                child: const Icon(Icons.drag_handle),
-                              ),
-                            ),
+                            /// 🔘 Drag handle (hidden if washing)
+                            isWashing
+                                ? const SizedBox(width: 34)
+                                : ReorderableDragStartListener(
+                                    index: index,
+                                    child: MouseRegion(
+                                      cursor: SystemMouseCursors.grab,
+                                      child: const Icon(Icons.drag_handle),
+                                    ),
+                                  ),
+
                             const SizedBox(width: 10),
 
                             /// 🔄 Progress badge
                             InkWell(
                               onTap: () {
-                                // Handle progress tap if needed
                                 showMoveToOnGoing(context, jobRepo);
                               },
                               child: Stack(
@@ -223,6 +269,7 @@ Widget readDataJobsOnQueue() {
                                 ],
                               ),
                             ),
+
                             const SizedBox(width: 7),
 
                             /// 📄 Job info
@@ -231,7 +278,6 @@ Widget readDataJobsOnQueue() {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Row(
-                                    mainAxisAlignment: MainAxisAlignment.start,
                                     children: [
                                       Text(
                                         '${displayCustomerName(job.customerName)} (${job.finalLoad})',
@@ -242,40 +288,37 @@ Widget readDataJobsOnQueue() {
                                               : Colors.black,
                                         ),
                                       ),
-                                      SizedBox(
-                                        width: 3,
-                                      ),
+                                      const SizedBox(width: 3),
                                       Text(
                                         afterNameStatuses(job),
                                         style: TextStyle(
-                                            fontWeight: FontWeight.w600,
-                                            color: isSelected
-                                                ? Colors.deepPurple
-                                                : Colors.black,
-                                            fontSize: 10),
+                                          fontWeight: FontWeight.w600,
+                                          color: isSelected
+                                              ? Colors.deepPurple
+                                              : Colors.black,
+                                          fontSize: 10,
+                                        ),
                                       ),
                                     ],
                                   ),
-                                  SizedBox(
-                                    width: 3,
-                                  ),
+                                  const SizedBox(height: 2),
                                   Text(
                                     belowNameStatuses(job),
                                     style: TextStyle(
-                                        fontWeight: FontWeight.w600,
-                                        color: isSelected
-                                            ? Colors.deepPurple
-                                            : Colors.black,
-                                        fontSize: 10),
+                                      fontWeight: FontWeight.w600,
+                                      color: isSelected
+                                          ? Colors.deepPurple
+                                          : Colors.black,
+                                      fontSize: 10,
+                                    ),
                                   ),
-                                  const SizedBox(height: 2),
                                   Text(
                                     processStatusJobsOnQueue(job),
                                     style: TextStyle(
                                       fontSize: 10,
-                                      color: (job.forSorting
+                                      color: job.forSorting
                                           ? Colors.deepPurple.shade400
-                                          : Colors.redAccent),
+                                          : Colors.redAccent,
                                     ),
                                   ),
                                   Text(
@@ -291,11 +334,19 @@ Widget readDataJobsOnQueue() {
 
                             /// 💰 Price
                             InkWell(
-                              onTap: (() {
+                              onTap: () {
                                 showPaidUnpaid(context, jobRepo);
-                              }),
+                              },
                               child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
                                 children: [
+                                  Text(
+                                    '# ${jobRepo.jobsId}',
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14,
+                                    ),
+                                  ),
                                   Text(
                                     '₱ ${job.finalPrice}',
                                     style: TextStyle(
@@ -310,7 +361,7 @@ Widget readDataJobsOnQueue() {
                                     ),
                                   ),
                                   Text(
-                                    (job.unpaid
+                                    job.unpaid
                                         ? 'Unpaid'
                                         : job.paidCash
                                             ? 'Paid\nCash'
@@ -323,9 +374,10 @@ Widget readDataJobsOnQueue() {
                                                         ? 'Partial\nCash'
                                                         : job.partialPaidGCash
                                                             ? 'Partial\nGCash'
-                                                            : 'Unpaid'),
+                                                            : 'Unpaid',
                                     style: TextStyle(
                                       fontWeight: FontWeight.w600,
+                                      fontSize: 10,
                                       color: isSelected
                                           ? (job.paidCash
                                               ? Colors.deepPurple
@@ -333,16 +385,14 @@ Widget readDataJobsOnQueue() {
                                           : (job.paidCash
                                               ? Colors.black
                                               : Colors.redAccent),
-                                      fontSize: 10,
                                     ),
                                     textAlign: TextAlign.right,
                                   ),
                                 ],
                               ),
                             ),
-                            SizedBox(
-                              width: 20,
-                            ),
+
+                            const SizedBox(width: 20),
                           ],
                         ),
                       ),

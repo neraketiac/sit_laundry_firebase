@@ -2,10 +2,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedMethods.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedVisibility.dart';
+import 'package:laundry_firebase/services/newservices/database_jobs.dart';
 import 'package:laundry_firebase/variables/newvariables/jobmodel_repository.dart';
 import 'package:laundry_firebase/variables/newvariables/variables.dart';
 
-void showJobOnQueueComplete(BuildContext context, JobModelRepository jobRepo) {
+void showMoveToOnGoing(BuildContext context, JobModelRepository jobRepo) {
   Future<void> saveButtonSetRepository() async {
 //dates
     /// 🟣 Dates
@@ -39,7 +40,7 @@ void showJobOnQueueComplete(BuildContext context, JobModelRepository jobRepo) {
             vertical: 5,
           ),
           title: Text(
-            "Enter Laundry",
+            "Move to On-Going?",
             textAlign: TextAlign.center,
           ),
           content: SingleChildScrollView(
@@ -54,31 +55,6 @@ void showJobOnQueueComplete(BuildContext context, JobModelRepository jobRepo) {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     visCustomerNameNoAutoComplete(context, setState, jobRepo),
-                    visRiderPickup(context, setState, jobRepo),
-                    visSelectPackage(context, setState, jobRepo),
-                    (jobRepo.isPerKg
-                        ? visAmountRegSSPerKg(context, setState, jobRepo)
-                        : visAmountRegSSPerLoad(context, setState, jobRepo)),
-                    visAmountOthersOnly(context, setState, jobRepo),
-                    visPaidUnPaid(context, setState, jobRepo),
-                    Text(
-                      'Other Options',
-                      style: TextStyle(fontSize: 11),
-                    ),
-                    visFold(context, setState, jobRepo),
-                    visMix(context, setState, jobRepo),
-                    visBasket(context, setState, jobRepo),
-                    visEcoBag(context, setState, jobRepo),
-                    visSako(context, setState, jobRepo),
-                    Text(
-                      'Add Ons',
-                      style: TextStyle(fontSize: 11),
-                    ),
-                    visAddDry(context, setState, jobRepo),
-                    visAddFab(context, setState, jobRepo),
-                    visAddWash(context, setState, jobRepo),
-                    visAddSpin(context, setState, jobRepo),
-                    conRemarks(context, setState, jobRepo.remarksVar),
                   ],
                 ),
               ),
@@ -102,7 +78,7 @@ void showJobOnQueueComplete(BuildContext context, JobModelRepository jobRepo) {
             ),
             boxButtonElevated(
                 context: context,
-                label: 'Save',
+                label: 'Move to On-Going',
                 onPressed: () async {
                   if (jobRepo.customerId == 0) {
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -110,7 +86,8 @@ void showJobOnQueueComplete(BuildContext context, JobModelRepository jobRepo) {
                           content: Text('Please select customer name.')),
                     );
                   } else {
-                    await saveButtonSetRepository();
+                    final nextJobId = await getMaxJobId();
+                    moveQueueToOngoing(jobRepo.docId, nextJobId);
                   }
                 }),
           ],

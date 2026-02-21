@@ -396,7 +396,7 @@ void resetSelected(JobModelRepository jobRepo) {
   jobRepo.addExtraSpinCount = 0;
 }
 
-void syncRepoToSelected(JobModelRepository jobRepo) {
+void syncRepoToSelectedBeforePopup(JobModelRepository jobRepo) {
   //admin
   jobRepo.currentEmpId = empIdGlobal;
 
@@ -444,9 +444,13 @@ void syncRepoToSelected(JobModelRepository jobRepo) {
   jobRepo.remarksVar.text = jobRepo.remarks;
 
   //list other items
-  if (jobRepo.selectedPackage == othersPackage) {
-    jobRepo.listSelectedItemModel = List.from(jobRepo.items);
-  }
+  //if (jobRepo.selectedPackage == othersPackage) {
+  jobRepo.listSelectedItemModel = List.from(jobRepo.items);
+  jobRepo.totalPriceShortCutRegSS = jobRepo.items.fold(
+    0,
+    (sum, item) => sum + item.itemPrice,
+  );
+  //}
 
   //other options
   jobRepo.selectedFold = jobRepo.fold;
@@ -477,7 +481,7 @@ void syncRepoToSelected(JobModelRepository jobRepo) {
 }
 
 //set selected to repository
-void setSelectedToRepository(JobModelRepository jobRepo) {
+void setSelectedToRepositoryBeforeSave(JobModelRepository jobRepo) {
   int computePromoCounter = 0;
   int computeLoadForKg(double kg) {
     double remainder = kg % 8;
@@ -514,6 +518,7 @@ void setSelectedToRepository(JobModelRepository jobRepo) {
   } else {
     jobRepo.finalPrice = jobRepo.totalPriceRegSS;
   }
+  //
 
   //payment status
   jobRepo.partialPaidCash = jobRepo.selectedPaidPartialCash;
@@ -551,8 +556,7 @@ void setSelectedToRepository(JobModelRepository jobRepo) {
   }
 
   //list other items
-  if (jobRepo.listSelectedItemModel.isNotEmpty &&
-      jobRepo.selectedPackage == othersPackage) {
+  if (jobRepo.listSelectedItemModel.isNotEmpty) {
     jobRepo.items = List.from(jobRepo.listSelectedItemModel);
   }
 

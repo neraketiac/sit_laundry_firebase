@@ -15,7 +15,7 @@ void showJobOnQueue(BuildContext context, JobModelRepository jobRepo) {
     //admin
     jobRepo.createdBy = empIdGlobal;
 
-    setSelectedToRepository(jobRepo);
+    setSelectedToRepositoryBeforeSave(jobRepo);
 
     await callDatabaseJobsQueueAdd(context, jobRepo);
     //await setRepositoryLaundryPayment(context, 'Show Jobs OnQueue');
@@ -98,7 +98,9 @@ void showJobOnQueue(BuildContext context, JobModelRepository jobRepo) {
                 style: TextStyle(color: Colors.black),
               ),
             ),
-            ElevatedButton(
+            boxButtonElevated(
+              context: context,
+              label: 'Save',
               onPressed: () async {
                 if (jobRepo.customerId == 0) {
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -108,10 +110,8 @@ void showJobOnQueue(BuildContext context, JobModelRepository jobRepo) {
                 } else {
                   await saveButtonSetRepository();
                   if (successInsertFB) resetSelected(jobRepo);
-                  Navigator.pop(context);
                 }
               },
-              child: const Text('Save'),
             ),
           ],
         );

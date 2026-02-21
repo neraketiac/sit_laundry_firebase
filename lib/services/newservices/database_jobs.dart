@@ -97,7 +97,7 @@ class DatabaseJobsOngoing {
 
   /// 🔄 Stream all ongoing jobs
   Stream<List<JobModel>> streamAll() {
-    return _ref.snapshots().map(
+    return _ref.orderBy('A00_JobId').snapshots().map(
           (s) => s.docs.map((d) => JobModel.fromJson(d.data())).toList(),
         );
   }
@@ -106,7 +106,13 @@ class DatabaseJobsOngoing {
   /// Values: 'washing' | 'drying' | 'folding'
   Future<void> updateStep(String docId, String step) async {
     await _ref.doc(docId).update({
-      'processStep': step,
+      'O00_ProcessStep': step,
+    });
+  }
+
+  Future<void> updateJobId(String docId, int jobId) async {
+    await _ref.doc(docId).update({
+      'A00_JobId': jobId + 1,
     });
   }
 }
@@ -132,8 +138,21 @@ class DatabaseJobsDone {
 /// 🔥 JOB MOVEMENT (TRANSACTIONS)
 /// 🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥
 
+Future<int> getMaxJobId() async {
+  final snapshot = await FirebaseFirestore.instance
+      .collection(JOBS_ONGOING_REF)
+      .orderBy('A00_JobId', descending: true)
+      .limit(1)
+      .get();
+
+  final maxNumber =
+      snapshot.docs.isNotEmpty ? snapshot.docs.first.get('A00_JobId') : 0;
+
+  return (maxNumber + 1);
+}
+
 /// ▶ Queue → Ongoing (start washing)
-Future<void> moveQueueToOngoing(String docId) async {
+Future<void> moveQueueToOngoing(String docId, int nextJobId) async {
   final firestore = FirebaseFirestore.instance;
 
   await firestore.runTransaction((tx) async {
@@ -145,7 +164,9 @@ Future<void> moveQueueToOngoing(String docId) async {
 
     tx.set(ongoingRef, {
       ...snapshot.data()!,
-      'processStep': 'washing', // 👈 initial step
+      'A00_JobId': nextJobId,
+      'O00_ProcessStep': 'washing', // 👈 initial step
+      'A04_DateO': Timestamp.now(),
     });
     tx.delete(queueRef);
   });
