@@ -1,6 +1,5 @@
 //floating button new record  ###########################################################
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/autocompletecustomer.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedConstantsFinal.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedMethods.dart';
@@ -11,7 +10,8 @@ import 'package:laundry_firebase/variables/newvariables/variables.dart';
 import 'package:laundry_firebase/variables/newvariables/variables_oth.dart';
 import 'package:laundry_firebase/variables/newvariables/variables_supplies.dart';
 
-void showFundsInFundsOut(BuildContext context, JobModelRepository jobRepo) {
+void showFundsInFundsOut(BuildContext context) {
+  JobModelRepository jobRepo = JobModelRepository();
   // if (selectedFundCode == menuOthSalaryPayment) {
   //   selectedFundCode = menuOthLaundryPayment;
   // }

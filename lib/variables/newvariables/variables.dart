@@ -1,11 +1,13 @@
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:laundry_firebase/models/newmodels/gcashmodel.dart';
 import 'package:laundry_firebase/models/oldmodels/customermodel.dart';
 import 'package:laundry_firebase/models/newmodels/employeemodel.dart';
+import 'package:laundry_firebase/models/oldmodels/employeesetupmodel.dart';
 import 'package:laundry_firebase/models/oldmodels/jobsonqueuemodel.dart';
 import 'package:laundry_firebase/models/newmodels/otheritemmodel.dart';
 import 'package:laundry_firebase/models/newmodels/suppliesmodelhist.dart';
@@ -25,6 +27,22 @@ import 'package:laundry_firebase/variables/newvariables/variables_supplies.dart'
 bool bFirebaseInitialized = false;
 const String storageKey = 'customer_code';
 
+bool isLoading = true;
+String? cachedToken;
+final FirebaseMessaging messaging = FirebaseMessaging.instance;
+
+final finalEmpSetup = EmployeeSetupModel(
+    docId: '',
+    empId: empNameToId[empIdGlobal]!,
+    empName: empIdGlobal,
+    logDate: Timestamp.now(),
+    logBy: empIdGlobal,
+    remarks: '',
+    showLaundry: false,
+    showFunds: false,
+    showFundsHistory: false,
+    showEmployee: false,
+    showIncome: false);
 bool loading = true;
 bool loggedIn = false;
 bool rememberMe = true;

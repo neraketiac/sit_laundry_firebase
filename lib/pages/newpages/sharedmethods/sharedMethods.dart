@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:image_picker/image_picker.dart';
@@ -10,8 +11,10 @@ import 'package:laundry_firebase/models/oldmodels/customermodel.dart';
 import 'package:laundry_firebase/models/newmodels/employeemodel.dart';
 import 'package:laundry_firebase/models/newmodels/jobmodel.dart';
 import 'package:laundry_firebase/models/newmodels/suppliesmodelhist.dart';
+import 'package:laundry_firebase/models/oldmodels/employeesetupmodel.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedConstantsFinal.dart';
 import 'package:laundry_firebase/services/newservices/database_employee_current.dart';
+import 'package:laundry_firebase/services/newservices/database_employee_setup.dart';
 import 'package:laundry_firebase/services/newservices/database_gcash.dart';
 import 'package:laundry_firebase/services/newservices/database_jobs.dart';
 import 'package:laundry_firebase/services/newservices/database_supplies_current.dart';
@@ -149,6 +152,32 @@ void showImagePreview(BuildContext context, String imageUrl) {
         ),
       );
     },
+  );
+}
+
+Widget animatedPanel({
+  required bool visible,
+  required double width,
+  required Widget child,
+}) {
+  return AnimatedContainer(
+    duration: const Duration(milliseconds: 300),
+    curve: Curves.easeOutCubic,
+    width: visible ? width : 0,
+    child: ClipRect(
+      child: SingleChildScrollView(
+        scrollDirection: Axis.vertical,
+        child: Container(
+          constraints: BoxConstraints(
+            minWidth: 0,
+            maxWidth: width,
+          ),
+          color: Colors.blue,
+          padding: const EdgeInsets.all(8),
+          child: child,
+        ),
+      ),
+    ),
   );
 }
 
@@ -841,6 +870,55 @@ Future<String?> uploadToCloudinaryBytes(Uint8List bytes) async {
   }
 
   return null;
+}
+
+// TOKENS //
+
+Future<void> registerWebToken(String empId) async {
+  try {
+    if (!kIsWeb) return; // Only needed for Web
+
+    // Ask permission
+    NotificationSettings settings = await messaging.requestPermission();
+
+    if (settings.authorizationStatus != AuthorizationStatus.authorized) {
+      print("Notification permission not granted");
+      return;
+    }
+
+    print("Notification permission granted");
+
+    // Get token
+    final token = await messaging.getToken(
+      vapidKey:
+          "BA9ojQB79PiK84UardJeRfsk_okHsBHG763k_TgqbdF7cMkh_qnxKwrv84byD2XjU3sGLF4PHgaR-yjb_gfn4Zs",
+    );
+
+    if (token == null) return;
+
+    // Prevent duplicate saves
+    if (cachedToken == token) {
+      print("Token unchanged. Skipping update.");
+      return;
+    }
+
+    cachedToken = token;
+
+    print("FCM TOKEN: $token");
+
+    saveTokenToFirestore(empId, token);
+  } catch (e) {
+    print("FCM INIT ERROR: $e");
+  }
+}
+
+Future<void> saveTokenToFirestore(String empId, String token) async {
+  await FirebaseFirestore.instance.collection("users").doc(empId).set({
+    "fcmToken": token,
+    "updatedAt": FieldValue.serverTimestamp(),
+  }, SetOptions(merge: true));
+
+  print("Token saved to Firestore");
 }
 
 // NOTIFICATIONS //

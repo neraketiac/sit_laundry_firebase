@@ -113,75 +113,42 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
           clipBehavior: Clip.none,
           children: [
             //4th floor
-            _fab(
-                hero: 'GCash Pending',
-                icon: Icons.g_mobiledata,
-                bottom: _isOpen ? base + step + step + step : base,
-                right: _isOpen ? base : base,
-                onTap: () => showGCashPending(context),
-                backgroundColor: cShowGCash),
 
             //3rd floor
 
             _fab(
-                hero: 'Gcash',
+                hero: 'Gcash Funds',
                 icon: Icons.attach_money_sharp,
-                bottom: _isOpen ? base + step + step : base,
-                right: _isOpen ? base + step : base,
+                bottom: _isOpen ? base : base,
+                right: _isOpen ? base + step + step : base,
                 onTap: () => showGCashOnly(context, jobRepoNonJob),
                 backgroundColor: cAdmin),
 
             _fab(
                 hero: 'Laundry Payment',
                 icon: Icons.payments_outlined,
-                bottom: _isOpen ? base + step + step : base,
-                right: _isOpen ? base : base,
+                bottom: _isOpen ? base : base,
+                right: _isOpen ? base + step : base,
                 onTap: () => showLaundryPayment(context, jobRepoNonJob),
                 backgroundColor: cAdmin),
-
-            //2nd floor
-
-            _fab(
-                hero: 'Funds In Funds Out',
-                icon: Icons.accessibility_new_rounded,
-                bottom: _isOpen ? base + step : base,
-                right: _isOpen ? base + step * 2 : base,
-                onTap: () => showFundsInFundsOut(context, jobRepoNonJob),
-                backgroundColor: cFundsInFundsOut),
-
-            _fab(
-                hero: 'FundsCheck',
-                icon: Icons.price_check_outlined,
-                bottom: _isOpen ? base + step : base,
-                right: _isOpen ? base + step : base,
-                onTap: () => showFundCheck(context),
-                backgroundColor: cFundsCheck),
 
             //1st floor
 
             _fab(
+                hero: 'GCash Pending',
+                icon: Icons.g_mobiledata,
+                bottom: _isOpen ? base + step : base,
+                right: _isOpen ? base + step : base,
+                onTap: () => showGCashPending(context),
+                backgroundColor: cShowGCash),
+
+            _fab(
                 hero: 'JobsOnQueue',
                 icon: Icons.local_laundry_service,
-                bottom: _isOpen ? base : base,
-                right: _isOpen ? base + step * 3 : base,
+                bottom: _isOpen ? base + step : base,
+                right: _isOpen ? base : base,
                 onTap: () => showJobOnQueue(context, jobRepoBQ),
                 backgroundColor: cJobsOnQueue),
-
-            _fab(
-                hero: 'Salary',
-                icon: Icons.savings,
-                bottom: _isOpen ? base : base,
-                right: _isOpen ? base + step * 2 : base,
-                onTap: () => showSalaryMaintenance(context, jobRepoNonJob),
-                backgroundColor: cEmployeeMaintenance),
-
-            _fab(
-                hero: 'Calendar',
-                icon: Icons.calendar_month,
-                bottom: base,
-                right: _isOpen ? base + step : base,
-                onTap: () => showCalendarDialog(context),
-                backgroundColor: Colors.white70),
 
             /// ───── Main FAB
             Positioned(

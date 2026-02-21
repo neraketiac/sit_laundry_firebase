@@ -1,6 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:laundry_firebase/models/oldmodels/employeesetupmodel.dart';
@@ -12,6 +10,11 @@ import 'package:laundry_firebase/pages/newpages/body/Gcash/readDataGCashPending.
 import 'package:laundry_firebase/pages/newpages/body/JobOnQueue/readDataJobsOnQueue.dart';
 import 'package:laundry_firebase/pages/newpages/body/Supplies/readSuppliesCurrent.dart';
 import 'package:laundry_firebase/pages/newpages/body/Supplies/readSuppliesHist.dart';
+import 'package:laundry_firebase/pages/newpages/header/Employee/showSalaryMaintenance.dart';
+import 'package:laundry_firebase/pages/newpages/header/Funds/showCalendarDialog.dart';
+import 'package:laundry_firebase/pages/newpages/header/Funds/showFundCheck.dart';
+import 'package:laundry_firebase/pages/newpages/header/Funds/showFundsInFundsOut.dart';
+import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedMethods.dart';
 import 'package:laundry_firebase/services/newservices/database_employee_setup.dart';
 import 'package:laundry_firebase/variables/newvariables/variables.dart';
 import 'package:web/web.dart' as web;
@@ -28,176 +31,8 @@ class MyMainLaundryBody extends StatefulWidget {
 class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
   late DatabaseEmployeeSetup databaseEmployeeSetup;
   late EmployeeSetupModel empSetup;
-  bool isLoading = true;
 
-  String? _cachedToken;
-  final FirebaseMessaging _messaging = FirebaseMessaging.instance;
-
-  @override
-  void initState() {
-    super.initState();
-    putEntries();
-
-    empIdGlobal = widget.empidClass;
-
-    // Register token once after widget is mounted
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      registerWebToken(empIdGlobal);
-    });
-
-    // Listen for token refresh (important for web)
-    _messaging.onTokenRefresh.listen((newToken) async {
-      print("Token refreshed: $newToken");
-      await saveTokenToFirestore(empIdGlobal, newToken);
-    });
-
-    databaseEmployeeSetup = DatabaseEmployeeSetup();
-    _loadEmployeeSetup();
-  }
-
-  Future<void> registerWebToken(String empId) async {
-    try {
-      if (!kIsWeb) return; // Only needed for Web
-
-      // Ask permission
-      NotificationSettings settings = await _messaging.requestPermission();
-
-      if (settings.authorizationStatus != AuthorizationStatus.authorized) {
-        print("Notification permission not granted");
-        return;
-      }
-
-      print("Notification permission granted");
-
-      // Get token
-      final token = await _messaging.getToken(
-        vapidKey:
-            "BA9ojQB79PiK84UardJeRfsk_okHsBHG763k_TgqbdF7cMkh_qnxKwrv84byD2XjU3sGLF4PHgaR-yjb_gfn4Zs",
-      );
-
-      if (token == null) return;
-
-      // Prevent duplicate saves
-      if (_cachedToken == token) {
-        print("Token unchanged. Skipping update.");
-        return;
-      }
-
-      _cachedToken = token;
-
-      print("FCM TOKEN: $token");
-
-      saveTokenToFirestore(empId, token);
-    } catch (e) {
-      print("FCM INIT ERROR: $e");
-    }
-  }
-
-  Future<void> saveTokenToFirestore(String empId, String token) async {
-    await FirebaseFirestore.instance.collection("users").doc(empId).set({
-      "fcmToken": token,
-      "updatedAt": FieldValue.serverTimestamp(),
-    }, SetOptions(merge: true));
-
-    print("Token saved to Firestore");
-  }
-
-  // @override
-  // Future<void> initState() async {
-  //   super.initState();
-  //   empIdGlobal = widget.empidClass;
-  //   putEntries(); // only to use getItemNameOnly()
-
-  //   // final cleanUrl = Uri.base.toString().split('#').last;
-  //   // final uri = Uri.parse(cleanUrl);
-  //   // final empId = uri.queryParameters['empId'];
-
-  //   // if (empId != null && empId.isNotEmpty) {
-  //   registerWebToken(empIdGlobal);
-
-  //   // }
-
-  //   databaseEmployeeSetup = DatabaseEmployeeSetup();
-  //   _loadEmployeeSetup();
-  // }
-
-  Widget _checkBox({
-    required String title,
-    required bool selectedBool,
-    required ValueChanged<bool?> onChanged,
-  }) {
-    return Row(
-      children: [
-        SizedBox(
-          width: 1,
-        ),
-        Transform.scale(
-          scale: 0.9, // shrink the checkbox itself
-          child: Checkbox(
-            value: selectedBool,
-            onChanged: onChanged,
-            visualDensity:
-                VisualDensity(horizontal: -4, vertical: -4), // tighter
-            materialTapTargetSize:
-                MaterialTapTargetSize.shrinkWrap, // no extra padding
-          ),
-        ),
-        Text(
-          title,
-          style: const TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(width: 5),
-      ],
-    );
-  }
-
-  Widget _animatedPanel({
-    required bool visible,
-    required double width,
-    required Widget child,
-  }) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeOutCubic,
-      width: visible ? width : 0,
-      child: ClipRect(
-        child: SingleChildScrollView(
-          scrollDirection: Axis.vertical,
-          child: Container(
-            constraints: BoxConstraints(
-              minWidth: 0,
-              maxWidth: width,
-            ),
-            color: Colors.blue,
-            padding: const EdgeInsets.all(8),
-            child: child,
-          ),
-        ),
-      ),
-    );
-  }
-
-// helper method
-  Widget _buildCheckBoxContainer({
-    required Color color,
-    required String title,
-    required bool value,
-    required ValueChanged<bool?> onChanged,
-  }) {
-    return Container(
-      color: color,
-      padding: const EdgeInsets.symmetric(horizontal: 4),
-      child: _checkBox(
-        title: title,
-        selectedBool: value,
-        onChanged: onChanged,
-      ),
-    );
-  }
-
+// EMPLOYEE
   Future<void> _loadEmployeeSetup() async {
     final snapshot = await databaseEmployeeSetup.get().first;
 
@@ -212,18 +47,7 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
       // Create default employee setup
 
       //final docRef = databaseEmployeeSetup.docId();
-      final newSetup = EmployeeSetupModel(
-          docId: '',
-          empId: empNameToId[empIdGlobal]!,
-          empName: empIdGlobal,
-          logDate: Timestamp.now(),
-          logBy: empIdGlobal,
-          remarks: '',
-          showLaundry: false,
-          showFunds: false,
-          showFundsHistory: false,
-          showEmployee: false,
-          showIncome: false);
+      final newSetup = finalEmpSetup;
 
       // Save to Firestore
       await databaseEmployeeSetup.add(newSetup);
@@ -236,11 +60,34 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
     }
   }
 
-  void _updateSetup(EmployeeSetupModel updated) {
+  void updateEmployeeSetup(EmployeeSetupModel updated) {
     setState(() {
       empSetup = updated;
     });
     databaseEmployeeSetup.update(updated);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    putEntries();
+
+    empIdGlobal = widget.empidClass;
+
+    // Register token once after widget is mounted
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      registerWebToken(empIdGlobal);
+    });
+
+    // Listen for token refresh (important for web)
+    messaging.onTokenRefresh.listen((newToken) async {
+      // print("Token refreshed: $newToken");
+      await saveTokenToFirestore(empIdGlobal, newToken);
+    });
+
+    databaseEmployeeSetup = DatabaseEmployeeSetup();
+    empSetup = finalEmpSetup;
+    _loadEmployeeSetup();
   }
 
   //########################### MAIN ###############################
@@ -267,79 +114,148 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
       appBar: AppBar(
         automaticallyImplyLeading: false,
         toolbarHeight: 48,
-        title: Row(
-          children: [
-            Expanded(
-              child: Row(
-                children: [
-                  Text(
-                    "$dateText. Hello ${empSetup.empName}",
-                    style: const TextStyle(fontSize: 14),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  IconButton(
-                    tooltip: 'Logout',
-                    icon: const Icon(Icons.logout, size: 14),
-                    onPressed: () {
-                      web.window.localStorage.removeItem(storageKey);
 
-                      setState(() {
-                        loggedIn = false;
-                        rememberMe = true;
-                      });
-
-                      Navigator.pushAndRemoveUntil(
-                        context,
-                        MaterialPageRoute(
-                            builder: (_) => const EnterLoyaltyCode()),
-                        (route) => false,
-                      );
-                    },
-                  ),
-                ],
+        /// 🔹 LEFT SIDE (Menu for Logout)
+        leading: MenuAnchor(
+          builder: (context, controller, child) {
+            return IconButton(
+              tooltip: 'Menu',
+              icon: const Icon(Icons.menu, size: 18),
+              onPressed: () {
+                controller.isOpen ? controller.close() : controller.open();
+              },
+            );
+          },
+          menuChildren: [
+            MenuItemButton(
+              style: MenuItemButton.styleFrom(
+                backgroundColor: Colors.blueGrey.shade600,
+                foregroundColor: Colors.white,
               ),
+              onPressed: () {
+                showFundsInFundsOut(context);
+              },
+              child: const Text("💰 Funds In/Out"),
             ),
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                  _buildCheckBoxContainer(
-                    color: Colors.grey,
-                    title: 'Gcash',
-                    value: empSetup.showFundsHistory,
-                    onChanged: (v) => _updateSetup(
-                      empSetup.copyWith(showFundsHistory: v ?? false),
-                    ),
-                  ),
-                  _buildCheckBoxContainer(
-                    color: Colors.lightBlueAccent[700]!,
-                    title: 'Ldy',
-                    value: empSetup.showLaundry,
-                    onChanged: (v) => _updateSetup(
-                      empSetup.copyWith(showLaundry: v ?? false),
-                    ),
-                  ),
-                  _buildCheckBoxContainer(
-                    color: Colors.lightBlueAccent,
-                    title: 'Funds',
-                    value: empSetup.showFunds,
-                    onChanged: (v) => _updateSetup(
-                      empSetup.copyWith(showFunds: v ?? false),
-                    ),
-                  ),
-                  _buildCheckBoxContainer(
-                    color: Colors.amber,
-                    title: 'Emp',
-                    value: empSetup.showEmployee,
-                    onChanged: (v) => _updateSetup(
-                      empSetup.copyWith(showEmployee: v ?? false),
-                    ),
-                  ),
-                ],
+            MenuItemButton(
+              style: MenuItemButton.styleFrom(
+                backgroundColor: Colors.green.shade600,
+                foregroundColor: Colors.white,
               ),
+              leadingIcon: const Icon(Icons.price_check_outlined, size: 18),
+              onPressed: () {
+                showFundCheck(context);
+              },
+              child: const Text("Funds Check"),
+            ),
+            MenuItemButton(
+              style: MenuItemButton.styleFrom(
+                backgroundColor: cEmployeeMaintenance,
+                foregroundColor: Colors.white,
+              ),
+              leadingIcon: const Icon(Icons.savings, size: 18),
+              onPressed: () {
+                showSalaryMaintenance(context);
+              },
+              child: const Text("Salary"),
+            ),
+            MenuItemButton(
+              style: MenuItemButton.styleFrom(
+                backgroundColor: Colors.white70,
+                foregroundColor: Colors.black,
+              ),
+              leadingIcon: const Icon(Icons.calendar_month, size: 18),
+              onPressed: () {
+                showCalendarDialog(context);
+              },
+              child: const Text("Calendar"),
+            ),
+            MenuItemButton(
+              leadingIcon: const Icon(Icons.logout, size: 18),
+              onPressed: () {
+                web.window.localStorage.removeItem(storageKey);
+
+                setState(() {
+                  loggedIn = false;
+                  rememberMe = true;
+                });
+
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const EnterLoyaltyCode(),
+                  ),
+                  (route) => false,
+                );
+              },
+              child: const Text("Logout"),
             ),
           ],
         ),
+
+        /// 🔹 TITLE (Greeting)
+        title: Text(
+          "$dateText. Hello ${empSetup.empName}",
+          style: const TextStyle(fontSize: 14),
+          overflow: TextOverflow.ellipsis,
+        ),
+
+        /// 🔹 RIGHT SIDE (3-Dot Menu)
+        actions: [
+          MenuAnchor(
+            builder: (context, controller, child) {
+              return IconButton(
+                tooltip: 'Show',
+                icon: const Icon(Icons.more_vert, size: 18),
+                onPressed: () {
+                  controller.isOpen ? controller.close() : controller.open();
+                },
+              );
+            },
+            menuChildren: [
+              MenuItemButton(
+                child: const Text('💳 GCash'),
+                onPressed: () {
+                  updateEmployeeSetup(
+                    empSetup.copyWith(
+                      showFundsHistory: !empSetup.showFundsHistory,
+                    ),
+                  );
+                },
+              ),
+              MenuItemButton(
+                child: const Text('🧺 Laundry'),
+                onPressed: () {
+                  updateEmployeeSetup(
+                    empSetup.copyWith(
+                      showLaundry: !empSetup.showLaundry,
+                    ),
+                  );
+                },
+              ),
+              MenuItemButton(
+                child: const Text('💰 Funds'),
+                onPressed: () {
+                  updateEmployeeSetup(
+                    empSetup.copyWith(
+                      showFunds: !empSetup.showFunds,
+                    ),
+                  );
+                },
+              ),
+              MenuItemButton(
+                child: const Text("🪪 Id"),
+                onPressed: () {
+                  updateEmployeeSetup(
+                    empSetup.copyWith(
+                      showEmployee: !empSetup.showEmployee,
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
@@ -347,7 +263,7 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _animatedPanel(
+            animatedPanel(
               visible: empSetup.showFundsHistory,
               width: 350,
               child: Column(
@@ -358,22 +274,22 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                 ],
               ),
             ),
-            _animatedPanel(
+            animatedPanel(
               visible: empSetup.showLaundry,
               width: 320,
               child: readDataJobsOnQueue(),
             ),
-            _animatedPanel(
+            animatedPanel(
               visible: empSetup.showFunds,
               width: 250,
               child: readDataSuppliesCurrent(),
             ),
-            _animatedPanel(
+            animatedPanel(
               visible: empSetup.showFunds,
               width: 600,
               child: readDataSuppliesHistory(),
             ),
-            _animatedPanel(
+            animatedPanel(
               visible: empSetup.showEmployee,
               width: 600,
               child: Column(

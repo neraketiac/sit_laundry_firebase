@@ -41,7 +41,7 @@ void showJobOnQueue(BuildContext context, JobModelRepository jobRepo) {
             vertical: 5,
           ),
           title: Text(
-            "Enter Laundry",
+            "Laundry Request",
             textAlign: TextAlign.center,
           ),
           content: SingleChildScrollView(
