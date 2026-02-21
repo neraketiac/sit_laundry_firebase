@@ -220,23 +220,27 @@ void showSalaryMaintenance(BuildContext context) {
                     if (fundTypeCodesEmployeeLayer.contains(selectedFundCode)) {
                       isGcashCredit = true;
                       await saveButtonSetRepository();
+                      return true;
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                             content: Text('Please select transaction type.')),
                       );
+                      return false;
                     }
                   } else if (selectedFundCode == null) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                           content: Text('Please select transaction type.')),
                     );
+                    return false;
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                           content:
                               Text('Name must be a staff for Salary Payment.')),
                     );
+                    return false;
                   }
                 }),
           ],

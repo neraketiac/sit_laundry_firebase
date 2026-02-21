@@ -178,6 +178,7 @@ void showGCashOnly(BuildContext context, JobModelRepository jobRepo) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('Please enter amount.')),
                     );
+                    return false;
                   } else if (ifMenuUniqueIsFundsOut(
                           SuppliesHistRepository.instance.suppliesModelHist!) &&
                       remarksSuppliesVar.text.isEmpty) {
@@ -185,6 +186,7 @@ void showGCashOnly(BuildContext context, JobModelRepository jobRepo) {
                       const SnackBar(
                           content: Text('Remarks is required for Funds Out.')),
                     );
+                    return false;
                   } else if (ifMenuUniqueIsFundsOut(
                           SuppliesHistRepository.instance.suppliesModelHist!) &&
                       !empNameToId.containsKey(autocompleteSelected.name)) {
@@ -192,19 +194,23 @@ void showGCashOnly(BuildContext context, JobModelRepository jobRepo) {
                       const SnackBar(
                           content: Text('Name must be a staff for Funds Out.')),
                     );
+                    return false;
                   } else if (selectedFundCode == null) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                           content: Text('Please select transaction type.')),
                     );
+                    return false;
                   } else {
                     if (fundTypeCodes1stLayer.contains(selectedFundCode)) {
                       await saveButtonSetRepository();
+                      return true;
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                             content: Text('Please select transaction type.')),
                       );
+                      return false;
                     }
                   }
                 }),

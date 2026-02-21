@@ -167,7 +167,7 @@ Future<int> getNextJobId() async {
       current = counterSnap.get('current') ?? 0;
     }
 
-    // 2️⃣ Get all existing JobIds in range 1–25
+    // 2️⃣ Get used JobIds (1–25 only)
     final snapshot = await firestore
         .collection(JOBS_ONGOING_REF)
         .where('A00_JobId', isGreaterThanOrEqualTo: 1)
@@ -176,6 +176,11 @@ Future<int> getNextJobId() async {
 
     final usedIds =
         snapshot.docs.map((doc) => doc.get('A00_JobId') as int).toSet();
+
+    // 🚨 If already full
+    if (usedIds.length >= 25) {
+      return 0;
+    }
 
     // 3️⃣ Try up to 25 slots
     for (int i = 0; i < 25; i++) {
@@ -189,8 +194,8 @@ Future<int> getNextJobId() async {
       current = next;
     }
 
-    // 4️⃣ If all numbers are used
-    throw Exception("Queue is full. All 25 JobIds are currently used.");
+    // Safety fallback
+    return 0;
   });
 }
 

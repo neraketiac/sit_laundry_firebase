@@ -77,28 +77,36 @@ void showMoveToOnGoing(BuildContext context, JobModelRepository jobRepo) {
               ),
             ),
             boxButtonElevated(
-                context: context,
-                label: 'Move to On-Going',
-                onPressed: () async {
-                  if (jobRepo.customerId == 0) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content: Text('Please select customer name.')),
-                    );
-                  } else {
-                    final nextJobId = await getNextJobId();
+              context: context,
+              label: 'Move to On-Going',
+              onPressed: () async {
+                if (jobRepo.customerId == 0) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Please select customer name.'),
+                    ),
+                  );
+                  return false; // ❌ do NOT close dialog
+                }
 
-                    if (nextJobId == 0) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                            content: Text(
-                                'Jobs OnGoing is full, please clean jobs first')),
-                      );
-                    } else {
-                      moveQueueToOngoing(jobRepo.docId, nextJobId);
-                    }
-                  }
-                }),
+                final nextJobId = await getNextJobId();
+
+                if (nextJobId == 0) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                        'Jobs OnGoing is full, please clean jobs first',
+                      ),
+                    ),
+                  );
+                  return false; // ❌ keep dialog open
+                }
+
+                await moveQueueToOngoing(jobRepo.docId, nextJobId);
+
+                return true; // ✅ close dialog
+              },
+            ),
           ],
         );
       });

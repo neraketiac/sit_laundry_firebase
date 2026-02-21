@@ -88,6 +88,7 @@ Widget readDataGCashPending() {
                                         onPressed: () async {
                                           await dbGCashPending
                                               .deleteVoid(gRepo.getModel()!);
+                                          return true;
                                         },
                                       ),
                                     if (isAdmin &&
@@ -104,6 +105,7 @@ Widget readDataGCashPending() {
                                           gRepo.gCashStatus = 0.75;
                                           await dbGCashPending
                                               .updateVoid(gRepo.getModel()!);
+                                          return true;
                                         },
                                       ),
                                     if (gRepo.gCashStatus > 0.5)
@@ -113,6 +115,7 @@ Widget readDataGCashPending() {
                                         onPressed: () async {
                                           gRepo.gCashStatus = 1.0;
                                           await moveToNext(gRepo.docId);
+                                          return true;
                                         },
                                       ),
                                   ],

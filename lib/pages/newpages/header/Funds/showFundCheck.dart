@@ -266,6 +266,7 @@ void showFundCheck(BuildContext context) {
                   setState(() {
                     resetAllQty();
                   });
+                  return true;
                 }),
           ],
         );

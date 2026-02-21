@@ -184,6 +184,7 @@ void showFundsInFundsOut(BuildContext context) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('Please enter amount.')),
                     );
+                    return false;
                   } else if (ifMenuUniqueIsFundsOut(
                           SuppliesHistRepository.instance.suppliesModelHist!) &&
                       remarksSuppliesVar.text.isEmpty) {
@@ -191,6 +192,7 @@ void showFundsInFundsOut(BuildContext context) {
                       const SnackBar(
                           content: Text('Remarks is required for Funds Out.')),
                     );
+                    return false;
                   } else if (ifMenuUniqueIsFundsOut(
                           SuppliesHistRepository.instance.suppliesModelHist!) &&
                       !empNameToId.containsKey(autocompleteSelected.name)) {
@@ -198,19 +200,23 @@ void showFundsInFundsOut(BuildContext context) {
                       const SnackBar(
                           content: Text('Name must be a staff for Funds Out.')),
                     );
+                    return false;
                   } else if (selectedFundCode == null) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                           content: Text('Please select transaction type.')),
                     );
+                    return false;
                   } else {
                     if (fundTypeCodes3rdLayer.contains(selectedFundCode)) {
                       await saveButtonSetRepository();
+                      return true;
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                             content: Text('Please select transaction type.')),
                       );
+                      return false;
                     }
                   }
                 }),

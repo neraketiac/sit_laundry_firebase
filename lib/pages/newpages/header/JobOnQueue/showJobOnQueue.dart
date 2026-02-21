@@ -107,9 +107,11 @@ void showJobOnQueue(BuildContext context, JobModelRepository jobRepo) {
                     const SnackBar(
                         content: Text('Please select customer name.')),
                   );
+                  return false;
                 } else {
                   await saveButtonSetRepository();
                   if (successInsertFB) resetSelected(jobRepo);
+                  return true;
                 }
               },
             ),

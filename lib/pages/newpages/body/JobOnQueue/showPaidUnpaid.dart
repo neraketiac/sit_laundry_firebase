@@ -86,8 +86,10 @@ void showPaidUnpaid(BuildContext context, JobModelRepository jobRepo) {
                       const SnackBar(
                           content: Text('Please select customer name.')),
                     );
+                    return false;
                   } else {
                     await saveButtonSetRepository();
+                    return true;
                   }
                 }),
           ],

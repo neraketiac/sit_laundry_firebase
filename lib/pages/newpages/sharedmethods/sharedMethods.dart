@@ -305,7 +305,7 @@ Widget boxButton2label({
 ElevatedButton boxButtonElevated({
   required BuildContext context,
   required String label,
-  required Future<void> Function()? onPressed,
+  required Future<bool> Function()? onPressed,
   bool disabled = false,
 }) {
   return ElevatedButton(
@@ -321,17 +321,21 @@ ElevatedButton boxButtonElevated({
               ),
             );
 
+            bool success = false;
+
             try {
-              await onPressed(); // 👈 EXECUTES PASSED LOGIC
+              success = await onPressed();
             } catch (e) {
               print(e);
             }
 
             // Close loading
-            Navigator.of(context).pop();
+            Navigator.of(context, rootNavigator: true).pop();
 
-            // Close confirmation dialog
-            Navigator.of(context).pop(true);
+            // Close confirmation dialog ONLY if success
+            if (success) {
+              Navigator.of(context).pop(true);
+            }
           },
     child: Text(label),
   );

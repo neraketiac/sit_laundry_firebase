@@ -120,19 +120,23 @@ void showGCashPending(BuildContext context) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Please enter amount.')),
                   );
+                  return false;
                 } else if (gRepo.selectedFundCode == null) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                         content: Text('Please select transaction type.')),
                   );
+                  return false;
                 } else {
                   if (fundTypeCodes1stLayer.contains(gRepo.selectedFundCode)) {
                     await saveButtonSetRepository();
+                    return true;
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                           content: Text('Please select transaction type.')),
                     );
+                    return false;
                   }
                 }
               },
