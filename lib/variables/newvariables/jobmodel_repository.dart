@@ -52,11 +52,9 @@ class JobModelRepository {
         unpaid: true,
         paidCash: false,
         paidGCash: false,
-        partialPaidCash: false,
-        partialPaidGCash: false,
-        partialPaidCashAmount: 0,
-        partialPaidGCashAmount: 0,
         paidGCashverified: false,
+        paidCashAmount: 0,
+        paidGCashAmount: 0,
         paymentReceivedBy: '',
         remarks: '',
         items: [OtherItemModel.makeEmpty()],
@@ -137,11 +135,9 @@ class JobModelRepository {
   bool get unpaid => jobModel.unpaid;
   bool get paidCash => jobModel.paidCash;
   bool get paidGCash => jobModel.paidGCash;
-  bool get partialPaidCash => jobModel.partialPaidCash;
-  bool get partialPaidGCash => jobModel.partialPaidGCash;
-  int get partialPaidCashAmount => jobModel.partialPaidCashAmount;
-  int get partialPaidGCashAmount => jobModel.partialPaidGCashAmount;
   bool get paidGCashVerified => jobModel.paidGCashverified;
+  int get paidCashAmount => jobModel.paidCashAmount;
+  int get paidGCashAmount => jobModel.paidGCashAmount;
   String get paymentReceivedBy => jobModel.paymentReceivedBy;
   String get remarks => jobModel.remarks;
   List<OtherItemModel> get items => jobModel.items;
@@ -196,13 +192,9 @@ class JobModelRepository {
   set unpaid(bool value) => jobModel.unpaid = value;
   set paidCash(bool value) => jobModel.paidCash = value;
   set paidGCash(bool value) => jobModel.paidGCash = value;
-  set partialPaidCash(bool value) => jobModel.partialPaidCash = value;
-  set partialPaidGCash(bool value) => jobModel.partialPaidGCash = value;
-  set partialPaidCashAmount(int value) =>
-      jobModel.partialPaidCashAmount = value;
-  set partialPaidGCashAmount(int value) =>
-      jobModel.partialPaidGCashAmount = value;
   set paidGCashVerified(bool value) => jobModel.paidGCashverified = value;
+  set paidCashAmount(int value) => jobModel.paidCashAmount = value;
+  set paidGCashAmount(int value) => jobModel.paidGCashAmount = value;
   set paymentReceivedBy(String value) => jobModel.paymentReceivedBy = value;
   set remarks(String value) => jobModel.remarks = value;
   set items(List<OtherItemModel> value) => jobModel.items = value;
@@ -297,10 +289,10 @@ class JobModelRepository {
       jobselectedRepository.customerAmountVar;
   TextEditingController get customerNameVar =>
       jobselectedRepository.customerNameVar;
-  TextEditingController get partialCashAmountVar =>
-      jobselectedRepository.partialCashAmountVar;
-  TextEditingController get partialGCashAmountVar =>
-      jobselectedRepository.partialGCashAmountVar;
+  TextEditingController get cashAmountVar =>
+      jobselectedRepository.cashAmountVar;
+  TextEditingController get gCashAmountVar =>
+      jobselectedRepository.gCashAmountVar;
   TextEditingController get remarksVar => jobselectedRepository.remarksVar;
 
   // String get customerAmountVar => jobselectedRepository.customerAmountVar.text;

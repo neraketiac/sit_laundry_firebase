@@ -352,8 +352,8 @@ void resetPaymentStatus(JobModelRepository jobRepo) {
   jobRepo.unpaid = true;
   jobRepo.paidCash = false;
   jobRepo.paidGCash = false;
-  jobRepo.partialCashAmountVar.text = '';
-  jobRepo.partialGCashAmountVar.text = '';
+  jobRepo.cashAmountVar.text = '';
+  jobRepo.cashAmountVar.text = '';
 }
 
 void resetSelected(JobModelRepository jobRepo) {
@@ -372,8 +372,8 @@ void resetSelected(JobModelRepository jobRepo) {
   jobRepo.paidGCash = false;
   jobRepo.selectedPaidPartialCash = false;
   jobRepo.selectedPaidPartialGCash = false;
-  jobRepo.partialCashAmountVar.text = '';
-  jobRepo.partialGCashAmountVar.text = '';
+  jobRepo.cashAmountVar.text = '';
+  jobRepo.gCashAmountVar.text = '';
 
   //verified gcash
   jobRepo.selectedPaidGCashVerified = false;
@@ -430,13 +430,7 @@ void syncRepoToSelectedBeforePopup(JobModelRepository jobRepo) {
   }
 
   //payment status
-  jobRepo.selectedPaidPartialCash = jobRepo.partialPaidCash;
-  jobRepo.selectedPaidPartialGCash = jobRepo.partialPaidGCash;
-  jobRepo.partialCashAmountVar.text = jobRepo.partialPaidCashAmount.toString();
-  jobRepo.partialGCashAmountVar.text =
-      jobRepo.partialPaidGCashAmount.toString();
   jobRepo.selectedPaidGCashVerified = jobRepo.paidGCashVerified;
-
   jobRepo.remarksVar.text = jobRepo.remarks;
 
   //weight status
@@ -525,14 +519,13 @@ void setSelectedToRepositoryBeforeSave(JobModelRepository jobRepo) {
   //
 
   //payment status
-  jobRepo.partialPaidCash = jobRepo.selectedPaidPartialCash;
-  jobRepo.partialPaidGCash = jobRepo.selectedPaidPartialGCash;
-  jobRepo.partialPaidCashAmount =
-      int.tryParse(jobRepo.partialCashAmountVar.text) ?? 0;
-  jobRepo.partialPaidGCashAmount =
-      int.tryParse(jobRepo.partialGCashAmountVar.text) ?? 0;
+  if (jobRepo.paidCash) {
+    if ((int.tryParse(jobRepo.cashAmountVar.text) ?? 0) >= jobRepo.finalPrice) {
+      jobRepo.unpaid = false;
+    }
+  }
 
-  if (jobRepo.paidCash || jobRepo.paidGCash) {
+  if (jobRepo.paidCash) {
     jobRepo.paymentReceivedBy = empIdGlobal;
   }
 
@@ -748,7 +741,7 @@ Future<void> setRepositoryLaundryPayment(
     BuildContext context, String viaJobs, JobModelRepository jobRepo) async {
   //generate only when funds received ( paidCash, partialPaidCash )
   //only PaidCash or PartialPaidCash
-  if (jobRepo.paidCash || jobRepo.partialPaidCash) {
+  if (jobRepo.paidCash) {
     //auto generated for Laundry payment, once user tag job to paid.
     SuppliesHistRepository.instance.setItemName(getItemNameOnly(
         menuOthCashInOutFunds, menuOthLaundryPayment)); //cash laundry payment
@@ -757,12 +750,12 @@ Future<void> setRepositoryLaundryPayment(
         .setItemUniqueId(menuOthLaundryPayment); //cash laundry payment
     SuppliesHistRepository.instance.setRemarks('auto via $viaJobs paid');
 
-    if (jobRepo.partialPaidCash) {
-      SuppliesHistRepository.instance
-          .setCurrentCounter(jobRepo.partialPaidCashAmount);
-    } else {
-      SuppliesHistRepository.instance.setCurrentCounter(jobRepo.finalPrice);
-    }
+    // if (jobRepo.partialPaidCash) {
+    //   SuppliesHistRepository.instance
+    //       .setCurrentCounter(jobRepo.partialPaidCashAmount);
+    // } else {
+    //   SuppliesHistRepository.instance.setCurrentCounter(jobRepo.finalPrice);
+    // }
 
     await setSuppliesRepository(context);
   }
@@ -782,12 +775,12 @@ Future<void> revertLaundryPaymentSuppliesHistory(
         .setItemUniqueId(menuOthUniqIdFundsOut); //funds out
     SuppliesHistRepository.instance.setRemarks('auto via $viaJobs unpaid');
 
-    if (jobRepo.partialPaidCashAmount > 0) {
-      SuppliesHistRepository.instance
-          .setCurrentCounter(jobRepo.partialPaidCashAmount);
-    } else {
-      SuppliesHistRepository.instance.setCurrentCounter(jobRepo.finalPrice);
-    }
+    // if (jobRepo.partialPaidCashAmount > 0) {
+    //   SuppliesHistRepository.instance
+    //       .setCurrentCounter(jobRepo.partialPaidCashAmount);
+    // } else {
+    //   SuppliesHistRepository.instance.setCurrentCounter(jobRepo.finalPrice);
+    // }
 
     await setSuppliesRepository(context);
   }

@@ -1025,8 +1025,8 @@ Visibility visPaidUnPaid(
 
   String returnPaymentStatusDuringToggle() {
     void resetPartialAmount() {
-      jobRepo.partialCashAmountVar.text = '';
-      jobRepo.partialGCashAmountVar.text = '';
+      jobRepo.cashAmountVar.text = '';
+      jobRepo.gCashAmountVar.text = '';
     }
 
     void setPartialAmount(TextEditingController controller) {
@@ -1045,10 +1045,10 @@ Visibility visPaidUnPaid(
       resetPartialAmount();
       return 'Split payment';
     } else if (jobRepo.paidCash) {
-      setPartialAmount(jobRepo.partialCashAmountVar);
+      setPartialAmount(jobRepo.cashAmountVar);
       return 'Paid Cash';
     } else if (jobRepo.paidGCash) {
-      setPartialAmount(jobRepo.partialGCashAmountVar);
+      setPartialAmount(jobRepo.gCashAmountVar);
       return 'Paid GCash';
     }
     resetPartialAmount();
@@ -1056,9 +1056,8 @@ Visibility visPaidUnPaid(
   }
 
   void validatePaymentWhenVarChange() {
-    final int valueCash = int.tryParse(jobRepo.partialCashAmountVar.text) ?? 0;
-    final int valueGCash =
-        int.tryParse(jobRepo.partialGCashAmountVar.text) ?? 0;
+    final int valueCash = int.tryParse(jobRepo.cashAmountVar.text) ?? 0;
+    final int valueGCash = int.tryParse(jobRepo.gCashAmountVar.text) ?? 0;
     final int tempFinalPrice = (jobRepo.selectedPackage == othersPackage
         ? jobRepo.totalPriceOthers
         : jobRepo.totalPriceRegSS);
@@ -1194,7 +1193,7 @@ Visibility visPaidUnPaid(
                                 validatePaymentWhenVarChange();
                               })
                             },
-                            controller: jobRepo.partialCashAmountVar,
+                            controller: jobRepo.cashAmountVar,
                             keyboardType: const TextInputType.numberWithOptions(
                                 decimal: true),
                             textAlign: TextAlign.center,
@@ -1242,7 +1241,7 @@ Visibility visPaidUnPaid(
                                 validatePaymentWhenVarChange();
                               })
                             },
-                            controller: jobRepo.partialGCashAmountVar,
+                            controller: jobRepo.gCashAmountVar,
                             keyboardType: const TextInputType.numberWithOptions(
                                 decimal: true),
                             textAlign: TextAlign.center,

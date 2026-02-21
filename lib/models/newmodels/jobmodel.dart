@@ -87,10 +87,8 @@ class JobModel {
   bool paidCash;
   bool paidGCash;
   bool paidGCashverified;
-  bool partialPaidCash;
-  bool partialPaidGCash;
-  int partialPaidCashAmount; //portion paid by cash
-  int partialPaidGCashAmount; //portion paid by gcash
+  int paidCashAmount;
+  int paidGCashAmount; //portion paid by gcash
   //if combine, can be tag paidCash & paidGCash
   String paymentReceivedBy;
 
@@ -141,11 +139,9 @@ class JobModel {
     required this.unpaid,
     required this.paidCash,
     required this.paidGCash,
-    required this.partialPaidCash,
-    required this.partialPaidGCash,
-    required this.partialPaidCashAmount,
-    required this.partialPaidGCashAmount,
     required this.paidGCashverified,
+    required this.paidCashAmount,
+    required this.paidGCashAmount,
     required this.paymentReceivedBy,
     required this.remarks,
     required this.items,
@@ -187,11 +183,9 @@ class JobModel {
       unpaid: true,
       paidCash: false,
       paidGCash: false,
-      partialPaidCash: false,
-      partialPaidGCash: false,
-      partialPaidCashAmount: 0,
-      partialPaidGCashAmount: 0,
       paidGCashverified: false,
+      paidCashAmount: 0,
+      paidGCashAmount: 0,
       paymentReceivedBy: '',
       remarks: '',
       items: [OtherItemModel.makeEmpty()],
@@ -235,10 +229,8 @@ class JobModel {
     bool? paidCash,
     bool? paidGCash,
     bool? paidGCashverified,
-    bool? partialPaidCash,
-    bool? partialPaidGCash,
-    int? partialPaidCashAmount,
-    int? partialPaidGCashAmount,
+    int? paidCashAmount,
+    int? paidGCashAmount,
     String? paymentReceivedBy,
     String? remarks,
     List<OtherItemModel>? items,
@@ -278,13 +270,9 @@ class JobModel {
       unpaid: unpaid ?? this.unpaid,
       paidCash: paidCash ?? this.paidCash,
       paidGCash: paidGCash ?? this.paidGCash,
-      partialPaidCash: partialPaidCash ?? this.partialPaidCash,
-      partialPaidGCash: partialPaidGCash ?? this.partialPaidGCash,
-      partialPaidCashAmount:
-          partialPaidCashAmount ?? this.partialPaidCashAmount,
-      partialPaidGCashAmount:
-          partialPaidGCashAmount ?? this.partialPaidGCashAmount,
       paidGCashverified: paidGCashverified ?? this.paidGCashverified,
+      paidCashAmount: paidCashAmount ?? this.paidCashAmount,
+      paidGCashAmount: paidGCashAmount ?? this.paidGCashAmount,
       paymentReceivedBy: paymentReceivedBy ?? this.paymentReceivedBy,
       remarks: remarks ?? this.remarks,
       items: items ?? this.items,
@@ -325,11 +313,9 @@ class JobModel {
         unpaid: json['P00_Unpaid'],
         paidCash: json['P01_PaidCash'],
         paidGCash: json['P02_PaidGCash'],
-        partialPaidCash: json['P03_PartialPaidCash'],
-        partialPaidGCash: json['P04_PartialPaidGCash'],
-        partialPaidCashAmount: json['P05_PartialPaidCashAmount'],
-        partialPaidGCashAmount: json['P06_PartialPaidGCashAmount'],
-        paidGCashverified: json['P07_PaidGCashVerified'],
+        paidGCashverified: json['P03_PaidGCashVerified'],
+        paidCashAmount: json['P04_PaidCashAmount'],
+        paidGCashAmount: json['P05_PaidGCashAmount'],
         paymentReceivedBy: json['P08_PaymentReceivedBy'],
         paidD: json['A03_PaidD'],
         dateO: json['A04_DateO'],
@@ -373,11 +359,9 @@ class JobModel {
         'P00_Unpaid': unpaid,
         'P01_PaidCash': paidCash,
         'P02_PaidGCash': paidGCash,
-        'P03_PartialPaidCash': partialPaidCash,
-        'P04_PartialPaidGCash': partialPaidGCash,
-        'P05_PartialPaidCashAmount': partialPaidCashAmount,
-        'P06_PartialPaidGCashAmount': partialPaidGCashAmount,
         'P07_PaidGCashVerified': paidGCashverified,
+        'P04_PaidCashAmount': paidCashAmount,
+        'P04_PaidGCashAmount': paidGCashAmount,
         'P08_PaymentReceivedBy': paymentReceivedBy,
         'A03_PaidD': paidD,
         'A04_DateO': dateO,

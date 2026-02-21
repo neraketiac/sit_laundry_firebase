@@ -6,8 +6,8 @@ import 'package:laundry_firebase/variables/newvariables/variables_oth.dart';
 class JobselectedRepository {
   TextEditingController customerAmountVar = TextEditingController();
   TextEditingController customerNameVar = TextEditingController();
-  TextEditingController partialCashAmountVar = TextEditingController();
-  TextEditingController partialGCashAmountVar = TextEditingController();
+  TextEditingController cashAmountVar = TextEditingController();
+  TextEditingController gCashAmountVar = TextEditingController();
   TextEditingController remarksVar = TextEditingController();
 
   int selectedRiderPickup = forSorting;

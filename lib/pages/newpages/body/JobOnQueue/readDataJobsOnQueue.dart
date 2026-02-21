@@ -316,14 +316,7 @@ Widget readDataJobsOnQueue() {
                                             ? 'Paid\nCash'
                                             : job.paidGCash
                                                 ? 'Paid\nGCash'
-                                                : job.partialPaidCash &&
-                                                        job.partialPaidGCash
-                                                    ? 'Partial\nboth'
-                                                    : job.partialPaidCash
-                                                        ? 'Partial\nCash'
-                                                        : job.partialPaidGCash
-                                                            ? 'Partial\nGCash'
-                                                            : 'Unpaid'),
+                                                : 'Unpaid'),
                                     style: TextStyle(
                                       fontWeight: FontWeight.w600,
                                       color: isSelected
