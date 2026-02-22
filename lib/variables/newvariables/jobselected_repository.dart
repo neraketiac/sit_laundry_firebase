@@ -25,16 +25,8 @@ class JobselectedRepository {
   OtherItemModel selectedItemModel = reg125ItemModel;
   List<OtherItemModel> listSelectedItemModel = [];
   int selectedOthersShortCut = menuOth155;
-  //int selectedPaidUnpaid = unpaid;
-  bool selectedPaidGCashVerified = false;
-  bool selectedFold = true;
-  bool selectedMix = true;
-  int basketCount = 0;
-  int ecoBagCount = 0;
-  int sakoCount = 0;
   int addFabCount = 0;
   int addExtraDryCount = 0;
   int addExtraWashCount = 0;
   int addExtraSpinCount = 0;
-  String selectedOnGoingStatus = '';
 }

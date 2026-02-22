@@ -64,7 +64,7 @@ String showHowMany155or125Set(
     ];
 
     // Base single
-    if (total == jobRepo.pricePerSet) return ' ${jobRepo.pricePerSet}}';
+    if (total == jobRepo.pricePerSet) return ' ${jobRepo.pricePerSet}';
 
     // Extras alone
     if (extras.contains(total)) return ' $total';
@@ -394,7 +394,7 @@ String textBagDetails(JobModel jM) {
   return parts.join(' ');
 }
 
-String textExtras(JobModel jM) {
+String textDetFabBleExtras(JobModel jM) {
   final List<String> parts = [];
 
   /// 🔁 Group item names and count
@@ -454,7 +454,7 @@ void resetSelected(JobModelRepository jobRepo) {
   jobRepo.gCashAmountVar.text = '';
 
   //verified gcash
-  jobRepo.selectedPaidGCashVerified = false;
+  // jobRepo.selectedPaidGCashVerified = false;
 
   //weight status
   jobRepo.isPerKg = true;
@@ -470,30 +470,30 @@ void resetSelected(JobModelRepository jobRepo) {
   jobRepo.items.clear();
 
   //other options
-  jobRepo.selectedFold = true;
-  jobRepo.selectedMix = true;
-  jobRepo.basketCount = 0;
-  jobRepo.ecoBagCount = 0;
-  jobRepo.sakoCount = 0;
+  jobRepo.fold = true;
+  jobRepo.mix = true;
+  jobRepo.basket = 0;
+  jobRepo.ebag = 0;
+  jobRepo.sako = 0;
   jobRepo.addFabCount = 0;
   jobRepo.addExtraDryCount = 0;
   jobRepo.addExtraWashCount = 0;
   jobRepo.addExtraSpinCount = 0;
 }
 
-void syncRepoToSelectedBeforePopup(JobModelRepository jobRepo) {
-  //admin
+//only all edit should call this
+void syncRepoToSelectedALL(JobModelRepository jobRepo) {
+  //1 admin
   jobRepo.currentEmpId = empIdGlobal;
 
+  //2 customer
   jobRepo.customerNameVar.text = jobRepo.customerName;
 
-  //initial status
-  //riderpickup can be true and forsorting is true, but always display the forSorting. meaning pickup is done.
-  //if pickup is false, it went to forsorting but never in pickup.
+  //3 queue status
   if (jobRepo.riderPickup) jobRepo.selectedRiderPickup = riderPickup;
   if (jobRepo.forSorting) jobRepo.selectedRiderPickup = forSorting;
 
-  //package status
+  //4 package status
   if (jobRepo.regular) jobRepo.selectedPackage = regularPackage;
   if (jobRepo.sayosabon) jobRepo.selectedPackage = sayoSabonPackage;
   if (jobRepo.addOn) {
@@ -501,7 +501,7 @@ void syncRepoToSelectedBeforePopup(JobModelRepository jobRepo) {
     jobRepo.selectedPackagePrev = othersPackage;
   }
 
-  //prices
+  //5 prices
   if (jobRepo.addOn) {
     jobRepo.totalPriceOthers = jobRepo.finalPrice;
     jobRepo.totalPriceRegSS = 0;
@@ -510,34 +510,28 @@ void syncRepoToSelectedBeforePopup(JobModelRepository jobRepo) {
     jobRepo.totalPriceOthers = 0;
   }
 
-  //payment status
-  jobRepo.selectedPaidGCashVerified = jobRepo.paidGCashVerified;
-  jobRepo.remarksVar.text = jobRepo.remarks;
+  //6 payment status
+  // jobRepo.selectedPaidGCashVerified = jobRepo.paidGCashVerified;
 
-  //weight status
+  //6 payment status
+  jobRepo.cashAmountVar.text = jobRepo.paidCashAmount.toString();
+  jobRepo.gCashAmountVar.text = jobRepo.paidGCashAmount.toString();
+
+  //7 weight status
   if (jobRepo.perKilo) jobRepo.isPerKg = true;
   if (jobRepo.perLoad) jobRepo.isPerKg = false;
 
   jobRepo.quantityKg = jobRepo.finalKilo;
   jobRepo.quantityLoad = jobRepo.finalLoad;
-  jobRepo.remarksVar.text = jobRepo.remarks;
 
-  //list other items
-  //if (jobRepo.selectedPackage == othersPackage) {
+  //8 list other items
   jobRepo.listSelectedItemModel = List.from(jobRepo.items);
   jobRepo.totalPriceShortCutRegSS = jobRepo.items.fold(
     0,
     (sum, item) => sum + item.itemPrice,
   );
-  //}
 
-  //other options
-  jobRepo.selectedFold = jobRepo.fold;
-  jobRepo.selectedMix = jobRepo.mix;
-  jobRepo.basketCount = jobRepo.basket;
-  jobRepo.ecoBagCount = jobRepo.ebag;
-  jobRepo.sakoCount = jobRepo.sako;
-
+  //10 extras
   if (jobRepo.selectedPackage != othersPackage) {
     jobRepo.addFabCount = jobRepo.items
         .where((e) => e.itemUniqueId == addFabAnyItemModel.itemUniqueId)
@@ -558,24 +552,35 @@ void syncRepoToSelectedBeforePopup(JobModelRepository jobRepo) {
     jobRepo.addExtraSpinCount = 0;
   }
 
-  jobRepo.selectedOnGoingStatus = jobRepo.processStep;
+  //12 Remarks
+  jobRepo.remarksVar.text = jobRepo.remarks;
+}
 
-  // if (jobRepo.processStep == 'waiting') {
-  //   jobRepo.selectedOnGoingStatus = processWaiting;
-  // }
-  // if (jobRepo.processStep == 'washing') {
-  //   jobRepo.selectedOnGoingStatus = processWashing;
-  // }
-  // if (jobRepo.processStep == 'drying') {
-  //   jobRepo.selectedOnGoingStatus = processDrying;
-  // }
-  // if (jobRepo.processStep == 'folding') {
-  //   jobRepo.selectedOnGoingStatus = processFolding;
-  // }
+void syncRepoToSelectedSmall(JobModelRepository jobRepo) {
+  //2 customer
+  jobRepo.customerNameVar.text = jobRepo.customerName;
+
+  //3 queue status
+  if (jobRepo.riderPickup) jobRepo.selectedRiderPickup = riderPickup;
+  if (jobRepo.forSorting) jobRepo.selectedRiderPickup = forSorting;
+
+  //6 payment status
+  jobRepo.cashAmountVar.text = jobRepo.paidCashAmount.toString();
+  jobRepo.gCashAmountVar.text = jobRepo.paidGCashAmount.toString();
+
+  //8 list other items
+  jobRepo.listSelectedItemModel = List.from(jobRepo.items);
+  jobRepo.totalPriceShortCutRegSS = jobRepo.items.fold(
+    0,
+    (sum, item) => sum + item.itemPrice,
+  );
+
+  jobRepo.remarksVar.text = jobRepo.remarks;
 }
 
 //set selected to repository
-void setSelectedToRepositoryBeforeSave(JobModelRepository jobRepo) {
+//only all edit should call this
+void syncSelectedToRepositoryALL(JobModelRepository jobRepo) {
   int computePromoCounter = 0;
   int computeLoadForKg(double kg) {
     double remainder = kg % 8;
@@ -595,43 +600,45 @@ void setSelectedToRepositoryBeforeSave(JobModelRepository jobRepo) {
     return wholeEight + lastCounter;
   }
 
+  //1 admin
   jobRepo.currentEmpId = empIdGlobal;
 
-  //initial status
+  //2 customer
+  //set by autocomplete
+
+  //3 queue status
   jobRepo.forSorting = forSorting == jobRepo.selectedRiderPickup;
   jobRepo.riderPickup = riderPickup == jobRepo.selectedRiderPickup;
 
-  //package status
+  //4 package status
   jobRepo.regular = regularPackage == jobRepo.selectedPackage;
   jobRepo.sayosabon = sayoSabonPackage == jobRepo.selectedPackage;
   jobRepo.addOn = othersPackage == jobRepo.selectedPackage;
 
-  //prices
+  //5 prices
   if (jobRepo.selectedPackage == othersPackage) {
     jobRepo.finalPrice = jobRepo.totalPriceOthers;
   } else {
     jobRepo.finalPrice = jobRepo.totalPriceRegSS;
   }
-  //
 
-  //payment status
+  //6 payment status
+  jobRepo.unpaid = true;
+  jobRepo.paidCashAmount = int.tryParse(jobRepo.cashAmountVar.text) ?? 0;
+  jobRepo.paidGCashAmount = int.tryParse(jobRepo.gCashAmountVar.text) ?? 0;
+  //check if paidCash is enough vs bill
   if (jobRepo.paidCash) {
-    if ((int.tryParse(jobRepo.cashAmountVar.text) ?? 0) >= jobRepo.finalPrice) {
+    //received by
+    jobRepo.paymentReceivedBy = empIdGlobal;
+    if (jobRepo.paidCashAmount >= jobRepo.finalPrice) {
+      //paid
       jobRepo.unpaid = false;
     }
   }
 
-  if (jobRepo.paidCash) {
-    jobRepo.paymentReceivedBy = empIdGlobal;
-  }
-
-  //verified gcash
-  jobRepo.paidGCashVerified = jobRepo.selectedPaidGCashVerified;
-
-  //weight status
+  //7 weight status
   jobRepo.perKilo = false;
   jobRepo.perLoad = false;
-
   if (jobRepo.isPerKg) {
     jobRepo.perKilo = true;
     jobRepo.finalKilo = jobRepo.quantityKg;
@@ -639,41 +646,42 @@ void setSelectedToRepositoryBeforeSave(JobModelRepository jobRepo) {
     jobRepo.promoCounter = computePromoCounter;
     jobRepo.pricingSetup = showHowMany155or125Set(
         computeTotalPrice(jobRepo.quantityKg, jobRepo), false, jobRepo);
-    jobRepo.remarks = jobRepo.remarksVar.text;
   } else {
     jobRepo.perLoad = true;
     jobRepo.finalLoad = jobRepo.quantityLoad;
     jobRepo.promoCounter = jobRepo.quantityLoad;
     jobRepo.pricingSetup = 'Load(s): ${jobRepo.quantityLoad}';
-    jobRepo.remarks = jobRepo.remarksVar.text;
   }
 
-  //list other items
+  //8 list other items
   if (jobRepo.listSelectedItemModel.isNotEmpty) {
     jobRepo.items = List.from(jobRepo.listSelectedItemModel);
   }
 
-  //other options
-  jobRepo.fold = jobRepo.selectedFold;
-  jobRepo.mix = jobRepo.selectedMix;
-  jobRepo.basket = jobRepo.basketCount;
-  jobRepo.ebag = jobRepo.ecoBagCount;
-  jobRepo.sako = jobRepo.sakoCount;
+  //12
+  jobRepo.remarks = jobRepo.remarksVar.text;
+}
 
-  // if (jobRepo.selectedOnGoingStatus == processWaiting) {
-  //   jobRepo.processStep = 'waiting';
-  // }
-  // if (jobRepo.selectedOnGoingStatus == processWashing) {
-  //   jobRepo.processStep = 'washing';
-  // }
-  // if (jobRepo.selectedOnGoingStatus == processDrying) {
-  //   jobRepo.processStep = 'drying';
-  // }
-  // if (jobRepo.selectedOnGoingStatus == processFolding) {
-  //   jobRepo.processStep = 'folding';
-  // }
+void syncSelectedToRepositorySmall(JobModelRepository jobRepo) {
+  //3 queue status
+  jobRepo.forSorting = forSorting == jobRepo.selectedRiderPickup;
+  jobRepo.riderPickup = riderPickup == jobRepo.selectedRiderPickup;
 
-  jobRepo.processStep = jobRepo.selectedOnGoingStatus;
+  //6 payment status
+  jobRepo.unpaid = true;
+  // jobRepo.paidCash;
+  // jobRepo.paidGCash;
+  jobRepo.paidCashAmount = int.tryParse(jobRepo.cashAmountVar.text) ?? 0;
+  jobRepo.paidGCashAmount = int.tryParse(jobRepo.gCashAmountVar.text) ?? 0;
+  //check if paidCash is enough vs bill
+  if (jobRepo.paidCash) {
+    //received by
+    jobRepo.paymentReceivedBy = empIdGlobal;
+    if (jobRepo.paidCashAmount >= jobRepo.finalPrice) {
+      //paid
+      jobRepo.unpaid = false;
+    }
+  }
 }
 
 //########################################################################//

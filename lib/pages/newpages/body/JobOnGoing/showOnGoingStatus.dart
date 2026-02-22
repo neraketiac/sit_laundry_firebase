@@ -5,13 +5,13 @@ import 'package:laundry_firebase/variables/newvariables/jobmodel_repository.dart
 
 void showOnGoingStatus(BuildContext context, JobModelRepository jobRepo) {
   Future<void> saveButtonSetRepository() async {
-    setSelectedToRepositoryBeforeSave(jobRepo);
+    syncSelectedToRepositorySmall(jobRepo);
 
     await callDatabaseUpdateJob(context, jobRepo.getJobsModel()!);
     //await setRepositoryLaundryPayment(context, 'Show Jobs OnQueue');
   }
 
-  syncRepoToSelectedBeforePopup(jobRepo);
+  syncRepoToSelectedSmall(jobRepo);
   showDialog(
     context: context,
     builder: (BuildContext context) {
@@ -58,7 +58,7 @@ void showOnGoingStatus(BuildContext context, JobModelRepository jobRepo) {
             TextButton(
               onPressed: () {
                 setState(() {
-                  syncRepoToSelectedBeforePopup(jobRepo);
+                  syncRepoToSelectedSmall(jobRepo);
                 });
 
                 Navigator.pop(context); // close popup

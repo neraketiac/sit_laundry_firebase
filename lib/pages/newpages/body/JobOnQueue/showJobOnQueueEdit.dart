@@ -5,13 +5,13 @@ import 'package:laundry_firebase/variables/newvariables/jobmodel_repository.dart
 
 void showJobOnQueueEdit(BuildContext context, JobModelRepository jobRepo) {
   Future<void> saveButtonSetRepository() async {
-    setSelectedToRepositoryBeforeSave(jobRepo);
+    syncSelectedToRepositoryALL(jobRepo);
 
     await callDatabaseUpdateJob(context, jobRepo.getJobsModel()!);
     //await setRepositoryLaundryPayment(context, 'Show Jobs OnQueue');
   }
 
-  syncRepoToSelectedBeforePopup(jobRepo);
+  syncRepoToSelectedALL(jobRepo);
   showDialog(
     context: context,
     builder: (BuildContext context) {
@@ -82,7 +82,7 @@ void showJobOnQueueEdit(BuildContext context, JobModelRepository jobRepo) {
             TextButton(
               onPressed: () {
                 setState(() {
-                  syncRepoToSelectedBeforePopup(jobRepo);
+                  syncRepoToSelectedALL(jobRepo);
                 });
 
                 Navigator.pop(context); // close popup

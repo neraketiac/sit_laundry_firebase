@@ -174,7 +174,7 @@ Widget readDataJobsOnQueue() {
                                     width: 3,
                                   ),
                                   Text(
-                                    textExtras(job),
+                                    textDetFabBleExtras(job),
                                     style: TextStyle(
                                         fontWeight: FontWeight.w600,
                                         color: isSelected

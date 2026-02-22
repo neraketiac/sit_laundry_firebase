@@ -59,6 +59,7 @@ class JobModelRepository {
         remarks: '',
         items: [OtherItemModel.makeEmpty()],
         processStep: '',
+        allStatus: 0,
         forDisposal: false,
         disposed: false);
   }
@@ -142,6 +143,7 @@ class JobModelRepository {
   String get remarks => jobModel.remarks;
   List<OtherItemModel> get items => jobModel.items;
   String get processStep => jobModel.processStep;
+  double get allStatus => jobModel.allStatus;
   bool get forDisposal => jobModel.forDisposal;
   bool get disposed => jobModel.disposed;
 
@@ -199,6 +201,7 @@ class JobModelRepository {
   set remarks(String value) => jobModel.remarks = value;
   set items(List<OtherItemModel> value) => jobModel.items = value;
   set processStep(String value) => jobModel.processStep = value;
+  set allStatus(double value) => jobModel.allStatus = value;
   set forDisposal(bool value) => jobModel.forDisposal = value;
   set disposed(bool value) => jobModel.disposed = value;
 
@@ -256,15 +259,6 @@ class JobModelRepository {
       jobselectedRepository.selectedItemModel = value;
   set selectedOthersShortCut(int value) =>
       jobselectedRepository.selectedOthersShortCut = value;
-  // set selectedPaidUnpaid(int value) =>
-  //     jobselectedRepository.selectedPaidUnpaid = value;
-  set selectedPaidGCashVerified(bool value) =>
-      jobselectedRepository.selectedPaidGCashVerified = value;
-  set selectedFold(bool value) => jobselectedRepository.selectedFold = value;
-  set selectedMix(bool value) => jobselectedRepository.selectedMix = value;
-  set basketCount(int value) => jobselectedRepository.basketCount = value;
-  set ecoBagCount(int value) => jobselectedRepository.ecoBagCount = value;
-  set sakoCount(int value) => jobselectedRepository.sakoCount = value;
   set addFabCount(int value) => jobselectedRepository.addFabCount = value;
   set addExtraDryCount(int value) =>
       jobselectedRepository.addExtraDryCount = value;
@@ -274,8 +268,6 @@ class JobModelRepository {
       jobselectedRepository.addExtraSpinCount = value;
   set listSelectedItemModel(List<OtherItemModel> value) =>
       jobselectedRepository.listSelectedItemModel = value;
-  set selectedOnGoingStatus(String value) =>
-      jobselectedRepository.selectedOnGoingStatus = value;
 
   /////////////////////////////////////////////////////////////
   //                          GETTER                         //
@@ -292,14 +284,6 @@ class JobModelRepository {
   TextEditingController get gCashAmountVar =>
       jobselectedRepository.gCashAmountVar;
   TextEditingController get remarksVar => jobselectedRepository.remarksVar;
-
-  // String get customerAmountVar => jobselectedRepository.customerAmountVar.text;
-  // String get customerNameVar => jobselectedRepository.customerNameVar.text;
-  // String get partialCashAmountVar =>
-  //     jobselectedRepository.partialCashAmountVar.text;
-  // String get partialGCashAmountVar =>
-  //     jobselectedRepository.partialGCashAmountVar.text;
-  // String get remarksVar => jobselectedRepository.remarksVar.text;
 
   int get selectedRiderPickup => jobselectedRepository.selectedRiderPickup;
   int get selectedPackage => jobselectedRepository.selectedPackage;
@@ -318,20 +302,10 @@ class JobModelRepository {
       jobselectedRepository.selectedItemModel;
   int get selectedOthersShortCut =>
       jobselectedRepository.selectedOthersShortCut;
-  //int get selectedPaidUnpaid => jobselectedRepository.selectedPaidUnpaid;
-  bool get selectedPaidGCashVerified =>
-      jobselectedRepository.selectedPaidGCashVerified;
-  bool get selectedFold => jobselectedRepository.selectedFold;
-  bool get selectedMix => jobselectedRepository.selectedMix;
-  int get basketCount => jobselectedRepository.basketCount;
-  int get ecoBagCount => jobselectedRepository.ecoBagCount;
-  int get sakoCount => jobselectedRepository.sakoCount;
   int get addFabCount => jobselectedRepository.addFabCount;
   int get addExtraDryCount => jobselectedRepository.addExtraDryCount;
   int get addExtraWashCount => jobselectedRepository.addExtraWashCount;
   int get addExtraSpinCount => jobselectedRepository.addExtraSpinCount;
   List<OtherItemModel> get listSelectedItemModel =>
       jobselectedRepository.listSelectedItemModel;
-  String get selectedOnGoingStatus =>
-      jobselectedRepository.selectedOnGoingStatus;
 }

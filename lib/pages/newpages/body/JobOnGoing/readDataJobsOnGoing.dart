@@ -224,7 +224,7 @@ Widget readDataJobsOnGoing() {
                                   const SizedBox(height: 2),
                                   //EXTRAS
                                   Text(
-                                    textExtras(job),
+                                    textDetFabBleExtras(job),
                                     style: TextStyle(
                                       fontWeight: FontWeight.w600,
                                       color: isSelected

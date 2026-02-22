@@ -102,6 +102,13 @@ class JobModel {
   /// Used ONLY in `Jobs_ongoing`
   /// Values: 'waiting', 'washing' | 'drying' | 'folding' | 'done'
   String processStep;
+  double allStatus;
+  //on queue 0.10 for pickup, 1.0 sorting
+  //on-going 0.10 waiting, 0.6 washing, 0.7 drying, 0.8 folding
+  //done     0.5 unpaid, 0.5 customer pickup, 0.5 for delivery, 0.5 delivered pay via gcash
+  //         customer pickup done + paid cash = 1.0
+  //         delivery done + paid cash = 1.0
+  //         delivery done + padi via gcash = 0.75 if verified = 1.0
 
   /// 🔴 Disposal
   bool forDisposal;
@@ -146,6 +153,7 @@ class JobModel {
     required this.remarks,
     required this.items,
     required this.processStep,
+    required this.allStatus,
     required this.forDisposal,
     required this.disposed,
   });
@@ -190,6 +198,7 @@ class JobModel {
       remarks: '',
       items: [OtherItemModel.makeEmpty()],
       processStep: '',
+      allStatus: 0,
       forDisposal: false,
       disposed: false,
     );
@@ -235,6 +244,7 @@ class JobModel {
     String? remarks,
     List<OtherItemModel>? items,
     String? processStep,
+    double? allStatus,
     bool? forDisposal,
     bool? disposed,
   }) {
@@ -277,6 +287,7 @@ class JobModel {
       remarks: remarks ?? this.remarks,
       items: items ?? this.items,
       processStep: processStep ?? this.processStep,
+      allStatus: allStatus ?? this.allStatus,
       forDisposal: forDisposal ?? this.forDisposal,
       disposed: disposed ?? this.disposed,
     );
@@ -324,6 +335,7 @@ class JobModel {
             .map((e) => OtherItemModel.fromJson(e))
             .toList(),
         processStep: json['O00_ProcessStep'],
+        allStatus: json['O01_AllStatus'],
         forDisposal: json['R01_ForDisposal'],
         disposed: json['R02_Disposed'],
       );
@@ -368,6 +380,7 @@ class JobModel {
         'A05_DateD': dateD,
         'items': items.map((e) => e.toJson()).toList(),
         'O00_ProcessStep': processStep,
+        'O01_AllStatus': allStatus,
         'R01_ForDisposal': forDisposal,
         'R02_Disposed': disposed,
       };

@@ -1,27 +1,11 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedMethods.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedVisibility.dart';
 import 'package:laundry_firebase/services/newservices/database_jobs.dart';
 import 'package:laundry_firebase/variables/newvariables/jobmodel_repository.dart';
-import 'package:laundry_firebase/variables/newvariables/variables.dart';
 
 void showMoveToOnGoing(BuildContext context, JobModelRepository jobRepo) {
-  Future<void> saveButtonSetRepository() async {
-//dates
-    /// 🟣 Dates
-    jobRepo.dateQ = Timestamp.now();
-
-    //admin
-    jobRepo.createdBy = empIdGlobal;
-
-    setSelectedToRepositoryBeforeSave(jobRepo);
-
-    await callDatabaseUpdateJob(context, jobRepo.getJobsModel()!);
-    //await setRepositoryLaundryPayment(context, 'Show Jobs OnQueue');
-  }
-
-  syncRepoToSelectedBeforePopup(jobRepo);
+  syncRepoToSelectedSmall(jobRepo);
   showDialog(
     context: context,
     builder: (BuildContext context) {
@@ -67,7 +51,7 @@ void showMoveToOnGoing(BuildContext context, JobModelRepository jobRepo) {
             TextButton(
               onPressed: () {
                 setState(() {
-                  syncRepoToSelectedBeforePopup(jobRepo);
+                  syncRepoToSelectedSmall(jobRepo);
                 });
 
                 Navigator.pop(context); // close popup

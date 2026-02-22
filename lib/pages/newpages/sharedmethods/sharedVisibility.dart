@@ -1289,10 +1289,10 @@ Visibility visPaidUnPaid(
               Transform.scale(
                 scale: 0.8, // shrink the checkbox itself
                 child: Checkbox(
-                  value: jobRepo.selectedPaidGCashVerified,
+                  value: jobRepo.paidGCashVerified,
                   onChanged: (bool? value) {
                     setState(() {
-                      jobRepo.selectedPaidGCashVerified = value ?? false;
+                      jobRepo.paidGCashVerified = value ?? false;
                     });
                   },
                   visualDensity:
@@ -1322,13 +1322,13 @@ Visibility visFold(
         children: [
           ToggleButtons(
             isSelected: [
-              jobRepo.selectedFold, // Fold
-              !jobRepo.selectedFold, // No Fold
+              jobRepo.fold, // Fold
+              !jobRepo.fold, // No Fold
             ],
             onPressed: (index) {
               setState(() {
                 // single source of truth
-                jobRepo.selectedFold = index == 0;
+                jobRepo.fold = index == 0;
               });
             },
             borderRadius: BorderRadius.circular(8),
@@ -1364,13 +1364,13 @@ Visibility visMix(
         children: [
           ToggleButtons(
             isSelected: [
-              jobRepo.selectedMix, // Fold
-              !jobRepo.selectedMix, // No Fold
+              jobRepo.mix, // Fold
+              !jobRepo.mix, // No Fold
             ],
             onPressed: (index) {
               setState(() {
                 // single source of truth
-                jobRepo.selectedMix = index == 0;
+                jobRepo.mix = index == 0;
               });
             },
             borderRadius: BorderRadius.circular(8),
@@ -1398,13 +1398,13 @@ Visibility visBasket(
   // ➕➖ handlers
   void incrementOne() {
     setState(() {
-      jobRepo.basketCount += 1;
+      jobRepo.basket += 1;
     });
   }
 
   void decrementOne() {
     setState(() {
-      jobRepo.basketCount -= 1;
+      jobRepo.basket -= 1;
     });
   }
 
@@ -1413,22 +1413,19 @@ Visibility visBasket(
     child: Container(
       alignment: Alignment.center,
       padding: const EdgeInsets.all(6.0),
-      decoration:
-          (jobRepo.basketCount > 0 ? decoGreenAccent2() : decoLightBlue()),
+      decoration: (jobRepo.basket > 0 ? decoGreenAccent2() : decoLightBlue()),
       child: Row(
         mainAxisSize: MainAxisSize.max,
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           // ➖ -1
           boxButton(
-              label: '-1',
-              disabled: jobRepo.basketCount <= 0,
-              onTap: decrementOne),
+              label: '-1', disabled: jobRepo.basket <= 0, onTap: decrementOne),
           const SizedBox(width: 12),
 
           // 🧺 basket : x
           Text(
-            'Basket : ${jobRepo.basketCount} pc',
+            'Basket : ${jobRepo.basket} pc',
             style: const TextStyle(
               fontWeight: FontWeight.w600,
             ),
@@ -1447,13 +1444,13 @@ Visibility visEcoBag(
   // ➕➖ handlers
   void incrementOne() {
     setState(() {
-      jobRepo.ecoBagCount += 1;
+      jobRepo.ebag += 1;
     });
   }
 
   void decrementOne() {
     setState(() {
-      jobRepo.ecoBagCount -= 1;
+      jobRepo.ebag -= 1;
     });
   }
 
@@ -1462,22 +1459,19 @@ Visibility visEcoBag(
     child: Container(
       alignment: Alignment.center,
       padding: const EdgeInsets.all(6.0),
-      decoration:
-          (jobRepo.ecoBagCount > 0 ? decoGreenAccent2() : decoLightBlue()),
+      decoration: (jobRepo.ebag > 0 ? decoGreenAccent2() : decoLightBlue()),
       child: Row(
         mainAxisSize: MainAxisSize.max,
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           // ➖ -1
           boxButton(
-              label: '-1',
-              disabled: jobRepo.ecoBagCount <= 0,
-              onTap: decrementOne),
+              label: '-1', disabled: jobRepo.ebag <= 0, onTap: decrementOne),
 
           const SizedBox(width: 12),
 
           Text(
-            'EcoBag : ${jobRepo.ecoBagCount} pc',
+            'EcoBag : ${jobRepo.ebag} pc',
             style: const TextStyle(
               fontWeight: FontWeight.w600,
             ),
@@ -1498,13 +1492,13 @@ Visibility visSako(
   // ➕➖ handlers
   void incrementOne() {
     setState(() {
-      jobRepo.sakoCount += 1;
+      jobRepo.sako += 1;
     });
   }
 
   void decrementOne() {
     setState(() {
-      jobRepo.sakoCount -= 1;
+      jobRepo.sako -= 1;
     });
   }
 
@@ -1513,22 +1507,19 @@ Visibility visSako(
     child: Container(
       alignment: Alignment.center,
       padding: const EdgeInsets.all(6.0),
-      decoration:
-          (jobRepo.sakoCount > 0 ? decoGreenAccent2() : decoLightBlue()),
+      decoration: (jobRepo.sako > 0 ? decoGreenAccent2() : decoLightBlue()),
       child: Row(
         mainAxisSize: MainAxisSize.max,
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           // ➖ -1
           boxButton(
-              label: '-1',
-              disabled: jobRepo.sakoCount <= 0,
-              onTap: decrementOne),
+              label: '-1', disabled: jobRepo.sako <= 0, onTap: decrementOne),
 
           const SizedBox(width: 12),
 
           Text(
-            'Sako : ${jobRepo.sakoCount} pc',
+            'Sako : ${jobRepo.sako} pc',
             style: const TextStyle(
               fontWeight: FontWeight.w600,
             ),
@@ -2019,11 +2010,11 @@ Visibility visOnGoingStatus(
           ToggleButtons(
             isSelected: List.generate(
               listOnGoingStatus.length,
-              (i) => jobRepo.selectedOnGoingStatus == listOnGoingStatus[i],
+              (i) => jobRepo.processStep == listOnGoingStatus[i],
             ),
             onPressed: (index) {
               setState(() {
-                jobRepo.selectedOnGoingStatus = listOnGoingStatus[index];
+                jobRepo.processStep = listOnGoingStatus[index];
               });
             },
             borderRadius: BorderRadius.circular(8),

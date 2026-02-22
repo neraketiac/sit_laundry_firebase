@@ -15,7 +15,7 @@ void showJobOnQueue(BuildContext context, JobModelRepository jobRepo) {
     //admin
     jobRepo.createdBy = empIdGlobal;
 
-    setSelectedToRepositoryBeforeSave(jobRepo);
+    syncSelectedToRepositoryALL(jobRepo);
 
     await callDatabaseJobsQueueAdd(context, jobRepo);
     //await setRepositoryLaundryPayment(context, 'Show Jobs OnQueue');
