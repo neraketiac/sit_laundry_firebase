@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:laundry_firebase/models/newmodels/jobmodel.dart';
 import 'package:laundry_firebase/models/newmodels/otheritemmodel.dart';
+import 'package:laundry_firebase/pages/newpages/body/JobOnQueue/showPaidUnpaid.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/autocompletecustomer.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedConstantsFinal.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedMethods.dart';
@@ -2035,6 +2037,151 @@ Visibility visOnGoingStatus(
           ),
         ],
       ),
+    ),
+  );
+}
+
+InkWell visIconArea(BuildContext context, JobModelRepository jobRepo,
+    JobModel job, bool isSelected, bool isRunning, VoidCallback onTap) {
+  return InkWell(
+    onTap: onTap,
+    child: Stack(
+      alignment: Alignment.center,
+      children: [
+        SizedBox(
+          width: 38,
+          height: 38,
+          child: CircularProgressIndicator(
+            value: jobRepo.allStatus,
+            strokeWidth: 6,
+            backgroundColor: backGroundStatusColor(job),
+            color: isSelected ? Colors.deepPurple : Colors.deepPurple.shade300,
+          ),
+        ),
+        AnimatedRotation(
+          turns: jobRepo.allStatus, //isRunning ? 1 : 0,
+          duration: const Duration(seconds: 2),
+          curve: Curves.linear,
+          child: Icon(
+            statusIcon(job),
+            color: Colors.deepPurple,
+            size: 20,
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+Expanded visNameArea(JobModel job, bool isSelected) {
+  return Expanded(
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Text(
+              '${displayCustomerName(job.customerName)} (${job.finalLoad})',
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                color: isSelected ? Colors.deepPurple : Colors.black,
+              ),
+            ),
+            SizedBox(
+              width: 3,
+            ),
+            Text(
+              textBagDetails(job),
+              style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  color: isSelected ? Colors.deepPurple : Colors.black,
+                  fontSize: 10),
+            ),
+          ],
+        ),
+        SizedBox(
+          width: 3,
+        ),
+        Text(
+          textDetFabBleExtras(job),
+          style: TextStyle(
+              fontWeight: FontWeight.w600,
+              color: isSelected ? Colors.deepPurple : Colors.black,
+              fontSize: 10),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          textJobStatus(job),
+          style: TextStyle(
+            fontSize: 10,
+            color: (job.forSorting
+                ? Colors.deepPurple.shade400
+                : Colors.redAccent),
+          ),
+        ),
+        Text(
+          '${job.pricingSetup} ${job.remarks}',
+          style: TextStyle(
+            fontSize: 10,
+            color: Colors.deepPurple.shade400,
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+InkWell visPaidUnpaidArea(BuildContext context, JobModelRepository jobRepo,
+    bool isSelected, JobModel job) {
+  return InkWell(
+    onTap: () {
+      showPaidUnpaid(context, jobRepo);
+    },
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Text(
+          jobRepo.processStep.isEmpty ? '' : '# ${jobRepo.jobsId}',
+          style: const TextStyle(
+            fontWeight: FontWeight.w900,
+            fontSize: 14,
+            shadows: [
+              Shadow(
+                offset: Offset(1.5, 0),
+                blurRadius: 0,
+                color: Colors.black,
+              ),
+            ],
+          ),
+        ),
+        Text(
+          '₱ ${job.finalPrice}',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: isSelected
+                ? (job.paidCash ? Colors.deepPurple : Colors.redAccent)
+                : (job.paidCash ? Colors.black : Colors.redAccent),
+          ),
+        ),
+        Text(
+          job.unpaid
+              ? 'Unpaid'
+              : job.paidCash
+                  ? 'Paid\nCash'
+                  : job.paidGCash
+                      ? 'Paid\nGCash'
+                      : 'Unpaid',
+          style: TextStyle(
+            fontWeight: FontWeight.w600,
+            fontSize: 10,
+            color: isSelected
+                ? (job.paidCash ? Colors.deepPurple : Colors.redAccent)
+                : (job.paidCash ? Colors.black : Colors.redAccent),
+          ),
+          textAlign: TextAlign.right,
+        ),
+      ],
     ),
   );
 }

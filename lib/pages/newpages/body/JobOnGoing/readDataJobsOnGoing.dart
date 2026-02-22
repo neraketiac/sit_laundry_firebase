@@ -4,6 +4,7 @@ import 'package:laundry_firebase/pages/newpages/body/JobOnGoing/showOnGoingStatu
 import 'package:laundry_firebase/pages/newpages/body/JobOnQueue/showJobOnQueueEdit.dart';
 import 'package:laundry_firebase/pages/newpages/body/JobOnQueue/showPaidUnpaid.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedMethods.dart';
+import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedVisibility.dart';
 import 'package:laundry_firebase/services/newservices/database_jobs.dart';
 import 'package:laundry_firebase/variables/newvariables/jobmodel_repository.dart';
 
@@ -153,160 +154,19 @@ Widget readDataJobsOnGoing() {
 
                             const SizedBox(width: 10),
 
-                            /// 🔄 Progress badge
-                            InkWell(
-                              onTap: () {
-                                showOnGoingStatus(context, jobRepo);
-                              },
-                              child: Stack(
-                                alignment: Alignment.center,
-                                children: [
-                                  SizedBox(
-                                    width: 38,
-                                    height: 38,
-                                    child: CircularProgressIndicator(
-                                      value: value,
-                                      strokeWidth: 6,
-                                      backgroundColor:
-                                          backGroundStatusColor(job),
-                                      color: isSelected
-                                          ? Colors.deepPurple
-                                          : Colors.deepPurple.shade300,
-                                    ),
-                                  ),
-                                  AnimatedRotation(
-                                    turns: isRunning ? 1 : 0,
-                                    duration: const Duration(seconds: 2),
-                                    curve: Curves.linear,
-                                    child: Icon(
-                                      statusIcon(job),
-                                      color: Colors.deepPurple,
-                                      size: 20,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
+                            //                    ICON AREA                    //
+                            visIconArea(
+                                context, jobRepo, job, isSelected, isRunning,
+                                () {
+                              showOnGoingStatus(context, jobRepo);
+                            }),
 
                             const SizedBox(width: 7),
-
-                            /// 📄 Job info
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    children: [
-                                      //CustomerName
-                                      Text(
-                                        '${displayCustomerName(job.customerName)} (${job.finalLoad})',
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.w600,
-                                          color: isSelected
-                                              ? Colors.deepPurple
-                                              : Colors.black,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 3),
-                                      //Bags
-                                      Text(
-                                        textBagDetails(job),
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.w600,
-                                          color: isSelected
-                                              ? Colors.deepPurple
-                                              : Colors.black,
-                                          fontSize: 10,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 2),
-                                  //EXTRAS
-                                  Text(
-                                    textDetFabBleExtras(job),
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                      color: isSelected
-                                          ? Colors.deepPurple
-                                          : Colors.black,
-                                      fontSize: 10,
-                                    ),
-                                  ),
-                                  //Status
-                                  Text(
-                                    textJobStatus(job),
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      color: job.forSorting
-                                          ? Colors.deepPurple.shade400
-                                          : Colors.redAccent,
-                                    ),
-                                  ),
-                                  Text(
-                                    '${job.pricingSetup} ${job.remarks}',
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      color: Colors.deepPurple.shade400,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-
-                            /// 💰 Price
-                            InkWell(
-                              onTap: () {
-                                showPaidUnpaid(context, jobRepo);
-                              },
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  Text(
-                                    '# ${jobRepo.jobsId}',
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                  Text(
-                                    '₱ ${job.finalPrice}',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: isSelected
-                                          ? (job.paidCash
-                                              ? Colors.deepPurple
-                                              : Colors.redAccent)
-                                          : (job.paidCash
-                                              ? Colors.black
-                                              : Colors.redAccent),
-                                    ),
-                                  ),
-                                  Text(
-                                    job.unpaid
-                                        ? 'Unpaid'
-                                        : job.paidCash
-                                            ? 'Paid\nCash'
-                                            : job.paidGCash
-                                                ? 'Paid\nGCash'
-                                                : 'Unpaid',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 10,
-                                      color: isSelected
-                                          ? (job.paidCash
-                                              ? Colors.deepPurple
-                                              : Colors.redAccent)
-                                          : (job.paidCash
-                                              ? Colors.black
-                                              : Colors.redAccent),
-                                    ),
-                                    textAlign: TextAlign.right,
-                                  ),
-                                ],
-                              ),
-                            ),
-
+                            //                    NAME AREA                    //
+                            visNameArea(jobRepo.getJobsModel()!, isSelected),
+                            //                    PRICE AREA                    //
+                            visPaidUnpaidArea(context, jobRepo, isSelected,
+                                jobRepo.getJobsModel()!),
                             const SizedBox(width: 20),
                           ],
                         ),
