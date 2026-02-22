@@ -1,102 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:laundry_firebase/models/newmodels/jobmodel.dart';
-import 'package:laundry_firebase/pages/newpages/body/JobOnQueue/showJobOnQueueComplete.dart';
-import 'package:laundry_firebase/pages/newpages/body/JobOnQueue/showMoveToOnGoing.dart';
+import 'package:laundry_firebase/pages/newpages/body/JobOnGoing/showOnGoingStatus.dart';
+import 'package:laundry_firebase/pages/newpages/body/JobOnQueue/showJobOnQueueEdit.dart';
 import 'package:laundry_firebase/pages/newpages/body/JobOnQueue/showPaidUnpaid.dart';
+import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedMethods.dart';
 import 'package:laundry_firebase/services/newservices/database_jobs.dart';
 import 'package:laundry_firebase/variables/newvariables/jobmodel_repository.dart';
-import 'package:laundry_firebase/variables/newvariables/variables.dart';
-import 'package:laundry_firebase/variables/newvariables/variables_oth.dart';
 
 Widget readDataJobsOnGoing() {
   DatabaseJobsOngoing databaseJobsGoing = DatabaseJobsOngoing();
   int? selectedIndex;
   int? blockedIndex;
-
-  IconData statusIcon(JobModel jM) {
-    if (jM.forSorting) {
-      return Icons.sort_by_alpha_outlined;
-    }
-    if (jM.riderPickup) {
-      return Icons.delivery_dining;
-    }
-    return Icons.pause;
-  }
-
-  Color backGroundStatusColor(JobModel jM) {
-    if (jM.forSorting) {
-      return Colors.green.shade300;
-      ;
-    }
-    if (jM.riderPickup) {
-      return Colors.redAccent;
-    }
-    return Colors.grey;
-  }
-
-  String processStatusJobsOnQueue(JobModel jM) {
-    if (jM.forSorting) {
-      return 'For Sorting';
-    }
-    if (jM.riderPickup) {
-      return 'Rider Pickup';
-    }
-    return 'no status';
-  }
-
-  const Map<int, String> itemNameAliases = {
-    menuOthXD: 'xD',
-    menuOthXW: 'xW',
-    menuOthXS: 'xS',
-  };
-
-  String afterNameStatuses(JobModel jM) {
-    final List<String> parts = [];
-
-    if (jM.basket > 0) parts.add('${jM.basket}B');
-    if (jM.ebag > 0) parts.add('${jM.ebag}E');
-    if (jM.sako > 0) parts.add('${jM.sako}S');
-
-    return parts.join(' ');
-  }
-
-  String belowNameStatuses(JobModel jM) {
-    final List<String> parts = [];
-
-    /// 🔁 Group item names and count
-    if (jM.items != null && jM.items!.isNotEmpty) {
-      final Map<String, int> itemCounts = {};
-
-      for (final item in jM.items!) {
-        late String? name;
-        if (item.itemGroup == groupOth) {
-          name = itemNameAliases[item.itemUniqueId];
-        } else {
-          name = item.itemGroup.trim();
-        }
-
-        if (name == null || name.isEmpty) continue;
-
-        itemCounts[name] = (itemCounts[name] ?? 0) + 1;
-      }
-
-      /// 🧾 Build display string
-      itemCounts.forEach((name, count) {
-        if (count > 1) {
-          parts.add('$count-$name');
-        } else {
-          parts.add(name);
-        }
-      });
-    }
-
-    return parts.join(' ');
-  }
-
-  String displayCustomerName(String? name) {
-    if (name == null || name.isEmpty) return '';
-    return name.length > 7 ? name.substring(0, 7) : name;
-  }
 
   return StreamBuilder<List<JobModel>>(
     stream: databaseJobsGoing.streamAll(),
@@ -124,15 +38,17 @@ Widget readDataJobsOnGoing() {
               final draggedJob = jobs[oldIndex];
 
               // 🚫 1. Cannot drag washing
-              if (draggedJob.processStep == 'washing') {
+              if ({'washing', 'drying', 'folding'}
+                  .contains(draggedJob.processStep)) {
                 return;
               }
 
               // 🔒 Collect washing indexes
-              final washingIndexes = <int>[];
+              final dontMoveIndexes = <int>[];
               for (int i = 0; i < jobs.length; i++) {
-                if (jobs[i].processStep == 'washing') {
-                  washingIndexes.add(i);
+                if ({'washing', 'drying', 'folding'}
+                    .contains(jobs[i].processStep)) {
+                  dontMoveIndexes.add(i);
                 }
               }
 
@@ -142,8 +58,9 @@ Widget readDataJobsOnGoing() {
               tempList.insert(newIndex, item);
 
               // 🚫 If washing index changes → BLOCK
-              for (int index in washingIndexes) {
-                if (tempList[index].processStep != 'washing') {
+              for (int index in dontMoveIndexes) {
+                if (!{'washing', 'drying', 'folding'}
+                    .contains(tempList[index].processStep)) {
                   // 🔥 Show red flash
                   setState(() {
                     blockedIndex = index;
@@ -176,7 +93,8 @@ Widget readDataJobsOnGoing() {
 
             children: List.generate(jobs.length, (index) {
               final job = jobs[index];
-              final isWashing = job.processStep == 'washing';
+              final dontMove =
+                  {'washing', 'drying', 'folding'}.contains(job.processStep);
 
               JobModelRepository jobRepo = JobModelRepository();
               jobRepo.setJobModel(job);
@@ -198,7 +116,7 @@ Widget readDataJobsOnGoing() {
                         setState(() {
                           selectedIndex = index;
                         });
-                        showJobOnQueueComplete(context, jobRepo);
+                        showJobOnQueueEdit(context, jobRepo);
                       },
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 250),
@@ -223,7 +141,7 @@ Widget readDataJobsOnGoing() {
                         child: Row(
                           children: [
                             /// 🔘 Drag handle (hidden if washing)
-                            isWashing
+                            dontMove
                                 ? const SizedBox(width: 34)
                                 : ReorderableDragStartListener(
                                     index: index,
@@ -238,7 +156,7 @@ Widget readDataJobsOnGoing() {
                             /// 🔄 Progress badge
                             InkWell(
                               onTap: () {
-                                showMoveToOnGoing(context, jobRepo);
+                                showOnGoingStatus(context, jobRepo);
                               },
                               child: Stack(
                                 alignment: Alignment.center,
@@ -279,6 +197,7 @@ Widget readDataJobsOnGoing() {
                                 children: [
                                   Row(
                                     children: [
+                                      //CustomerName
                                       Text(
                                         '${displayCustomerName(job.customerName)} (${job.finalLoad})',
                                         style: TextStyle(
@@ -289,8 +208,9 @@ Widget readDataJobsOnGoing() {
                                         ),
                                       ),
                                       const SizedBox(width: 3),
+                                      //Bags
                                       Text(
-                                        afterNameStatuses(job),
+                                        textBagDetails(job),
                                         style: TextStyle(
                                           fontWeight: FontWeight.w600,
                                           color: isSelected
@@ -302,8 +222,9 @@ Widget readDataJobsOnGoing() {
                                     ],
                                   ),
                                   const SizedBox(height: 2),
+                                  //EXTRAS
                                   Text(
-                                    belowNameStatuses(job),
+                                    textExtras(job),
                                     style: TextStyle(
                                       fontWeight: FontWeight.w600,
                                       color: isSelected
@@ -312,8 +233,9 @@ Widget readDataJobsOnGoing() {
                                       fontSize: 10,
                                     ),
                                   ),
+                                  //Status
                                   Text(
-                                    processStatusJobsOnQueue(job),
+                                    textJobStatus(job),
                                     style: TextStyle(
                                       fontSize: 10,
                                       color: job.forSorting

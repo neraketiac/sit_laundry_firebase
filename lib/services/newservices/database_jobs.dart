@@ -115,6 +115,23 @@ class DatabaseJobsOngoing {
       'A00_JobId': jobId + 1,
     });
   }
+
+  Future<bool> update(JobModel jM) async {
+    bool bSuccess = false;
+    await _ref
+        .doc(jM.docId)
+        .update(jM.toJson())
+        .then((value) => {
+              print("Update Done"),
+              bSuccess = true,
+            })
+        .catchError((error) => {
+              print("Failed Update Jobs On-Going : $error ${jM.customerName}"),
+              bSuccess = false,
+            });
+    ;
+    return bSuccess;
+  }
 }
 
 /// 🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩
@@ -131,6 +148,23 @@ class DatabaseJobsDone {
     return _ref.snapshots().map(
           (s) => s.docs.map((d) => JobModel.fromJson(d.data())).toList(),
         );
+  }
+
+  Future<bool> update(JobModel jM) async {
+    bool bSuccess = false;
+    await _ref
+        .doc(jM.docId)
+        .update(jM.toJson())
+        .then((value) => {
+              print("Update Done"),
+              bSuccess = true,
+            })
+        .catchError((error) => {
+              print("Failed Update Jobs Done : $error ${jM.customerName}"),
+              bSuccess = false,
+            });
+    ;
+    return bSuccess;
   }
 }
 
@@ -213,7 +247,7 @@ Future<void> moveQueueToOngoing(String docId, int nextJobId) async {
     tx.set(ongoingRef, {
       ...snapshot.data()!,
       'A00_JobId': nextJobId,
-      'O00_ProcessStep': 'washing', // 👈 initial step
+      'O00_ProcessStep': 'waiting', // 👈 initial step
       'A04_DateO': Timestamp.now(),
     });
     tx.delete(queueRef);
@@ -231,7 +265,11 @@ Future<void> moveOngoingToDone(String docId) async {
     final snapshot = await tx.get(ongoingRef);
     if (!snapshot.exists) return;
 
-    tx.set(doneRef, snapshot.data()!);
+    tx.set(doneRef, {
+      ...snapshot.data()!,
+      'O00_ProcessStep': 'done', // 👈 initial step
+      'A05_DateD': Timestamp.now(),
+    });
     tx.delete(ongoingRef);
   });
 }

@@ -1,19 +1,10 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedMethods.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedVisibility.dart';
 import 'package:laundry_firebase/variables/newvariables/jobmodel_repository.dart';
-import 'package:laundry_firebase/variables/newvariables/variables.dart';
 
-void showPaidUnpaid(BuildContext context, JobModelRepository jobRepo) {
+void showOnGoingStatus(BuildContext context, JobModelRepository jobRepo) {
   Future<void> saveButtonSetRepository() async {
-//dates
-    /// 🟣 Dates
-    jobRepo.dateQ = Timestamp.now();
-
-    //admin
-    jobRepo.createdBy = empIdGlobal;
-
     setSelectedToRepositoryBeforeSave(jobRepo);
 
     await callDatabaseUpdateJob(context, jobRepo.getJobsModel()!);
@@ -39,7 +30,7 @@ void showPaidUnpaid(BuildContext context, JobModelRepository jobRepo) {
             vertical: 5,
           ),
           title: Text(
-            "Enter Laundry",
+            "On-Going Status",
             textAlign: TextAlign.center,
           ),
           content: SingleChildScrollView(
@@ -55,8 +46,7 @@ void showPaidUnpaid(BuildContext context, JobModelRepository jobRepo) {
                   children: [
                     visCustomerNameNoAutoComplete(
                         context, setState, jobRepo, false),
-                    visPaidUnPaid(context, setState, jobRepo),
-                    conRemarks(context, setState, jobRepo.remarksVar),
+                    visOnGoingStatus(context, setState, jobRepo),
                   ],
                 ),
               ),

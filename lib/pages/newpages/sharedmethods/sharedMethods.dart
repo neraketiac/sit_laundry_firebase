@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -11,14 +10,11 @@ import 'package:laundry_firebase/models/oldmodels/customermodel.dart';
 import 'package:laundry_firebase/models/newmodels/employeemodel.dart';
 import 'package:laundry_firebase/models/newmodels/jobmodel.dart';
 import 'package:laundry_firebase/models/newmodels/suppliesmodelhist.dart';
-import 'package:laundry_firebase/models/oldmodels/employeesetupmodel.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedConstantsFinal.dart';
 import 'package:laundry_firebase/services/newservices/database_employee_current.dart';
-import 'package:laundry_firebase/services/newservices/database_employee_setup.dart';
 import 'package:laundry_firebase/services/newservices/database_gcash.dart';
 import 'package:laundry_firebase/services/newservices/database_jobs.dart';
 import 'package:laundry_firebase/services/newservices/database_supplies_current.dart';
-import 'package:laundry_firebase/variables/newvariables/gcash_repository.dart';
 import 'package:laundry_firebase/variables/newvariables/jobmodel_repository.dart';
 import 'package:laundry_firebase/variables/newvariables/supplies_hist_repository.dart';
 import 'package:laundry_firebase/variables/newvariables/variables.dart';
@@ -125,7 +121,7 @@ int computeTotalPrice(double q, JobModelRepository jobRepo) {
     } else if (remaining >= jobRepo.maxPartial) {
       remainingPrice = jobRepo.pricePerSet;
     }
-    debugPrint('c=$counter rP=$remainingPrice r=$remaining');
+//    debugPrint('c=$counter rP=$remainingPrice r=$remaining');
   }
 
   return (counter * jobRepo.pricePerSet) + remainingPrice;
@@ -347,6 +343,90 @@ ElevatedButton boxButtonElevated({
 //                                                                        //
 //########################################################################//
 
+String textJobStatus(JobModel jM) {
+  if (jM.processStep == '') {
+    if (jM.forSorting) {
+      return 'For Sorting';
+    }
+    if (jM.riderPickup) {
+      return 'Rider Pickup';
+    }
+  } else {
+    return jM.processStep;
+  }
+
+  return 'no status';
+}
+
+String displayCustomerName(String? name) {
+  if (name == null || name.isEmpty) return '';
+  return name.length > 7 ? name.substring(0, 7) : name;
+}
+
+IconData statusIcon(JobModel jM) {
+  if (jM.forSorting) {
+    return Icons.sort_by_alpha_outlined;
+  }
+  if (jM.riderPickup) {
+    return Icons.delivery_dining;
+  }
+  return Icons.pause;
+}
+
+Color backGroundStatusColor(JobModel jM) {
+  if (jM.forSorting) {
+    return Colors.green.shade300;
+    ;
+  }
+  if (jM.riderPickup) {
+    return Colors.redAccent;
+  }
+  return Colors.grey;
+}
+
+String textBagDetails(JobModel jM) {
+  final List<String> parts = [];
+
+  if (jM.basket > 0) parts.add('${jM.basket}B');
+  if (jM.ebag > 0) parts.add('${jM.ebag}E');
+  if (jM.sako > 0) parts.add('${jM.sako}S');
+
+  return parts.join(' ');
+}
+
+String textExtras(JobModel jM) {
+  final List<String> parts = [];
+
+  /// 🔁 Group item names and count
+  if (jM.items != null && jM.items!.isNotEmpty) {
+    final Map<String, int> itemCounts = {};
+
+    for (final item in jM.items!) {
+      late String? name;
+      if (item.itemGroup == groupOth) {
+        name = itemNameAliases[item.itemUniqueId];
+      } else {
+        name = item.itemGroup.trim();
+      }
+
+      if (name == null || name.isEmpty) continue;
+
+      itemCounts[name] = (itemCounts[name] ?? 0) + 1;
+    }
+
+    /// 🧾 Build display string
+    itemCounts.forEach((name, count) {
+      if (count > 1) {
+        parts.add('$count-$name');
+      } else {
+        parts.add(name);
+      }
+    });
+  }
+
+  return parts.join(' ');
+}
+
 //reset payment
 void resetPaymentStatus(JobModelRepository jobRepo) {
   jobRepo.unpaid = true;
@@ -370,8 +450,6 @@ void resetSelected(JobModelRepository jobRepo) {
   jobRepo.unpaid = true;
   jobRepo.paidCash = false;
   jobRepo.paidGCash = false;
-  jobRepo.selectedPaidPartialCash = false;
-  jobRepo.selectedPaidPartialGCash = false;
   jobRepo.cashAmountVar.text = '';
   jobRepo.gCashAmountVar.text = '';
 
@@ -385,8 +463,11 @@ void resetSelected(JobModelRepository jobRepo) {
   jobRepo.quantityLoad = 1;
   jobRepo.remarksVar.text = '';
 
+  jobRepo.finalPrice = 0;
+
   //list other items
   jobRepo.clearListSelectedItemModel();
+  jobRepo.items.clear();
 
   //other options
   jobRepo.selectedFold = true;
@@ -476,6 +557,21 @@ void syncRepoToSelectedBeforePopup(JobModelRepository jobRepo) {
     jobRepo.addExtraWashCount = 0;
     jobRepo.addExtraSpinCount = 0;
   }
+
+  jobRepo.selectedOnGoingStatus = jobRepo.processStep;
+
+  // if (jobRepo.processStep == 'waiting') {
+  //   jobRepo.selectedOnGoingStatus = processWaiting;
+  // }
+  // if (jobRepo.processStep == 'washing') {
+  //   jobRepo.selectedOnGoingStatus = processWashing;
+  // }
+  // if (jobRepo.processStep == 'drying') {
+  //   jobRepo.selectedOnGoingStatus = processDrying;
+  // }
+  // if (jobRepo.processStep == 'folding') {
+  //   jobRepo.selectedOnGoingStatus = processFolding;
+  // }
 }
 
 //set selected to repository
@@ -563,6 +659,21 @@ void setSelectedToRepositoryBeforeSave(JobModelRepository jobRepo) {
   jobRepo.basket = jobRepo.basketCount;
   jobRepo.ebag = jobRepo.ecoBagCount;
   jobRepo.sako = jobRepo.sakoCount;
+
+  // if (jobRepo.selectedOnGoingStatus == processWaiting) {
+  //   jobRepo.processStep = 'waiting';
+  // }
+  // if (jobRepo.selectedOnGoingStatus == processWashing) {
+  //   jobRepo.processStep = 'washing';
+  // }
+  // if (jobRepo.selectedOnGoingStatus == processDrying) {
+  //   jobRepo.processStep = 'drying';
+  // }
+  // if (jobRepo.selectedOnGoingStatus == processFolding) {
+  //   jobRepo.processStep = 'folding';
+  // }
+
+  jobRepo.processStep = jobRepo.selectedOnGoingStatus;
 }
 
 //########################################################################//
@@ -786,18 +897,46 @@ Future<void> revertLaundryPaymentSuppliesHistory(
   }
 }
 
-Future<void> callDatabaseJobQueueUpdate(
-    BuildContext context, JobModel jM) async {
-  DatabaseJobsQueue databaseJobsQueue = DatabaseJobsQueue();
+Future<void> callDatabaseUpdateJob(BuildContext context, JobModel jM) async {
+  if (jM.processStep == 'done') {
+    DatabaseJobsDone dbJ = DatabaseJobsDone();
 
-  if (await databaseJobsQueue.update(jM)) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Update on Queue done.')),
-    );
+    if (await dbJ.update(jM)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Update on job done.')),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error update Jobs Done.')),
+      );
+    }
+  } else if (jM.processStep == 'waiting' ||
+      jM.processStep == 'washing' ||
+      jM.processStep == 'drying' ||
+      jM.processStep == 'folding') {
+    DatabaseJobsOngoing dbJ = DatabaseJobsOngoing();
+
+    if (await dbJ.update(jM)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Update on-going done.')),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error update Jobs On-Going.')),
+      );
+    }
   } else {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Error update Jobs On Queue.')),
-    );
+    DatabaseJobsQueue dbJ = DatabaseJobsQueue();
+
+    if (await dbJ.update(jM)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Update on Queue done.')),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error update Jobs On Queue.')),
+      );
+    }
   }
 }
 

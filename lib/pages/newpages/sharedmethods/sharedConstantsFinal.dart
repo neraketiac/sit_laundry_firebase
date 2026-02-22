@@ -51,6 +51,26 @@ final List<int> listPackage = [
   othersPackage,
 ];
 
+const Map<int, String> itemNameAliases = {
+  menuOthXD: 'xD',
+  menuOthXW: 'xW',
+  menuOthXS: 'xS',
+};
+
+// final List<int> listOnGoingStatus = [
+//   processWaiting,
+//   processWashing,
+//   processDrying,
+//   processFolding,
+// ];
+
+final List<String> listOnGoingStatus = [
+  'waiting',
+  'washing',
+  'drying',
+  'folding',
+];
+
 final List<int> listRiderPickup = [
   forSorting,
   riderPickup,

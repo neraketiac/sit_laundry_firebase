@@ -26,8 +26,6 @@ class JobselectedRepository {
   List<OtherItemModel> listSelectedItemModel = [];
   int selectedOthersShortCut = menuOth155;
   //int selectedPaidUnpaid = unpaid;
-  bool selectedPaidPartialCash = false;
-  bool selectedPaidPartialGCash = false;
   bool selectedPaidGCashVerified = false;
   bool selectedFold = true;
   bool selectedMix = true;
@@ -38,4 +36,5 @@ class JobselectedRepository {
   int addExtraDryCount = 0;
   int addExtraWashCount = 0;
   int addExtraSpinCount = 0;
+  String selectedOnGoingStatus = '';
 }

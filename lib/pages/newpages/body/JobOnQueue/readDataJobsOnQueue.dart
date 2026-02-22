@@ -1,101 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:laundry_firebase/models/newmodels/jobmodel.dart';
-import 'package:laundry_firebase/pages/newpages/body/JobOnQueue/showJobOnQueueComplete.dart';
+import 'package:laundry_firebase/pages/newpages/body/JobOnQueue/showJobOnQueueEdit.dart';
 import 'package:laundry_firebase/pages/newpages/body/JobOnQueue/showMoveToOnGoing.dart';
 import 'package:laundry_firebase/pages/newpages/body/JobOnQueue/showPaidUnpaid.dart';
+import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedMethods.dart';
 import 'package:laundry_firebase/services/newservices/database_jobs.dart';
 import 'package:laundry_firebase/variables/newvariables/jobmodel_repository.dart';
-import 'package:laundry_firebase/variables/newvariables/variables.dart';
-import 'package:laundry_firebase/variables/newvariables/variables_oth.dart';
 
 Widget readDataJobsOnQueue() {
   DatabaseJobsQueue databaseJobsQueue = DatabaseJobsQueue();
   int? selectedIndex;
-
-  IconData statusIcon(JobModel jM) {
-    if (jM.forSorting) {
-      return Icons.sort_by_alpha_outlined;
-    }
-    if (jM.riderPickup) {
-      return Icons.delivery_dining;
-    }
-    return Icons.pause;
-  }
-
-  Color backGroundStatusColor(JobModel jM) {
-    if (jM.forSorting) {
-      return Colors.green.shade300;
-      ;
-    }
-    if (jM.riderPickup) {
-      return Colors.redAccent;
-    }
-    return Colors.grey;
-  }
-
-  String processStatusJobsOnQueue(JobModel jM) {
-    if (jM.forSorting) {
-      return 'For Sorting';
-    }
-    if (jM.riderPickup) {
-      return 'Rider Pickup';
-    }
-    return 'no status';
-  }
-
-  const Map<int, String> itemNameAliases = {
-    menuOthXD: 'xD',
-    menuOthXW: 'xW',
-    menuOthXS: 'xS',
-  };
-
-  String afterNameStatuses(JobModel jM) {
-    final List<String> parts = [];
-
-    if (jM.basket > 0) parts.add('${jM.basket}B');
-    if (jM.ebag > 0) parts.add('${jM.ebag}E');
-    if (jM.sako > 0) parts.add('${jM.sako}S');
-
-    return parts.join(' ');
-  }
-
-  String belowNameStatuses(JobModel jM) {
-    final List<String> parts = [];
-
-    /// 🔁 Group item names and count
-    if (jM.items != null && jM.items!.isNotEmpty) {
-      final Map<String, int> itemCounts = {};
-
-      for (final item in jM.items!) {
-        late String? name;
-        if (item.itemGroup == groupOth) {
-          name = itemNameAliases[item.itemUniqueId];
-        } else {
-          name = item.itemGroup.trim();
-        }
-
-        if (name == null || name.isEmpty) continue;
-
-        itemCounts[name] = (itemCounts[name] ?? 0) + 1;
-      }
-
-      /// 🧾 Build display string
-      itemCounts.forEach((name, count) {
-        if (count > 1) {
-          parts.add('$count-$name');
-        } else {
-          parts.add(name);
-        }
-      });
-    }
-
-    return parts.join(' ');
-  }
-
-  String displayCustomerName(String? name) {
-    if (name == null || name.isEmpty) return '';
-    return name.length > 7 ? name.substring(0, 7) : name;
-  }
 
   return StreamBuilder<List<JobModel>>(
     stream: databaseJobsQueue.streamAll(),
@@ -156,7 +70,7 @@ Widget readDataJobsOnQueue() {
                         setState(() {
                           selectedIndex = index;
                         });
-                        showJobOnQueueComplete(context, jobRepo);
+                        showJobOnQueueEdit(context, jobRepo);
                       },
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 250),
@@ -246,7 +160,7 @@ Widget readDataJobsOnQueue() {
                                         width: 3,
                                       ),
                                       Text(
-                                        afterNameStatuses(job),
+                                        textBagDetails(job),
                                         style: TextStyle(
                                             fontWeight: FontWeight.w600,
                                             color: isSelected
@@ -260,7 +174,7 @@ Widget readDataJobsOnQueue() {
                                     width: 3,
                                   ),
                                   Text(
-                                    belowNameStatuses(job),
+                                    textExtras(job),
                                     style: TextStyle(
                                         fontWeight: FontWeight.w600,
                                         color: isSelected
@@ -270,7 +184,7 @@ Widget readDataJobsOnQueue() {
                                   ),
                                   const SizedBox(height: 2),
                                   Text(
-                                    processStatusJobsOnQueue(job),
+                                    textJobStatus(job),
                                     style: TextStyle(
                                       fontSize: 10,
                                       color: (job.forSorting

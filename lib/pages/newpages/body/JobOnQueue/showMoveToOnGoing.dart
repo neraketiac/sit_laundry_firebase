@@ -17,7 +17,7 @@ void showMoveToOnGoing(BuildContext context, JobModelRepository jobRepo) {
 
     setSelectedToRepositoryBeforeSave(jobRepo);
 
-    await callDatabaseJobQueueUpdate(context, jobRepo.getJobsModel()!);
+    await callDatabaseUpdateJob(context, jobRepo.getJobsModel()!);
     //await setRepositoryLaundryPayment(context, 'Show Jobs OnQueue');
   }
 
@@ -54,7 +54,8 @@ void showMoveToOnGoing(BuildContext context, JobModelRepository jobRepo) {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    visCustomerNameNoAutoComplete(context, setState, jobRepo),
+                    visCustomerNameNoAutoComplete(
+                        context, setState, jobRepo, false),
                   ],
                 ),
               ),

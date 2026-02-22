@@ -258,10 +258,6 @@ class JobModelRepository {
       jobselectedRepository.selectedOthersShortCut = value;
   // set selectedPaidUnpaid(int value) =>
   //     jobselectedRepository.selectedPaidUnpaid = value;
-  set selectedPaidPartialCash(bool value) =>
-      jobselectedRepository.selectedPaidPartialCash = value;
-  set selectedPaidPartialGCash(bool value) =>
-      jobselectedRepository.selectedPaidPartialGCash = value;
   set selectedPaidGCashVerified(bool value) =>
       jobselectedRepository.selectedPaidGCashVerified = value;
   set selectedFold(bool value) => jobselectedRepository.selectedFold = value;
@@ -278,6 +274,8 @@ class JobModelRepository {
       jobselectedRepository.addExtraSpinCount = value;
   set listSelectedItemModel(List<OtherItemModel> value) =>
       jobselectedRepository.listSelectedItemModel = value;
+  set selectedOnGoingStatus(String value) =>
+      jobselectedRepository.selectedOnGoingStatus = value;
 
   /////////////////////////////////////////////////////////////
   //                          GETTER                         //
@@ -321,10 +319,6 @@ class JobModelRepository {
   int get selectedOthersShortCut =>
       jobselectedRepository.selectedOthersShortCut;
   //int get selectedPaidUnpaid => jobselectedRepository.selectedPaidUnpaid;
-  bool get selectedPaidPartialCash =>
-      jobselectedRepository.selectedPaidPartialCash;
-  bool get selectedPaidPartialGCash =>
-      jobselectedRepository.selectedPaidPartialGCash;
   bool get selectedPaidGCashVerified =>
       jobselectedRepository.selectedPaidGCashVerified;
   bool get selectedFold => jobselectedRepository.selectedFold;
@@ -338,4 +332,6 @@ class JobModelRepository {
   int get addExtraSpinCount => jobselectedRepository.addExtraSpinCount;
   List<OtherItemModel> get listSelectedItemModel =>
       jobselectedRepository.listSelectedItemModel;
+  String get selectedOnGoingStatus =>
+      jobselectedRepository.selectedOnGoingStatus;
 }

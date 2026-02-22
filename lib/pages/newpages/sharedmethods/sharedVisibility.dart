@@ -88,8 +88,8 @@ Visibility visCustomerName(
   );
 }
 
-Visibility visCustomerNameNoAutoComplete(
-    BuildContext context, Function setState, JobModelRepository jobRepo) {
+Visibility visCustomerNameNoAutoComplete(BuildContext context,
+    Function setState, JobModelRepository jobRepo, bool bShort) {
   return Visibility(
     visible: true,
     child: Container(
@@ -105,34 +105,43 @@ Visibility visCustomerNameNoAutoComplete(
               children: [],
             ),
           ),
-          TextFormField(
-            controller: jobRepo.customerNameVar,
-            readOnly: true, // 👈 prevents editing
-            textAlign: TextAlign.center,
-            decoration: InputDecoration(
-              labelText: 'Customer Name',
-              labelStyle: TextStyle(
-                fontSize: 12,
-                color: Colors.grey[700],
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Label
+              Padding(
+                padding: const EdgeInsets.only(left: 4, bottom: 4),
+                child: Text(
+                  'Customer Name',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey[700],
+                  ),
+                ),
               ),
-              hintText: 'Search Name',
-              hintStyle: TextStyle(
-                fontSize: 12,
-                color: Colors.grey[700],
+              // Box
+              Container(
+                alignment: Alignment.center,
+                padding:
+                    const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.grey),
+                ),
+                child: Text(
+                  (bShort
+                      ? '${jobRepo.processStep.isEmpty ? '' : '#${jobRepo.jobsId} '}${jobRepo.customerNameVar.text}'
+                      : '${jobRepo.processStep.isEmpty ? '' : '#${jobRepo.jobsId} '}${jobRepo.customerNameVar.text} (${jobRepo.finalLoad})\n${textBagDetails(jobRepo.getJobsModel()!)} ₱ ${jobRepo.finalPrice}.00'),
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: jobRepo.customerNameVar.text.isEmpty
+                        ? Colors.grey[700]
+                        : Colors.black,
+                  ),
+                ),
               ),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: Colors.grey),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: Colors.blue, width: 2),
-              ),
-            ),
-            onFieldSubmitted: (_) {}, // optional / can remove
+            ],
           ),
           SizedBox(
             height: 5,
@@ -1987,6 +1996,53 @@ Visibility showUploadedImage(
                   : Icons.login),
               size: 25),
         ),
+      ),
+    ),
+  );
+}
+
+Visibility visOnGoingStatus(
+    BuildContext context, Function setState, JobModelRepository jobRepo) {
+  return Visibility(
+    visible: true,
+    child: Container(
+      alignment: Alignment.center,
+      padding: const EdgeInsets.all(1.0),
+      decoration: decoLightBlue(),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            'On-Going Status',
+            style: TextStyle(fontSize: 11),
+          ),
+          ToggleButtons(
+            isSelected: List.generate(
+              listOnGoingStatus.length,
+              (i) => jobRepo.selectedOnGoingStatus == listOnGoingStatus[i],
+            ),
+            onPressed: (index) {
+              setState(() {
+                jobRepo.selectedOnGoingStatus = listOnGoingStatus[index];
+              });
+            },
+            borderRadius: BorderRadius.circular(8),
+            selectedColor: Colors.black,
+            fillColor: Colors.greenAccent,
+            color: Colors.black,
+            borderColor: cSalaryOut,
+            constraints: const BoxConstraints(
+              minWidth: 75,
+              minHeight: 25,
+            ),
+            children: const [
+              Text('waiting'),
+              Text('washing'),
+              Text('drying'),
+              Text('folding'),
+            ],
+          ),
+        ],
       ),
     ),
   );

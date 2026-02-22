@@ -131,6 +131,12 @@ const int forSorting = 501,
     waitRiderDelivery = 702,
     nasaCustomerNa = 703;
 
+const int processWaiting = 650,
+    processWashing = 651,
+    processDrying = 652,
+    processFolding = 653,
+    processDone = 654;
+
 //paymentStats
 //Map<int, String> mapPaymentStat = {};
 const int unpaid = 801,
