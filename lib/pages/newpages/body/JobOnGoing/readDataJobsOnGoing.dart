@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:laundry_firebase/models/newmodels/jobmodel.dart';
 import 'package:laundry_firebase/pages/newpages/body/JobOnGoing/showOnGoingStatus.dart';
 import 'package:laundry_firebase/pages/newpages/body/JobOnQueue/showJobOnQueueEdit.dart';
-import 'package:laundry_firebase/pages/newpages/body/JobOnQueue/showPaidUnpaid.dart';
-import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedMethods.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedVisibility.dart';
 import 'package:laundry_firebase/services/newservices/database_jobs.dart';
 import 'package:laundry_firebase/variables/newvariables/jobmodel_repository.dart';

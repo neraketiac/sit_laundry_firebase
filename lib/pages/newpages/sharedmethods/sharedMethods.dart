@@ -6,6 +6,7 @@ import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:laundry_firebase/models/newmodels/gcashmodel.dart';
+import 'package:laundry_firebase/models/newmodels/otheritemmodel.dart';
 import 'package:laundry_firebase/models/oldmodels/customermodel.dart';
 import 'package:laundry_firebase/models/newmodels/employeemodel.dart';
 import 'package:laundry_firebase/models/newmodels/jobmodel.dart';
@@ -155,6 +156,7 @@ Widget animatedPanel({
   required bool visible,
   required double width,
   required Widget child,
+  required Color color,
 }) {
   return AnimatedContainer(
     duration: const Duration(milliseconds: 300),
@@ -168,7 +170,7 @@ Widget animatedPanel({
             minWidth: 0,
             maxWidth: width,
           ),
-          color: Colors.blue,
+          color: color,
           padding: const EdgeInsets.all(8),
           child: child,
         ),
@@ -394,35 +396,36 @@ String textBagDetails(JobModel jM) {
   return parts.join(' ');
 }
 
-String textDetFabBleExtras(JobModel jM) {
+String textDetFabBleExtras(List<OtherItemModel> listItems) {
   final List<String> parts = [];
 
   /// 🔁 Group item names and count
-  if (jM.items != null && jM.items!.isNotEmpty) {
-    final Map<String, int> itemCounts = {};
+  // if (jM.items != null && jM.items!.isNotEmpty) {
+  final Map<String, int> itemCounts = {};
 
-    for (final item in jM.items!) {
-      late String? name;
-      if (item.itemGroup == groupOth) {
-        name = itemNameAliases[item.itemUniqueId];
-      } else {
-        name = item.itemGroup.trim();
-      }
-
-      if (name == null || name.isEmpty) continue;
-
-      itemCounts[name] = (itemCounts[name] ?? 0) + 1;
+  // for (final item in jM.items!) {
+  for (final item in listItems) {
+    late String? name;
+    if (item.itemGroup == groupOth) {
+      name = itemNameAliases[item.itemUniqueId];
+    } else {
+      name = item.itemGroup.trim();
     }
 
-    /// 🧾 Build display string
-    itemCounts.forEach((name, count) {
-      if (count > 1) {
-        parts.add('$count-$name');
-      } else {
-        parts.add(name);
-      }
-    });
+    if (name == null || name.isEmpty) continue;
+
+    itemCounts[name] = (itemCounts[name] ?? 0) + 1;
   }
+
+  /// 🧾 Build display string
+  itemCounts.forEach((name, count) {
+    if (count > 1) {
+      parts.add('$count-$name');
+    } else {
+      parts.add(name);
+    }
+  });
+  // }
 
   return parts.join(' ');
 }

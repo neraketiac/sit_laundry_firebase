@@ -2078,6 +2078,7 @@ Expanded visNameArea(JobModel job, bool isSelected) {
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        //NAME BAGS
         Row(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
@@ -2086,6 +2087,13 @@ Expanded visNameArea(JobModel job, bool isSelected) {
               style: TextStyle(
                 fontWeight: FontWeight.w600,
                 color: isSelected ? Colors.deepPurple : Colors.black,
+                shadows: [
+                  Shadow(
+                    offset: Offset(1, 0.9),
+                    blurRadius: 0,
+                    color: Colors.blueGrey,
+                  ),
+                ],
               ),
             ),
             SizedBox(
@@ -2094,23 +2102,38 @@ Expanded visNameArea(JobModel job, bool isSelected) {
             Text(
               textBagDetails(job),
               style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                  color: isSelected ? Colors.deepPurple : Colors.black,
-                  fontSize: 10),
+                fontWeight: FontWeight.w600,
+                color: isSelected ? Colors.deepPurple : Colors.black,
+                fontSize: 10,
+                shadows: [
+                  Shadow(
+                    offset: Offset(1, 0.9),
+                    blurRadius: 0,
+                    color: Colors.blueGrey,
+                  ),
+                ],
+              ),
             ),
           ],
         ),
-        SizedBox(
-          width: 3,
-        ),
-        Text(
-          textDetFabBleExtras(job),
-          style: TextStyle(
+        //SHORTCUTS
+        if (job.items.isNotEmpty)
+          Text(
+            textDetFabBleExtras(job.items),
+            style: TextStyle(
               fontWeight: FontWeight.w600,
               color: isSelected ? Colors.deepPurple : Colors.black,
-              fontSize: 10),
-        ),
-        const SizedBox(height: 2),
+              fontSize: 10,
+              shadows: [
+                Shadow(
+                  offset: Offset(1, 0.9),
+                  blurRadius: 0,
+                  color: Colors.blueGrey,
+                ),
+              ],
+            ),
+          ),
+        //STATUS
         Text(
           textJobStatus(job),
           style: TextStyle(
@@ -2120,13 +2143,15 @@ Expanded visNameArea(JobModel job, bool isSelected) {
                 : Colors.redAccent),
           ),
         ),
-        Text(
-          '${job.pricingSetup} ${job.remarks}',
-          style: TextStyle(
-            fontSize: 10,
-            color: Colors.deepPurple.shade400,
+        // PRICING SETUP
+        if (job.pricingSetup.isNotEmpty || job.remarks.isNotEmpty)
+          Text(
+            '${job.pricingSetup} ${job.remarks}',
+            style: TextStyle(
+              fontSize: 10,
+              color: Colors.deepPurple.shade400,
+            ),
           ),
-        ),
       ],
     ),
   );
@@ -2145,12 +2170,12 @@ InkWell visPaidUnpaidArea(BuildContext context, JobModelRepository jobRepo,
           jobRepo.processStep.isEmpty ? '' : '# ${jobRepo.jobsId}',
           style: const TextStyle(
             fontWeight: FontWeight.w900,
-            fontSize: 14,
+            fontSize: 16,
             shadows: [
               Shadow(
-                offset: Offset(1.5, 0),
+                offset: Offset(1, 1),
                 blurRadius: 0,
-                color: Colors.black,
+                color: Colors.blueGrey,
               ),
             ],
           ),

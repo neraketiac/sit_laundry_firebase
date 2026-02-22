@@ -196,7 +196,7 @@ class JobModel {
       paidGCashAmount: 0,
       paymentReceivedBy: '',
       remarks: '',
-      items: [OtherItemModel.makeEmpty()],
+      items: [],
       processStep: '',
       allStatus: 0,
       forDisposal: false,

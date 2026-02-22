@@ -20,6 +20,12 @@ import 'package:laundry_firebase/services/newservices/database_employee_setup.da
 import 'package:laundry_firebase/variables/newvariables/variables.dart';
 import 'package:web/web.dart' as web;
 
+class LaundryColors {
+  static const Color onQueue = Color(0xFFF4B400); // Amber
+  static const Color ongoing = Color(0xFF2196F3); // Blue
+  static const Color done = Color(0xFF4CAF50); // Green
+}
+
 class MyMainLaundryBody extends StatefulWidget {
   final String empidClass;
 
@@ -314,38 +320,41 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                   readDataGCashDone(),
                 ],
               ),
+              color: Colors.blue,
             ),
             animatedPanel(
               visible: empSetup.showLaundry,
               width: 320,
               child: readDataJobsOnQueue(),
+              color: LaundryColors.onQueue,
             ),
             animatedPanel(
               visible: empSetup.showLaundry,
               width: 320,
               child: readDataJobsOnGoing(),
+              color: LaundryColors.ongoing,
             ),
             animatedPanel(
-              visible: empSetup.showFunds,
-              width: 250,
-              child: readDataSuppliesCurrent(),
-            ),
+                visible: empSetup.showFunds,
+                width: 250,
+                child: readDataSuppliesCurrent(),
+                color: cFundsInFundsOut),
             animatedPanel(
-              visible: empSetup.showFunds,
-              width: 600,
-              child: readDataSuppliesHistory(),
-            ),
+                visible: empSetup.showFunds,
+                width: 600,
+                child: readDataSuppliesHistory(),
+                color: cFundsInFundsOut),
             animatedPanel(
-              visible: empSetup.showEmployee,
-              width: 600,
-              child: Column(
-                children: [
-                  const SizedBox(height: 1),
-                  readDataEmployeeCurr(),
-                  readDataEmployeeHist(),
-                ],
-              ),
-            ),
+                visible: empSetup.showEmployee,
+                width: 600,
+                child: Column(
+                  children: [
+                    const SizedBox(height: 1),
+                    readDataEmployeeCurr(),
+                    readDataEmployeeHist(),
+                  ],
+                ),
+                color: cEmployeeMaintenance),
           ],
         ),
       ),
