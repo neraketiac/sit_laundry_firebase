@@ -5,7 +5,6 @@ import 'package:laundry_firebase/pages/newpages/body/JobOnQueue/showJobOnQueueEd
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedVisibility.dart';
 import 'package:laundry_firebase/services/newservices/database_jobs.dart';
 import 'package:laundry_firebase/variables/newvariables/jobmodel_repository.dart';
-import 'dart:math';
 
 Widget readDataJobsOnGoing() {
   DatabaseJobsOngoing databaseJobsGoing = DatabaseJobsOngoing();
@@ -117,10 +116,18 @@ Widget readDataJobsOnGoing() {
           }
 
           return ReorderableListView(
+            proxyDecorator: (child, index, animation) {
+              return Material(
+                elevation: 8,
+                borderRadius: BorderRadius.circular(14),
+                child: child,
+              );
+            },
             padding: EdgeInsets.zero,
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             buildDefaultDragHandles: false, // disable default drag handles
+            onReorderStart: (index) {},
 
             onReorder: (oldIndex, newIndex) async {
               if (newIndex > oldIndex) newIndex -= 1;
@@ -144,6 +151,29 @@ Widget readDataJobsOnGoing() {
                 setState(() => blockedIndex = newIndex);
                 await Future.delayed(const Duration(milliseconds: 400));
                 setState(() => blockedIndex = null);
+
+                // ================================
+                // 🔔 CONFIRMATION DIALOG
+                // ================================
+                await showDialog<bool>(
+                  context: context,
+                  builder: (context) {
+                    return AlertDialog(
+                      title: const Text('Error'),
+                      content: Text(
+                        'Cannot swap to Job #${targetJob.jobId} ${targetJob.customerName}\n'
+                        'that is already started.',
+                      ),
+                      actions: [
+                        ElevatedButton(
+                          onPressed: () => Navigator.pop(context, true),
+                          child: const Text('Okay'),
+                        ),
+                      ],
+                    );
+                  },
+                );
+
                 return;
               }
 
@@ -204,120 +234,114 @@ Widget readDataJobsOnGoing() {
               final isRunning = progress > 0 && progress < 1;
               final isSelected = selectedIndex == index;
 
-              return TweenAnimationBuilder<double>(
-                key: ValueKey(job.docId),
-                tween: Tween(begin: 0, end: 0),
-                duration: const Duration(milliseconds: 900),
-                curve: Curves.easeOutCubic,
-                builder: (context, value, _) {
-                  return MouseRegion(
-                    cursor: SystemMouseCursors.click,
-                    child: InkWell(
-                      onTap: () {
-                        setState(() {
-                          selectedIndex = index;
-                        });
-                        showJobOnQueueEdit(context, jobRepo);
-                      },
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 250),
-                        margin: const EdgeInsets.symmetric(vertical: 1),
-                        padding: const EdgeInsets.all(5),
-                        decoration: BoxDecoration(
-                          color: blockedIndex == index
-                              ? Colors.red.shade200 // 🔥 flash red
-                              : isSelected
-                                  ? Colors.deepPurple.shade100
-                                  : Colors.deepPurple.shade50,
-                          borderRadius: BorderRadius.circular(18),
-                          boxShadow: [
-                            if (isSelected)
-                              const BoxShadow(
-                                color: Colors.deepPurple,
-                                blurRadius: 12,
-                                offset: Offset(0, 6),
-                              ),
-                          ],
-                        ),
-                        child: Row(
-                          children: [
-                            /// 🔘 Drag handle (hidden if washing)
-                            dontMove
-                                ? const SizedBox(width: 24)
-                                : Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      // 🔼 UP
-                                      SizedBox(
-                                        width: 28,
-                                        height: 28,
-                                        child: IconButton(
-                                            padding: EdgeInsets.zero,
-                                            iconSize: 18,
-                                            splashRadius: 18,
-                                            icon: const Icon(
-                                                Icons.keyboard_arrow_up),
-                                            onPressed: () async {
+              return ReorderableDelayedDragStartListener(
+                key: ValueKey(job.docId), // 👈 KEY MUST BE HERE
+                index: index,
+                enabled: !dontMove, // 🚫 disable drag if locked
+                child: TweenAnimationBuilder<double>(
+                  tween: Tween(begin: 0, end: 0),
+                  duration: const Duration(milliseconds: 900),
+                  curve: Curves.easeOutCubic,
+                  builder: (context, value, _) {
+                    return MouseRegion(
+                      cursor: dontMove
+                          ? SystemMouseCursors.basic
+                          : SystemMouseCursors.grab,
+                      child: InkWell(
+                        onTap: () {
+                          setState(() {
+                            selectedIndex = index;
+                          });
+                          showJobOnQueueEdit(context, jobRepo);
+                        },
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 250),
+                          margin: const EdgeInsets.symmetric(vertical: 1),
+                          padding: const EdgeInsets.all(5),
+                          decoration: BoxDecoration(
+                            color: blockedIndex == index
+                                ? Colors.red.shade200
+                                : isSelected
+                                    ? Colors.deepPurple.shade100
+                                    : Colors.deepPurple.shade50,
+                            borderRadius: BorderRadius.circular(14),
+                            boxShadow: [
+                              if (isSelected)
+                                const BoxShadow(
+                                  color: Colors.deepPurple,
+                                  blurRadius: 12,
+                                  offset: Offset(0, 6),
+                                ),
+                            ],
+                          ),
+                          child: Row(
+                            children: [
+                              /// 🔼 UP / DOWN COLUMN
+                              Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  SizedBox(
+                                    width: 28,
+                                    height: 28,
+                                    child: IconButton(
+                                      padding: EdgeInsets.zero,
+                                      iconSize: 18,
+                                      splashRadius: 18,
+                                      icon: const Icon(Icons.keyboard_arrow_up),
+                                      onPressed: dontMove
+                                          ? null
+                                          : () async {
                                               await moveJob(index, index - 1);
-                                            }),
-                                      ),
-
-                                      // ☰ DRAG HANDLE
-                                      ReorderableDragStartListener(
-                                        index: index,
-                                        child: MouseRegion(
-                                          cursor: SystemMouseCursors.grab,
-                                          child: const Padding(
-                                            padding: EdgeInsets.symmetric(
-                                                vertical: 1),
-                                            child: Icon(
-                                              Icons.drag_handle,
-                                              size: 5,
-                                              color: Colors.grey,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-
-                                      // 🔽 DOWN
-                                      SizedBox(
-                                        width: 28,
-                                        height: 28,
-                                        child: IconButton(
-                                            padding: EdgeInsets.zero,
-                                            iconSize: 18,
-                                            splashRadius: 18,
-                                            icon: const Icon(
-                                                Icons.keyboard_arrow_down),
-                                            onPressed: () async {
-                                              await moveJob(index, index + 1);
-                                            }),
-                                      ),
-                                    ],
+                                            },
+                                    ),
                                   ),
+                                  SizedBox(
+                                    width: 28,
+                                    height: 28,
+                                    child: IconButton(
+                                      padding: EdgeInsets.zero,
+                                      iconSize: 18,
+                                      splashRadius: 18,
+                                      icon:
+                                          const Icon(Icons.keyboard_arrow_down),
+                                      onPressed: dontMove
+                                          ? null
+                                          : () async {
+                                              await moveJob(index, index + 1);
+                                            },
+                                    ),
+                                  ),
+                                ],
+                              ),
 
-                            const SizedBox(width: 10),
+                              const SizedBox(width: 10),
 
-                            //                    ICON AREA                    //
-                            visIconArea(
-                                context, jobRepo, job, isSelected, isRunning,
+                              visIconArea(
+                                context,
+                                jobRepo,
+                                job,
+                                isSelected,
+                                isRunning,
                                 () {
-                              showOnGoingStatus(context, jobRepo);
-                            }),
+                                  showOnGoingStatus(context, jobRepo);
+                                },
+                              ),
 
-                            const SizedBox(width: 7),
-                            //                    NAME AREA                    //
-                            visNameArea(jobRepo.getJobsModel()!, isSelected),
-                            //                    PRICE AREA                    //
-                            visPaidUnpaidArea(context, jobRepo, isSelected,
-                                jobRepo.getJobsModel()!),
-                            const SizedBox(width: 20),
-                          ],
+                              const SizedBox(width: 7),
+
+                              visNameArea(jobRepo.getJobsModel()!, isSelected),
+
+                              visPaidUnpaidArea(context, jobRepo, isSelected,
+                                  jobRepo.getJobsModel()!),
+
+                              const SizedBox(width: 20),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                  );
-                },
+                    );
+                  },
+                ),
               );
             }),
           );
