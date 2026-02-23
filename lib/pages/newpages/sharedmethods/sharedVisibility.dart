@@ -2059,13 +2059,23 @@ InkWell visIconArea(BuildContext context, JobModelRepository jobRepo,
           ),
         ),
         AnimatedRotation(
-          turns: jobRepo.allStatus, //isRunning ? 1 : 0,
+          turns: jobRepo.allStatus,
           duration: const Duration(seconds: 2),
           curve: Curves.linear,
-          child: Icon(
-            statusIcon(job),
-            color: Colors.deepPurple,
-            size: 20,
+          child: Text(
+            '#${jobRepo.jobsId}',
+            style: const TextStyle(
+              color: Colors.deepPurple,
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              shadows: [
+                Shadow(
+                  offset: Offset(1, 1),
+                  blurRadius: 0,
+                  color: Colors.blueGrey,
+                ),
+              ],
+            ),
           ),
         ),
       ],
@@ -2166,20 +2176,20 @@ InkWell visPaidUnpaidArea(BuildContext context, JobModelRepository jobRepo,
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
-        Text(
-          jobRepo.processStep.isEmpty ? '' : '# ${jobRepo.jobsId}',
-          style: const TextStyle(
-            fontWeight: FontWeight.w900,
-            fontSize: 16,
-            shadows: [
-              Shadow(
-                offset: Offset(1, 1),
-                blurRadius: 0,
-                color: Colors.blueGrey,
-              ),
-            ],
-          ),
-        ),
+        // Text(
+        //   jobRepo.processStep.isEmpty ? '' : '# ${jobRepo.jobsId}',
+        //   style: const TextStyle(
+        //     fontWeight: FontWeight.w900,
+        //     fontSize: 16,
+        //     shadows: [
+        //       Shadow(
+        //         offset: Offset(1, 1),
+        //         blurRadius: 0,
+        //         color: Colors.blueGrey,
+        //       ),
+        //     ],
+        //   ),
+        // ),
         Text(
           '₱ ${job.finalPrice}',
           style: TextStyle(

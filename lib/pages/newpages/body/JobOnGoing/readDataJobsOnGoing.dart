@@ -5,6 +5,7 @@ import 'package:laundry_firebase/pages/newpages/body/JobOnQueue/showJobOnQueueEd
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedVisibility.dart';
 import 'package:laundry_firebase/services/newservices/database_jobs.dart';
 import 'package:laundry_firebase/variables/newvariables/jobmodel_repository.dart';
+import 'dart:math';
 
 Widget readDataJobsOnGoing() {
   DatabaseJobsOngoing databaseJobsGoing = DatabaseJobsOngoing();
@@ -26,7 +27,97 @@ Widget readDataJobsOnGoing() {
 
       return StatefulBuilder(
         builder: (context, setState) {
+          Future<void> moveJob(int oldIndex, int newIndex) async {
+            //if (newIndex > oldIndex) newIndex -= 1;
+
+            final movingJob = jobs[oldIndex];
+
+            bool isLocked(String step) =>
+                {'washing', 'drying', 'folding'}.contains(step);
+
+            if (isLocked(movingJob.processStep)) return;
+
+            final isMovingDown = newIndex > oldIndex;
+
+            int newJobId;
+
+            if (isMovingDown) {
+              // 🔽 Moving Down
+              newJobId = movingJob.jobId == 25
+                  ? 1 // wrap to 1
+                  : movingJob.jobId + 1;
+            } else {
+              // 🔼 Moving Up
+              newJobId = movingJob.jobId == 1
+                  ? 25 // wrap to 25
+                  : movingJob.jobId - 1;
+            }
+
+            // 🔍 Check if target exists in UI
+            JobModel? targetJob =
+                jobs.where((j) => j.jobId == newJobId).isNotEmpty
+                    ? jobs.firstWhere((j) => j.jobId == newJobId)
+                    : null;
+
+            // 🚫 If target exists and is locked → block
+            if (targetJob != null && isLocked(targetJob.processStep)) {
+              setState(() => blockedIndex = newIndex);
+              await Future.delayed(const Duration(milliseconds: 400));
+              setState(() => blockedIndex = null);
+
+              return;
+            }
+
+            // 🔔 Optional confirmation
+            // on #1 and #25 will be asked
+            //if (newJobId == 1 || newJobId == 25) {
+            final confirm = await showDialog<bool>(
+              context: context,
+              builder: (_) => AlertDialog(
+                title: const Text('Confirm Reorder'),
+                content: Text(
+                  'Move Job #${movingJob.jobId} ${movingJob.customerName} '
+                  'to #$newJobId?',
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context, false),
+                    child: const Text('No'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () => Navigator.pop(context, true),
+                    child: const Text('Yes'),
+                  ),
+                ],
+              ),
+            );
+
+            if (confirm != true) return;
+            //}
+
+            final oldJobId = movingJob.jobId;
+
+            // 🔥 UI UPDATE
+            setState(() {
+              movingJob.jobId = newJobId;
+
+              if (targetJob != null) {
+                targetJob.jobId = oldJobId; // swap
+              }
+
+              jobs.sort((a, b) => a.jobId.compareTo(b.jobId));
+            });
+
+            // 🔥 FIRESTORE UPDATE
+            await databaseJobsGoing.swapOrInsert(
+              movingDocId: movingJob.docId,
+              oldJobId: oldJobId,
+              newJobId: newJobId,
+            );
+          }
+
           return ReorderableListView(
+            padding: EdgeInsets.zero,
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             buildDefaultDragHandles: false, // disable default drag handles
@@ -34,62 +125,73 @@ Widget readDataJobsOnGoing() {
             onReorder: (oldIndex, newIndex) async {
               if (newIndex > oldIndex) newIndex -= 1;
 
-              final draggedJob = jobs[oldIndex];
+              final movingJob = jobs[oldIndex];
+              final targetJob = jobs[newIndex];
 
-              // 🚫 1. Cannot drag washing
-              if ({'washing', 'drying', 'folding'}
-                  .contains(draggedJob.processStep)) {
+              bool isLocked(String step) =>
+                  {'washing', 'drying', 'folding'}.contains(step);
+
+              // 🚫 Locked moving job
+              if (isLocked(movingJob.processStep)) {
+                setState(() => blockedIndex = oldIndex);
+                await Future.delayed(const Duration(milliseconds: 400));
+                setState(() => blockedIndex = null);
                 return;
               }
 
-              // 🔒 Collect washing indexes
-              final dontMoveIndexes = <int>[];
-              for (int i = 0; i < jobs.length; i++) {
-                if ({'washing', 'drying', 'folding'}
-                    .contains(jobs[i].processStep)) {
-                  dontMoveIndexes.add(i);
-                }
+              // 🚫 Locked target job
+              if (isLocked(targetJob.processStep)) {
+                setState(() => blockedIndex = newIndex);
+                await Future.delayed(const Duration(milliseconds: 400));
+                setState(() => blockedIndex = null);
+                return;
               }
 
-              // 🔍 Simulate reorder
-              final tempList = List.of(jobs);
-              final item = tempList.removeAt(oldIndex);
-              tempList.insert(newIndex, item);
+              // ================================
+              // 🔔 CONFIRMATION DIALOG
+              // ================================
+              final confirm = await showDialog<bool>(
+                context: context,
+                builder: (context) {
+                  return AlertDialog(
+                    title: const Text('Confirm Swap'),
+                    content: Text(
+                      'Swap Job #${movingJob.jobId} ${movingJob.customerName} '
+                      'to Job #${targetJob.jobId} ${targetJob.customerName}?',
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, false),
+                        child: const Text('No'),
+                      ),
+                      ElevatedButton(
+                        onPressed: () => Navigator.pop(context, true),
+                        child: const Text('Yes'),
+                      ),
+                    ],
+                  );
+                },
+              );
 
-              // 🚫 If washing index changes → BLOCK
-              for (int index in dontMoveIndexes) {
-                if (!{'washing', 'drying', 'folding'}
-                    .contains(tempList[index].processStep)) {
-                  // 🔥 Show red flash
-                  setState(() {
-                    blockedIndex = index;
-                  });
+              // ❌ If user pressed No or dismissed dialog
+              if (confirm != true) return;
 
-                  await Future.delayed(const Duration(milliseconds: 400));
+              final oldJobId = movingJob.jobId;
+              final targetJobId = targetJob.jobId;
 
-                  setState(() {
-                    blockedIndex = null;
-                  });
-
-                  return;
-                }
-              }
-
-              // ✅ Safe reorder
+              // 🔥 Update UI first
               setState(() {
-                jobs.removeAt(oldIndex);
-                jobs.insert(newIndex, draggedJob);
-
-                if (selectedIndex == oldIndex) {
-                  selectedIndex = newIndex;
-                }
+                movingJob.jobId = targetJobId;
+                targetJob.jobId = oldJobId;
+                jobs.sort((a, b) => a.jobId.compareTo(b.jobId));
               });
 
-              for (int i = 0; i < jobs.length; i++) {
-                databaseJobsGoing.updateJobId(jobs[i].docId, i);
-              }
+              // 🔥 Update Firestore
+              await Future.wait([
+                databaseJobsGoing.updateJobId(movingJob.docId, movingJob.jobId),
+                databaseJobsGoing.updateJobId(targetJob.docId, targetJob.jobId),
+              ]);
             },
-
             children: List.generate(jobs.length, (index) {
               final job = jobs[index];
               final dontMove =
@@ -119,8 +221,8 @@ Widget readDataJobsOnGoing() {
                       },
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 250),
-                        margin: const EdgeInsets.symmetric(vertical: 10),
-                        padding: const EdgeInsets.all(14),
+                        margin: const EdgeInsets.symmetric(vertical: 1),
+                        padding: const EdgeInsets.all(5),
                         decoration: BoxDecoration(
                           color: blockedIndex == index
                               ? Colors.red.shade200 // 🔥 flash red
@@ -141,13 +243,57 @@ Widget readDataJobsOnGoing() {
                           children: [
                             /// 🔘 Drag handle (hidden if washing)
                             dontMove
-                                ? const SizedBox(width: 34)
-                                : ReorderableDragStartListener(
-                                    index: index,
-                                    child: MouseRegion(
-                                      cursor: SystemMouseCursors.grab,
-                                      child: const Icon(Icons.drag_handle),
-                                    ),
+                                ? const SizedBox(width: 24)
+                                : Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      // 🔼 UP
+                                      SizedBox(
+                                        width: 28,
+                                        height: 28,
+                                        child: IconButton(
+                                            padding: EdgeInsets.zero,
+                                            iconSize: 18,
+                                            splashRadius: 18,
+                                            icon: const Icon(
+                                                Icons.keyboard_arrow_up),
+                                            onPressed: () async {
+                                              await moveJob(index, index - 1);
+                                            }),
+                                      ),
+
+                                      // ☰ DRAG HANDLE
+                                      ReorderableDragStartListener(
+                                        index: index,
+                                        child: MouseRegion(
+                                          cursor: SystemMouseCursors.grab,
+                                          child: const Padding(
+                                            padding: EdgeInsets.symmetric(
+                                                vertical: 1),
+                                            child: Icon(
+                                              Icons.drag_handle,
+                                              size: 5,
+                                              color: Colors.grey,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+
+                                      // 🔽 DOWN
+                                      SizedBox(
+                                        width: 28,
+                                        height: 28,
+                                        child: IconButton(
+                                            padding: EdgeInsets.zero,
+                                            iconSize: 18,
+                                            splashRadius: 18,
+                                            icon: const Icon(
+                                                Icons.keyboard_arrow_down),
+                                            onPressed: () async {
+                                              await moveJob(index, index + 1);
+                                            }),
+                                      ),
+                                    ],
                                   ),
 
                             const SizedBox(width: 10),

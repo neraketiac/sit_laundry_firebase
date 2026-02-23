@@ -112,7 +112,7 @@ class DatabaseJobsOngoing {
 
   Future<void> updateJobId(String docId, int jobId) async {
     await _ref.doc(docId).update({
-      'A00_JobId': jobId + 1,
+      'A00_JobId': jobId,
     });
   }
 
@@ -131,6 +131,32 @@ class DatabaseJobsOngoing {
             });
     ;
     return bSuccess;
+  }
+
+  Future<void> swapOrInsert({
+    required String movingDocId,
+    required int oldJobId,
+    required int newJobId,
+  }) async {
+    final firestore = FirebaseFirestore.instance;
+    final colRef = firestore.collection(JOBS_ONGOING_REF);
+
+    await firestore.runTransaction((tx) async {
+      final movingRef = colRef.doc(movingDocId);
+
+      final query =
+          await colRef.where('A00_JobId', isEqualTo: newJobId).limit(1).get();
+
+      if (query.docs.isNotEmpty) {
+        final targetDoc = query.docs.first;
+        final targetRef = colRef.doc(targetDoc.id);
+
+        tx.update(movingRef, {'A00_JobId': newJobId});
+        tx.update(targetRef, {'A00_JobId': oldJobId});
+      } else {
+        tx.update(movingRef, {'A00_JobId': newJobId});
+      }
+    });
   }
 }
 
