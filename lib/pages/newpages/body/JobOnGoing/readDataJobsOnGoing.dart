@@ -10,6 +10,7 @@ Widget readDataJobsOnGoing() {
   DatabaseJobsOngoing databaseJobsGoing = DatabaseJobsOngoing();
   int? selectedIndex;
   int? blockedIndex;
+  bool isLocked(String step) => {'washing', 'drying', 'folding'}.contains(step);
 
   return StreamBuilder<List<JobModel>>(
     stream: databaseJobsGoing.streamAll(),
@@ -134,20 +135,32 @@ Widget readDataJobsOnGoing() {
 
               final movingJob = jobs[oldIndex];
               final targetJob = jobs[newIndex];
+              bool useSwap = false;
+              bool lowtohigh = oldIndex < newIndex;
 
-              bool isLocked(String step) =>
-                  {'washing', 'drying', 'folding'}.contains(step);
-
-              // 🚫 Locked moving job
-              if (isLocked(movingJob.processStep)) {
-                setState(() => blockedIndex = oldIndex);
-                await Future.delayed(const Duration(milliseconds: 400));
-                setState(() => blockedIndex = null);
-                return;
+              if (newIndex + 1 < jobs.length) {
+                //from 3 to 5
+                if (lowtohigh) {
+                  final nextTargetJob = jobs[newIndex + 1];
+                  useSwap = targetJob.jobId + 1 == nextTargetJob.jobId;
+                }
+                //from 5 to 3
+                else {
+                  final nextTargetJob = jobs[newIndex - 1];
+                  useSwap = targetJob.jobId - 1 == nextTargetJob.jobId;
+                }
               }
 
+              // // 🚫 Locked moving job
+              // if (isLocked(movingJob.processStep)) {
+              //   setState(() => blockedIndex = oldIndex);
+              //   await Future.delayed(const Duration(milliseconds: 400));
+              //   setState(() => blockedIndex = null);
+              //   return;
+              // }
+
               // 🚫 Locked target job
-              if (isLocked(targetJob.processStep)) {
+              if (isLocked(targetJob.processStep) && useSwap) {
                 setState(() => blockedIndex = newIndex);
                 await Future.delayed(const Duration(milliseconds: 400));
                 setState(() => blockedIndex = null);
@@ -186,8 +199,11 @@ Widget readDataJobsOnGoing() {
                   return AlertDialog(
                     title: const Text('Confirm Swap'),
                     content: Text(
-                      'Swap Job #${movingJob.jobId} ${movingJob.customerName} '
-                      'to Job #${targetJob.jobId} ${targetJob.customerName}?',
+                      useSwap
+                          ? 'Swap Job #${movingJob.jobId} ${movingJob.customerName} '
+                              'to Job #${targetJob.jobId} ${targetJob.customerName}?'
+                          : //to
+                          'Move Job #${movingJob.jobId} ${movingJob.customerName} ${lowtohigh ? 'to Job #${targetJob.jobId + 1}?' : 'to Job #${targetJob.jobId - 1}?'}',
                     ),
                     actions: [
                       TextButton(
@@ -210,16 +226,29 @@ Widget readDataJobsOnGoing() {
               final targetJobId = targetJob.jobId;
 
               // 🔥 Update UI first
-              setState(() {
-                movingJob.jobId = targetJobId;
-                targetJob.jobId = oldJobId;
-                jobs.sort((a, b) => a.jobId.compareTo(b.jobId));
-              });
-
+              if (useSwap) {
+                setState(() {
+                  movingJob.jobId = targetJobId;
+                  targetJob.jobId = oldJobId;
+                  jobs.sort((a, b) => a.jobId.compareTo(b.jobId));
+                });
+              } else {
+                setState(() {
+                  if (lowtohigh) {
+                    movingJob.jobId = targetJobId + 1;
+                  } else {
+                    movingJob.jobId = targetJobId - 1;
+                  }
+                  jobs.sort((a, b) => a.jobId.compareTo(b.jobId));
+                });
+              }
               // 🔥 Update Firestore
               await Future.wait([
-                databaseJobsGoing.updateJobId(movingJob.docId, movingJob.jobId),
-                databaseJobsGoing.updateJobId(targetJob.docId, targetJob.jobId),
+                databaseJobsGoing.updateJobId(
+                    movingJob.docId, movingJob.jobId), // lift
+                if (useSwap)
+                  databaseJobsGoing.updateJobId(
+                      targetJob.docId, targetJob.jobId), // nabagsakan
               ]);
             },
             children: List.generate(jobs.length, (index) {
@@ -261,9 +290,11 @@ Widget readDataJobsOnGoing() {
                           decoration: BoxDecoration(
                             color: blockedIndex == index
                                 ? Colors.red.shade200
-                                : isSelected
+                                : (isLocked(jobRepo.processStep))
                                     ? Colors.deepPurple.shade100
-                                    : Colors.deepPurple.shade50,
+                                    : isSelected
+                                        ? Colors.deepPurple.shade50
+                                        : Colors.deepPurple.shade50,
                             borderRadius: BorderRadius.circular(14),
                             boxShadow: [
                               if (isSelected)

@@ -89,6 +89,14 @@ void showMoveToOnGoing(BuildContext context, JobModelRepository jobRepo) {
 
                 await moveQueueToOngoing(jobRepo.docId, nextJobId);
 
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      '${jobRepo.customerName} ₱ ${jobRepo.finalPrice} added to #$nextJobId.',
+                    ),
+                  ),
+                );
+
                 return true; // ✅ close dialog
               },
             ),
