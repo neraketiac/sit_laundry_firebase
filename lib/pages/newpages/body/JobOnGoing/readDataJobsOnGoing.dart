@@ -134,6 +134,130 @@ Widget readDataJobsOnGoing() {
             );
           }
 
+          Future<void> moveUpCascade(int index) async {
+            if (index == 0) return;
+
+            jobs.sort((a, b) => a.jobId.compareTo(b.jobId));
+
+            //if last job is long pressed even only 1 item, just dont use long press if want to go down
+            // if (0 == index - 1) {
+            //   setState(() => clickedUpButtonIndex = index);
+            //   setState(() => blockedIndex = 0);
+            //   await Future.delayed(const Duration(milliseconds: 400));
+            //   setState(() => clickedUpButtonIndex = null);
+            //   setState(() => blockedIndex = null);
+
+            //   return;
+            // }
+
+            //if next job is locked
+            if (isLocked(jobs[index - 1].processStep)) {
+              setState(() => blockedIndex = index - 1);
+              await Future.delayed(const Duration(milliseconds: 400));
+              setState(() => blockedIndex = null);
+
+              return;
+            }
+
+            final selectedJob = jobs[index];
+            int currentId = selectedJob.jobId;
+            int lockedItemReached = 0;
+            bool zeroIndexReached = false;
+
+            // 1️⃣ Collect continuous sequence
+            List<JobModel> affectedJobs = [];
+            List<int> affectedIds = [];
+            List<int> destinationIds = [];
+
+            // for (int i = index; i < jobs.length; i++) {
+            for (int i = index; i >= 0; i--) {
+              if (jobs[i].jobId == currentId) {
+                //block jobid = 0
+                if ((jobs[i].jobId - 1) <= 0) {
+                  zeroIndexReached = true;
+                  break;
+                }
+                affectedJobs.add(jobs[i]);
+
+                if (isLocked(jobs[i].processStep)) {
+                  lockedItemReached = i;
+                  break;
+                }
+
+                // collect jobId
+                affectedIds.add(jobs[i].jobId);
+                destinationIds.add(jobs[i].jobId - 1);
+
+                currentId--;
+              } else {
+                //next number is blank, not sequence
+                break;
+              }
+            }
+            //Already reached the locked item
+            if (lockedItemReached > 0) {
+              setState(() => clickedUpButtonIndex = index);
+              setState(() => blockedIndex = lockedItemReached);
+              await Future.delayed(const Duration(milliseconds: 400));
+              setState(() => clickedUpButtonIndex = null);
+              setState(() => blockedIndex = null);
+
+              debugPrint(
+                  "❌ Cannot move. Locked item reached$lockedItemReached ${affectedJobs.last.jobId}");
+              return;
+            }
+
+            // 2️⃣ 1 PROTECTION, MAKE SURE NO jobId = 0
+            if (zeroIndexReached) {
+              setState(() => clickedUpButtonIndex = index);
+              setState(() => blockedIndex = 0);
+              await Future.delayed(const Duration(milliseconds: 400));
+              setState(() => clickedUpButtonIndex = null);
+              setState(() => blockedIndex = null);
+
+              debugPrint("❌ Cannot move up");
+              return;
+            }
+
+            final messageAffected = affectedIds.map((id) => '#$id').join(', ');
+            final messageDestination =
+                destinationIds.map((id) => '#$id').join(', ');
+
+            // ALERT affected
+            final confirm = await showDialog<bool>(
+              context: context,
+              builder: (_) => AlertDialog(
+                title: const Text('Confirm Reorder'),
+                content: Text(
+                  'Move up all\n $messageAffected\n'
+                  'to $messageDestination?',
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context, false),
+                    child: const Text('No'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () => Navigator.pop(context, true),
+                    child: const Text('Yes'),
+                  ),
+                ],
+              ),
+            );
+
+            if (confirm != true) return;
+
+            // 3️⃣ Firestore batch update (atomic)
+            databaseJobsGoing.cascadeUp(affectedJobs);
+
+            // 4️⃣ Update UI AFTER successful commit
+            setState(() {
+              for (final job in affectedJobs) {
+                job.jobId -= 1;
+              }
+            });
+          }
+
           Future<void> moveDownCascade(int index) async {
             jobs.sort((a, b) => a.jobId.compareTo(b.jobId));
 
@@ -284,6 +408,13 @@ Widget readDataJobsOnGoing() {
 
             for (int i = index; i < jobs.length; i++) {
               if (jobs[i].jobId == currentId) {
+                //do not include moving the middle part
+                //ex 1,2,3,4,5 move 3 to 1, then 4, 5 no need to move forward
+                //ex 1,2,3,4,5 move 7 to 1, then all nums need to move forward cause moving 7 always > jobsid
+                if (movingJob.jobId < jobs[i].jobId) {
+                  break;
+                }
+
                 affectedJobs.add(jobs[i]);
 
                 if (isLocked(jobs[i].processStep)) {
@@ -366,6 +497,8 @@ Widget readDataJobsOnGoing() {
             onReorder: (oldIndex, newIndex) async {
               if (newIndex > oldIndex) newIndex -= 1;
 
+              final canPrioritize = newIndex < oldIndex;
+
               final movingJob = jobs[oldIndex];
               final targetJob = jobs[newIndex];
               bool useSwap = false;
@@ -445,9 +578,13 @@ Widget readDataJobsOnGoing() {
                   return AlertDialog(
                     title: const Text('Confirm Action'),
                     content: Text(
-                      'Prioritize #${movingJob.jobId} ${movingJob.customerName}?\n'
-                      'or'
-                      'Swap to Job #${targetJob.jobId} ${targetJob.customerName}?\n\n',
+                      (canPrioritize
+                              ? 'Prioritize #${movingJob.jobId} ${movingJob.customerName}?\n'
+                              : '') +
+                          (canPrioritize ? 'or\n' : '') +
+                          (canPrioritize
+                              ? 'Swap to Job #${targetJob.jobId} ${targetJob.customerName}?'
+                              : 'Swap #${movingJob.jobId} ${movingJob.customerName} to #${targetJob.jobId} ${targetJob.customerName}?'),
                     ),
                     actions: [
                       TextButton(
@@ -460,11 +597,12 @@ Widget readDataJobsOnGoing() {
                             Navigator.pop(context, ReorderAction.swap),
                         child: const Text('Swap'),
                       ),
-                      ElevatedButton(
-                        onPressed: () =>
-                            Navigator.pop(context, ReorderAction.move),
-                        child: const Text('Prioritize'),
-                      ),
+                      if (canPrioritize)
+                        ElevatedButton(
+                          onPressed: () =>
+                              Navigator.pop(context, ReorderAction.move),
+                          child: const Text('Prioritize'),
+                        ),
                     ],
                   );
                 },
@@ -508,7 +646,7 @@ Widget readDataJobsOnGoing() {
                 ]);
               } else if (action == ReorderAction.move) {
                 // do move logic
-                debugPrint('out newIndex=$newIndex');
+
                 if (await moveDownCascadeBool(movingJob, newIndex)) {
                 } else {
                   return;
@@ -647,6 +785,11 @@ Widget readDataJobsOnGoing() {
                                                       index, index - 1);
                                                 }
                                               },
+                                        onLongPress: dontMove
+                                            ? null
+                                            : () async {
+                                                await moveUpCascade(index);
+                                              },
                                       ),
                                     ),
                                   ),
@@ -682,7 +825,6 @@ Widget readDataJobsOnGoing() {
                                         onLongPress: dontMove
                                             ? null
                                             : () async {
-                                                debugPrint('index=$index');
                                                 await moveDownCascade(index);
                                               },
                                       ),

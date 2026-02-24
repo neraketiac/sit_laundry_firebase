@@ -46,7 +46,7 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
 //*showJobsOnQueue
 //*showJobsOnQueue
 
-  late JobModelRepository jobRepoBQ;
+  //late JobModelRepository jobRepoBQ;
   late JobModelRepository jobRepoNonJob;
 
   late String _sEmpId;
@@ -66,7 +66,7 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
     }
     SuppliesHistRepository.instance.reset();
 
-    jobRepoBQ = JobModelRepository();
+    //jobRepoBQ = JobModelRepository();
     jobRepoNonJob = JobModelRepository();
 
     //JobModelRepository.instance.reset();
@@ -80,7 +80,7 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
     required String hero,
     required IconData icon,
     required double bottom,
-    required double right,
+    required double left,
     required VoidCallback onTap,
     required Color backgroundColor,
   }) {
@@ -88,7 +88,7 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
       duration: const Duration(milliseconds: 320), // fast → slow
       curve: Curves.easeOutCubic,
       bottom: bottom,
-      right: right,
+      left: left,
       child: FloatingActionButton(
         backgroundColor: backgroundColor,
         heroTag: hero,
@@ -106,6 +106,7 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
 
     return Scaffold(
       body: MyMainLaundryBody(_sEmpId),
+      floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
       floatingActionButton: SizedBox(
         width: 300,
         height: 300,
@@ -120,7 +121,7 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
                 hero: 'Gcash Funds',
                 icon: Icons.attach_money_sharp,
                 bottom: _isOpen ? base : base,
-                right: _isOpen ? base + step + step : base,
+                left: _isOpen ? base + step + step : base,
                 onTap: () => showGCashOnly(context, jobRepoNonJob),
                 backgroundColor: cAdmin),
 
@@ -128,7 +129,7 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
                 hero: 'Laundry Payment',
                 icon: Icons.payments_outlined,
                 bottom: _isOpen ? base : base,
-                right: _isOpen ? base + step : base,
+                left: _isOpen ? base + step : base,
                 onTap: () => showLaundryPayment(context, jobRepoNonJob),
                 backgroundColor: cAdmin),
 
@@ -138,7 +139,7 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
                 hero: 'GCash Pending',
                 icon: Icons.g_mobiledata,
                 bottom: _isOpen ? base + step : base,
-                right: _isOpen ? base + step : base,
+                left: _isOpen ? base + step : base,
                 onTap: () => showGCashPending(context),
                 backgroundColor: cShowGCash),
 
@@ -146,14 +147,14 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
                 hero: 'JobsOnQueue',
                 icon: Icons.local_laundry_service,
                 bottom: _isOpen ? base + step : base,
-                right: _isOpen ? base : base,
-                onTap: () => showJobOnQueue(context, jobRepoBQ),
+                left: _isOpen ? base : base,
+                onTap: () => showJobOnQueue(context),
                 backgroundColor: cJobsOnQueue),
 
             /// ───── Main FAB
             Positioned(
               bottom: base,
-              right: base,
+              left: base,
               child: FloatingActionButton(
                 heroTag: 'main',
                 onPressed: () {

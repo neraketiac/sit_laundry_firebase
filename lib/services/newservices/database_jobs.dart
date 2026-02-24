@@ -195,6 +195,20 @@ class DatabaseJobsOngoing {
 
     await batch.commit();
   }
+
+  Future<void> cascadeUp(List<JobModel> affectedJobs) async {
+    final batch = _firestore.batch();
+
+    for (final job in affectedJobs) {
+      final docRef = _ref.doc(job.docId);
+
+      batch.update(docRef, {
+        'A00_JobId': job.jobId - 1,
+      });
+    }
+
+    await batch.commit();
+  }
 }
 
 /// 🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩
