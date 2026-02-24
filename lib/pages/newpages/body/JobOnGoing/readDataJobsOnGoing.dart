@@ -6,6 +6,12 @@ import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedVisibility.d
 import 'package:laundry_firebase/services/newservices/database_jobs.dart';
 import 'package:laundry_firebase/variables/newvariables/jobmodel_repository.dart';
 
+enum ReorderAction {
+  swap,
+  move,
+  cancel,
+}
+
 Widget readDataJobsOnGoing() {
   DatabaseJobsOngoing databaseJobsGoing = DatabaseJobsOngoing();
   int? selectedIndex;
@@ -33,17 +39,12 @@ Widget readDataJobsOnGoing() {
             final movingJob = jobs[oldIndex];
             bool isLocked(String step) =>
                 {'washing', 'drying', 'folding'}.contains(step);
-            debugPrint('debugPrint 3');
             if (isLocked(movingJob.processStep)) return;
-            debugPrint('debugPrint 4');
             final isMovingDown = newIndex > oldIndex;
-            debugPrint('debugPrint 5');
             int newJobId;
 
             // bool useSwap = false;
-            debugPrint('debugPrint 6');
             if (isMovingDown) {
-              debugPrint('debugPrint 6 moving down');
               // 🔽 Moving Down for #25 only
               newJobId = movingJob.jobId == 25
                   ? 1 // wrap to 1
@@ -64,13 +65,11 @@ Widget readDataJobsOnGoing() {
 
               // useSwap = jobs[oldIndex].jobId - 1 == jobs[newIndex].jobId;
             }
-            debugPrint('debugPrint 7');
             // 🔍 Check if target exists in UI
             JobModel? targetJob =
                 jobs.where((j) => j.jobId == newJobId).isNotEmpty
                     ? jobs.firstWhere((j) => j.jobId == newJobId)
                     : null;
-            debugPrint('debugPrint 8');
             // 🚫 If target exists and is locked → block
             if (targetJob != null && isLocked(targetJob.processStep)) {
               if (!isMovingDown) {
@@ -251,6 +250,105 @@ Widget readDataJobsOnGoing() {
             });
           }
 
+          Future<bool> moveDownCascadeBool(
+              JobModel movingJob, int index) async {
+            jobs.sort((a, b) => a.jobId.compareTo(b.jobId));
+            int newIndexJobId = jobs[index].jobId;
+
+            //if last job is long pressed even only 1 item, just dont use long press if want to go down
+            if (jobs.length == index + 1) {
+              setState(() => blockedIndex = index);
+              await Future.delayed(const Duration(milliseconds: 400));
+              setState(() => blockedIndex = null);
+
+              return false;
+            }
+
+            //if next job is locked
+            if (isLocked(jobs[index + 1].processStep)) {
+              setState(() => blockedIndex = index + 1);
+              await Future.delayed(const Duration(milliseconds: 400));
+              setState(() => blockedIndex = null);
+
+              return false;
+            }
+
+            final selectedJob = jobs[index];
+            int currentId = selectedJob.jobId;
+            int lockedItemReached = 0;
+
+            // 1️⃣ Collect continuous sequence
+            List<JobModel> affectedJobs = [];
+            List<int> affectedIds = [];
+            List<int> destinationIds = [];
+
+            for (int i = index; i < jobs.length; i++) {
+              if (jobs[i].jobId == currentId) {
+                affectedJobs.add(jobs[i]);
+
+                if (isLocked(jobs[i].processStep)) {
+                  lockedItemReached = i;
+                  break;
+                }
+
+                // collect jobId
+                affectedIds.add(jobs[i].jobId);
+                destinationIds.add(jobs[i].jobId + 1);
+
+                currentId++;
+              } else {
+                //next number is blank, not sequence
+                break;
+              }
+            }
+            //Already reached the locked item
+            if (lockedItemReached > 0) {
+              setState(() => clickedDownButtonIndex = index);
+              setState(() => blockedIndex = lockedItemReached);
+              await Future.delayed(const Duration(milliseconds: 400));
+              setState(() => clickedDownButtonIndex = null);
+              setState(() => blockedIndex = null);
+
+              debugPrint(
+                  "❌ Cannot move. Locked item reached$lockedItemReached ${affectedJobs.last.jobId}");
+              return false;
+            }
+
+            // 2️⃣ MAX 25 PROTECTION
+            final highestIdAfterShift = affectedJobs.last.jobId + 1;
+
+            if (highestIdAfterShift > 25) {
+              setState(() => clickedDownButtonIndex = index);
+              setState(() => blockedIndex = jobs.length - 1);
+              await Future.delayed(const Duration(milliseconds: 400));
+              setState(() => clickedDownButtonIndex = null);
+              setState(() => blockedIndex = null);
+
+              debugPrint(
+                  "❌ Cannot move. Max jobId 25 reached.$index ${affectedJobs.last.jobId}");
+              return false;
+            }
+
+            final messageAffected = affectedIds.map((id) => '#$id').join(', ');
+            final messageDestination =
+                destinationIds.map((id) => '#$id').join(', ');
+
+            // 3️⃣ Firestore batch update (atomic)
+            databaseJobsGoing.cascade(affectedJobs);
+
+            //this will only update the vacant slot made above after moving down
+            databaseJobsGoing.updateJobId(movingJob.docId, newIndexJobId);
+
+            // 4️⃣ Update UI AFTER successful commit
+            setState(() {
+              for (final job in affectedJobs) {
+                job.jobId += 1;
+              }
+            });
+
+            return true;
+          }
+
           return ReorderableListView(
             proxyDecorator: (child, index, animation) {
               return Material(
@@ -341,63 +439,120 @@ Widget readDataJobsOnGoing() {
               // ================================
               // 🔔 CONFIRMATION DIALOG
               // ================================
-              final confirm = await showDialog<bool>(
+              final action = await showDialog<ReorderAction>(
                 context: context,
                 builder: (context) {
                   return AlertDialog(
-                    title: const Text('Confirm Swap'),
+                    title: const Text('Confirm Action'),
                     content: Text(
-                      useSwap
-                          ? 'Swap Job #${movingJob.jobId} ${movingJob.customerName} '
-                              'to Job #${targetJob.jobId} ${targetJob.customerName}?'
-                          : //to
-                          'Move Job #${movingJob.jobId} ${movingJob.customerName} ${lowtohigh ? 'to Job #${targetJob.jobId + 1}?' : 'to Job #${targetJob.jobId - 1}?'}',
+                      'Prioritize #${movingJob.jobId} ${movingJob.customerName}?\n'
+                      'or'
+                      'Swap to Job #${targetJob.jobId} ${targetJob.customerName}?\n\n',
                     ),
                     actions: [
                       TextButton(
-                        onPressed: () => Navigator.pop(context, false),
-                        child: const Text('No'),
+                        onPressed: () =>
+                            Navigator.pop(context, ReorderAction.cancel),
+                        child: const Text('Cancel'),
+                      ),
+                      TextButton(
+                        onPressed: () =>
+                            Navigator.pop(context, ReorderAction.swap),
+                        child: const Text('Swap'),
                       ),
                       ElevatedButton(
-                        onPressed: () => Navigator.pop(context, true),
-                        child: const Text('Yes'),
+                        onPressed: () =>
+                            Navigator.pop(context, ReorderAction.move),
+                        child: const Text('Prioritize'),
                       ),
                     ],
                   );
                 },
               );
 
-              // ❌ If user pressed No or dismissed dialog
-              if (confirm != true) return;
-
+              // do swap logic
+              //oldJob babagsakan
               final oldJobId = movingJob.jobId;
+              //targetJobId lift
               final targetJobId = targetJob.jobId;
 
-              // 🔥 Update UI first
-              if (useSwap) {
-                setState(() {
-                  movingJob.jobId = targetJobId;
-                  targetJob.jobId = oldJobId;
-                  jobs.sort((a, b) => a.jobId.compareTo(b.jobId));
-                });
-              } else {
-                setState(() {
-                  if (lowtohigh) {
-                    movingJob.jobId = targetJobId + 1;
-                  } else {
-                    movingJob.jobId = targetJobId - 1;
-                  }
-                  jobs.sort((a, b) => a.jobId.compareTo(b.jobId));
-                });
-              }
-              // 🔥 Update Firestore
-              await Future.wait([
-                databaseJobsGoing.updateJobId(
-                    movingJob.docId, movingJob.jobId), // lift
-                if (useSwap)
+              // ❌ If dismissed or cancel
+              if (action == null || action == ReorderAction.cancel) return;
+
+              // ✅ Handle selection
+              if (action == ReorderAction.swap) {
+                // 🔥 Update UI first
+                if (useSwap) {
+                  setState(() {
+                    movingJob.jobId = targetJobId;
+                    targetJob.jobId = oldJobId;
+                    jobs.sort((a, b) => a.jobId.compareTo(b.jobId));
+                  });
+                } else {
+                  setState(() {
+                    if (lowtohigh) {
+                      movingJob.jobId = targetJobId + 1;
+                    } else {
+                      movingJob.jobId = targetJobId - 1;
+                    }
+                    jobs.sort((a, b) => a.jobId.compareTo(b.jobId));
+                  });
+                }
+                // 🔥 Update Firestore
+                await Future.wait([
                   databaseJobsGoing.updateJobId(
-                      targetJob.docId, targetJob.jobId), // nabagsakan
-              ]);
+                      movingJob.docId, movingJob.jobId), // lift
+                  if (useSwap)
+                    databaseJobsGoing.updateJobId(
+                        targetJob.docId, targetJob.jobId), // nabagsakan
+                ]);
+              } else if (action == ReorderAction.move) {
+                // do move logic
+                debugPrint('out newIndex=$newIndex');
+                if (await moveDownCascadeBool(movingJob, newIndex)) {
+                } else {
+                  return;
+                }
+
+                // final binagsakangInt = await moveDownCascadeInt(
+                //     newIndex); //this will move all the down
+                // if (binagsakangInt != 0) {
+                //   //this will only update the vacant slot made above after moving down
+                //   databaseJobsGoing.updateJobId(
+                //       movingJob.docId, binagsakangInt);
+                // } else {
+                //   return;
+                // }
+              }
+
+              // final confirm = await showDialog<bool>(
+              //   context: context,
+              //   builder: (context) {
+              //     return AlertDialog(
+              //       title: const Text('Confirm Swap'),
+              //       content: Text(
+              //         useSwap
+              //             ? 'Swap Job #${movingJob.jobId} ${movingJob.customerName} '
+              //                 'to Job #${targetJob.jobId} ${targetJob.customerName}?'
+              //             : //to
+              //             'Move Job #${movingJob.jobId} ${movingJob.customerName} ${lowtohigh ? 'to Job #${targetJob.jobId + 1}?' : 'to Job #${targetJob.jobId - 1}?'}',
+              //       ),
+              //       actions: [
+              //         TextButton(
+              //           onPressed: () => Navigator.pop(context, false),
+              //           child: const Text('No'),
+              //         ),
+              //         ElevatedButton(
+              //           onPressed: () => Navigator.pop(context, true),
+              //           child: const Text('Yes'),
+              //         ),
+              //       ],
+              //     );
+              //   },
+              // );
+
+              // // ❌ If user pressed No or dismissed dialog
+              // if (confirm != true) return;
             },
             children: List.generate(jobs.length, (index) {
               final job = jobs[index];
