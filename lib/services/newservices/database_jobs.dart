@@ -133,23 +133,46 @@ class DatabaseJobsOngoing {
     return bSuccess;
   }
 
+  // Future<void> swapOrInsert({
+  //   required String movingDocId,
+  //   required int oldJobId,
+  //   required int newJobId,
+  // }) async {
+  //   final firestore = FirebaseFirestore.instance;
+  //   final colRef = firestore.collection(JOBS_ONGOING_REF);
+
+  //   await firestore.runTransaction((tx) async {
+  //     final movingRef = colRef.doc(movingDocId);
+
+  //     final query =
+  //         await colRef.where('A00_JobId', isEqualTo: newJobId).limit(1).get();
+
+  //     if (query.docs.isNotEmpty) {
+  //       final targetDoc = query.docs.first;
+  //       final targetRef = colRef.doc(targetDoc.id);
+
+  //       tx.update(movingRef, {'A00_JobId': newJobId});
+  //       tx.update(targetRef, {'A00_JobId': oldJobId});
+  //     } else {
+  //       tx.update(movingRef, {'A00_JobId': newJobId});
+  //     }
+  //   });
+  // }
+
   Future<void> swapOrInsert({
     required String movingDocId,
     required int oldJobId,
     required int newJobId,
   }) async {
-    final firestore = FirebaseFirestore.instance;
-    final colRef = firestore.collection(JOBS_ONGOING_REF);
-
-    await firestore.runTransaction((tx) async {
-      final movingRef = colRef.doc(movingDocId);
+    await _firestore.runTransaction((tx) async {
+      final movingRef = _ref.doc(movingDocId);
 
       final query =
-          await colRef.where('A00_JobId', isEqualTo: newJobId).limit(1).get();
+          await _ref.where('A00_JobId', isEqualTo: newJobId).limit(1).get();
 
       if (query.docs.isNotEmpty) {
         final targetDoc = query.docs.first;
-        final targetRef = colRef.doc(targetDoc.id);
+        final targetRef = _ref.doc(targetDoc.id);
 
         tx.update(movingRef, {'A00_JobId': newJobId});
         tx.update(targetRef, {'A00_JobId': oldJobId});
@@ -157,6 +180,20 @@ class DatabaseJobsOngoing {
         tx.update(movingRef, {'A00_JobId': newJobId});
       }
     });
+  }
+
+  Future<void> cascade(List<JobModel> affectedJobs) async {
+    final batch = _firestore.batch();
+
+    for (final job in affectedJobs) {
+      final docRef = _ref.doc(job.docId);
+
+      batch.update(docRef, {
+        'A00_JobId': job.jobId + 1,
+      });
+    }
+
+    await batch.commit();
   }
 }
 

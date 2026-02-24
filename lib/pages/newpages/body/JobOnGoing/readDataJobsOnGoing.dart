@@ -9,8 +9,9 @@ import 'package:laundry_firebase/variables/newvariables/jobmodel_repository.dart
 Widget readDataJobsOnGoing() {
   DatabaseJobsOngoing databaseJobsGoing = DatabaseJobsOngoing();
   int? selectedIndex;
-  int? blockedIndex;
+  int? blockedIndex, clickedUpButtonIndex, clickedDownButtonIndex;
   bool isLocked(String step) => {'washing', 'drying', 'folding'}.contains(step);
+  final Color cDontMove = Colors.deepPurple.shade100;
 
   return StreamBuilder<List<JobModel>>(
     stream: databaseJobsGoing.streamAll(),
@@ -29,40 +30,58 @@ Widget readDataJobsOnGoing() {
         builder: (context, setState) {
           Future<void> moveJob(int oldIndex, int newIndex) async {
             //if (newIndex > oldIndex) newIndex -= 1;
-
             final movingJob = jobs[oldIndex];
-
             bool isLocked(String step) =>
                 {'washing', 'drying', 'folding'}.contains(step);
-
+            debugPrint('debugPrint 3');
             if (isLocked(movingJob.processStep)) return;
-
+            debugPrint('debugPrint 4');
             final isMovingDown = newIndex > oldIndex;
-
+            debugPrint('debugPrint 5');
             int newJobId;
 
+            // bool useSwap = false;
+            debugPrint('debugPrint 6');
             if (isMovingDown) {
-              // 🔽 Moving Down
+              debugPrint('debugPrint 6 moving down');
+              // 🔽 Moving Down for #25 only
               newJobId = movingJob.jobId == 25
                   ? 1 // wrap to 1
                   : movingJob.jobId + 1;
+              //detect next exists
+              // useSwap = jobs[oldIndex].jobId + 1 == jobs[newIndex].jobId;
             } else {
-              // 🔼 Moving Up
+              // debugPrint('debugPrint 6 moving up newJobId=${movingJob.jobId}');
+              // debugPrint(
+              //     'debugPrint 6 moving up oldIndex=$oldIndex newIndex=$newIndex');
+              // debugPrint(
+              //     'debugPrint 6 moving up oldjobid=${jobs[oldIndex].jobId} newjobid=${jobs[newIndex].jobId} ');
+              // 🔼 Moving Up for # 1 only
               newJobId = movingJob.jobId == 1
                   ? 25 // wrap to 25
                   : movingJob.jobId - 1;
-            }
+              //detect next exists
 
+              // useSwap = jobs[oldIndex].jobId - 1 == jobs[newIndex].jobId;
+            }
+            debugPrint('debugPrint 7');
             // 🔍 Check if target exists in UI
             JobModel? targetJob =
                 jobs.where((j) => j.jobId == newJobId).isNotEmpty
                     ? jobs.firstWhere((j) => j.jobId == newJobId)
                     : null;
-
+            debugPrint('debugPrint 8');
             // 🚫 If target exists and is locked → block
             if (targetJob != null && isLocked(targetJob.processStep)) {
+              if (!isMovingDown) {
+                setState(() => clickedUpButtonIndex = oldIndex);
+              } else {
+                setState(() => clickedDownButtonIndex = oldIndex);
+              }
               setState(() => blockedIndex = newIndex);
               await Future.delayed(const Duration(milliseconds: 400));
+              if (!isMovingDown) setState(() => clickedUpButtonIndex = null);
+              if (isMovingDown) setState(() => clickedDownButtonIndex = null);
               setState(() => blockedIndex = null);
 
               return;
@@ -116,6 +135,122 @@ Widget readDataJobsOnGoing() {
             );
           }
 
+          Future<void> moveDownCascade(int index) async {
+            jobs.sort((a, b) => a.jobId.compareTo(b.jobId));
+
+            //if last job is long pressed even only 1 item, just dont use long press if want to go down
+            if (jobs.length == index + 1) {
+              setState(() => blockedIndex = index);
+              await Future.delayed(const Duration(milliseconds: 400));
+              setState(() => blockedIndex = null);
+
+              return;
+            }
+
+            //if next job is locked
+            if (isLocked(jobs[index + 1].processStep)) {
+              setState(() => blockedIndex = index + 1);
+              await Future.delayed(const Duration(milliseconds: 400));
+              setState(() => blockedIndex = null);
+
+              return;
+            }
+
+            final selectedJob = jobs[index];
+            int currentId = selectedJob.jobId;
+            int lockedItemReached = 0;
+
+            // 1️⃣ Collect continuous sequence
+            List<JobModel> affectedJobs = [];
+            List<int> affectedIds = [];
+            List<int> destinationIds = [];
+
+            for (int i = index; i < jobs.length; i++) {
+              if (jobs[i].jobId == currentId) {
+                affectedJobs.add(jobs[i]);
+
+                if (isLocked(jobs[i].processStep)) {
+                  lockedItemReached = i;
+                  break;
+                }
+
+                // collect jobId
+                affectedIds.add(jobs[i].jobId);
+                destinationIds.add(jobs[i].jobId + 1);
+
+                currentId++;
+              } else {
+                //next number is blank, not sequence
+                break;
+              }
+            }
+            //Already reached the locked item
+            if (lockedItemReached > 0) {
+              setState(() => clickedDownButtonIndex = index);
+              setState(() => blockedIndex = lockedItemReached);
+              await Future.delayed(const Duration(milliseconds: 400));
+              setState(() => clickedDownButtonIndex = null);
+              setState(() => blockedIndex = null);
+
+              debugPrint(
+                  "❌ Cannot move. Locked item reached$lockedItemReached ${affectedJobs.last.jobId}");
+              return;
+            }
+
+            // 2️⃣ MAX 25 PROTECTION
+            final highestIdAfterShift = affectedJobs.last.jobId + 1;
+
+            if (highestIdAfterShift > 25) {
+              setState(() => clickedDownButtonIndex = index);
+              setState(() => blockedIndex = jobs.length - 1);
+              await Future.delayed(const Duration(milliseconds: 400));
+              setState(() => clickedDownButtonIndex = null);
+              setState(() => blockedIndex = null);
+
+              debugPrint(
+                  "❌ Cannot move. Max jobId 25 reached.$index ${affectedJobs.last.jobId}");
+              return;
+            }
+
+            final messageAffected = affectedIds.map((id) => '#$id').join(', ');
+            final messageDestination =
+                destinationIds.map((id) => '#$id').join(', ');
+
+            // ALERT affected
+            final confirm = await showDialog<bool>(
+              context: context,
+              builder: (_) => AlertDialog(
+                title: const Text('Confirm Reorder'),
+                content: Text(
+                  'Move down all\n $messageAffected\n'
+                  'to $messageDestination?',
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context, false),
+                    child: const Text('No'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () => Navigator.pop(context, true),
+                    child: const Text('Yes'),
+                  ),
+                ],
+              ),
+            );
+
+            if (confirm != true) return;
+
+            // 3️⃣ Firestore batch update (atomic)
+            databaseJobsGoing.cascade(affectedJobs);
+
+            // 4️⃣ Update UI AFTER successful commit
+            setState(() {
+              for (final job in affectedJobs) {
+                job.jobId += 1;
+              }
+            });
+          }
+
           return ReorderableListView(
             proxyDecorator: (child, index, animation) {
               return Material(
@@ -138,16 +273,29 @@ Widget readDataJobsOnGoing() {
               bool useSwap = false;
               bool lowtohigh = oldIndex < newIndex;
 
-              if (newIndex + 1 < jobs.length) {
-                //from 3 to 5
-                if (lowtohigh) {
-                  final nextTargetJob = jobs[newIndex + 1];
-                  useSwap = targetJob.jobId + 1 == nextTargetJob.jobId;
-                }
-                //from 5 to 3
-                else {
-                  final nextTargetJob = jobs[newIndex - 1];
-                  useSwap = targetJob.jobId - 1 == nextTargetJob.jobId;
+              //use swap only from 1 to 25, because if you !swap for 25, you could insert jobid 26
+
+              //immediately  useswap if targetJob.jobId is 25,
+              //if you allow not to swap, you could insert jobId 26 because its always available
+              if (targetJob.jobId == 25 || targetJob.jobId == 1) {
+                useSwap = true;
+              } else {
+                if (newIndex + 1 < jobs.length) {
+                  //from 3 to 5
+                  if (lowtohigh) {
+                    final nextTargetJob = jobs[newIndex + 1];
+                    useSwap = targetJob.jobId + 1 == nextTargetJob.jobId;
+                  }
+                  //from 5 to 3
+                  else {
+                    //prevent negative index
+                    if (newIndex - 1 < 0) {
+                      useSwap = false;
+                    } else {
+                      final nextTargetJob = jobs[newIndex - 1];
+                      useSwap = targetJob.jobId - 1 == nextTargetJob.jobId;
+                    }
+                  }
                 }
               }
 
@@ -291,7 +439,7 @@ Widget readDataJobsOnGoing() {
                             color: blockedIndex == index
                                 ? Colors.red.shade200
                                 : (isLocked(jobRepo.processStep))
-                                    ? Colors.deepPurple.shade100
+                                    ? cDontMove
                                     : isSelected
                                         ? Colors.deepPurple.shade50
                                         : Colors.deepPurple.shade50,
@@ -314,32 +462,75 @@ Widget readDataJobsOnGoing() {
                                   SizedBox(
                                     width: 28,
                                     height: 28,
-                                    child: IconButton(
-                                      padding: EdgeInsets.zero,
-                                      iconSize: 18,
-                                      splashRadius: 18,
-                                      icon: const Icon(Icons.keyboard_arrow_up),
-                                      onPressed: dontMove
-                                          ? null
-                                          : () async {
-                                              await moveJob(index, index - 1);
-                                            },
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: clickedUpButtonIndex == index
+                                            ? Colors.red
+                                            : dontMove
+                                                ? cDontMove
+                                                : Colors.grey
+                                                    .shade300, // circle background
+                                      ),
+                                      child: IconButton(
+                                        padding: EdgeInsets.zero,
+                                        iconSize: 18,
+                                        splashRadius: 20,
+                                        color: dontMove
+                                            ? cDontMove
+                                            : Colors.grey.shade800, //
+                                        icon:
+                                            const Icon(Icons.keyboard_arrow_up),
+                                        //UP
+                                        onPressed: dontMove
+                                            ? null
+                                            : () async {
+                                                if (index - 1 < 0) {
+                                                  await moveJob(index, index);
+                                                } else {
+                                                  await moveJob(
+                                                      index, index - 1);
+                                                }
+                                              },
+                                      ),
                                     ),
                                   ),
                                   SizedBox(
                                     width: 28,
                                     height: 28,
-                                    child: IconButton(
-                                      padding: EdgeInsets.zero,
-                                      iconSize: 18,
-                                      splashRadius: 18,
-                                      icon:
-                                          const Icon(Icons.keyboard_arrow_down),
-                                      onPressed: dontMove
-                                          ? null
-                                          : () async {
-                                              await moveJob(index, index + 1);
-                                            },
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: clickedDownButtonIndex == index
+                                            ? Colors.red
+                                            : dontMove
+                                                ? cDontMove
+                                                : Colors.grey
+                                                    .shade300, // circle background
+                                      ),
+                                      child: IconButton(
+                                        padding: EdgeInsets.zero,
+                                        iconSize: 18,
+                                        splashRadius: 20,
+                                        color: dontMove
+                                            ? cDontMove
+                                            : Colors
+                                                .grey.shade800, // icon color
+                                        icon: const Icon(
+                                            Icons.keyboard_arrow_down),
+                                        //DOWN
+                                        onPressed: dontMove
+                                            ? null
+                                            : () async {
+                                                await moveJob(index, index + 1);
+                                              },
+                                        onLongPress: dontMove
+                                            ? null
+                                            : () async {
+                                                debugPrint('index=$index');
+                                                await moveDownCascade(index);
+                                              },
+                                      ),
                                     ),
                                   ),
                                 ],
