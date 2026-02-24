@@ -46,7 +46,7 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
 //*showJobsOnQueue
 //*showJobsOnQueue
 
-  //late JobModelRepository jobRepoBQ;
+  late JobModelRepository jobRepoOnQueue;
   late JobModelRepository jobRepoNonJob;
 
   late String _sEmpId;
@@ -66,7 +66,8 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
     }
     SuppliesHistRepository.instance.reset();
 
-    //jobRepoBQ = JobModelRepository();
+    jobRepoOnQueue = JobModelRepository();
+    jobRepoOnQueue.reset();
     jobRepoNonJob = JobModelRepository();
 
     //JobModelRepository.instance.reset();
@@ -148,7 +149,7 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
                 icon: Icons.local_laundry_service,
                 bottom: _isOpen ? base + step : base,
                 left: _isOpen ? base : base,
-                onTap: () => showJobOnQueue(context),
+                onTap: () => showJobOnQueue(context, jobRepoOnQueue),
                 backgroundColor: cJobsOnQueue),
 
             /// ───── Main FAB

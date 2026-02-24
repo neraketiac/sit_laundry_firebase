@@ -24,7 +24,8 @@ void showMoveToOnGoing(BuildContext context, JobModelRepository jobRepo) {
             vertical: 5,
           ),
           title: Text(
-            "Move to On-Going?",
+            "Move to On-Going\n"
+            "as #${jobRepo.jobId}",
             textAlign: TextAlign.center,
           ),
           content: SingleChildScrollView(
@@ -74,9 +75,9 @@ void showMoveToOnGoing(BuildContext context, JobModelRepository jobRepo) {
                   return false; // ❌ do NOT close dialog
                 }
 
-                final nextJobId = await getNextJobId();
+                //final nextJobId = await getNextJobId();
 
-                if (nextJobId == 0) {
+                if (jobRepo.jobId == 0) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       content: Text(
@@ -87,12 +88,12 @@ void showMoveToOnGoing(BuildContext context, JobModelRepository jobRepo) {
                   return false; // ❌ keep dialog open
                 }
 
-                await moveQueueToOngoing(jobRepo.docId, nextJobId);
+                await moveQueueToOngoing(jobRepo.docId, jobRepo.jobId);
 
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(
-                      '${jobRepo.customerName} ₱ ${jobRepo.finalPrice} added to #$nextJobId.',
+                      '${jobRepo.customerName} ₱ ${jobRepo.finalPrice} added to #${jobRepo.jobId}.',
                     ),
                   ),
                 );

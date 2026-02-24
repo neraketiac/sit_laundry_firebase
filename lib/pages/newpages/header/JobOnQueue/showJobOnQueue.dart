@@ -6,8 +6,8 @@ import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedVisibility.d
 import 'package:laundry_firebase/variables/newvariables/jobmodel_repository.dart';
 import 'package:laundry_firebase/variables/newvariables/variables.dart';
 
-void showJobOnQueue(BuildContext context) {
-  JobModelRepository jobRepo = JobModelRepository();
+void showJobOnQueue(BuildContext context, JobModelRepository jobRepo) {
+  //JobModelRepository jobRepo = JobModelRepository();
   Future<void> saveButtonSetRepository() async {
 //dates
     /// 🟣 Dates
@@ -111,7 +111,7 @@ void showJobOnQueue(BuildContext context) {
                   return false;
                 } else {
                   await saveButtonSetRepository();
-                  if (successInsertFB) resetSelected(jobRepo);
+                  if (successInsertFB) jobRepo.reset();
                   return true;
                 }
               },

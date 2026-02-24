@@ -15,10 +15,6 @@ class JobModelRepository {
   late JobModel jobModel;
   late JobselectedRepository jobselectedRepository = JobselectedRepository();
 
-  JobModelRepository() {
-    reset();
-  }
-
   Future<void> reset() async {
     jobModel = JobModel(
         docId: '',
@@ -62,6 +58,8 @@ class JobModelRepository {
         allStatus: 0,
         forDisposal: false,
         disposed: false);
+
+    jobselectedRepository.reset();
   }
 
   JobModel? getJobsModel() {
@@ -106,7 +104,7 @@ class JobModelRepository {
   JobModel get jobModelData => jobModel;
 
   String get docId => jobModel.docId;
-  int get jobsId => jobModel.jobId;
+  int get jobId => jobModel.jobId;
   Timestamp get dateQ => jobModel.dateQ;
   Timestamp get needOn => jobModel.needOn;
   Timestamp get dateO => jobModel.dateO;
@@ -164,7 +162,7 @@ class JobModelRepository {
 
   set jobModelData(JobModel value) => jobModel = value;
   set docId(String value) => jobModel.docId = value;
-  set jobsId(int value) => jobModel.jobId = value;
+  set jobId(int value) => jobModel.jobId = value;
   set dateQ(Timestamp value) => jobModel.dateQ = value;
   set needOn(Timestamp value) => jobModel.needOn = value;
   set dateO(Timestamp value) => jobModel.dateO = value;

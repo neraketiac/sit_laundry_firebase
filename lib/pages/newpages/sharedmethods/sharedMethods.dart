@@ -439,51 +439,6 @@ void resetPaymentStatus(JobModelRepository jobRepo) {
   jobRepo.cashAmountVar.text = '';
 }
 
-void resetSelected(JobModelRepository jobRepo) {
-  successInsertFB = false;
-  jobRepo.selectedRiderPickup = forSorting;
-  //package status
-  jobRepo.selectedPackage = regularPackage;
-
-  //prices
-  jobRepo.totalPriceRegSS = 155;
-  jobRepo.totalPriceOthers = 0;
-
-  //payment status
-  jobRepo.unpaid = true;
-  jobRepo.paidCash = false;
-  jobRepo.paidGCash = false;
-  jobRepo.cashAmountVar.text = '';
-  jobRepo.gCashAmountVar.text = '';
-
-  //verified gcash
-  // jobRepo.selectedPaidGCashVerified = false;
-
-  //weight status
-  jobRepo.isPerKg = true;
-
-  jobRepo.quantityKg = 8;
-  jobRepo.quantityLoad = 1;
-  jobRepo.remarksVar.text = '';
-
-  jobRepo.finalPrice = 0;
-
-  //list other items
-  jobRepo.clearListSelectedItemModel();
-  jobRepo.items.clear();
-
-  //other options
-  jobRepo.fold = true;
-  jobRepo.mix = true;
-  jobRepo.basket = 0;
-  jobRepo.ebag = 0;
-  jobRepo.sako = 0;
-  jobRepo.addFabCount = 0;
-  jobRepo.addExtraDryCount = 0;
-  jobRepo.addExtraWashCount = 0;
-  jobRepo.addExtraSpinCount = 0;
-}
-
 //only all edit should call this
 void syncRepoToSelectedALL(JobModelRepository jobRepo) {
   //1 admin

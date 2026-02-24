@@ -132,8 +132,8 @@ Visibility visCustomerNameNoAutoComplete(BuildContext context,
                 ),
                 child: Text(
                   (bShort
-                      ? '${jobRepo.processStep.isEmpty ? '' : '#${jobRepo.jobsId} '}${jobRepo.customerNameVar.text}'
-                      : '${jobRepo.processStep.isEmpty ? '' : '#${jobRepo.jobsId} '}${jobRepo.customerNameVar.text} (${jobRepo.finalLoad})\n${textBagDetails(jobRepo.getJobsModel()!)} ₱ ${jobRepo.finalPrice}.00'),
+                      ? '${jobRepo.processStep.isEmpty ? '' : '#${jobRepo.jobId} '}${jobRepo.customerNameVar.text}'
+                      : '${jobRepo.processStep.isEmpty ? '' : '#${jobRepo.jobId} '}${jobRepo.customerNameVar.text} (${jobRepo.finalLoad})\n${textBagDetails(jobRepo.getJobsModel()!)} ₱ ${jobRepo.finalPrice}.00'),
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 14,
@@ -2063,7 +2063,13 @@ InkWell visIconArea(BuildContext context, JobModelRepository jobRepo,
           duration: const Duration(seconds: 2),
           curve: Curves.linear,
           child: Text(
-            '#${jobRepo.jobsId}',
+            jobRepo.processStep.isNotEmpty
+                ? '#${jobRepo.jobId}'
+                : jobRepo.forSorting
+                    ? '🔃'
+                    : jobRepo.riderPickup
+                        ? '🚲'
+                        : '',
             style: const TextStyle(
               color: Colors.deepPurple,
               fontSize: 16,
