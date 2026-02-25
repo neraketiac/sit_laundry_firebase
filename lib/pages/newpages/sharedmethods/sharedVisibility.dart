@@ -58,7 +58,7 @@ Widget visCustomerName(
   JobModelRepository jobRepo,
 ) {
   return Container(
-    padding: const EdgeInsets.all(20),
+    padding: const EdgeInsets.all(1),
     decoration: BoxDecoration(
       borderRadius: BorderRadius.circular(24),
       gradient: LinearGradient(
@@ -85,7 +85,7 @@ Widget visCustomerName(
       children: [
         /// 🔹 Section Label
         Text(
-          "Select Customer",
+          "     Select Customer",
           style: TextStyle(
             fontSize: 13,
             letterSpacing: 1,
@@ -94,7 +94,7 @@ Widget visCustomerName(
           ),
         ),
 
-        const SizedBox(height: 14),
+        const SizedBox(height: 2),
 
         /// 🔹 Autocomplete Field wrapped in glass box
         Container(
@@ -111,7 +111,7 @@ Widget visCustomerName(
           ),
         ),
 
-        const SizedBox(height: 18),
+        const SizedBox(height: 2),
 
         /// 🔹 Gradient "New Account" Button
         Align(
@@ -139,7 +139,7 @@ Widget visCustomerName(
                 shadowColor: Colors.transparent,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 22,
-                  vertical: 12,
+                  vertical: 2,
                 ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(18),
@@ -153,6 +153,7 @@ Widget visCustomerName(
                 "New Account",
                 style: TextStyle(
                   fontWeight: FontWeight.w600,
+                  color: Colors.white,
                 ),
               ),
             ),
@@ -170,7 +171,7 @@ Widget visCustomerNameNoAutoComplete(
   bool bShort,
 ) {
   return Container(
-    padding: const EdgeInsets.all(2),
+    padding: const EdgeInsets.all(1),
     decoration: BoxDecoration(
       borderRadius: BorderRadius.circular(16),
       gradient: LinearGradient(
@@ -197,7 +198,7 @@ Widget visCustomerNameNoAutoComplete(
       children: [
         /// 🔹 Label
         Text(
-          "Customer",
+          "     Customer",
           style: TextStyle(
             fontSize: 12,
             letterSpacing: 1,
@@ -206,7 +207,7 @@ Widget visCustomerNameNoAutoComplete(
           ),
         ),
 
-        const SizedBox(height: 12),
+        const SizedBox(height: 2),
 
         /// 🔹 Content Card
         Container(
@@ -248,7 +249,7 @@ Widget visRiderPickup(
   JobModelRepository jobRepo,
 ) {
   return Container(
-    padding: const EdgeInsets.all(20),
+    padding: const EdgeInsets.all(1),
     decoration: BoxDecoration(
       borderRadius: BorderRadius.circular(24),
       gradient: LinearGradient(
@@ -266,7 +267,7 @@ Widget visRiderPickup(
         BoxShadow(
           color: Colors.black.withOpacity(0.25),
           blurRadius: 25,
-          offset: const Offset(0, 12),
+          offset: const Offset(0, 2),
         ),
       ],
     ),
@@ -275,7 +276,7 @@ Widget visRiderPickup(
       children: [
         /// 🔹 Label
         Text(
-          "Initial Status",
+          "     Initial Status",
           style: TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.w600,
@@ -284,11 +285,11 @@ Widget visRiderPickup(
           ),
         ),
 
-        const SizedBox(height: 18),
+        const SizedBox(height: 2),
 
         /// 🔥 Custom Segmented Control
         Container(
-          padding: const EdgeInsets.all(6),
+          padding: const EdgeInsets.all(1),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(18),
             color: Colors.black.withOpacity(0.15),
@@ -313,7 +314,7 @@ Widget visRiderPickup(
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 220),
                       curve: Curves.easeOut,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      padding: const EdgeInsets.symmetric(vertical: 2),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(14),
                         gradient: isSelected
@@ -353,7 +354,7 @@ Widget visSelectPackage(
   JobModelRepository jobRepo,
 ) {
   return Container(
-    padding: const EdgeInsets.all(20),
+    padding: const EdgeInsets.all(1),
     decoration: BoxDecoration(
       borderRadius: BorderRadius.circular(24),
       gradient: LinearGradient(
@@ -380,7 +381,7 @@ Widget visSelectPackage(
       children: [
         /// 🔹 Label
         Text(
-          "Package Type",
+          "     Package Type",
           style: TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.w600,
@@ -389,11 +390,11 @@ Widget visSelectPackage(
           ),
         ),
 
-        const SizedBox(height: 18),
+        const SizedBox(height: 2),
 
         /// 🔥 Segmented Control
         Container(
-          padding: const EdgeInsets.all(6),
+          padding: const EdgeInsets.all(1),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(18),
             color: Colors.black.withOpacity(0.15),
@@ -443,7 +444,7 @@ Widget visSelectPackage(
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 220),
                       curve: Curves.easeOut,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      padding: const EdgeInsets.symmetric(vertical: 2),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(14),
                         gradient: isSelected
@@ -525,7 +526,7 @@ Visibility visAmountRegSSPerKg(
     visible:
         (jobRepo.selectedPackage == othersPackage ? false : jobRepo.isPerKg),
     child: Container(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(1),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(28),
         gradient: LinearGradient(
@@ -562,7 +563,7 @@ Visibility visAmountRegSSPerKg(
                   color: Colors.white.withOpacity(0.7),
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 4),
               Text(
                 formatter.format(jobRepo.totalPriceRegSS),
                 style: const TextStyle(
@@ -571,7 +572,7 @@ Visibility visAmountRegSSPerKg(
                   color: Colors.white,
                 ),
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 2),
               Container(
                 height: 3,
                 width: 120,
@@ -584,11 +585,11 @@ Visibility visAmountRegSSPerKg(
             ],
           ),
 
-          const SizedBox(height: 28),
+          const SizedBox(height: 2),
 
           /// 📦 QUANTITY DISPLAY
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 2),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(20),
               color: Colors.black.withOpacity(0.2),
@@ -608,7 +609,7 @@ Visibility visAmountRegSSPerKg(
                     color: Colors.white,
                   ),
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 2),
                 GestureDetector(
                   onTap: () {
                     setState(() {
@@ -628,12 +629,13 @@ Visibility visAmountRegSSPerKg(
             ),
           ),
 
-          const SizedBox(height: 24),
+          const SizedBox(height: 2),
 
           /// ➖➕ CONTROLS
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              const SizedBox(width: 42),
               _glassActionButton(
                 label: "−1",
                 onTap: decrementOne,
@@ -647,6 +649,9 @@ Visibility visAmountRegSSPerKg(
               const SizedBox(width: 12),
               Visibility(
                 visible: showPointOne,
+                maintainSize: true,
+                maintainAnimation: true,
+                maintainState: true,
                 child: _glassActionButton(
                   label: "+0.1",
                   onTap: incrementPointOne,
@@ -669,9 +674,9 @@ Widget _glassActionButton({
     onTap: disabled ? null : onTap,
     child: AnimatedContainer(
       duration: const Duration(milliseconds: 200),
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(12),
         gradient: disabled
             ? null
             : const LinearGradient(
@@ -711,12 +716,10 @@ Visibility visAmountRegSSPerLoad(
   };
 
   jobRepo.pricePerSet = prices[jobRepo.selectedPackage] ?? 155;
-  // 🧠 UI rules
 
   jobRepo.totalPriceRegSS = (jobRepo.pricePerSet * jobRepo.quantityLoad) +
       jobRepo.totalPriceShortCutRegSS;
 
-  // ➕➖ handlers
   void incrementOne() {
     setState(() {
       jobRepo.quantityLoad += 1;
@@ -727,6 +730,7 @@ Visibility visAmountRegSSPerLoad(
   void decrementOne() {
     setState(() {
       jobRepo.quantityLoad -= 1;
+      if (jobRepo.quantityLoad < 1) jobRepo.quantityLoad = 1;
       resetPaymentStatus(jobRepo);
     });
   }
@@ -735,14 +739,16 @@ Visibility visAmountRegSSPerLoad(
     visible:
         (jobRepo.selectedPackage == othersPackage ? false : !jobRepo.isPerKg),
     child: Container(
-      padding: const EdgeInsets.all(2),
+      padding: const EdgeInsets.all(1),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(28), // ← SAME AS KG
         gradient: LinearGradient(
           colors: [
             Colors.white.withOpacity(0.12),
             Colors.white.withOpacity(0.05),
           ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
         border: Border.all(
           color: Colors.white.withOpacity(0.25),
@@ -750,41 +756,83 @@ Visibility visAmountRegSSPerLoad(
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.35),
-            blurRadius: 25,
-            offset: const Offset(0, 12),
+            blurRadius: 35, // ← SAME DEPTH AS KG
+            offset: const Offset(0, 18),
           ),
         ],
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          /// 💰 TOTAL
-          Padding(
-            padding: const EdgeInsets.all(2),
+          /// 💰 TOTAL PRICE (IDENTICAL STYLE)
+          Column(
+            children: [
+              Text(
+                "TOTAL",
+                style: TextStyle(
+                  fontSize: 12,
+                  letterSpacing: 2,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white.withOpacity(0.7),
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                formatter.format(jobRepo.totalPriceRegSS),
+                style: const TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Container(
+                height: 3,
+                width: 120,
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Colors.blueAccent, Colors.purpleAccent],
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 2),
+
+          /// 📦 LOAD DISPLAY (MATCHED SIZE)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 2),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              color: Colors.black.withOpacity(0.2),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.2),
+              ),
+            ),
             child: Column(
               children: [
                 Text(
-                  "TOTAL",
-                  style: TextStyle(
-                    fontSize: 10,
-                    letterSpacing: 1.5,
-                    color: Colors.white.withOpacity(0.7),
-                  ),
-                ),
-                Text(
-                  formatter.format(jobRepo.totalPriceRegSS),
+                  "${jobRepo.quantityLoad} load",
                   style: const TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w800,
+                    fontSize: 20, // ← SAME AS KG
+                    fontWeight: FontWeight.w700,
                     color: Colors.white,
                   ),
                 ),
-                Container(
-                  height: 2,
-                  width: 100,
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Colors.blueAccent, Colors.purpleAccent],
+                const SizedBox(height: 2),
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      jobRepo.isPerKg = true;
+                      resetPaymentStatus(jobRepo);
+                    });
+                  },
+                  child: Text(
+                    "Switch to Kg",
+                    style: TextStyle(
+                      fontSize: 12, // ← SAME AS KG
+                      color: Colors.blueAccent,
                     ),
                   ),
                 ),
@@ -792,66 +840,23 @@ Visibility visAmountRegSSPerLoad(
             ),
           ),
 
-          /// 📦 LOAD DISPLAY
-          Padding(
-            padding: const EdgeInsets.all(2),
-            child: Container(
-              padding: const EdgeInsets.all(2),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(14),
-                color: Colors.black.withOpacity(0.2),
-                border: Border.all(
-                  color: Colors.white.withOpacity(0.2),
-                ),
-              ),
-              child: Column(
-                children: [
-                  Text(
-                    "${jobRepo.quantityLoad} load",
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
-                    ),
-                  ),
-                  GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        jobRepo.isPerKg = true;
-                        resetPaymentStatus(jobRepo);
-                      });
-                    },
-                    child: Text(
-                      "Switch to Kg",
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: Colors.blueAccent,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+          const SizedBox(height: 2),
 
-          /// ➖➕ CONTROLS
-          Padding(
-            padding: const EdgeInsets.all(2),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                _glassMiniButton(
-                  label: "−1",
-                  onTap: decrementOne,
-                  disabled: jobRepo.quantityLoad <= 1,
-                ),
-                const SizedBox(width: 6),
-                _glassMiniButton(
-                  label: "+1",
-                  onTap: incrementOne,
-                ),
-              ],
-            ),
+          /// ➖➕ CONTROLS (SAME BUTTON STYLE)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _glassActionButton(
+                label: "−1",
+                onTap: decrementOne,
+                disabled: jobRepo.quantityLoad <= 1,
+              ),
+              const SizedBox(width: 12),
+              _glassActionButton(
+                label: "+1",
+                onTap: incrementOne,
+              ),
+            ],
           ),
         ],
       ),
@@ -868,7 +873,7 @@ Widget _glassMiniButton({
     onTap: disabled ? null : onTap,
     child: AnimatedContainer(
       duration: const Duration(milliseconds: 200),
-      padding: const EdgeInsets.all(2),
+      padding: const EdgeInsets.all(1),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
         gradient: disabled
@@ -932,7 +937,7 @@ Widget visAmountOthersOnly(
   return Visibility(
     visible: (jobRepo.selectedPackage == othersPackage),
     child: Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(1),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(26),
         gradient: LinearGradient(
@@ -1258,7 +1263,7 @@ Visibility visPaidUnPaid(
   return Visibility(
     visible: true,
     child: Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(1),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(26),
         gradient: LinearGradient(
@@ -1505,7 +1510,7 @@ Widget _glassBinaryToggle({
   required ValueChanged<bool> onChanged,
 }) {
   return Container(
-    padding: const EdgeInsets.all(14),
+    padding: const EdgeInsets.all(1),
     decoration: BoxDecoration(
       borderRadius: BorderRadius.circular(22),
       gradient: LinearGradient(
@@ -1539,7 +1544,7 @@ Widget _glassBinaryToggle({
         ),
         const SizedBox(height: 12),
         Container(
-          padding: const EdgeInsets.all(4),
+          padding: const EdgeInsets.all(1),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(18),
             color: Colors.black.withOpacity(0.2),
@@ -1804,7 +1809,7 @@ Widget _glassCounterCard({
   return Visibility(
     visible: visible,
     child: Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(1),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(22),
         gradient: LinearGradient(
@@ -1914,7 +1919,7 @@ Widget conRemarks(
   TextEditingController valueController,
 ) {
   return Container(
-    padding: const EdgeInsets.all(16),
+    padding: const EdgeInsets.all(1),
     decoration: BoxDecoration(
       borderRadius: BorderRadius.circular(24),
       gradient: LinearGradient(
@@ -1995,7 +2000,7 @@ Widget customerAmount(
   return Visibility(
     visible: true,
     child: Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(1),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(24),
         gradient: LinearGradient(
@@ -2103,7 +2108,7 @@ Widget customerNumber(
   return Visibility(
     visible: true,
     child: Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(1),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(24),
         gradient: LinearGradient(
@@ -2208,7 +2213,7 @@ Widget customerNameGCash(
   TextEditingController valueController,
 ) {
   return Container(
-    padding: const EdgeInsets.all(16),
+    padding: const EdgeInsets.all(1),
     decoration: BoxDecoration(
       borderRadius: BorderRadius.circular(24),
       gradient: LinearGradient(
@@ -2305,7 +2310,7 @@ Widget fundTypeToggle(
   return Visibility(
     visible: true,
     child: Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(1),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(24),
         gradient: LinearGradient(
@@ -2343,7 +2348,7 @@ Widget fundTypeToggle(
 
           /// 🔹 SEGMENTED CONTROL
           Container(
-            padding: const EdgeInsets.all(4),
+            padding: const EdgeInsets.all(1),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(18),
               color: Colors.black.withOpacity(0.25),
@@ -2441,7 +2446,7 @@ Widget showUploadedImage(
         }
       },
       child: Container(
-        padding: const EdgeInsets.all(10),
+        padding: const EdgeInsets.all(1),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
           gradient: LinearGradient(
@@ -2485,7 +2490,7 @@ Widget showUploadedImage(
                 bottom: 6,
                 right: 6,
                 child: Container(
-                  padding: const EdgeInsets.all(6),
+                  padding: const EdgeInsets.all(1),
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: Colors.black.withOpacity(0.6),
@@ -2559,7 +2564,7 @@ Widget visOnGoingStatus(
   return Visibility(
     visible: true,
     child: Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(1),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(24),
         gradient: LinearGradient(
@@ -2596,7 +2601,7 @@ Widget visOnGoingStatus(
 
           /// 🔹 STEP SELECTOR
           Container(
-            padding: const EdgeInsets.all(4),
+            padding: const EdgeInsets.all(1),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(18),
               color: Colors.black.withOpacity(0.25),
@@ -2887,7 +2892,7 @@ Future<bool> showCoolConfirmDialog({
               constraints: BoxConstraints(
                 maxWidth: width > 600 ? 420 : width * 0.92,
               ),
-              padding: const EdgeInsets.all(26),
+              padding: const EdgeInsets.all(1),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(28),
                 gradient: LinearGradient(
