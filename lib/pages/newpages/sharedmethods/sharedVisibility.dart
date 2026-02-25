@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:laundry_firebase/models/newmodels/jobmodel.dart';
@@ -50,248 +52,433 @@ class PHPhoneFormatter extends TextInputFormatter {
   }
 }
 
-Visibility visCustomerName(
-    BuildContext context, Function setState, JobModelRepository jobRepo) {
-  return Visibility(
-    visible: true,
-    child: Container(
-      padding: const EdgeInsets.all(1.0),
-      decoration: decoAmber(),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          // 🔹 Label + Checkbox on same row
-          Padding(
-            padding: const EdgeInsets.only(left: 4, bottom: 4),
-            child: Row(
-              children: [],
+Widget visCustomerName(
+  BuildContext context,
+  Function setState,
+  JobModelRepository jobRepo,
+) {
+  return Container(
+    padding: const EdgeInsets.all(20),
+    decoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(24),
+      gradient: LinearGradient(
+        colors: [
+          Colors.white.withOpacity(0.12),
+          Colors.white.withOpacity(0.05),
+        ],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      ),
+      border: Border.all(
+        color: Colors.white.withOpacity(0.25),
+      ),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.25),
+          blurRadius: 25,
+          offset: const Offset(0, 12),
+        ),
+      ],
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        /// 🔹 Section Label
+        Text(
+          "Select Customer",
+          style: TextStyle(
+            fontSize: 13,
+            letterSpacing: 1,
+            fontWeight: FontWeight.w600,
+            color: Colors.white.withOpacity(0.75),
+          ),
+        ),
+
+        const SizedBox(height: 14),
+
+        /// 🔹 Autocomplete Field wrapped in glass box
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            color: Colors.black.withOpacity(0.15),
+            border: Border.all(
+              color: Colors.white.withOpacity(0.15),
             ),
           ),
-          AutoCompleteCustomer(
+          child: AutoCompleteCustomer(
             jobRepo: jobRepo,
           ),
-          SizedBox(
-            height: 5,
-          ),
-          MaterialButton(
-            color: cButtons,
-            onPressed: () {
-              Navigator.pop(context);
-              allCardsVar(context);
-            },
-            child: Text("New Account"),
-          ),
-          SizedBox(
-            height: 5,
-          ),
-        ],
-      ),
-    ),
-  );
-}
+        ),
 
-Visibility visCustomerNameNoAutoComplete(BuildContext context,
-    Function setState, JobModelRepository jobRepo, bool bShort) {
-  return Visibility(
-    visible: true,
-    child: Container(
-      padding: const EdgeInsets.all(1.0),
-      decoration: decoAmber(),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          // 🔹 Label + Checkbox on same row
-          Padding(
-            padding: const EdgeInsets.only(left: 4, bottom: 4),
-            child: Row(
-              children: [],
+        const SizedBox(height: 18),
+
+        /// 🔹 Gradient "New Account" Button
+        Align(
+          alignment: Alignment.centerRight,
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(18),
+              gradient: const LinearGradient(
+                colors: [
+                  Colors.blueAccent,
+                  Colors.purpleAccent,
+                ],
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.purple.withOpacity(0.4),
+                  blurRadius: 15,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+            ),
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.transparent,
+                shadowColor: Colors.transparent,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 22,
+                  vertical: 12,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(18),
+                ),
+              ),
+              onPressed: () {
+                Navigator.pop(context);
+                allCardsVar(context);
+              },
+              child: const Text(
+                "New Account",
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
           ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Label
-              Padding(
-                padding: const EdgeInsets.only(left: 4, bottom: 4),
-                child: Text(
-                  'Customer Name',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey[700],
-                  ),
-                ),
-              ),
-              // Box
-              Container(
-                alignment: Alignment.center,
-                padding:
-                    const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.grey),
-                ),
-                child: Text(
-                  (bShort
-                      ? '${jobRepo.processStep.isEmpty ? '' : '#${jobRepo.jobId} '}${jobRepo.customerNameVar.text}'
-                      : '${jobRepo.processStep.isEmpty ? '' : '#${jobRepo.jobId} '}${jobRepo.customerNameVar.text} (${jobRepo.finalLoad})\n${textBagDetails(jobRepo.getJobsModel()!)} ₱ ${jobRepo.finalPrice}.00'),
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: jobRepo.customerNameVar.text.isEmpty
-                        ? Colors.grey[700]
-                        : Colors.black,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          SizedBox(
-            height: 5,
-          ),
-        ],
-      ),
+        ),
+      ],
     ),
   );
 }
 
-Visibility visRiderPickup(
-    BuildContext context, Function setState, JobModelRepository jobRepo) {
-  return Visibility(
-    visible: true,
-    child: Container(
-      alignment: Alignment.center,
-      padding: const EdgeInsets.all(1.0),
-      decoration: decoLightBlue(),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            'Initial Status',
-            style: TextStyle(fontSize: 11),
+Widget visCustomerNameNoAutoComplete(
+  BuildContext context,
+  Function setState,
+  JobModelRepository jobRepo,
+  bool bShort,
+) {
+  return Container(
+    padding: const EdgeInsets.all(2),
+    decoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(16),
+      gradient: LinearGradient(
+        colors: [
+          Colors.white.withOpacity(0.12),
+          Colors.white.withOpacity(0.05),
+        ],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      ),
+      border: Border.all(
+        color: Colors.white.withOpacity(0.25),
+      ),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.25),
+          blurRadius: 20,
+          offset: const Offset(0, 10),
+        ),
+      ],
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        /// 🔹 Label
+        Text(
+          "Customer",
+          style: TextStyle(
+            fontSize: 12,
+            letterSpacing: 1,
+            fontWeight: FontWeight.w600,
+            color: Colors.white.withOpacity(0.7),
           ),
-          ToggleButtons(
-            isSelected: List.generate(
+        ),
+
+        const SizedBox(height: 12),
+
+        /// 🔹 Content Card
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 2),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            color: Colors.black.withOpacity(0.15),
+            border: Border.all(
+              color: Colors.white.withOpacity(0.15),
+            ),
+          ),
+          child: Text(
+            bShort
+                ? '${jobRepo.processStep.isEmpty ? '' : '#${jobRepo.jobId} '}${jobRepo.customerNameVar.text}'
+                : '${jobRepo.processStep.isEmpty ? '' : '#${jobRepo.jobId} '}${jobRepo.customerNameVar.text} '
+                    '(${jobRepo.finalLoad})\n'
+                    '${textBagDetails(jobRepo.getJobsModel()!)} '
+                    '₱ ${jobRepo.finalPrice}.00',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 15,
+              height: 1.4,
+              fontWeight: FontWeight.w500,
+              color: jobRepo.customerNameVar.text.isEmpty
+                  ? Colors.white.withOpacity(0.5)
+                  : Colors.white,
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+Widget visRiderPickup(
+  BuildContext context,
+  Function setState,
+  JobModelRepository jobRepo,
+) {
+  return Container(
+    padding: const EdgeInsets.all(20),
+    decoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(24),
+      gradient: LinearGradient(
+        colors: [
+          Colors.white.withOpacity(0.12),
+          Colors.white.withOpacity(0.05),
+        ],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      ),
+      border: Border.all(
+        color: Colors.white.withOpacity(0.25),
+      ),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.25),
+          blurRadius: 25,
+          offset: const Offset(0, 12),
+        ),
+      ],
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        /// 🔹 Label
+        Text(
+          "Initial Status",
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 1,
+            color: Colors.white.withOpacity(0.75),
+          ),
+        ),
+
+        const SizedBox(height: 18),
+
+        /// 🔥 Custom Segmented Control
+        Container(
+          padding: const EdgeInsets.all(6),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(18),
+            color: Colors.black.withOpacity(0.15),
+            border: Border.all(
+              color: Colors.white.withOpacity(0.15),
+            ),
+          ),
+          child: Row(
+            children: List.generate(
               listRiderPickup.length,
-              (i) => jobRepo.selectedRiderPickup == listRiderPickup[i],
+              (index) {
+                final isSelected =
+                    jobRepo.selectedRiderPickup == listRiderPickup[index];
+
+                return Expanded(
+                  child: GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        jobRepo.selectedRiderPickup = listRiderPickup[index];
+                      });
+                    },
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 220),
+                      curve: Curves.easeOut,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(14),
+                        gradient: isSelected
+                            ? const LinearGradient(
+                                colors: [
+                                  Colors.blueAccent,
+                                  Colors.purpleAccent,
+                                ],
+                              )
+                            : null,
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        index == 0 ? "For Sorting" : "Rider Pickup",
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          color: isSelected
+                              ? Colors.white
+                              : Colors.white.withOpacity(0.6),
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
             ),
-            onPressed: (index) {
-              setState(() {
-                jobRepo.selectedRiderPickup = listRiderPickup[index];
-              });
-            },
-            borderRadius: BorderRadius.circular(8),
-            selectedColor: Colors.black,
-            fillColor: Colors.greenAccent,
-            color: Colors.black,
-            borderColor: cSalaryOut,
-            constraints: const BoxConstraints(
-              minWidth: 80,
-              minHeight: 25,
-            ),
-            children: const [
-              Text('For Sorting'),
-              Text('Rider Pickup'),
-            ],
           ),
-        ],
-      ),
+        ),
+      ],
     ),
   );
 }
 
-Visibility visSelectPackage(
-    BuildContext context, Function setState, JobModelRepository jobRepo) {
-  return Visibility(
-    visible: true,
-    child: Container(
-      alignment: Alignment.center,
-      padding: const EdgeInsets.all(1.0),
-      decoration: decoLightBlue(),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            'Package Status',
-            style: TextStyle(fontSize: 11),
-          ),
-          ToggleButtons(
-            isSelected: List.generate(
-              listPackage.length,
-              (i) => jobRepo.selectedPackage == listPackage[i],
-            ),
-            onPressed: (index) {
-              setState(() {
-                if (jobRepo.selectedPackagePrev == othersPackage &&
-                    jobRepo.listSelectedItemModel.isNotEmpty) {
-                  showDialog<bool>(
-                    context: context,
-                    barrierDismissible: false,
-                    builder: (context) {
-                      return AlertDialog(
-                        title: const Text('Confirm'),
-                        content: const Text(
-                          'Added items in All Services\nwill be delete?',
-                          textAlign: TextAlign.center,
-                        ),
-                        actions: [
-                          TextButton(
-                            onPressed: () {
-                              setState(() {
-                                jobRepo.selectedPackage = othersPackage;
-                              });
-
-                              Navigator.pop(context, false);
-                            },
-                            child: const Text('No'),
-                          ),
-                          ElevatedButton(
-                            onPressed: () {
-                              setState(() {
-                                jobRepo.selectedPackage = listPackage[index];
-                                jobRepo.selectedPackagePrev =
-                                    listPackage[index];
-                                jobRepo.listSelectedItemModel.clear();
-                                jobRepo.totalPriceOthers = 0;
-                              });
-
-                              Navigator.pop(context, true);
-                            },
-                            child: const Text('Yes'),
-                          ),
-                        ],
-                      );
-                    },
-                  );
-                } else {
-                  jobRepo.selectedPackage = listPackage[index];
-                  jobRepo.selectedPackagePrev = listPackage[index];
-                  if (jobRepo.selectedPackage == othersPackage) {
-                    jobRepo.selectedItemModel = listOthItems[0];
-                  }
-                }
-                resetPaymentStatus(jobRepo);
-              });
-            },
-            borderRadius: BorderRadius.circular(8),
-            selectedColor: Colors.black,
-            fillColor: Colors.greenAccent,
-            color: Colors.black,
-            borderColor: cSalaryOut,
-            constraints: const BoxConstraints(
-              minWidth: 75,
-              minHeight: 25,
-            ),
-            children: const [
-              Text('Regular'),
-              Text('Sayo Sabon', style: TextStyle(fontSize: 12)),
-              Text(
-                'All Services',
-                style: TextStyle(fontSize: 12),
-              ),
-            ],
-          ),
+Widget visSelectPackage(
+  BuildContext context,
+  Function setState,
+  JobModelRepository jobRepo,
+) {
+  return Container(
+    padding: const EdgeInsets.all(20),
+    decoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(24),
+      gradient: LinearGradient(
+        colors: [
+          Colors.white.withOpacity(0.12),
+          Colors.white.withOpacity(0.05),
         ],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
       ),
+      border: Border.all(
+        color: Colors.white.withOpacity(0.25),
+      ),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.25),
+          blurRadius: 25,
+          offset: const Offset(0, 12),
+        ),
+      ],
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        /// 🔹 Label
+        Text(
+          "Package Type",
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 1,
+            color: Colors.white.withOpacity(0.75),
+          ),
+        ),
+
+        const SizedBox(height: 18),
+
+        /// 🔥 Segmented Control
+        Container(
+          padding: const EdgeInsets.all(6),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(18),
+            color: Colors.black.withOpacity(0.15),
+            border: Border.all(
+              color: Colors.white.withOpacity(0.15),
+            ),
+          ),
+          child: Row(
+            children: List.generate(
+              listPackage.length,
+              (index) {
+                final value = listPackage[index];
+                final isSelected = jobRepo.selectedPackage == value;
+
+                return Expanded(
+                  child: GestureDetector(
+                    onTap: () async {
+                      // 🔥 Confirmation logic
+                      if (jobRepo.selectedPackagePrev == othersPackage &&
+                          jobRepo.listSelectedItemModel.isNotEmpty) {
+                        final confirm = await showCoolConfirmDialog(
+                          context: context,
+                          title: "Change Package?",
+                          message: "Items in All Services will be removed.",
+                          confirmText: "Change",
+                        );
+
+                        if (!confirm) return;
+
+                        setState(() {
+                          jobRepo.listSelectedItemModel.clear();
+                          jobRepo.totalPriceOthers = 0;
+                        });
+                      }
+
+                      setState(() {
+                        jobRepo.selectedPackage = value;
+                        jobRepo.selectedPackagePrev = value;
+
+                        if (value == othersPackage) {
+                          jobRepo.selectedItemModel = listOthItems[0];
+                        }
+
+                        resetPaymentStatus(jobRepo);
+                      });
+                    },
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 220),
+                      curve: Curves.easeOut,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(14),
+                        gradient: isSelected
+                            ? const LinearGradient(
+                                colors: [
+                                  Colors.blueAccent,
+                                  Colors.purpleAccent,
+                                ],
+                              )
+                            : null,
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        index == 0
+                            ? "Regular"
+                            : index == 1
+                                ? "Sayo Sabon"
+                                : "All Services",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: isSelected
+                              ? Colors.white
+                              : Colors.white.withOpacity(0.6),
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
+      ],
     ),
   );
 }
@@ -338,193 +525,178 @@ Visibility visAmountRegSSPerKg(
     visible:
         (jobRepo.selectedPackage == othersPackage ? false : jobRepo.isPerKg),
     child: Container(
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.black12),
+        borderRadius: BorderRadius.circular(28),
+        gradient: LinearGradient(
+          colors: [
+            Colors.white.withOpacity(0.12),
+            Colors.white.withOpacity(0.05),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.25),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.35),
+            blurRadius: 35,
+            offset: const Offset(0, 18),
+          ),
+        ],
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // 🔷 Accent header
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 6),
-            decoration: const BoxDecoration(
-              color: Colors.indigo,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
-            ),
+          /// 💰 TOTAL PRICE
+          Column(
+            children: [
+              Text(
+                "TOTAL",
+                style: TextStyle(
+                  fontSize: 12,
+                  letterSpacing: 2,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white.withOpacity(0.7),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                formatter.format(jobRepo.totalPriceRegSS),
+                style: const TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Container(
+                height: 3,
+                width: 120,
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Colors.blueAccent, Colors.purpleAccent],
+                  ),
+                ),
+              ),
+            ],
           ),
 
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8),
+          const SizedBox(height: 28),
+
+          /// 📦 QUANTITY DISPLAY
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              color: Colors.black.withOpacity(0.2),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.2),
+              ),
+            ),
             child: Column(
               children: [
-                // 💰 Price (read-only display)
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Visibility(
-                      visible: false,
-                      maintainSize: true,
-                      maintainAnimation: true,
-                      maintainState: true,
-                      child: Text(
-                        showHowMany155or125Set(
-                            computeTotalPrice(jobRepo.quantityKg, jobRepo),
-                            true,
-                            jobRepo),
-                        style: TextStyle(fontSize: 10),
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade50,
-                        borderRadius: BorderRadius.circular(6),
-                        border: Border.all(color: Colors.black12),
-                      ),
-                      child: Column(
-                        children: [
-                          Text(
-                            formatter.format(jobRepo.totalPriceRegSS),
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          const SizedBox(height: 3), // 👈 distance from text
-                          Container(
-                            height: 2, // underline thickness
-                            width: 80, // underline length
-                            color: Colors.black,
-                          ),
-                          const SizedBox(height: 1),
-                          Container(
-                            height: 2, // underline thickness
-                            width: 80, // underline length
-                            color: Colors.black,
-                          ),
-                        ],
-                      ),
-                    ),
-                    Text(
-                      showHowMany155or125Set(
-                          computeTotalPrice(jobRepo.quantityKg, jobRepo),
-                          true,
-                          jobRepo),
-                      style: TextStyle(fontSize: 10),
-                    ),
-                  ],
+                Text(
+                  "${jobRepo.quantityKg.toStringAsFixed(
+                    jobRepo.quantityKg % 1 == 0 ? 0 : 1,
+                  )} kg",
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                  ),
                 ),
-
                 const SizedBox(height: 6),
-
-                // 📦 Quantity (read-only display)
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade100,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.black26),
-                  ),
-                  child: Column(
-                    children: [
-                      Text(
-                        '${jobRepo.quantityKg.toStringAsFixed(
-                          jobRepo.quantityKg % 1 == 0 ? 0 : 1,
-                        )} kg',
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 0.4,
-                        ),
-                      ),
-                      const SizedBox(height: 3),
-                      Container(
-                        height: 2, // underline thickness
-                        width: 80, // underline length
-                        color: Colors.black,
-                      ),
-                      Container(
-                        decoration: decoGreenAccentNoBorder(),
-                        child: boxButton2label(
-                          label: 'kg ',
-                          label2: 'load',
-                          boldLabel2: false,
-                          onTap: () {
-                            setState(() {
-                              jobRepo.isPerKg = false;
-                              resetPaymentStatus(jobRepo);
-                            });
-                          },
-                        ),
-                      ),
-                    ],
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      jobRepo.isPerKg = false;
+                      resetPaymentStatus(jobRepo);
+                    });
+                  },
+                  child: Text(
+                    "Switch to Load",
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.blueAccent,
+                    ),
                   ),
                 ),
               ],
             ),
           ),
 
-          const Divider(height: 1),
+          const SizedBox(height: 24),
 
-          // ➖➕ Unit-based controls
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                SizedBox(
-                  width: 50,
+          /// ➖➕ CONTROLS
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _glassActionButton(
+                label: "−1",
+                onTap: decrementOne,
+                disabled: jobRepo.quantityKg <= 1,
+              ),
+              const SizedBox(width: 12),
+              _glassActionButton(
+                label: "+1",
+                onTap: incrementOne,
+              ),
+              const SizedBox(width: 12),
+              Visibility(
+                visible: showPointOne,
+                child: _glassActionButton(
+                  label: "+0.1",
+                  onTap: incrementPointOne,
                 ),
-                boxButton(
-                  label: '−1',
-                  disabled: jobRepo.quantityKg <= 1,
-                  onTap: decrementOne,
-                ),
-
-                // Visibility(
-                //   visible: showPointOne,
-                //   child: Row(
-                //     children: [
-                //       const SizedBox(width: 6),
-                //       boxButton(
-                //         label: '+0.1',
-                //         onTap: incrementPointOne,
-                //       ),
-                //     ],
-                //   ),
-                // ),
-                const SizedBox(width: 6),
-                boxButton(
-                  label: '+1',
-                  onTap: incrementOne,
-                ),
-                const SizedBox(width: 6),
-                Visibility(
-                  visible: showPointOne,
-                  maintainSize: true,
-                  maintainAnimation: true,
-                  maintainState: true,
-                  child: boxButton(
-                    label: '+0.1',
-                    onTap: incrementPointOne,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 6),
-            decoration: const BoxDecoration(
-              color: Colors.indigo,
-              borderRadius: BorderRadius.vertical(bottom: Radius.circular(12)),
-            ),
+              ),
+            ],
           ),
         ],
+      ),
+    ),
+  );
+}
+
+Widget _glassActionButton({
+  required String label,
+  required VoidCallback onTap,
+  bool disabled = false,
+}) {
+  return GestureDetector(
+    onTap: disabled ? null : onTap,
+    child: AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        gradient: disabled
+            ? null
+            : const LinearGradient(
+                colors: [
+                  Colors.blueAccent,
+                  Colors.purpleAccent,
+                ],
+              ),
+        color: disabled ? Colors.grey.withOpacity(0.3) : null,
+        boxShadow: disabled
+            ? []
+            : [
+                BoxShadow(
+                  color: Colors.purple.withOpacity(0.4),
+                  blurRadius: 15,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontWeight: FontWeight.w600,
+          color: disabled ? Colors.white54 : Colors.white,
+        ),
       ),
     ),
   );
@@ -563,166 +735,122 @@ Visibility visAmountRegSSPerLoad(
     visible:
         (jobRepo.selectedPackage == othersPackage ? false : !jobRepo.isPerKg),
     child: Container(
+      padding: const EdgeInsets.all(2),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.black12),
+        borderRadius: BorderRadius.circular(20),
+        gradient: LinearGradient(
+          colors: [
+            Colors.white.withOpacity(0.12),
+            Colors.white.withOpacity(0.05),
+          ],
+        ),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.25),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.35),
+            blurRadius: 25,
+            offset: const Offset(0, 12),
+          ),
+        ],
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // 🔷 Accent header
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 6),
-            decoration: const BoxDecoration(
-              color: Colors.indigo,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
-            ),
-          ),
-
+          /// 💰 TOTAL
           Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8),
+            padding: const EdgeInsets.all(2),
             child: Column(
               children: [
-                // 💰 Price (read-only display)
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade50,
-                        borderRadius: BorderRadius.circular(6),
-                        border: Border.all(color: Colors.black12),
-                      ),
-                      child: Column(
-                        children: [
-                          Text(
-                            formatter.format(jobRepo.totalPriceRegSS),
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          const SizedBox(height: 3), // 👈 distance from text
-                          Container(
-                            height: 2, // underline thickness
-                            width: 80, // underline length
-                            color: Colors.black,
-                          ),
-                          const SizedBox(height: 1),
-                          Container(
-                            height: 2, // underline thickness
-                            width: 80, // underline length
-                            color: Colors.black,
-                          ),
-                        ],
-                      ),
-                    ),
-                    // Visibility(
-                    //   visible: false,
-                    //   maintainSize: true,
-                    //   maintainAnimation: true,
-                    //   maintainState: true,
-                    //   child: boxButton(
-                    //     label: '−1',
-                    //     disabled: quantityLoad <= 1,
-                    //     onTap: decrementOne,
-                    //   ),
-                    // ),
-                  ],
-                ),
-
-                const SizedBox(height: 6),
-
-                // 📦 Quantity (read-only display)
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade100,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.black26),
+                Text(
+                  "TOTAL",
+                  style: TextStyle(
+                    fontSize: 10,
+                    letterSpacing: 1.5,
+                    color: Colors.white.withOpacity(0.7),
                   ),
-                  child: Column(
-                    children: [
-                      Text(
-                        '${jobRepo.quantityLoad} load',
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 0.4,
-                        ),
-                      ),
-                      const SizedBox(height: 3),
-                      Container(
-                        height: 2, // underline thickness
-                        width: 80, // underline length
-                        color: Colors.black,
-                      ),
-                      Container(
-                        decoration: decoGreenAccentNoBorder(),
-                        child: boxButton2label(
-                          label: 'kg ',
-                          label2: 'load',
-                          boldLabel2: true,
-                          onTap: () {
-                            setState(() {
-                              jobRepo.isPerKg = true;
-                              resetPaymentStatus(jobRepo);
-                            });
-                          },
-                        ),
-                      ),
-                    ],
+                ),
+                Text(
+                  formatter.format(jobRepo.totalPriceRegSS),
+                  style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
+                  ),
+                ),
+                Container(
+                  height: 2,
+                  width: 100,
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Colors.blueAccent, Colors.purpleAccent],
+                    ),
                   ),
                 ),
               ],
             ),
           ),
 
-          const Divider(height: 1),
-
-          // ➖➕ Unit-based controls
+          /// 📦 LOAD DISPLAY
           Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8),
+            padding: const EdgeInsets.all(2),
+            child: Container(
+              padding: const EdgeInsets.all(2),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(14),
+                color: Colors.black.withOpacity(0.2),
+                border: Border.all(
+                  color: Colors.white.withOpacity(0.2),
+                ),
+              ),
+              child: Column(
+                children: [
+                  Text(
+                    "${jobRepo.quantityLoad} load",
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        jobRepo.isPerKg = true;
+                        resetPaymentStatus(jobRepo);
+                      });
+                    },
+                    child: Text(
+                      "Switch to Kg",
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Colors.blueAccent,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          /// ➖➕ CONTROLS
+          Padding(
+            padding: const EdgeInsets.all(2),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                SizedBox(
-                  width: 50,
-                ),
-                boxButton(
-                  label: '−1',
-                  disabled: jobRepo.quantityLoad <= 1,
+                _glassMiniButton(
+                  label: "−1",
                   onTap: decrementOne,
+                  disabled: jobRepo.quantityLoad <= 1,
                 ),
                 const SizedBox(width: 6),
-                boxButton(
-                  label: '+1',
+                _glassMiniButton(
+                  label: "+1",
                   onTap: incrementOne,
                 ),
-                const SizedBox(width: 6),
-                Visibility(
-                  visible: false,
-                  maintainSize: true,
-                  maintainAnimation: true,
-                  maintainState: true,
-                  child: boxButton(
-                    label: '+0.1',
-                    onTap: () {},
-                  ),
-                ),
               ],
-            ),
-          ),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 6),
-            decoration: const BoxDecoration(
-              color: Colors.indigo,
-              borderRadius: BorderRadius.vertical(bottom: Radius.circular(12)),
             ),
           ),
         ],
@@ -731,297 +859,323 @@ Visibility visAmountRegSSPerLoad(
   );
 }
 
-Visibility visAmountOthersOnly(
-    BuildContext context, Function setState, JobModelRepository jobRepo) {
+Widget _glassMiniButton({
+  required String label,
+  required VoidCallback onTap,
+  bool disabled = false,
+}) {
+  return GestureDetector(
+    onTap: disabled ? null : onTap,
+    child: AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      padding: const EdgeInsets.all(2),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        gradient: disabled
+            ? null
+            : const LinearGradient(
+                colors: [
+                  Colors.blueAccent,
+                  Colors.purpleAccent,
+                ],
+              ),
+        color: disabled ? Colors.grey.withOpacity(0.3) : null,
+        boxShadow: disabled
+            ? []
+            : [
+                BoxShadow(
+                  color: Colors.purple.withOpacity(0.4),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontWeight: FontWeight.w600,
+            color: disabled ? Colors.white54 : Colors.white,
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
+Widget visAmountOthersOnly(
+  BuildContext context,
+  Function setState,
+  JobModelRepository jobRepo,
+) {
   void addOtherItem(OtherItemModel item) {
     jobRepo.listSelectedItemModel.add(item);
     jobRepo.totalPriceOthers += item.itemPrice;
   }
 
+  String getShortcutLabel(int value) {
+    switch (value) {
+      case menuOth155:
+        return "155";
+      case menuOth125:
+        return "125";
+      case menuOthXD:
+        return "+Dry";
+      case menuFabWKLDValAny8ml:
+        return "+Fab";
+      default:
+        return value.toString();
+    }
+  }
+
   return Visibility(
     visible: (jobRepo.selectedPackage == othersPackage),
     child: Container(
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.black12),
+        borderRadius: BorderRadius.circular(26),
+        gradient: LinearGradient(
+          colors: [
+            Colors.white.withOpacity(0.12),
+            Colors.white.withOpacity(0.05),
+          ],
+        ),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.25),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.35),
+            blurRadius: 30,
+            offset: const Offset(0, 18),
+          ),
+        ],
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const SizedBox(height: 6), // 👈 distance from text
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-            decoration: BoxDecoration(
-              color: Colors.grey.shade50,
-              borderRadius: BorderRadius.circular(6),
-              border: Border.all(color: Colors.black12),
-            ),
-            child: Column(
-              children: [
-                Text(
-                  formatter.format(jobRepo.totalPriceOthers),
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
+          /// 💰 TOTAL
+          Column(
+            children: [
+              Text(
+                "ADD-ONS TOTAL",
+                style: TextStyle(
+                  fontSize: 11,
+                  letterSpacing: 1.5,
+                  color: Colors.white.withOpacity(0.7),
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                formatter.format(jobRepo.totalPriceOthers),
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.white,
+                ),
+              ),
+              Container(
+                height: 3,
+                width: 120,
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Colors.pinkAccent, Colors.purpleAccent],
                   ),
                 ),
-                const SizedBox(height: 3), // 👈 distance from text
-                Container(
-                  height: 2, // underline thickness
-                  width: 80, // underline length
-                  color: Colors.black,
-                ),
-                const SizedBox(height: 1),
-                Container(
-                  height: 2, // underline thickness
-                  width: 80, // underline length
-                  color: Colors.black,
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
 
-          const SizedBox(height: 5),
-          Text('Shortcuts',
-              style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 20),
 
-          Container(
-            alignment: Alignment.center,
-            padding: const EdgeInsets.all(1.0),
-            //decoration: decoDarkBlue(),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ToggleButtons(
-                  isSelected: List.generate(
-                    listOthersDropDownShortCuts.length,
-                    (i) =>
-                        jobRepo.selectedOthersShortCut ==
-                        listOthersDropDownShortCuts[i],
-                  ),
-                  onPressed: (index) {
-                    setState(() {
-                      jobRepo.selectedOthersShortCut =
-                          listOthersDropDownShortCuts[index];
-                      if (jobRepo.selectedOthersShortCut == menuOth155) {
-                        addOtherItem(reg155ItemModel);
-                      }
-                      if (jobRepo.selectedOthersShortCut == menuOth125) {
-                        addOtherItem(reg125ItemModel);
-                      }
-                      if (jobRepo.selectedOthersShortCut == menuOthXD) {
-                        addOtherItem(xDItemModel);
-                      }
-                      if (jobRepo.selectedOthersShortCut ==
-                          menuFabWKLDValAny8ml) {
-                        addOtherItem(addFabAnyItemModel);
-                      }
-                    });
-                  },
-                  borderRadius: BorderRadius.circular(8),
-                  selectedColor: Colors.black,
-                  fillColor: Colors.pinkAccent[100],
-                  color: Colors.black,
-                  borderColor: cSalaryOut,
-                  constraints: const BoxConstraints(
-                    minWidth: 50,
-                    minHeight: 25,
-                  ),
-                  children: const [
-                    Text('155'),
-                    Text('125'),
-                    Text('+Dry'),
-                    Text('+Fab'),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 6), // 👈 distance from text
-          Text('All Items',
-              style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold)),
-          Container(
-            alignment: Alignment.center,
-            padding: const EdgeInsets.all(1.0),
-            decoration: decoDarkBlue(),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ToggleButtons(
-                  isSelected: List.generate(
-                    listOthersDropDown.length,
-                    (i) => jobRepo.selectedOthers == listOthersDropDown[i],
-                  ),
-                  onPressed: (index) {
-                    setState(() {
-                      jobRepo.selectedOthers = listOthersDropDown[index];
-                      (jobRepo.selectedOthers == menuOthDVal
-                          ? jobRepo.selectedItemModel = listOthItems[0]
-                          : jobRepo.selectedOthers == menuDetDVal
-                              ? jobRepo.selectedItemModel = listDetItems[0]
-                              : jobRepo.selectedOthers == menuFabDVal
-                                  ? jobRepo.selectedItemModel = listFabItems[0]
-                                  : jobRepo.selectedItemModel =
-                                      listBleItems[0]);
-                    });
-                  },
-                  borderRadius: BorderRadius.circular(8),
-                  selectedColor: Colors.black,
-                  fillColor: Colors.pinkAccent[100],
-                  color: Colors.black,
-                  borderColor: cSalaryOut,
-                  constraints: const BoxConstraints(
-                    minWidth: 40,
-                    minHeight: 25,
-                  ),
-                  children: const [
-                    Text('Oth'),
-                    Text('Det'),
-                    Text('Fab'),
-                    Text('Ble'),
-                  ],
-                ),
-              ],
-            ),
+          /// ⚡ SHORTCUT BUTTONS
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: listOthersDropDownShortCuts.map((shortcut) {
+              return _glassShortcutButton(
+                label: getShortcutLabel(shortcut),
+                onTap: () {
+                  setState(() {
+                    jobRepo.selectedOthersShortCut = shortcut;
+
+                    if (shortcut == menuOth155) {
+                      addOtherItem(reg155ItemModel);
+                    } else if (shortcut == menuOth125) {
+                      addOtherItem(reg125ItemModel);
+                    } else if (shortcut == menuOthXD) {
+                      addOtherItem(xDItemModel);
+                    } else if (shortcut == menuFabWKLDValAny8ml) {
+                      addOtherItem(addFabAnyItemModel);
+                    }
+                  });
+                },
+              );
+            }).toList(),
           ),
 
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: SizedBox(
-                        height: 40, // compact height
-                        child: DropdownButtonFormField<OtherItemModel>(
-                          isDense: true,
-                          iconSize: 18,
-                          dropdownColor:
-                              const Color.fromARGB(255, 252, 162, 192),
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: Colors.black,
-                          ),
-                          decoration: const InputDecoration(
-                            isDense: true,
-                            contentPadding: EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 8,
-                            ),
-                            border: OutlineInputBorder(),
-                            filled: true, // enables background color
-                            fillColor: Color.fromARGB(255, 255, 144, 181),
-                          ),
-                          hint: const Text(
-                            'Select supply',
-                            style: TextStyle(fontSize: 12),
-                          ),
-                          initialValue: (jobRepo.selectedOthers == menuOthDVal
-                              ? listOthItems[0]
-                              : jobRepo.selectedOthers == menuDetDVal
-                                  ? listDetItems[0]
-                                  : jobRepo.selectedOthers == menuFabDVal
-                                      ? listFabItems[0]
-                                      : listBleItems[0]),
-                          items: (jobRepo.selectedOthers == menuOthDVal
-                                  ? listOthItems
-                                  : jobRepo.selectedOthers == menuDetDVal
-                                      ? listDetItems
-                                      : jobRepo.selectedOthers == menuFabDVal
-                                          ? listFabItems
-                                          : listBleItems)
-                              .map(
-                                (e) => DropdownMenuItem(
-                                  value: e,
-                                  child: Text(
-                                    '${e.itemName}  ₱${e.itemPrice}',
-                                    style: const TextStyle(fontSize: 12),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              )
-                              .toList(),
-                          onChanged: (val) {
-                            setState(() => jobRepo.selectedItemModel = val!);
-                          },
-                        ),
-                      ),
+          const SizedBox(height: 20),
+
+          /// 🧊 DROPDOWN + ADD BUTTON
+          Row(
+            children: [
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    color: Colors.black.withOpacity(0.2),
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.2),
                     ),
-                    const SizedBox(width: 8),
-                    SizedBox(
-                      height: 36,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            addOtherItem(jobRepo.selectedItemModel);
-                          });
-                        },
-                        style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.pinkAccent[100]),
-                        child: const Text(
-                          'Add',
-                          style: TextStyle(fontSize: 12),
-                        ),
-                      ),
+                  ),
+                  child: DropdownButton<OtherItemModel>(
+                    value: jobRepo.selectedItemModel,
+                    isExpanded: true,
+                    dropdownColor: Colors.black87,
+                    underline: const SizedBox(),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 13,
                     ),
-                  ],
-                ),
-
-                const SizedBox(height: 5),
-
-                /// 🧾 Selected Items Preview
-                Column(
-                  children: jobRepo.listSelectedItemModel.map((e) {
-                    return Container(
-                      decoration: decoPinkAccent(),
-                      padding: const EdgeInsets.symmetric(horizontal: 50),
-                      child: Row(
-                        children: [
-                          // Remove button
-                          IconButton(
-                            icon: const Icon(
-                              Icons.remove_circle_outline,
-                              size: 18,
-                            ),
-                            onPressed: () {
-                              setState(() {
-                                jobRepo.totalPriceOthers -= e.itemPrice;
-                                jobRepo.listSelectedItemModel.remove(e);
-                              });
-                            },
-                          ),
-
-                          // LEFT TEXT (can move right)
-                          Expanded(
-                            child: Padding(
-                              padding: const EdgeInsets.only(left: 15),
-                              child: Text(
-                                e.itemName,
-                                style: const TextStyle(fontSize: 12),
-                              ),
-                            ),
-                          ),
-
-                          // RIGHT PRICE (can move left)
-                          Padding(
-                            padding: const EdgeInsets.only(right: 30),
+                    items: (jobRepo.selectedOthers == menuOthDVal
+                            ? listOthItems
+                            : jobRepo.selectedOthers == menuDetDVal
+                                ? listDetItems
+                                : jobRepo.selectedOthers == menuFabDVal
+                                    ? listFabItems
+                                    : listBleItems)
+                        .map(
+                          (e) => DropdownMenuItem(
+                            value: e,
                             child: Text(
-                              '₱${e.itemPrice}',
-                              style: const TextStyle(fontSize: 12),
+                              "${e.itemName}  ₱${e.itemPrice}",
                             ),
                           ),
-                        ],
-                      ),
-                    );
-                  }).toList(),
+                        )
+                        .toList(),
+                    onChanged: (val) {
+                      setState(() {
+                        jobRepo.selectedItemModel = val!;
+                      });
+                    },
+                  ),
                 ),
-              ],
-            ),
+              ),
+              const SizedBox(width: 10),
+              _glassAddButton(
+                onTap: () {
+                  setState(() {
+                    addOtherItem(jobRepo.selectedItemModel);
+                  });
+                },
+              ),
+            ],
           ),
-          const Divider(height: 1),
+
+          const SizedBox(height: 20),
+
+          /// 🧾 SELECTED ITEMS LIST
+          Column(
+            children: jobRepo.listSelectedItemModel.map((e) {
+              return Container(
+                margin: const EdgeInsets.only(bottom: 6),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16),
+                  color: Colors.black.withOpacity(0.25),
+                  border: Border.all(
+                    color: Colors.white.withOpacity(0.2),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          jobRepo.totalPriceOthers -= e.itemPrice;
+                          jobRepo.listSelectedItemModel.remove(e);
+                        });
+                      },
+                      child: const Icon(
+                        Icons.remove_circle,
+                        color: Colors.redAccent,
+                        size: 18,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        e.itemName,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ),
+                    Text(
+                      "₱${e.itemPrice}",
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
+          ),
         ],
+      ),
+    ),
+  );
+}
+
+Widget _glassShortcutButton({
+  required String label,
+  required VoidCallback onTap,
+}) {
+  return GestureDetector(
+    onTap: onTap,
+    child: Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        gradient: const LinearGradient(
+          colors: [Colors.pinkAccent, Colors.purpleAccent],
+        ),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+          color: Colors.white,
+        ),
+      ),
+    ),
+  );
+}
+
+Widget _glassAddButton({required VoidCallback onTap}) {
+  return GestureDetector(
+    onTap: onTap,
+    child: Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        gradient: const LinearGradient(
+          colors: [Colors.blueAccent, Colors.purpleAccent],
+        ),
+      ),
+      child: const Text(
+        "Add",
+        style: TextStyle(
+          fontWeight: FontWeight.w600,
+          color: Colors.white,
+        ),
       ),
     ),
   );
@@ -1041,15 +1195,24 @@ Visibility visPaidUnPaid(
     }
 
     void setPartialAmount(TextEditingController controller) {
-      if (jobRepo.selectedPackage == othersPackage) {
-        if ((int.tryParse(controller.text) ?? 0) < jobRepo.totalPriceOthers) {
+      if (jobRepo.finalPrice == 0) {
+        if (jobRepo.selectedPackage == othersPackage) {
           controller.text = jobRepo.totalPriceOthers.toString();
-        }
-      } else {
-        if ((int.tryParse(controller.text) ?? 0) < jobRepo.totalPriceRegSS) {
+        } else {
           controller.text = jobRepo.totalPriceRegSS.toString();
         }
+      } else {
+        controller.text = jobRepo.finalPrice.toString();
       }
+      // if (jobRepo.selectedPackage == othersPackage) {
+      //   if ((int.tryParse(controller.text) ?? 0) < jobRepo.totalPriceOthers) {
+      //     controller.text = jobRepo.totalPriceOthers.toString();
+      //   }
+      // } else {
+      //   if ((int.tryParse(controller.text) ?? 0) < jobRepo.totalPriceRegSS) {
+      //     controller.text = jobRepo.totalPriceRegSS.toString();
+      //   }
+      // }
     }
 
     if (jobRepo.paidCash && jobRepo.paidGCash) {
@@ -1095,945 +1258,1397 @@ Visibility visPaidUnPaid(
   return Visibility(
     visible: true,
     child: Container(
-      alignment: Alignment.center,
-      padding: const EdgeInsets.all(1.0),
-      decoration: decoLightBlue(),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(26),
+        gradient: LinearGradient(
+          colors: [
+            Colors.white.withOpacity(0.12),
+            Colors.white.withOpacity(0.05),
+          ],
+        ),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.25),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.35),
+            blurRadius: 30,
+            offset: const Offset(0, 18),
+          ),
+        ],
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
-        spacing: 0,
         children: [
-          Text(
-            actualPaymentStatus,
-            style: TextStyle(fontSize: 11),
-            textAlign: TextAlign.center,
+          /// 💰 STATUS BADGE
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              gradient: LinearGradient(
+                colors: jobRepo.unpaid
+                    ? [Colors.redAccent, Colors.orangeAccent]
+                    : [Colors.greenAccent, Colors.tealAccent],
+              ),
+            ),
+            child: Text(
+              actualPaymentStatus,
+              style: const TextStyle(
+                fontWeight: FontWeight.w700,
+                fontSize: 13,
+                color: Colors.black,
+              ),
+            ),
           ),
 
-          //toggle checkbox
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'Paid(Cash)',
-                    style: const TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(width: 2), // tiny gap
-                  Transform.scale(
-                    scale: 0.8, // shrink the checkbox itself
-                    child: Checkbox(
-                      value: jobRepo.paidCash,
-                      onChanged: (bool? value) {
-                        setState(() {
-                          jobRepo.paidCash = value ?? false;
-                          actualPaymentStatus =
-                              returnPaymentStatusDuringToggle();
-                        });
-                      },
-                      visualDensity: VisualDensity(
-                          horizontal: -4, vertical: -4), // tighter
-                      materialTapTargetSize:
-                          MaterialTapTargetSize.shrinkWrap, // no extra padding
-                    ),
-                  ),
-                ],
-              ),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'Paid(GCash)',
-                    style: const TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(width: 2), // tiny gap
-                  Transform.scale(
-                    scale: 0.8, // shrink the checkbox itself
-                    child: Checkbox(
-                      value: jobRepo.paidGCash,
-                      onChanged: (bool? value) {
-                        setState(() {
-                          jobRepo.paidGCash = value ?? false;
-                          actualPaymentStatus =
-                              returnPaymentStatusDuringToggle();
-                        });
-                      },
-                      visualDensity: VisualDensity(
-                          horizontal: -4, vertical: -4), // tighter
-                      materialTapTargetSize:
-                          MaterialTapTargetSize.shrinkWrap, // no extra padding
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          //amountVar
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              /// CASH FIELD (slides from LEFT)
+          const SizedBox(height: 20),
 
+          /// 💳 PAYMENT METHOD TOGGLES
+          Row(
+            children: [
               Expanded(
-                child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 300),
-                  transitionBuilder: (child, animation) {
-                    final offsetAnimation = Tween<Offset>(
-                      begin: const Offset(-1, 0), // from left
-                      end: Offset.zero,
-                    ).animate(animation);
-
-                    return SlideTransition(
-                      position: offsetAnimation,
-                      child: child,
-                    );
-                  },
-                  child: jobRepo.paidCash
-                      ? Padding(
-                          key: const ValueKey('cash'),
-                          padding: const EdgeInsets.only(right: 4),
-                          child: TextFormField(
-                            onChanged: (value) => {
-                              setState(() {
-                                validatePaymentWhenVarChange();
-                              })
-                            },
-                            controller: jobRepo.cashAmountVar,
-                            keyboardType: const TextInputType.numberWithOptions(
-                                decimal: true),
-                            textAlign: TextAlign.center,
-                            inputFormatters: [
-                              FilteringTextInputFormatter.allow(
-                                  RegExp(r'^\d*\.?\d{0,2}')),
-                            ],
-                            style: const TextStyle(fontSize: 12),
-                            decoration: const InputDecoration(
-                              labelText: 'Cash Amount',
-                              isDense: true,
-                              border: OutlineInputBorder(),
-                              filled: true,
-                              fillColor: Colors.white,
-                            ),
-                          ),
-                        )
-                      : const SizedBox.shrink(),
-                ),
-              ),
-
-              /// GCASH FIELD (slides from RIGHT)
-
-              Expanded(
-                child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 300),
-                  transitionBuilder: (child, animation) {
-                    final offsetAnimation = Tween<Offset>(
-                      begin: const Offset(1, 0), // from right
-                      end: Offset.zero,
-                    ).animate(animation);
-
-                    return SlideTransition(
-                      position: offsetAnimation,
-                      child: child,
-                    );
-                  },
-                  child: jobRepo.paidGCash
-                      ? Padding(
-                          key: const ValueKey('gcash'),
-                          padding: const EdgeInsets.only(left: 4),
-                          child: TextFormField(
-                            onChanged: (value) => {
-                              setState(() {
-                                validatePaymentWhenVarChange();
-                              })
-                            },
-                            controller: jobRepo.gCashAmountVar,
-                            keyboardType: const TextInputType.numberWithOptions(
-                                decimal: true),
-                            textAlign: TextAlign.center,
-                            inputFormatters: [
-                              FilteringTextInputFormatter.allow(
-                                  RegExp(r'^\d*\.?\d{0,2}')),
-                            ],
-                            style: const TextStyle(fontSize: 12),
-                            decoration: const InputDecoration(
-                              labelText: 'GCash Amount',
-                              isDense: true,
-                              border: OutlineInputBorder(),
-                              filled: true,
-                              fillColor: Colors.white,
-                            ),
-                          ),
-                        )
-                      : const SizedBox.shrink(),
-                ),
-              ),
-            ],
-          ),
-
-          //GCash verified
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'GCash verified?',
-                style: const TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(width: 2), // tiny gap
-              Transform.scale(
-                scale: 0.8, // shrink the checkbox itself
-                child: Checkbox(
-                  value: jobRepo.paidGCashVerified,
-                  onChanged: (bool? value) {
+                child: _glassPaymentToggle(
+                  label: "Cash",
+                  selected: jobRepo.paidCash,
+                  onTap: () {
                     setState(() {
-                      jobRepo.paidGCashVerified = value ?? false;
+                      jobRepo.paidCash = !jobRepo.paidCash;
+                      actualPaymentStatus = returnPaymentStatusDuringToggle();
                     });
                   },
-                  visualDensity:
-                      VisualDensity(horizontal: -4, vertical: -4), // tighter
-                  materialTapTargetSize:
-                      MaterialTapTargetSize.shrinkWrap, // no extra padding
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _glassPaymentToggle(
+                  label: "GCash",
+                  selected: jobRepo.paidGCash,
+                  onTap: () {
+                    setState(() {
+                      jobRepo.paidGCash = !jobRepo.paidGCash;
+                      actualPaymentStatus = returnPaymentStatusDuringToggle();
+                    });
+                  },
                 ),
               ),
             ],
-          )
-        ],
-      ),
-    ),
-  );
-}
-
-Visibility visFold(
-    BuildContext context, Function setState, JobModelRepository jobRepo) {
-  return Visibility(
-    visible: (jobRepo.selectedPackage == othersPackage ? false : true),
-    child: Container(
-      alignment: Alignment.center,
-      padding: const EdgeInsets.all(1.0),
-      decoration: decoLightBlue(),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ToggleButtons(
-            isSelected: [
-              jobRepo.fold, // Fold
-              !jobRepo.fold, // No Fold
-            ],
-            onPressed: (index) {
-              setState(() {
-                // single source of truth
-                jobRepo.fold = index == 0;
-              });
-            },
-            borderRadius: BorderRadius.circular(8),
-            selectedColor: Colors.black,
-            fillColor: Colors.greenAccent,
-            color: Colors.black,
-            borderColor: cSalaryOut,
-            constraints: const BoxConstraints(
-              minWidth: 80,
-              minHeight: 25,
-            ),
-            children: const [
-              Text('Fold'),
-              Text('No Fold'),
-            ],
-          ),
-        ],
-      ),
-    ),
-  );
-}
-
-Visibility visMix(
-    BuildContext context, Function setState, JobModelRepository jobRepo) {
-  return Visibility(
-    visible: (jobRepo.selectedPackage == othersPackage ? false : true),
-    child: Container(
-      alignment: Alignment.center,
-      padding: const EdgeInsets.all(1.0),
-      decoration: decoLightBlue(),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ToggleButtons(
-            isSelected: [
-              jobRepo.mix, // Fold
-              !jobRepo.mix, // No Fold
-            ],
-            onPressed: (index) {
-              setState(() {
-                // single source of truth
-                jobRepo.mix = index == 0;
-              });
-            },
-            borderRadius: BorderRadius.circular(8),
-            selectedColor: Colors.black,
-            fillColor: Colors.greenAccent,
-            color: Colors.black,
-            borderColor: cSalaryOut,
-            constraints: const BoxConstraints(
-              minWidth: 80,
-              minHeight: 25,
-            ),
-            children: const [
-              Text('Mix'),
-              Text('Dont Mix'),
-            ],
-          ),
-        ],
-      ),
-    ),
-  );
-}
-
-Visibility visBasket(
-    BuildContext context, Function setState, JobModelRepository jobRepo) {
-  // ➕➖ handlers
-  void incrementOne() {
-    setState(() {
-      jobRepo.basket += 1;
-    });
-  }
-
-  void decrementOne() {
-    setState(() {
-      jobRepo.basket -= 1;
-    });
-  }
-
-  return Visibility(
-    visible: true,
-    child: Container(
-      alignment: Alignment.center,
-      padding: const EdgeInsets.all(6.0),
-      decoration: (jobRepo.basket > 0 ? decoGreenAccent2() : decoLightBlue()),
-      child: Row(
-        mainAxisSize: MainAxisSize.max,
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          // ➖ -1
-          boxButton(
-              label: '-1', disabled: jobRepo.basket <= 0, onTap: decrementOne),
-          const SizedBox(width: 12),
-
-          // 🧺 basket : x
-          Text(
-            'Basket : ${jobRepo.basket} pc',
-            style: const TextStyle(
-              fontWeight: FontWeight.w600,
-            ),
           ),
 
-          const SizedBox(width: 12),
-          boxButton(label: '+1', onTap: incrementOne),
-        ],
-      ),
-    ),
-  );
-}
+          const SizedBox(height: 20),
 
-Visibility visEcoBag(
-    BuildContext context, Function setState, JobModelRepository jobRepo) {
-  // ➕➖ handlers
-  void incrementOne() {
-    setState(() {
-      jobRepo.ebag += 1;
-    });
-  }
-
-  void decrementOne() {
-    setState(() {
-      jobRepo.ebag -= 1;
-    });
-  }
-
-  return Visibility(
-    visible: true,
-    child: Container(
-      alignment: Alignment.center,
-      padding: const EdgeInsets.all(6.0),
-      decoration: (jobRepo.ebag > 0 ? decoGreenAccent2() : decoLightBlue()),
-      child: Row(
-        mainAxisSize: MainAxisSize.max,
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          // ➖ -1
-          boxButton(
-              label: '-1', disabled: jobRepo.ebag <= 0, onTap: decrementOne),
-
-          const SizedBox(width: 12),
-
-          Text(
-            'EcoBag : ${jobRepo.ebag} pc',
-            style: const TextStyle(
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-
-          const SizedBox(width: 12),
-
-          // ➕ +1
-          boxButton(label: '+1', onTap: incrementOne),
-        ],
-      ),
-    ),
-  );
-}
-
-Visibility visSako(
-    BuildContext context, Function setState, JobModelRepository jobRepo) {
-  // ➕➖ handlers
-  void incrementOne() {
-    setState(() {
-      jobRepo.sako += 1;
-    });
-  }
-
-  void decrementOne() {
-    setState(() {
-      jobRepo.sako -= 1;
-    });
-  }
-
-  return Visibility(
-    visible: true,
-    child: Container(
-      alignment: Alignment.center,
-      padding: const EdgeInsets.all(6.0),
-      decoration: (jobRepo.sako > 0 ? decoGreenAccent2() : decoLightBlue()),
-      child: Row(
-        mainAxisSize: MainAxisSize.max,
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          // ➖ -1
-          boxButton(
-              label: '-1', disabled: jobRepo.sako <= 0, onTap: decrementOne),
-
-          const SizedBox(width: 12),
-
-          Text(
-            'Sako : ${jobRepo.sako} pc',
-            style: const TextStyle(
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-
-          const SizedBox(width: 12),
-
-          // ➕ +1
-          boxButton(label: '+1', onTap: incrementOne),
-        ],
-      ),
-    ),
-  );
-}
-
-Visibility visAddFab(
-    BuildContext context, Function setState, JobModelRepository jobRepo) {
-  // ➕➖ handlers
-  void incrementOne() {
-    setState(() {
-      jobRepo.addFabCount += 1;
-      jobRepo.listSelectedItemModel.add(addFabAnyItemModel);
-      jobRepo.totalPriceShortCutRegSS += addFabAnyItemModel.itemPrice;
-    });
-  }
-
-  void decrementOne() {
-    setState(() {
-      jobRepo.addFabCount -= 1;
-      jobRepo.listSelectedItemModel.remove(addFabAnyItemModel);
-      jobRepo.totalPriceShortCutRegSS -= addFabAnyItemModel.itemPrice;
-    });
-  }
-
-  return Visibility(
-    visible: (jobRepo.selectedPackage == othersPackage ? false : true),
-    child: Container(
-      alignment: Alignment.center,
-      padding: const EdgeInsets.all(6.0),
-      decoration:
-          (jobRepo.addFabCount > 0 ? decoOtherItems() : decoLightBlue()),
-      child: Row(
-        mainAxisSize: MainAxisSize.max,
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          // ➖ -1
-          boxButtonOtherItems(
-              label: '-1',
-              disabled: jobRepo.addFabCount <= 0,
-              onTap: decrementOne),
-
-          const SizedBox(width: 12),
-
-          Text(
-            '+Fab(₱${addFabAnyItemModel.itemPrice}): ${jobRepo.addFabCount} pc',
-            style: const TextStyle(
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-
-          const SizedBox(width: 12),
-
-          // ➕ +1
-          boxButtonOtherItems(label: '+1', onTap: incrementOne),
-        ],
-      ),
-    ),
-  );
-}
-
-Visibility visAddDry(
-    BuildContext context, Function setState, JobModelRepository jobRepo) {
-  // ➕➖ handlers
-  void incrementOne() {
-    setState(() {
-      jobRepo.addExtraDryCount += 1;
-      jobRepo.listSelectedItemModel.add(xDItemModel);
-      jobRepo.totalPriceShortCutRegSS += xDItemModel.itemPrice;
-    });
-  }
-
-  void decrementOne() {
-    setState(() {
-      jobRepo.addExtraDryCount -= 1;
-      jobRepo.listSelectedItemModel.remove(xDItemModel);
-      jobRepo.totalPriceShortCutRegSS -= xDItemModel.itemPrice;
-    });
-  }
-
-  return Visibility(
-    visible: (jobRepo.selectedPackage == othersPackage ? false : true),
-    child: Container(
-      alignment: Alignment.center,
-      padding: const EdgeInsets.all(6.0),
-      decoration:
-          (jobRepo.addExtraDryCount > 0 ? decoOtherItems() : decoLightBlue()),
-      child: Row(
-        mainAxisSize: MainAxisSize.max,
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          // ➖ -1
-          boxButtonOtherItems(
-              label: '-1',
-              disabled: jobRepo.addExtraDryCount <= 0,
-              onTap: decrementOne),
-
-          const SizedBox(width: 12),
-
-          Text(
-            '+Dry(₱${xDItemModel.itemPrice}): ${jobRepo.addExtraDryCount} pc',
-            style: const TextStyle(
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-
-          const SizedBox(width: 12),
-
-          // ➕ +1
-          boxButtonOtherItems(label: '+1', onTap: incrementOne),
-        ],
-      ),
-    ),
-  );
-}
-
-Visibility visAddWash(
-    BuildContext context, Function setState, JobModelRepository jobRepo) {
-  // ➕➖ handlers
-  void incrementOne() {
-    setState(() {
-      jobRepo.addExtraWashCount += 1;
-      jobRepo.listSelectedItemModel.add(xWashItemModel);
-      jobRepo.totalPriceShortCutRegSS += xWashItemModel.itemPrice;
-    });
-  }
-
-  void decrementOne() {
-    setState(() {
-      jobRepo.addExtraWashCount -= 1;
-      jobRepo.listSelectedItemModel.remove(xWashItemModel);
-      jobRepo.totalPriceShortCutRegSS -= xWashItemModel.itemPrice;
-    });
-  }
-
-  return Visibility(
-    visible: (jobRepo.selectedPackage == othersPackage ? false : true),
-    child: Container(
-      alignment: Alignment.center,
-      padding: const EdgeInsets.all(6.0),
-      decoration:
-          (jobRepo.addExtraWashCount > 0 ? decoOtherItems() : decoLightBlue()),
-      child: Row(
-        mainAxisSize: MainAxisSize.max,
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          // ➖ -1
-          boxButtonOtherItems(
-              label: '-1',
-              disabled: jobRepo.addExtraWashCount <= 0,
-              onTap: decrementOne),
-
-          const SizedBox(width: 12),
-
-          Text(
-            '+Wash(₱${xWashItemModel.itemPrice}): ${jobRepo.addExtraWashCount} pc',
-            style: const TextStyle(
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-
-          const SizedBox(width: 12),
-
-          // ➕ +1
-          boxButtonOtherItems(label: '+1', onTap: incrementOne),
-        ],
-      ),
-    ),
-  );
-}
-
-Visibility visAddSpin(
-    BuildContext context, Function setState, JobModelRepository jobRepo) {
-  // ➕➖ handlers
-  void incrementOne() {
-    setState(() {
-      jobRepo.addExtraSpinCount += 1;
-      jobRepo.listSelectedItemModel.add(xSpinItemModel);
-      jobRepo.totalPriceShortCutRegSS += xSpinItemModel.itemPrice;
-    });
-  }
-
-  void decrementOne() {
-    setState(() {
-      jobRepo.addExtraSpinCount -= 1;
-      jobRepo.listSelectedItemModel.remove(xSpinItemModel);
-      jobRepo.totalPriceShortCutRegSS -= xSpinItemModel.itemPrice;
-    });
-  }
-
-  return Visibility(
-    visible: (jobRepo.selectedPackage == othersPackage ? false : true),
-    child: Container(
-      alignment: Alignment.center,
-      padding: const EdgeInsets.all(6.0),
-      decoration:
-          (jobRepo.addExtraSpinCount > 0 ? decoOtherItems() : decoLightBlue()),
-      child: Row(
-        mainAxisSize: MainAxisSize.max,
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          // ➖ -1
-          boxButtonOtherItems(
-              label: '-1',
-              disabled: jobRepo.addExtraSpinCount <= 0,
-              onTap: decrementOne),
-
-          const SizedBox(width: 12),
-
-          Text(
-            '+Spin(₱${xSpinItemModel.itemPrice}): ${jobRepo.addExtraSpinCount} pc',
-            style: const TextStyle(
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-
-          const SizedBox(width: 12),
-
-          // ➕ +1
-          boxButtonOtherItems(label: '+1', onTap: incrementOne),
-        ],
-      ),
-    ),
-  );
-}
-
-Container conRemarks(BuildContext context, Function setState,
-    TextEditingController valueController) {
-  return Container(
-    padding: EdgeInsets.all(1.0),
-    decoration: decoAmber(),
-    child: TextFormField(
-      textCapitalization: TextCapitalization.words,
-      textAlign: TextAlign.start,
-      controller: valueController,
-      decoration: InputDecoration(labelText: 'Remarks', hintText: 'Notes'),
-      validator: (val) {
-        valueController.text = val!;
-      },
-    ),
-  );
-}
-
-Visibility customerAmount(BuildContext context, Function setState,
-    TextEditingController valueController) {
-  return Visibility(
-    visible: true,
-    child: Container(
-      padding: const EdgeInsets.all(1.0),
-      decoration: decoAmber(),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Label (not indented)
-          const Padding(
-            padding: EdgeInsets.only(left: 4, bottom: 4),
-            child: Text(
-              'Amount',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-
-          // Amount field
-          TextFormField(
-            textAlign: TextAlign.center,
-            controller: valueController,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            inputFormatters: [
-              FilteringTextInputFormatter.allow(
-                RegExp(r'\d+(\.\d{0,2})?'),
-              ),
-            ],
-            decoration: InputDecoration(
-              hintText: '0.00',
-              border: const OutlineInputBorder(),
-              prefixIcon: SizedBox(
-                width: fieldIndentWidth,
-                child: const Center(
-                  child: Text(
-                    '₱',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
+          /// 💵 AMOUNT FIELDS
+          Row(
+            children: [
+              if (jobRepo.paidCash)
+                Expanded(
+                  child: _glassAmountField(
+                    label: "Cash Amount",
+                    controller: jobRepo.cashAmountVar,
                   ),
                 ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    ),
-  );
-}
-
-Visibility customerNumber(BuildContext context, Function setState,
-    TextEditingController valueController) {
-  return Visibility(
-    visible: true,
-    child: Container(
-      padding: const EdgeInsets.all(1.0),
-      decoration: decoAmber(),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Label (not indented)
-          const Padding(
-            padding: EdgeInsets.only(left: 4, bottom: 4),
-            child: Text(
-              'Mobile Number',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-
-          // Amount field
-          TextFormField(
-            textAlign: TextAlign.center,
-            controller: valueController,
-            keyboardType: TextInputType.phone,
-            inputFormatters: [
-              FilteringTextInputFormatter.digitsOnly,
-              LengthLimitingTextInputFormatter(11),
-              PHPhoneFormatter(),
-            ],
-            decoration: const InputDecoration(
-              hintText: '09 XX XXX XXXX',
-              border: OutlineInputBorder(),
-            ),
-          ),
-        ],
-      ),
-    ),
-  );
-}
-
-Container customerNameGCash(BuildContext context, Function setState,
-    TextEditingController valueController) {
-  return Container(
-    padding: EdgeInsets.all(1.0),
-    decoration: decoAmber(),
-    child: TextFormField(
-      textCapitalization: TextCapitalization.words,
-      textAlign: TextAlign.start,
-      controller: valueController,
-      decoration: InputDecoration(
-          labelText: 'Customer Name', hintText: 'Customer Name'),
-      validator: (val) {
-        valueController.text = val!;
-      },
-    ),
-  );
-}
-
-Visibility fundTypeToggle(
-  Function setState,
-  List<int> listIntToSelect,
-  GCashRepository gRepo,
-) {
-  return Visibility(
-    visible: true,
-    child: Container(
-      alignment: Alignment.center,
-      padding: const EdgeInsets.all(1.0),
-      decoration: decoLightBlue(),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text('For Customer Only'),
-          // 🔹 FIRST ROW
-          ToggleButtons(
-            isSelected: List.generate(
-              listIntToSelect.length,
-              (i) => gRepo.selectedFundCode == listIntToSelect[i],
-            ),
-            onPressed: (index) {
-              setState(() {
-                gRepo.selectedFundCode = listIntToSelect[index];
-              });
-            },
-            borderRadius: BorderRadius.circular(8),
-            selectedColor: Colors.white,
-            borderColor: Colors.blue,
-            fillColor: Colors.blue,
-            color: Colors.black,
-            constraints: const BoxConstraints(
-              minWidth: 70,
-              minHeight: 30,
-            ),
-            children: List.generate(listIntToSelect.length, (index) {
-              return GestureDetector(
-                onDoubleTap: () {
-                  setState(() {
-                    if (listIntToSelect[index] == menuOthLaundryPayment) {
-                      customerAmountVar.text =
-                          (int.parse(customerAmountVar.text) + 155).toString();
-                    }
-                  });
-
-                  // You can add any double-tap specific logic here
-                },
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 0),
-                  child: Text(
-                    ['Cash-in', 'Load', 'Cash-Out'][index],
+              if (jobRepo.paidCash && jobRepo.paidGCash)
+                const SizedBox(width: 12),
+              if (jobRepo.paidGCash)
+                Expanded(
+                  child: _glassAmountField(
+                    label: "GCash Amount",
+                    controller: jobRepo.gCashAmountVar,
                   ),
                 ),
-              );
-            }),
+            ],
           ),
+
+          const SizedBox(height: 16),
+
+          /// ✅ GCASH VERIFIED
+          if (jobRepo.paidGCash)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text(
+                  "GCash Verified",
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.white70,
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Switch(
+                  value: jobRepo.paidGCashVerified,
+                  activeColor: Colors.greenAccent,
+                  onChanged: (value) {
+                    setState(() {
+                      jobRepo.paidGCashVerified = value;
+                    });
+                  },
+                ),
+              ],
+            ),
         ],
       ),
     ),
   );
 }
 
-Visibility showUploadedImage(
-    BuildContext context, Function setState, GCashRepository gRepo) {
-  return Visibility(
-    visible: true,
-    child: InkWell(
-      onTap: (() {
-        debugPrint(
-            'gRepo.itemUniqueId: ${gRepo.itemUniqueId} / ${gRepo.cashInImageUrl} / ${gRepo.cashOutImageUrl}');
-        if (gRepo.itemUniqueId == menuOthUniqIdCashOut) {
-          if (gRepo.cashOutImageUrl == '') {
-            callPickImageUniversal(context, gRepo.getModel()!, false);
-          } else {
-            showImagePreview(context, gRepo.cashOutImageUrl);
-          }
-        } else {
-          if (gRepo.cashInImageUrl == '') {
-            callPickImageUniversal(context, gRepo.getModel()!, true);
-          } else {
-            showImagePreview(context, gRepo.cashInImageUrl);
-          }
-        }
-      }),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(6),
-        child: Image.network(
-          (gRepo.itemUniqueId == menuOthUniqIdCashOut
-              ? gRepo.cashOutImageUrl
-              : gRepo.cashInImageUrl)!,
-          width: 20,
-          height: 30,
-          fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => Icon(
-              (gRepo.itemUniqueId == menuOthUniqIdCashOut
-                  ? Icons.logout
-                  : Icons.login),
-              size: 25),
+Widget _glassPaymentToggle({
+  required String label,
+  required bool selected,
+  required VoidCallback onTap,
+}) {
+  return GestureDetector(
+    onTap: onTap,
+    child: AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      padding: const EdgeInsets.symmetric(vertical: 14),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(18),
+        gradient: selected
+            ? const LinearGradient(
+                colors: [Colors.blueAccent, Colors.purpleAccent],
+              )
+            : null,
+        color: selected ? null : Colors.black.withOpacity(0.2),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.2),
+        ),
+      ),
+      alignment: Alignment.center,
+      child: Text(
+        label,
+        style: TextStyle(
+          fontWeight: FontWeight.w600,
+          color: selected ? Colors.white : Colors.white.withOpacity(0.7),
         ),
       ),
     ),
   );
 }
 
-Visibility visOnGoingStatus(
-    BuildContext context, Function setState, JobModelRepository jobRepo) {
+Widget _glassAmountField({
+  required String label,
+  required TextEditingController controller,
+}) {
+  return Container(
+    padding: const EdgeInsets.symmetric(horizontal: 12),
+    decoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(16),
+      color: Colors.black.withOpacity(0.25),
+      border: Border.all(
+        color: Colors.white.withOpacity(0.2),
+      ),
+    ),
+    child: TextFormField(
+      controller: controller,
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+      textAlign: TextAlign.center,
+      style: const TextStyle(
+        color: Colors.white,
+        fontSize: 13,
+      ),
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: const TextStyle(color: Colors.white70),
+        border: InputBorder.none,
+      ),
+    ),
+  );
+}
+
+Visibility visFold(
+  BuildContext context,
+  Function setState,
+  JobModelRepository jobRepo,
+) {
+  return Visibility(
+    visible: (jobRepo.selectedPackage != othersPackage),
+    child: _glassBinaryToggle(
+      title: "Fold Option",
+      leftLabel: "Fold",
+      rightLabel: "No Fold",
+      value: jobRepo.fold,
+      onChanged: (val) {
+        setState(() {
+          jobRepo.fold = val;
+        });
+      },
+    ),
+  );
+}
+
+Visibility visMix(
+  BuildContext context,
+  Function setState,
+  JobModelRepository jobRepo,
+) {
+  return Visibility(
+    visible: (jobRepo.selectedPackage != othersPackage),
+    child: _glassBinaryToggle(
+      title: "Mix Option",
+      leftLabel: "Mix",
+      rightLabel: "Don't Mix",
+      value: jobRepo.mix,
+      onChanged: (val) {
+        setState(() {
+          jobRepo.mix = val;
+        });
+      },
+    ),
+  );
+}
+
+Widget _glassBinaryToggle({
+  required String title,
+  required String leftLabel,
+  required String rightLabel,
+  required bool value,
+  required ValueChanged<bool> onChanged,
+}) {
+  return Container(
+    padding: const EdgeInsets.all(14),
+    decoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(22),
+      gradient: LinearGradient(
+        colors: [
+          Colors.white.withOpacity(0.12),
+          Colors.white.withOpacity(0.05),
+        ],
+      ),
+      border: Border.all(
+        color: Colors.white.withOpacity(0.25),
+      ),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.35),
+          blurRadius: 20,
+          offset: const Offset(0, 10),
+        ),
+      ],
+    ),
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          title,
+          style: TextStyle(
+            fontSize: 12,
+            letterSpacing: 1,
+            fontWeight: FontWeight.w600,
+            color: Colors.white.withOpacity(0.7),
+          ),
+        ),
+        const SizedBox(height: 12),
+        Container(
+          padding: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(18),
+            color: Colors.black.withOpacity(0.2),
+            border: Border.all(
+              color: Colors.white.withOpacity(0.2),
+            ),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: GestureDetector(
+                  onTap: () => onChanged(true),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(14),
+                      gradient: value
+                          ? const LinearGradient(
+                              colors: [
+                                Colors.blueAccent,
+                                Colors.purpleAccent,
+                              ],
+                            )
+                          : null,
+                    ),
+                    alignment: Alignment.center,
+                    child: Text(
+                      leftLabel,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        color: value
+                            ? Colors.white
+                            : Colors.white.withOpacity(0.6),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: GestureDetector(
+                  onTap: () => onChanged(false),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(14),
+                      gradient: !value
+                          ? const LinearGradient(
+                              colors: [
+                                Colors.blueAccent,
+                                Colors.purpleAccent,
+                              ],
+                            )
+                          : null,
+                    ),
+                    alignment: Alignment.center,
+                    child: Text(
+                      rightLabel,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        color: !value
+                            ? Colors.white
+                            : Colors.white.withOpacity(0.6),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+Widget visBasket(
+  BuildContext context,
+  Function setState,
+  JobModelRepository jobRepo,
+) {
+  return _glassCounterCard(
+    label: "Basket",
+    count: jobRepo.basket,
+    highlight: jobRepo.basket > 0,
+    onIncrement: () {
+      setState(() => jobRepo.basket++);
+    },
+    onDecrement: () {
+      setState(() {
+        if (jobRepo.basket > 0) jobRepo.basket--;
+      });
+    },
+  );
+}
+
+Widget visEcoBag(
+  BuildContext context,
+  Function setState,
+  JobModelRepository jobRepo,
+) {
+  return _glassCounterCard(
+    label: "EcoBag",
+    count: jobRepo.ebag,
+    highlight: jobRepo.ebag > 0,
+    onIncrement: () {
+      setState(() => jobRepo.ebag++);
+    },
+    onDecrement: () {
+      setState(() {
+        if (jobRepo.ebag > 0) jobRepo.ebag--;
+      });
+    },
+  );
+}
+
+Widget visSako(
+  BuildContext context,
+  Function setState,
+  JobModelRepository jobRepo,
+) {
+  return _glassCounterCard(
+    label: "Sako",
+    count: jobRepo.sako,
+    highlight: jobRepo.sako > 0,
+    onIncrement: () {
+      setState(() => jobRepo.sako++);
+    },
+    onDecrement: () {
+      setState(() {
+        if (jobRepo.sako > 0) jobRepo.sako--;
+      });
+    },
+  );
+}
+
+Widget visAddFab(
+  BuildContext context,
+  Function setState,
+  JobModelRepository jobRepo,
+) {
+  return _glassCounterCard(
+    label: "+Fab (₱${addFabAnyItemModel.itemPrice})",
+    count: jobRepo.addFabCount,
+    visible: jobRepo.selectedPackage != othersPackage,
+    highlight: jobRepo.addFabCount > 0,
+    onIncrement: () {
+      setState(() {
+        jobRepo.addFabCount++;
+        jobRepo.listSelectedItemModel.add(addFabAnyItemModel);
+        jobRepo.totalPriceShortCutRegSS += addFabAnyItemModel.itemPrice;
+      });
+    },
+    onDecrement: () {
+      setState(() {
+        if (jobRepo.addFabCount > 0) {
+          jobRepo.addFabCount--;
+          jobRepo.listSelectedItemModel.remove(addFabAnyItemModel);
+          jobRepo.totalPriceShortCutRegSS -= addFabAnyItemModel.itemPrice;
+        }
+      });
+    },
+  );
+}
+
+Widget visAddDry(
+  BuildContext context,
+  Function setState,
+  JobModelRepository jobRepo,
+) {
+  return _glassCounterCard(
+    label: "+Dry (₱${xDItemModel.itemPrice})",
+    count: jobRepo.addExtraDryCount,
+    visible: jobRepo.selectedPackage != othersPackage,
+    highlight: jobRepo.addExtraDryCount > 0,
+    onIncrement: () {
+      setState(() {
+        jobRepo.addExtraDryCount++;
+        jobRepo.listSelectedItemModel.add(xDItemModel);
+        jobRepo.totalPriceShortCutRegSS += xDItemModel.itemPrice;
+      });
+    },
+    onDecrement: () {
+      setState(() {
+        if (jobRepo.addExtraDryCount > 0) {
+          jobRepo.addExtraDryCount--;
+          jobRepo.listSelectedItemModel.remove(xDItemModel);
+          jobRepo.totalPriceShortCutRegSS -= xDItemModel.itemPrice;
+        }
+      });
+    },
+  );
+}
+
+Widget visAddWash(
+  BuildContext context,
+  Function setState,
+  JobModelRepository jobRepo,
+) {
+  return _glassCounterCard(
+    label: "+Wash (₱${xWashItemModel.itemPrice})",
+    count: jobRepo.addExtraWashCount,
+    visible: jobRepo.selectedPackage != othersPackage,
+    highlight: jobRepo.addExtraWashCount > 0,
+    onIncrement: () {
+      setState(() {
+        jobRepo.addExtraWashCount++;
+        jobRepo.listSelectedItemModel.add(xWashItemModel);
+        jobRepo.totalPriceShortCutRegSS += xWashItemModel.itemPrice;
+      });
+    },
+    onDecrement: () {
+      setState(() {
+        if (jobRepo.addExtraWashCount > 0) {
+          jobRepo.addExtraWashCount--;
+          jobRepo.listSelectedItemModel.remove(xWashItemModel);
+          jobRepo.totalPriceShortCutRegSS -= xWashItemModel.itemPrice;
+        }
+      });
+    },
+  );
+}
+
+Widget visAddSpin(
+  BuildContext context,
+  Function setState,
+  JobModelRepository jobRepo,
+) {
+  return _glassCounterCard(
+    label: "+Spin (₱${xSpinItemModel.itemPrice})",
+    count: jobRepo.addExtraSpinCount,
+    visible: jobRepo.selectedPackage != othersPackage,
+    highlight: jobRepo.addExtraSpinCount > 0,
+    onIncrement: () {
+      setState(() {
+        jobRepo.addExtraSpinCount++;
+        jobRepo.listSelectedItemModel.add(xSpinItemModel);
+        jobRepo.totalPriceShortCutRegSS += xSpinItemModel.itemPrice;
+      });
+    },
+    onDecrement: () {
+      setState(() {
+        if (jobRepo.addExtraSpinCount > 0) {
+          jobRepo.addExtraSpinCount--;
+          jobRepo.listSelectedItemModel.remove(xSpinItemModel);
+          jobRepo.totalPriceShortCutRegSS -= xSpinItemModel.itemPrice;
+        }
+      });
+    },
+  );
+}
+
+Widget _glassCounterCard({
+  required String label,
+  required int count,
+  required VoidCallback onIncrement,
+  required VoidCallback onDecrement,
+  bool visible = true,
+  bool highlight = false,
+}) {
+  return Visibility(
+    visible: visible,
+    child: Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(22),
+        gradient: LinearGradient(
+          colors: highlight
+              ? [
+                  Colors.greenAccent.withOpacity(0.4),
+                  Colors.tealAccent.withOpacity(0.3),
+                ]
+              : [
+                  Colors.white.withOpacity(0.12),
+                  Colors.white.withOpacity(0.05),
+                ],
+        ),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.25),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.35),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          /// ➖
+          _glassMiniCounterButton(
+            label: "-",
+            disabled: count <= 0,
+            onTap: onDecrement,
+          ),
+
+          /// LABEL + COUNT
+          Column(
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.white.withOpacity(0.7),
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                "$count pc",
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ),
+
+          /// ➕
+          _glassMiniCounterButton(
+            label: "+",
+            onTap: onIncrement,
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+Widget _glassMiniCounterButton({
+  required String label,
+  required VoidCallback onTap,
+  bool disabled = false,
+}) {
+  return GestureDetector(
+    onTap: disabled ? null : onTap,
+    child: AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      padding: const EdgeInsets.symmetric(
+        horizontal: 18,
+        vertical: 10,
+      ),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        gradient: disabled
+            ? null
+            : const LinearGradient(
+                colors: [
+                  Colors.blueAccent,
+                  Colors.purpleAccent,
+                ],
+              ),
+        color: disabled ? Colors.grey.withOpacity(0.3) : null,
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontWeight: FontWeight.w700,
+          color: disabled ? Colors.white54 : Colors.white,
+        ),
+      ),
+    ),
+  );
+}
+
+Widget conRemarks(
+  BuildContext context,
+  Function setState,
+  TextEditingController valueController,
+) {
+  return Container(
+    padding: const EdgeInsets.all(16),
+    decoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(24),
+      gradient: LinearGradient(
+        colors: [
+          Colors.white.withOpacity(0.12),
+          Colors.white.withOpacity(0.05),
+        ],
+      ),
+      border: Border.all(
+        color: Colors.white.withOpacity(0.25),
+      ),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.35),
+          blurRadius: 20,
+          offset: const Offset(0, 10),
+        ),
+      ],
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        /// 🔹 Title
+        Text(
+          "Remarks / Notes",
+          style: TextStyle(
+            fontSize: 12,
+            letterSpacing: 1,
+            fontWeight: FontWeight.w600,
+            color: Colors.white.withOpacity(0.7),
+          ),
+        ),
+
+        const SizedBox(height: 12),
+
+        /// 🔹 Text Area
+        Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 14,
+            vertical: 8,
+          ),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(18),
+            color: Colors.black.withOpacity(0.25),
+            border: Border.all(
+              color: Colors.white.withOpacity(0.2),
+            ),
+          ),
+          child: TextFormField(
+            controller: valueController,
+            textCapitalization: TextCapitalization.sentences,
+            maxLines: 3,
+            minLines: 2,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 13,
+            ),
+            decoration: const InputDecoration(
+              hintText: "Enter notes here...",
+              hintStyle: TextStyle(
+                color: Colors.white54,
+                fontSize: 13,
+              ),
+              border: InputBorder.none,
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+Widget customerAmount(
+  BuildContext context,
+  Function setState,
+  TextEditingController valueController,
+) {
   return Visibility(
     visible: true,
     child: Container(
-      alignment: Alignment.center,
-      padding: const EdgeInsets.all(1.0),
-      decoration: decoLightBlue(),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
+        gradient: LinearGradient(
+          colors: [
+            Colors.white.withOpacity(0.12),
+            Colors.white.withOpacity(0.05),
+          ],
+        ),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.25),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.35),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          /// 🔹 LABEL
+          Text(
+            "Amount",
+            style: TextStyle(
+              fontSize: 12,
+              letterSpacing: 1,
+              fontWeight: FontWeight.w600,
+              color: Colors.white.withOpacity(0.7),
+            ),
+          ),
+
+          const SizedBox(height: 12),
+
+          /// 🔹 AMOUNT FIELD
+          Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 14,
+              vertical: 4,
+            ),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              color: Colors.black.withOpacity(0.25),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.2),
+              ),
+            ),
+            child: Row(
+              children: [
+                /// ₱ PREFIX
+                const Padding(
+                  padding: EdgeInsets.only(right: 8),
+                  child: Text(
+                    "₱",
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.greenAccent,
+                    ),
+                  ),
+                ),
+
+                /// INPUT
+                Expanded(
+                  child: TextFormField(
+                    controller: valueController,
+                    textAlign: TextAlign.center,
+                    keyboardType:
+                        const TextInputType.numberWithOptions(decimal: true),
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(
+                        RegExp(r'\d+(\.\d{0,2})?'),
+                      ),
+                    ],
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
+                    decoration: const InputDecoration(
+                      hintText: "0.00",
+                      hintStyle: TextStyle(
+                        color: Colors.white54,
+                        fontSize: 18,
+                      ),
+                      border: InputBorder.none,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+Widget customerNumber(
+  BuildContext context,
+  Function setState,
+  TextEditingController valueController,
+) {
+  return Visibility(
+    visible: true,
+    child: Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
+        gradient: LinearGradient(
+          colors: [
+            Colors.white.withOpacity(0.12),
+            Colors.white.withOpacity(0.05),
+          ],
+        ),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.25),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.35),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          /// 🔹 LABEL
+          Text(
+            "Mobile Number",
+            style: TextStyle(
+              fontSize: 12,
+              letterSpacing: 1,
+              fontWeight: FontWeight.w600,
+              color: Colors.white.withOpacity(0.7),
+            ),
+          ),
+
+          const SizedBox(height: 12),
+
+          /// 🔹 PHONE FIELD
+          Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 14,
+              vertical: 6,
+            ),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              color: Colors.black.withOpacity(0.25),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.2),
+              ),
+            ),
+            child: Row(
+              children: [
+                /// 🇵🇭 PREFIX
+                const Padding(
+                  padding: EdgeInsets.only(right: 8),
+                  child: Text(
+                    "+63",
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.greenAccent,
+                    ),
+                  ),
+                ),
+
+                /// INPUT
+                Expanded(
+                  child: TextFormField(
+                    controller: valueController,
+                    textAlign: TextAlign.center,
+                    keyboardType: TextInputType.phone,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly,
+                      LengthLimitingTextInputFormatter(11),
+                      PHPhoneFormatter(),
+                    ],
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                    decoration: const InputDecoration(
+                      hintText: "09XX XXX XXXX",
+                      hintStyle: TextStyle(
+                        color: Colors.white54,
+                        fontSize: 13,
+                      ),
+                      border: InputBorder.none,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+Widget customerNameGCash(
+  BuildContext context,
+  Function setState,
+  TextEditingController valueController,
+) {
+  return Container(
+    padding: const EdgeInsets.all(16),
+    decoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(24),
+      gradient: LinearGradient(
+        colors: [
+          Colors.white.withOpacity(0.12),
+          Colors.white.withOpacity(0.05),
+        ],
+      ),
+      border: Border.all(
+        color: Colors.white.withOpacity(0.25),
+      ),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.35),
+          blurRadius: 20,
+          offset: const Offset(0, 10),
+        ),
+      ],
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        /// 🔹 LABEL
+        Text(
+          "GCash Account Name",
+          style: TextStyle(
+            fontSize: 12,
+            letterSpacing: 1,
+            fontWeight: FontWeight.w600,
+            color: Colors.white.withOpacity(0.7),
+          ),
+        ),
+
+        const SizedBox(height: 12),
+
+        /// 🔹 INPUT FIELD
+        Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 14,
+            vertical: 6,
+          ),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            color: Colors.black.withOpacity(0.25),
+            border: Border.all(
+              color: Colors.white.withOpacity(0.2),
+            ),
+          ),
+          child: TextFormField(
+            controller: valueController,
+            textCapitalization: TextCapitalization.words,
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
+            ),
+            decoration: const InputDecoration(
+              hintText: "Enter GCash Account Name",
+              hintStyle: TextStyle(
+                color: Colors.white54,
+                fontSize: 13,
+              ),
+              border: InputBorder.none,
+            ),
+
+            /// ✅ Proper validation
+            validator: (val) {
+              if (val == null || val.trim().isEmpty) {
+                return "Please enter account name";
+              }
+              return null;
+            },
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+Widget fundTypeToggle(
+  Function setState,
+  List<int> listIntToSelect,
+  GCashRepository gRepo,
+) {
+  String getFundLabel(int index) {
+    const labels = [
+      "Cash-in",
+      "Load",
+      "Cash-Out",
+    ];
+    return labels[index];
+  }
+
+  return Visibility(
+    visible: true,
+    child: Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
+        gradient: LinearGradient(
+          colors: [
+            Colors.white.withOpacity(0.12),
+            Colors.white.withOpacity(0.05),
+          ],
+        ),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.25),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.35),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
+          /// 🔹 TITLE
           Text(
-            'On-Going Status',
-            style: TextStyle(fontSize: 11),
+            "Fund Type",
+            style: TextStyle(
+              fontSize: 12,
+              letterSpacing: 1,
+              fontWeight: FontWeight.w600,
+              color: Colors.white.withOpacity(0.7),
+            ),
           ),
-          ToggleButtons(
-            isSelected: List.generate(
-              listOnGoingStatus.length,
-              (i) => jobRepo.processStep == listOnGoingStatus[i],
+
+          const SizedBox(height: 14),
+
+          /// 🔹 SEGMENTED CONTROL
+          Container(
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(18),
+              color: Colors.black.withOpacity(0.25),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.2),
+              ),
             ),
-            onPressed: (index) {
-              setState(() {
-                jobRepo.processStep = listOnGoingStatus[index];
-              });
-            },
-            borderRadius: BorderRadius.circular(8),
-            selectedColor: Colors.black,
-            fillColor: Colors.greenAccent,
-            color: Colors.black,
-            borderColor: cSalaryOut,
-            constraints: const BoxConstraints(
-              minWidth: 75,
-              minHeight: 25,
+            child: Row(
+              children: List.generate(
+                listIntToSelect.length,
+                (index) {
+                  final fundCode = listIntToSelect[index];
+                  final isSelected = gRepo.selectedFundCode == fundCode;
+
+                  return Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          gRepo.selectedFundCode = fundCode;
+                        });
+                      },
+
+                      /// 👇 DOUBLE TAP LOGIC CLEANLY HERE
+                      onDoubleTap: () {
+                        setState(() {
+                          if (fundCode == menuOthLaundryPayment) {
+                            customerAmountVar.text =
+                                (int.tryParse(customerAmountVar.text) ??
+                                        0 + 155)
+                                    .toString();
+                          }
+                        });
+                      },
+
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 220),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(14),
+                          gradient: isSelected
+                              ? const LinearGradient(
+                                  colors: [
+                                    Colors.blueAccent,
+                                    Colors.purpleAccent,
+                                  ],
+                                )
+                              : null,
+                        ),
+                        alignment: Alignment.center,
+                        child: Text(
+                          getFundLabel(index),
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            color: isSelected
+                                ? Colors.white
+                                : Colors.white.withOpacity(0.6),
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
             ),
-            children: const [
-              Text('waiting'),
-              Text('washing'),
-              Text('drying'),
-              Text('folding'),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+Widget showUploadedImage(
+  BuildContext context,
+  Function setState,
+  GCashRepository gRepo,
+) {
+  final bool isCashOut = gRepo.itemUniqueId == menuOthUniqIdCashOut;
+
+  final String imageUrl =
+      isCashOut ? gRepo.cashOutImageUrl : gRepo.cashInImageUrl;
+
+  final IconData fallbackIcon = isCashOut ? Icons.logout : Icons.login;
+
+  return Visibility(
+    visible: true,
+    child: GestureDetector(
+      onTap: () {
+        debugPrint(
+            'itemUniqueId: ${gRepo.itemUniqueId} / ${gRepo.cashInImageUrl} / ${gRepo.cashOutImageUrl}');
+
+        if (imageUrl.isEmpty) {
+          callPickImageUniversal(context, gRepo.getModel()!, !isCashOut);
+        } else {
+          showImagePreview(context, imageUrl);
+        }
+      },
+      child: Container(
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          gradient: LinearGradient(
+            colors: [
+              Colors.white.withOpacity(0.12),
+              Colors.white.withOpacity(0.05),
             ],
+          ),
+          border: Border.all(
+            color: Colors.white.withOpacity(0.25),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.35),
+              blurRadius: 15,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            /// 🖼 IMAGE PREVIEW
+            ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: imageUrl.isNotEmpty
+                  ? Image.network(
+                      imageUrl,
+                      width: 120,
+                      height: 120,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) =>
+                          _uploadPlaceholder(fallbackIcon),
+                    )
+                  : _uploadPlaceholder(fallbackIcon),
+            ),
+
+            /// 📷 Overlay when image exists
+            if (imageUrl.isNotEmpty)
+              Positioned(
+                bottom: 6,
+                right: 6,
+                child: Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.black.withOpacity(0.6),
+                  ),
+                  child: const Icon(
+                    Icons.visibility,
+                    size: 14,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+Widget _uploadPlaceholder(IconData icon) {
+  return Container(
+    width: 120,
+    height: 120,
+    decoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(16),
+      color: Colors.black.withOpacity(0.25),
+      border: Border.all(
+        color: Colors.white.withOpacity(0.2),
+      ),
+    ),
+    child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(
+          icon,
+          size: 30,
+          color: Colors.white70,
+        ),
+        const SizedBox(height: 6),
+        const Text(
+          "Upload Receipt",
+          style: TextStyle(
+            fontSize: 11,
+            color: Colors.white54,
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+Widget visOnGoingStatus(
+  BuildContext context,
+  Function setState,
+  JobModelRepository jobRepo,
+) {
+  String formatStepLabel(String step) {
+    switch (step) {
+      case "waiting":
+        return "Waiting";
+      case "washing":
+        return "Washing";
+      case "drying":
+        return "Drying";
+      case "folding":
+        return "Folding";
+      default:
+        return step;
+    }
+  }
+
+  return Visibility(
+    visible: true,
+    child: Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
+        gradient: LinearGradient(
+          colors: [
+            Colors.white.withOpacity(0.12),
+            Colors.white.withOpacity(0.05),
+          ],
+        ),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.25),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.35),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          /// 🔹 TITLE
+          Text(
+            "On-Going Status",
+            style: TextStyle(
+              fontSize: 12,
+              letterSpacing: 1,
+              fontWeight: FontWeight.w600,
+              color: Colors.white.withOpacity(0.7),
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
+          /// 🔹 STEP SELECTOR
+          Container(
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(18),
+              color: Colors.black.withOpacity(0.25),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.2),
+              ),
+            ),
+            child: Row(
+              children: List.generate(
+                listOnGoingStatus.length,
+                (index) {
+                  final step = listOnGoingStatus[index];
+                  final isSelected = jobRepo.processStep == step;
+
+                  return Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          jobRepo.processStep = step;
+                        });
+                      },
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 220),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(14),
+                          gradient: isSelected
+                              ? const LinearGradient(
+                                  colors: [
+                                    Colors.blueAccent,
+                                    Colors.purpleAccent,
+                                  ],
+                                )
+                              : null,
+                        ),
+                        alignment: Alignment.center,
+                        child: Text(
+                          formatStepLabel(step),
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: isSelected
+                                ? Colors.white
+                                : Colors.white.withOpacity(0.6),
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
           ),
         ],
       ),
@@ -2090,82 +2705,85 @@ InkWell visIconArea(BuildContext context, JobModelRepository jobRepo,
 }
 
 Expanded visNameArea(JobModel job, bool isSelected) {
+  final primaryColor = isSelected ? Colors.deepPurple : Colors.black87;
+
+  final secondaryColor =
+      isSelected ? Colors.deepPurple.shade300 : Colors.grey.shade700;
+
   return Expanded(
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        //NAME BAGS
+        /// 🔹 CUSTOMER NAME + LOAD
         Row(
-          mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            Text(
-              '${displayCustomerName(job.customerName)} (${job.finalLoad})',
-              style: TextStyle(
-                fontWeight: FontWeight.w600,
-                color: isSelected ? Colors.deepPurple : Colors.black,
-                shadows: [
-                  Shadow(
-                    offset: Offset(1, 0.9),
-                    blurRadius: 0,
-                    color: Colors.blueGrey,
-                  ),
-                ],
+            Flexible(
+              child: Text(
+                '${displayCustomerName(job.customerName)} '
+                '(${job.finalLoad})',
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: primaryColor,
+                ),
               ),
             ),
-            SizedBox(
-              width: 3,
-            ),
+            const SizedBox(width: 4),
             Text(
               textBagDetails(job),
               style: TextStyle(
-                fontWeight: FontWeight.w600,
-                color: isSelected ? Colors.deepPurple : Colors.black,
                 fontSize: 10,
-                shadows: [
-                  Shadow(
-                    offset: Offset(1, 0.9),
-                    blurRadius: 0,
-                    color: Colors.blueGrey,
-                  ),
-                ],
+                fontWeight: FontWeight.w600,
+                color: secondaryColor,
               ),
             ),
           ],
         ),
-        //SHORTCUTS
+
+        const SizedBox(height: 2),
+
+        /// 🔹 SHORTCUT EXTRAS
         if (job.items.isNotEmpty)
           Text(
             textDetFabBleExtras(job.items),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: TextStyle(
-              fontWeight: FontWeight.w600,
-              color: isSelected ? Colors.deepPurple : Colors.black,
               fontSize: 10,
-              shadows: [
-                Shadow(
-                  offset: Offset(1, 0.9),
-                  blurRadius: 0,
-                  color: Colors.blueGrey,
-                ),
-              ],
+              fontWeight: FontWeight.w500,
+              color: secondaryColor,
             ),
           ),
-        //STATUS
+
+        const SizedBox(height: 2),
+
+        /// 🔹 STATUS
         Text(
           textJobStatus(job),
           style: TextStyle(
             fontSize: 10,
-            color: (job.forSorting
+            fontWeight: FontWeight.w600,
+            color: job.forSorting
                 ? Colors.deepPurple.shade400
-                : Colors.redAccent),
+                : Colors.redAccent.shade200,
           ),
         ),
-        // PRICING SETUP
+
+        /// 🔹 PRICING / REMARKS
         if (job.pricingSetup.isNotEmpty || job.remarks.isNotEmpty)
-          Text(
-            '${job.pricingSetup} ${job.remarks}',
-            style: TextStyle(
-              fontSize: 10,
-              color: Colors.deepPurple.shade400,
+          Padding(
+            padding: const EdgeInsets.only(top: 2),
+            child: Text(
+              '${job.pricingSetup} ${job.remarks}',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w500,
+                color: Colors.deepPurple.shade300,
+              ),
             ),
           ),
       ],
@@ -2173,56 +2791,226 @@ Expanded visNameArea(JobModel job, bool isSelected) {
   );
 }
 
-InkWell visPaidUnpaidArea(BuildContext context, JobModelRepository jobRepo,
-    bool isSelected, JobModel job) {
+InkWell visPaidUnpaidArea(
+  BuildContext context,
+  JobModelRepository jobRepo,
+  bool isSelected,
+  JobModel job,
+) {
+  final bool isPaid = !job.unpaid;
+
+  final Color paidColor = isSelected ? Colors.deepPurple : Colors.black87;
+
+  final Color unpaidColor = Colors.redAccent;
+
+  final Color statusColor = isPaid ? paidColor : unpaidColor;
+
+  final String statusText = job.unpaid
+      ? "Unpaid"
+      : job.paidCash
+          ? "Paid • Cash"
+          : job.paidGCash
+              ? "Paid • GCash"
+              : "Paid";
+
   return InkWell(
+    borderRadius: BorderRadius.circular(14),
     onTap: () {
       showPaidUnpaid(context, jobRepo);
     },
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.end,
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        // Text(
-        //   jobRepo.processStep.isEmpty ? '' : '# ${jobRepo.jobsId}',
-        //   style: const TextStyle(
-        //     fontWeight: FontWeight.w900,
-        //     fontSize: 16,
-        //     shadows: [
-        //       Shadow(
-        //         offset: Offset(1, 1),
-        //         blurRadius: 0,
-        //         color: Colors.blueGrey,
-        //       ),
-        //     ],
-        //   ),
-        // ),
+        /// 💰 AMOUNT
         Text(
-          '₱ ${job.finalPrice}',
+          "₱ ${job.finalPrice}",
           style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: isSelected
-                ? (job.paidCash ? Colors.deepPurple : Colors.redAccent)
-                : (job.paidCash ? Colors.black : Colors.redAccent),
+            fontSize: 14,
+            fontWeight: FontWeight.w800,
+            color: statusColor,
           ),
         ),
-        Text(
-          job.unpaid
-              ? 'Unpaid'
-              : job.paidCash
-                  ? 'Paid\nCash'
-                  : job.paidGCash
-                      ? 'Paid\nGCash'
-                      : 'Unpaid',
-          style: TextStyle(
-            fontWeight: FontWeight.w600,
-            fontSize: 10,
-            color: isSelected
-                ? (job.paidCash ? Colors.deepPurple : Colors.redAccent)
-                : (job.paidCash ? Colors.black : Colors.redAccent),
+
+        const SizedBox(height: 2),
+
+        /// 🔹 STATUS BADGE
+        Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 8,
+            vertical: 3,
           ),
-          textAlign: TextAlign.right,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10),
+            color: isPaid
+                ? Colors.greenAccent.withOpacity(0.15)
+                : Colors.redAccent.withOpacity(0.15),
+          ),
+          child: Text(
+            statusText,
+            style: TextStyle(
+              fontSize: 9,
+              fontWeight: FontWeight.w600,
+              color: statusColor,
+            ),
+            textAlign: TextAlign.right,
+          ),
         ),
       ],
     ),
   );
+}
+
+Future<bool> showCoolConfirmDialog({
+  required BuildContext context,
+  required String title,
+  required String message,
+  String confirmText = "Confirm",
+  String cancelText = "Cancel",
+  bool isDanger = false,
+}) async {
+  final result = await showGeneralDialog<bool>(
+    context: context,
+    barrierDismissible: true,
+    barrierLabel: "Confirm",
+    barrierColor: Colors.black.withOpacity(0.4),
+    transitionDuration: const Duration(milliseconds: 250),
+    pageBuilder: (_, __, ___) {
+      final width = MediaQuery.of(context).size.width;
+
+      return Center(
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(28),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+            child: Container(
+              constraints: BoxConstraints(
+                maxWidth: width > 600 ? 420 : width * 0.92,
+              ),
+              padding: const EdgeInsets.all(26),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(28),
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.white.withOpacity(0.15),
+                    Colors.white.withOpacity(0.05),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                border: Border.all(
+                  color: Colors.white.withOpacity(0.25),
+                  width: 1.2,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.3),
+                    blurRadius: 30,
+                    offset: const Offset(0, 15),
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Title with glow accent
+                  Row(
+                    children: [
+                      Container(
+                        width: 6,
+                        height: 28,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(6),
+                          gradient: LinearGradient(
+                            colors: isDanger
+                                ? [Colors.redAccent, Colors.red]
+                                : [Colors.blueAccent, Colors.purpleAccent],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          title,
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 18),
+
+                  Text(
+                    message,
+                    style: TextStyle(
+                      fontSize: 15,
+                      color: Colors.white.withOpacity(0.85),
+                    ),
+                  ),
+
+                  const SizedBox(height: 32),
+
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      TextButton(
+                        style: TextButton.styleFrom(
+                          foregroundColor: Colors.white.withOpacity(0.8),
+                        ),
+                        onPressed: () => Navigator.pop(context, false),
+                        child: Text(cancelText),
+                      ),
+                      const SizedBox(width: 12),
+                      Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(18),
+                          gradient: LinearGradient(
+                            colors: isDanger
+                                ? [Colors.redAccent, Colors.red]
+                                : [Colors.blueAccent, Colors.purple],
+                          ),
+                        ),
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.transparent,
+                            shadowColor: Colors.transparent,
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 26, vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(18),
+                            ),
+                          ),
+                          onPressed: () => Navigator.pop(context, true),
+                          child: Text(
+                            confirmText,
+                            style: const TextStyle(fontWeight: FontWeight.w600),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    },
+    transitionBuilder: (_, animation, __, child) {
+      return FadeTransition(
+        opacity: animation,
+        child: ScaleTransition(
+          scale: Tween<double>(begin: 0.9, end: 1).animate(animation),
+          child: child,
+        ),
+      );
+    },
+  );
+
+  return result ?? false;
 }

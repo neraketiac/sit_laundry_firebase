@@ -4,165 +4,194 @@ import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedVisibility.d
 import 'package:laundry_firebase/services/newservices/database_jobs.dart';
 import 'package:laundry_firebase/variables/newvariables/jobmodel_repository.dart';
 
+import 'dart:ui';
+
 void showMoveToOnGoing(BuildContext context, JobModelRepository jobRepo) {
   syncRepoToSelectedSmall(jobRepo);
-  showDialog(
+
+  showGeneralDialog(
     context: context,
-    builder: (BuildContext context) {
-      return StatefulBuilder(builder: (context, setState) {
-        return AlertDialog(
-          backgroundColor: Colors.lightBlue,
-          contentPadding: const EdgeInsets.all(0),
-          titlePadding: const EdgeInsets.only(
-            top: 0,
-            left: 5,
-            right: 5,
-            bottom: 0,
-          ),
-          actionsPadding: const EdgeInsets.symmetric(
-            horizontal: 5,
-            vertical: 5,
-          ),
-          title: Text(
-            "Move to On-Going\n"
-            "as #${jobRepo.jobId}",
-            textAlign: TextAlign.center,
-          ),
-          content: SingleChildScrollView(
-            scrollDirection: Axis.vertical,
-            child: Container(
-              padding: EdgeInsets.all(1.0),
-              decoration: BoxDecoration(
-                  border: Border.all(color: Colors.blueAccent, width: 2.0)),
-              child: Form(
-                //key: _formKey,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    visCustomerNameNoAutoComplete(
-                        context, setState, jobRepo, false),
-                  ],
+    barrierDismissible: true,
+    barrierLabel: "MoveToOnGoing",
+    barrierColor: Colors.black.withOpacity(0.45),
+    transitionDuration: const Duration(milliseconds: 250),
+    pageBuilder: (_, __, ___) {
+      final width = MediaQuery.of(context).size.width;
+
+      return StatefulBuilder(
+        builder: (context, setState) {
+          return Center(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(30),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+                child: Container(
+                  constraints: BoxConstraints(
+                    maxWidth: width > 600 ? 480 : width * 0.95,
+                  ),
+                  padding: const EdgeInsets.all(26),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(30),
+                    gradient: LinearGradient(
+                      colors: [
+                        Colors.white.withOpacity(0.15),
+                        Colors.white.withOpacity(0.05),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.25),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.35),
+                        blurRadius: 40,
+                        offset: const Offset(0, 20),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // 🔥 Title with accent bar
+                      Row(
+                        children: [
+                          Container(
+                            width: 6,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(8),
+                              gradient: const LinearGradient(
+                                colors: [
+                                  Colors.blueAccent,
+                                  Colors.purpleAccent,
+                                ],
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              jobRepo.jobId == 0
+                                  ? "Jobs On-Going Full"
+                                  : "Move to #${jobRepo.jobId}",
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 24),
+
+                      // 🔹 Form Area
+                      visCustomerNameNoAutoComplete(
+                          context, setState, jobRepo, false),
+
+                      const SizedBox(height: 32),
+
+                      // 🔥 Buttons
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: Text(
+                              "Cancel",
+                              style: TextStyle(
+                                color: Colors.white.withOpacity(0.8),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(18),
+                              gradient: const LinearGradient(
+                                colors: [
+                                  Colors.blueAccent,
+                                  Colors.purple,
+                                ],
+                              ),
+                            ),
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.transparent,
+                                shadowColor: Colors.transparent,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 28,
+                                  vertical: 14,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(18),
+                                ),
+                              ),
+                              onPressed: () async {
+                                if (jobRepo.customerId == 0) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text("Please select customer."),
+                                    ),
+                                  );
+                                  return;
+                                }
+
+                                final confirm = await showCoolConfirmDialog(
+                                  context: context,
+                                  title: "Confirm Move",
+                                  message: "Move ${jobRepo.customerName} "
+                                      "to #${jobRepo.jobId}?",
+                                  confirmText: "Move",
+                                );
+
+                                if (!confirm) return;
+
+                                await moveQueueToOngoing(
+                                    jobRepo.docId, jobRepo.jobId);
+
+                                Navigator.pop(context);
+
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      "${jobRepo.customerName} added to #${jobRepo.jobId}.",
+                                    ),
+                                  ),
+                                );
+                              },
+                              child: const Text(
+                                "Move to On-Going",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-          // 👇 Bottom buttons
-          actionsAlignment: MainAxisAlignment.end,
-          actions: [
-            TextButton(
-              style: TextButton.styleFrom(
-                backgroundColor: Colors.red.shade300,
-                foregroundColor: Colors.black,
-              ),
-              onPressed: () async {
-                final confirm = await showDialog<bool>(
-                  context: context,
-                  builder: (context) {
-                    return AlertDialog(
-                      title: const Text('Confirm Action'),
-                      content: Text(
-                          'Delete ${jobRepo.customerName} (${jobRepo.finalLoad})?'),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(context, false),
-                          child: const Text('No'),
-                        ),
-                        TextButton(
-                          onPressed: () => Navigator.pop(context, true),
-                          child: const Text('Yes'),
-                        ),
-                      ],
-                    );
-                  },
-                );
-
-                if (confirm == true) {
-                  DatabaseJobsQueue databaseJobsQueue = DatabaseJobsQueue();
-                  await databaseJobsQueue.delete(jobRepo.docId);
-                  Navigator.pop(context, false);
-                }
-              },
-              child: const Text('Delete?'),
-            ),
-            TextButton(
-              onPressed: () {
-                setState(() {
-                  syncRepoToSelectedSmall(jobRepo);
-                });
-
-                Navigator.pop(context); // close popup
-              },
-              child: const Text(
-                'Cancel',
-                style: TextStyle(color: Colors.black),
-              ),
-            ),
-            boxButtonElevated(
-              context: context,
-              label: 'Move to On-Going',
-              onPressed: () async {
-                if (jobRepo.customerId == 0) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Please select customer name.'),
-                    ),
-                  );
-                  return false; // ❌ do NOT close dialog
-                }
-
-                //final nextJobId = await getNextJobId();
-
-                if (jobRepo.jobId == 0) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text(
-                        'Jobs OnGoing is full, please clean jobs first',
-                      ),
-                    ),
-                  );
-                  return false; // ❌ keep dialog open
-                }
-
-                final confirm = await showDialog<bool>(
-                  context: context,
-                  builder: (context) {
-                    return AlertDialog(
-                      title: const Text('Confirm Action'),
-                      content: Text(
-                          'Move ${jobRepo.customerName} (${jobRepo.finalLoad}) to #${jobRepo.jobId} On-Going?'),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(context, false),
-                          child: const Text('No'),
-                        ),
-                        TextButton(
-                          onPressed: () => Navigator.pop(context, true),
-                          child: const Text('Yes'),
-                        ),
-                      ],
-                    );
-                  },
-                );
-
-                if (confirm == false) return false;
-
-                if (confirm == true) {
-                  await moveQueueToOngoing(jobRepo.docId, jobRepo.jobId);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        '${jobRepo.customerName} ₱ ${jobRepo.finalPrice} added to #${jobRepo.jobId}.',
-                      ),
-                    ),
-                  );
-                }
-
-                return true; // ✅ close dialog
-              },
-            ),
-          ],
-        );
-      });
+          );
+        },
+      );
+    },
+    transitionBuilder: (_, animation, __, child) {
+      return FadeTransition(
+        opacity: animation,
+        child: ScaleTransition(
+          scale: Tween<double>(begin: 0.92, end: 1).animate(animation),
+          child: child,
+        ),
+      );
     },
   );
 }

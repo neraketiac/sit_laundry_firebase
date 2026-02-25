@@ -1,37 +1,13 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:laundry_firebase/pages/newpages/body/main_laundry_body.dart';
-import 'package:laundry_firebase/pages/newpages/header/Funds/showCalendarDialog.dart';
-import 'package:laundry_firebase/pages/newpages/header/Funds/showFundsInFundsOut.dart';
 import 'package:laundry_firebase/pages/newpages/header/GCash/showGCashOnly.dart';
 import 'package:laundry_firebase/pages/newpages/header/GCash/showGCashPending.dart';
 import 'package:laundry_firebase/pages/newpages/header/Funds/showLaundryPayment.dart';
-import 'package:laundry_firebase/pages/newpages/header/Funds/showFundCheck.dart';
 import 'package:laundry_firebase/pages/newpages/header/JobOnQueue/showJobOnQueue.dart';
-import 'package:laundry_firebase/pages/newpages/header/Employee/showSalaryMaintenance.dart';
 import 'package:laundry_firebase/variables/newvariables/jobmodel_repository.dart';
 import 'package:laundry_firebase/variables/newvariables/supplies_hist_repository.dart';
 import 'package:laundry_firebase/variables/newvariables/variables.dart';
-
-/*
-cd C:\Users\haali\Documents\GIT_SIT\sit_laundry_firebase
-C:\Users\haali\Documents\GIT_SIT\sit_laundry_firebase> git status
-C:\Users\haali\Documents\GIT_SIT\sit_laundry_firebase> git add .
-C:\Users\haali\Documents\GIT_SIT\sit_laundry_firebase> git commit -m "JobsOnGoing"
-C:\Users\haali\Documents\GIT_SIT\sit_laundry_firebase> git push
-
-flutter build web
-firebase login
-///--<< do this on first time only
-  firebase init hosting
-    public (yes)
-    rewrite index (yes)
-    github (no)
-  open file firebase.json change public to build/web
-//-->>
-firebase deploy
-
-
-*/
 
 class MyMainLaundryHeader extends StatefulWidget {
   final String empid;
@@ -42,15 +18,12 @@ class MyMainLaundryHeader extends StatefulWidget {
   State<MyMainLaundryHeader> createState() => _MyMainLaundryHeaderState();
 }
 
-class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
-//*showJobsOnQueue
-//*showJobsOnQueue
-
+class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader>
+    with SingleTickerProviderStateMixin {
   late JobModelRepository jobRepoOnQueue;
   late JobModelRepository jobRepoNonJob;
 
   late String _sEmpId;
-
   bool _isOpen = false;
 
   @override
@@ -59,22 +32,13 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
 
     _sEmpId = widget.empid;
     empIdGlobal = _sEmpId;
-    if (empIdGlobal == 'Ket' || empIdGlobal == 'DonF') {
-      isAdmin = true;
-    } else {
-      isAdmin = false;
-    }
+
+    isAdmin = (empIdGlobal == 'Ket' || empIdGlobal == 'DonF');
+
     SuppliesHistRepository.instance.reset();
 
-    jobRepoOnQueue = JobModelRepository();
-    jobRepoOnQueue.reset();
+    jobRepoOnQueue = JobModelRepository()..reset();
     jobRepoNonJob = JobModelRepository();
-
-    //JobModelRepository.instance.reset();
-
-    //*show JobsOnQueue
-
-    //*showJobsOnQueue
   }
 
   Widget _fab({
@@ -86,16 +50,37 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
     required Color backgroundColor,
   }) {
     return AnimatedPositioned(
-      duration: const Duration(milliseconds: 320), // fast → slow
+      duration: const Duration(milliseconds: 280),
       curve: Curves.easeOutCubic,
       bottom: bottom,
       left: left,
-      child: FloatingActionButton(
-        backgroundColor: backgroundColor,
-        heroTag: hero,
-        mini: true,
-        onPressed: onTap,
-        child: Icon(icon),
+      child: AnimatedScale(
+        scale: _isOpen ? 1 : 0,
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeOutBack,
+        child: AnimatedOpacity(
+          opacity: _isOpen ? 1 : 0,
+          duration: const Duration(milliseconds: 200),
+          child: Container(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: backgroundColor.withOpacity(0.5),
+                  blurRadius: 12,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+            ),
+            child: FloatingActionButton(
+              heroTag: hero,
+              mini: true,
+              backgroundColor: backgroundColor,
+              onPressed: onTap,
+              child: Icon(icon),
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -114,54 +99,70 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader> {
         child: Stack(
           clipBehavior: Clip.none,
           children: [
-            //4th floor
-
-            //3rd floor
-
+            /// GCash Funds
             _fab(
-                hero: 'Gcash Funds',
-                icon: Icons.attach_money_sharp,
-                bottom: _isOpen ? base : base,
-                left: _isOpen ? base + step + step : base,
-                onTap: () => showGCashOnly(context, jobRepoNonJob),
-                backgroundColor: cAdmin),
+              hero: 'Gcash Funds',
+              icon: Icons.attach_money_sharp,
+              bottom: base,
+              left: _isOpen ? base + step * 2 : base,
+              onTap: () => showGCashOnly(context, jobRepoNonJob),
+              backgroundColor: cAdmin,
+            ),
 
+            /// Laundry Payment
             _fab(
-                hero: 'Laundry Payment',
-                icon: Icons.payments_outlined,
-                bottom: _isOpen ? base : base,
-                left: _isOpen ? base + step : base,
-                onTap: () => showLaundryPayment(context, jobRepoNonJob),
-                backgroundColor: cAdmin),
+              hero: 'Laundry Payment',
+              icon: Icons.payments_outlined,
+              bottom: base,
+              left: _isOpen ? base + step : base,
+              onTap: () => showLaundryPayment(context, jobRepoNonJob),
+              backgroundColor: cAdmin,
+            ),
 
-            //1st floor
-
+            /// GCash Pending
             _fab(
-                hero: 'GCash Pending',
-                icon: Icons.g_mobiledata,
-                bottom: _isOpen ? base + step : base,
-                left: _isOpen ? base + step : base,
-                onTap: () => showGCashPending(context),
-                backgroundColor: cShowGCash),
+              hero: 'GCash Pending',
+              icon: Icons.g_mobiledata,
+              bottom: _isOpen ? base + step : base,
+              left: _isOpen ? base + step : base,
+              onTap: () => showGCashPending(context),
+              backgroundColor: cShowGCash,
+            ),
 
+            /// Jobs On Queue
             _fab(
-                hero: 'JobsOnQueue',
-                icon: Icons.local_laundry_service,
-                bottom: _isOpen ? base + step : base,
-                left: _isOpen ? base : base,
-                onTap: () => showJobOnQueue(context, jobRepoOnQueue),
-                backgroundColor: cJobsOnQueue),
+              hero: 'JobsOnQueue',
+              icon: Icons.local_laundry_service,
+              bottom: _isOpen ? base + step : base,
+              left: base,
+              onTap: () => showJobOnQueue(context, jobRepoOnQueue),
+              backgroundColor: cJobsOnQueue,
+            ),
 
-            /// ───── Main FAB
+            /// MAIN FAB (Glass Style)
             Positioned(
               bottom: base,
               left: base,
-              child: FloatingActionButton(
-                heroTag: 'main',
-                onPressed: () {
-                  setState(() => _isOpen = !_isOpen);
-                },
-                child: Icon(_isOpen ? Icons.close : Icons.menu),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(30),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+                  child: FloatingActionButton(
+                    heroTag: 'main',
+                    backgroundColor: Colors.deepPurple,
+                    elevation: 12,
+                    onPressed: () {
+                      setState(() => _isOpen = !_isOpen);
+                    },
+                    child: AnimatedRotation(
+                      duration: const Duration(milliseconds: 250),
+                      turns: _isOpen ? 0.125 : 0,
+                      child: Icon(
+                        _isOpen ? Icons.close : Icons.menu,
+                      ),
+                    ),
+                  ),
+                ),
               ),
             ),
           ],
