@@ -7,12 +7,9 @@ import 'package:laundry_firebase/variables/newvariables/variables.dart';
 
 void showPaidUnpaid(BuildContext context, JobModelRepository jobRepo) {
   Future<void> saveButtonSetRepository() async {
-//dates
-    /// 🟣 Dates
-    jobRepo.dateQ = Timestamp.now();
-
-    //admin
-    jobRepo.createdBy = empIdGlobal;
+    if (jobRepo.paidCash || jobRepo.paidGCash) {
+      jobRepo.paidD = Timestamp.now();
+    }
 
     syncSelectedToRepositorySmall(jobRepo);
 

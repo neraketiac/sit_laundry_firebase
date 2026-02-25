@@ -24,12 +24,16 @@ class JobModelRepository {
         dateO: timestamp1900,
         paidD: timestamp1900,
         dateD: timestamp1900,
+        customerPickupDate: timestamp1900,
+        riderDeliveryDate: timestamp1900,
         createdBy: '',
         currentEmpId: '',
         customerId: 0,
         customerName: '',
         forSorting: false,
         riderPickup: false,
+        isCustomerPickedUp: false,
+        isDeliveredToCustomer: false,
         perKilo: false,
         perLoad: false,
         finalKilo: 0,
@@ -110,12 +114,16 @@ class JobModelRepository {
   Timestamp get dateO => jobModel.dateO;
   Timestamp get paidD => jobModel.paidD;
   Timestamp get dateD => jobModel.dateD;
+  Timestamp get customerPickupDate => jobModel.customerPickupDate;
+  Timestamp get riderDeliveryDate => jobModel.riderDeliveryDate;
   String get createdBy => jobModel.createdBy;
   String get currentEmpId => jobModel.currentEmpId;
   int get customerId => jobModel.customerId;
   String get customerName => jobModel.customerName;
   bool get forSorting => jobModel.forSorting;
   bool get riderPickup => jobModel.riderPickup;
+  bool get isCustomerPickedUp => jobModel.isCustomerPickedUp;
+  bool get isDeliveredToCustomer => jobModel.isDeliveredToCustomer;
   bool get perKilo => jobModel.perKilo;
   bool get perLoad => jobModel.perLoad;
   double get finalKilo => jobModel.finalKilo;
@@ -168,12 +176,18 @@ class JobModelRepository {
   set dateO(Timestamp value) => jobModel.dateO = value;
   set paidD(Timestamp value) => jobModel.paidD = value;
   set dateD(Timestamp value) => jobModel.dateD = value;
+  set customerPickupDate(Timestamp value) =>
+      jobModel.customerPickupDate = value;
+  set riderDeliveryDate(Timestamp value) => jobModel.riderDeliveryDate = value;
   set createdBy(String value) => jobModel.createdBy = value;
   set currentEmpId(String value) => jobModel.currentEmpId = value;
   set customerId(int value) => jobModel.customerId = value;
   set customerName(String value) => jobModel.customerName = value;
   set forSorting(bool value) => jobModel.forSorting = value;
   set riderPickup(bool value) => jobModel.riderPickup = value;
+  set isCustomerPickedUp(bool value) => jobModel.isCustomerPickedUp = value;
+  set isDeliveredToCustomer(bool value) =>
+      jobModel.isDeliveredToCustomer = value;
   set perKilo(bool value) => jobModel.perKilo = value;
   set perLoad(bool value) => jobModel.perLoad = value;
   set finalKilo(double value) => jobModel.finalKilo = value;

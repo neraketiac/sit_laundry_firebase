@@ -276,7 +276,9 @@ Widget visRiderPickup(
       children: [
         /// 🔹 Label
         Text(
-          "     Initial Status",
+          jobRepo.processStep == 'done'
+              ? "     Final Status"
+              : "     Initial Status",
           style: TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.w600,
@@ -328,7 +330,13 @@ Widget visRiderPickup(
                       ),
                       alignment: Alignment.center,
                       child: Text(
-                        index == 0 ? "For Sorting" : "Rider Pickup",
+                        index == 0
+                            ? (jobRepo.processStep == 'done'
+                                ? 'Customer Pickup'
+                                : "For Sorting")
+                            : (jobRepo.processStep == 'done'
+                                ? 'Rider Delivery'
+                                : "Rider Pickup"),
                         style: TextStyle(
                           fontWeight: FontWeight.w600,
                           color: isSelected
@@ -343,6 +351,45 @@ Widget visRiderPickup(
             ),
           ),
         ),
+
+        /// 🔽 Dynamic Checkbox
+        if (jobRepo.processStep == 'done') ...[
+          const SizedBox(height: 6),
+          if (jobRepo.selectedRiderPickup == listRiderPickup[0])
+            Row(
+              children: [
+                Checkbox(
+                  value: jobRepo.isCustomerPickedUp ?? false,
+                  onChanged: (value) {
+                    setState(() {
+                      jobRepo.isCustomerPickedUp = value ?? false;
+                    });
+                  },
+                ),
+                const Text(
+                  "Napickup ni customer",
+                  style: TextStyle(color: Colors.white),
+                ),
+              ],
+            ),
+          if (jobRepo.selectedRiderPickup == listRiderPickup[1])
+            Row(
+              children: [
+                Checkbox(
+                  value: jobRepo.isDeliveredToCustomer ?? false,
+                  onChanged: (value) {
+                    setState(() {
+                      jobRepo.isDeliveredToCustomer = value ?? false;
+                    });
+                  },
+                ),
+                const Text(
+                  "Nadelivery kay customer",
+                  style: TextStyle(color: Colors.white),
+                ),
+              ],
+            ),
+        ]
       ],
     ),
   );

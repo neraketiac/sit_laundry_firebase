@@ -45,11 +45,13 @@ class JobModel {
   int jobId;
 
   /// 🟣 Dates
-  Timestamp dateQ;
-  Timestamp needOn;
-  Timestamp dateO;
-  Timestamp paidD;
-  Timestamp dateD;
+  Timestamp dateQ; //Queue Date
+  Timestamp needOn; //need on date
+  Timestamp dateO; //On-Going date
+  Timestamp paidD; //Paid Date / GCash Date
+  Timestamp dateD; //Done Date
+  Timestamp customerPickupDate; //Done - pickup ni customer Date
+  Timestamp riderDeliveryDate; //Done - delivery date ni rider
 
   /// 🟠 Employee
   String createdBy;
@@ -60,6 +62,8 @@ class JobModel {
   String customerName;
   bool forSorting;
   bool riderPickup;
+  bool isCustomerPickedUp;
+  bool isDeliveredToCustomer;
 
   /// 🟤 Pricing
   bool perKilo;
@@ -122,12 +126,16 @@ class JobModel {
     required this.dateO,
     required this.paidD,
     required this.dateD,
+    required this.customerPickupDate,
+    required this.riderDeliveryDate,
     required this.createdBy,
     required this.currentEmpId,
     required this.customerId,
     required this.customerName,
     required this.forSorting,
     required this.riderPickup,
+    required this.isCustomerPickedUp,
+    required this.isDeliveredToCustomer,
     required this.perKilo,
     required this.perLoad,
     required this.finalKilo,
@@ -167,12 +175,16 @@ class JobModel {
       dateO: Timestamp.now(),
       paidD: Timestamp.now(),
       dateD: Timestamp.now(),
+      customerPickupDate: Timestamp.now(),
+      riderDeliveryDate: Timestamp.now(),
       createdBy: '',
       currentEmpId: '',
       customerId: 0,
       customerName: '',
       forSorting: false,
       riderPickup: false,
+      isCustomerPickedUp: false,
+      isDeliveredToCustomer: false,
       perKilo: true,
       perLoad: false,
       finalKilo: 0,
@@ -213,12 +225,16 @@ class JobModel {
     Timestamp? dateO,
     Timestamp? paidD,
     Timestamp? dateD,
+    Timestamp? customerPickupDate,
+    Timestamp? riderDeliveryDate,
     String? createdBy,
     String? currentEmpId,
     int? customerId,
     String? customerName,
     bool? forSorting,
     bool? riderPickup,
+    bool? isCustomerPickedUp,
+    bool? isDeliveredToCustomer,
     bool? perKilo,
     bool? perLoad,
     double? finalKilo,
@@ -256,12 +272,17 @@ class JobModel {
       dateO: dateO ?? this.dateO,
       paidD: paidD ?? this.paidD,
       dateD: dateD ?? this.dateD,
+      customerPickupDate: customerPickupDate ?? this.customerPickupDate,
+      riderDeliveryDate: riderDeliveryDate ?? this.riderDeliveryDate,
       createdBy: createdBy ?? this.createdBy,
       currentEmpId: currentEmpId ?? this.currentEmpId,
       customerId: customerId ?? this.customerId,
       customerName: customerName ?? this.customerName,
       forSorting: forSorting ?? this.forSorting,
       riderPickup: riderPickup ?? this.riderPickup,
+      isCustomerPickedUp: isCustomerPickedUp ?? this.isCustomerPickedUp,
+      isDeliveredToCustomer:
+          isDeliveredToCustomer ?? this.isDeliveredToCustomer,
       perKilo: perKilo ?? this.perKilo,
       perLoad: perLoad ?? this.perLoad,
       finalKilo: finalKilo ?? this.finalKilo,
@@ -304,6 +325,8 @@ class JobModel {
         customerName: json['C01_CustomerName'],
         forSorting: json['Q00_ForSorting'],
         riderPickup: json['Q01_RiderPickup'],
+        isCustomerPickedUp: json['Q01_IsCustomerPickedUp'],
+        isDeliveredToCustomer: json['Q01_IsDeliveredToCustomer'],
         perKilo: json['Q02_PerKilo'],
         perLoad: json['Q03_PerLoad'],
         finalKilo: json['Q04_FinalKilo'],
@@ -331,6 +354,8 @@ class JobModel {
         paidD: json['A03_PaidD'],
         dateO: json['A04_DateO'],
         dateD: json['A05_DateD'],
+        customerPickupDate: json['A06_CustomerPickupDate'],
+        riderDeliveryDate: json['A07_RiderDeliveryDate'],
         items: (json['items'] as List)
             .map((e) => OtherItemModel.fromJson(e))
             .toList(),
@@ -351,6 +376,8 @@ class JobModel {
         'C01_CustomerName': customerName,
         'Q00_ForSorting': forSorting,
         'Q01_RiderPickup': riderPickup,
+        'Q01_IsCustomerPickedUp': isCustomerPickedUp,
+        'Q01_IsDeliveredToCustomer': isDeliveredToCustomer,
         'Q02_PerKilo': perKilo,
         'Q03_PerLoad': perLoad,
         'Q04_FinalKilo': finalKilo,
@@ -378,6 +405,8 @@ class JobModel {
         'A03_PaidD': paidD,
         'A04_DateO': dateO,
         'A05_DateD': dateD,
+        'A06_CustomerPickupDate': customerPickupDate,
+        'A07_RiderDeliveryDate': riderDeliveryDate,
         'items': items.map((e) => e.toJson()).toList(),
         'O00_ProcessStep': processStep,
         'O01_AllStatus': allStatus,

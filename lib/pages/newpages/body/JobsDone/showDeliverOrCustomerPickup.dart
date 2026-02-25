@@ -3,24 +3,20 @@ import 'package:flutter/material.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedMethods.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedVisibility.dart';
 import 'package:laundry_firebase/variables/newvariables/jobmodel_repository.dart';
-import 'package:laundry_firebase/variables/newvariables/variables.dart';
 
 void showDeliverOrCustomerPickup(
     BuildContext context, JobModelRepository jobRepo) {
   Future<void> saveButtonSetRepository() async {
-//dates
     /// 🟣 Dates
-    jobRepo.dateQ = Timestamp.now();
+    if (jobRepo.isCustomerPickedUp) {
+      jobRepo.customerPickupDate = Timestamp.now();
+    }
 
-    //admin
-    jobRepo.createdBy = empIdGlobal;
+    if (jobRepo.isDeliveredToCustomer) {
+      jobRepo.riderDeliveryDate = Timestamp.now();
+    }
 
     syncSelectedToRepositorySmall(jobRepo);
-
-    //replace riderpickup forsorting, totally remove forsorting if riderpickup
-    jobRepo.forSorting = forSorting == jobRepo.selectedRiderPickup;
-    jobRepo.riderPickup = riderPickup == jobRepo.selectedRiderPickup;
-
     await callDatabaseUpdateJob(context, jobRepo.getJobsModel()!);
     //await setRepositoryLaundryPayment(context, 'Show Jobs OnQueue');
   }
