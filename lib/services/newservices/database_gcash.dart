@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:laundry_firebase/models/newmodels/gcashmodel.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedMethods.dart';
+import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedmethodsdatabase.dart';
 import 'package:laundry_firebase/variables/newvariables/variables_oth.dart';
 
 /// 🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦

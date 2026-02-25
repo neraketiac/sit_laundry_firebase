@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedMethods.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedVisibility.dart';
+import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedmethodsdatabase.dart';
 import 'package:laundry_firebase/variables/newvariables/jobmodel_repository.dart';
 
 void showJobOnQueueEdit(BuildContext context, JobModelRepository jobRepo) {
@@ -17,7 +18,7 @@ void showJobOnQueueEdit(BuildContext context, JobModelRepository jobRepo) {
     builder: (BuildContext context) {
       return StatefulBuilder(builder: (context, setState) {
         return AlertDialog(
-          backgroundColor: Colors.lightBlue,
+          backgroundColor: Colors.lightBlue.shade600,
           contentPadding: const EdgeInsets.all(0),
           titlePadding: const EdgeInsets.only(
             top: 0,

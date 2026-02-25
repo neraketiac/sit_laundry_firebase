@@ -47,9 +47,9 @@ class AutoCompleteCustomer extends StatelessWidget {
             decoration: const InputDecoration(
               hintText: "Search customer...",
               hintStyle: TextStyle(
-                color: Colors.white54,
-                fontSize: 13,
-              ),
+                  color: Colors.white54,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600),
               border: InputBorder.none,
             ),
             onFieldSubmitted: (value) => onFieldSubmitted(),

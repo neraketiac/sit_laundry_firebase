@@ -8,6 +8,7 @@ import 'package:laundry_firebase/pages/newpages/body/JobOnQueue/showPaidUnpaid.d
 import 'package:laundry_firebase/pages/newpages/sharedmethods/autocompletecustomer.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedConstantsFinal.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedMethods.dart';
+import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedmethodsdatabase.dart';
 import 'package:laundry_firebase/variables/newvariables/gcash_repository.dart';
 import 'package:laundry_firebase/variables/newvariables/jobmodel_repository.dart';
 import 'package:laundry_firebase/variables/newvariables/variables.dart';
@@ -15,42 +16,6 @@ import 'package:laundry_firebase/variables/newvariables/variables_ble.dart';
 import 'package:laundry_firebase/variables/newvariables/variables_det.dart';
 import 'package:laundry_firebase/variables/newvariables/variables_fab.dart';
 import 'package:laundry_firebase/variables/newvariables/variables_oth.dart';
-import 'package:laundry_firebase/variables/newvariables/variables_supplies.dart';
-
-class PHPhoneFormatter extends TextInputFormatter {
-  @override
-  TextEditingValue formatEditUpdate(
-      TextEditingValue oldValue, TextEditingValue newValue) {
-    // Remove all spaces
-    String digits = newValue.text.replaceAll(' ', '');
-
-    // Allow digits only
-    digits = digits.replaceAll(RegExp(r'[^0-9]'), '');
-
-    // Limit to 11 digits
-    if (digits.length > 11) {
-      digits = digits.substring(0, 11);
-    }
-
-    String formatted = '';
-
-    for (int i = 0; i < digits.length; i++) {
-      formatted += digits[i];
-
-      // Add spaces after 2, 4, and 7 digits
-      if (i == 1 || i == 3 || i == 6) {
-        if (i != digits.length - 1) {
-          formatted += ' ';
-        }
-      }
-    }
-
-    return TextEditingValue(
-      text: formatted,
-      selection: TextSelection.collapsed(offset: formatted.length),
-    );
-  }
-}
 
 Widget visCustomerName(
   BuildContext context,
@@ -229,9 +194,9 @@ Widget visCustomerNameNoAutoComplete(
                     '₱ ${jobRepo.finalPrice}.00',
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: 15,
+              fontSize: 16,
               height: 1.4,
-              fontWeight: FontWeight.w500,
+              fontWeight: FontWeight.w600,
               color: jobRepo.customerNameVar.text.isEmpty
                   ? Colors.white.withOpacity(0.5)
                   : Colors.white,
@@ -311,6 +276,9 @@ Widget visRiderPickup(
                     onTap: () {
                       setState(() {
                         jobRepo.selectedRiderPickup = listRiderPickup[index];
+                        //reset once change of selection
+                        jobRepo.isCustomerPickedUp = false;
+                        jobRepo.isDeliveredToCustomer = false;
                       });
                     },
                     child: AnimatedContainer(
@@ -466,7 +434,7 @@ Widget visSelectPackage(
                           context: context,
                           title: "Change Package?",
                           message: "Items in All Services will be removed.",
-                          confirmText: "Change",
+                          confirmText: "Yes",
                         );
 
                         if (!confirm) return;
@@ -614,7 +582,7 @@ Visibility visAmountRegSSPerKg(
               Text(
                 formatter.format(jobRepo.totalPriceRegSS),
                 style: const TextStyle(
-                  fontSize: 28,
+                  fontSize: fontSizeTotalPrice,
                   fontWeight: FontWeight.w800,
                   color: Colors.white,
                 ),
@@ -651,27 +619,47 @@ Visibility visAmountRegSSPerKg(
                     jobRepo.quantityKg % 1 == 0 ? 0 : 1,
                   )} kg",
                   style: const TextStyle(
-                    fontSize: 20,
+                    fontSize: fontSizeKiloLoad,
                     fontWeight: FontWeight.w700,
                     color: Colors.white,
                   ),
                 ),
                 const SizedBox(height: 2),
                 GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      jobRepo.isPerKg = false;
-                      resetPaymentStatus(jobRepo);
-                    });
-                  },
-                  child: Text(
-                    "Switch to Load",
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.blueAccent,
-                    ),
-                  ),
-                ),
+                    onTap: () {
+                      setState(() {
+                        jobRepo.isPerKg = false;
+                        resetPaymentStatus(jobRepo);
+                      });
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 2),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        gradient: const LinearGradient(
+                          colors: [
+                            Colors.blueAccent,
+                            Colors.purpleAccent,
+                          ],
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.purple.withOpacity(0.4),
+                            blurRadius: 15,
+                            offset: const Offset(0, 6),
+                          ),
+                        ],
+                      ),
+                      child: const Text(
+                        "Switch to Load",
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                    )),
               ],
             ),
           ),
@@ -707,48 +695,6 @@ Visibility visAmountRegSSPerKg(
             ],
           ),
         ],
-      ),
-    ),
-  );
-}
-
-Widget _glassActionButton({
-  required String label,
-  required VoidCallback onTap,
-  bool disabled = false,
-}) {
-  return GestureDetector(
-    onTap: disabled ? null : onTap,
-    child: AnimatedContainer(
-      duration: const Duration(milliseconds: 200),
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        gradient: disabled
-            ? null
-            : const LinearGradient(
-                colors: [
-                  Colors.blueAccent,
-                  Colors.purpleAccent,
-                ],
-              ),
-        color: disabled ? Colors.grey.withOpacity(0.3) : null,
-        boxShadow: disabled
-            ? []
-            : [
-                BoxShadow(
-                  color: Colors.purple.withOpacity(0.4),
-                  blurRadius: 15,
-                  offset: const Offset(0, 6),
-                ),
-              ],
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontWeight: FontWeight.w600,
-          color: disabled ? Colors.white54 : Colors.white,
-        ),
       ),
     ),
   );
@@ -827,7 +773,7 @@ Visibility visAmountRegSSPerLoad(
               Text(
                 formatter.format(jobRepo.totalPriceRegSS),
                 style: const TextStyle(
-                  fontSize: 28,
+                  fontSize: fontSizeTotalPrice,
                   fontWeight: FontWeight.w800,
                   color: Colors.white,
                 ),
@@ -862,27 +808,47 @@ Visibility visAmountRegSSPerLoad(
                 Text(
                   "${jobRepo.quantityLoad} load",
                   style: const TextStyle(
-                    fontSize: 20, // ← SAME AS KG
+                    fontSize: fontSizeKiloLoad, // ← SAME AS KG
                     fontWeight: FontWeight.w700,
                     color: Colors.white,
                   ),
                 ),
                 const SizedBox(height: 2),
                 GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      jobRepo.isPerKg = true;
-                      resetPaymentStatus(jobRepo);
-                    });
-                  },
-                  child: Text(
-                    "Switch to Kg",
-                    style: TextStyle(
-                      fontSize: 12, // ← SAME AS KG
-                      color: Colors.blueAccent,
-                    ),
-                  ),
-                ),
+                    onTap: () {
+                      setState(() {
+                        jobRepo.isPerKg = true;
+                        resetPaymentStatus(jobRepo);
+                      });
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 2),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        gradient: const LinearGradient(
+                          colors: [
+                            Colors.blueAccent,
+                            Colors.purpleAccent,
+                          ],
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.purple.withOpacity(0.4),
+                            blurRadius: 15,
+                            offset: const Offset(0, 6),
+                          ),
+                        ],
+                      ),
+                      child: const Text(
+                        "Switch to Kg",
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                    )),
               ],
             ),
           ),
@@ -906,51 +872,6 @@ Visibility visAmountRegSSPerLoad(
             ],
           ),
         ],
-      ),
-    ),
-  );
-}
-
-Widget _glassMiniButton({
-  required String label,
-  required VoidCallback onTap,
-  bool disabled = false,
-}) {
-  return GestureDetector(
-    onTap: disabled ? null : onTap,
-    child: AnimatedContainer(
-      duration: const Duration(milliseconds: 200),
-      padding: const EdgeInsets.all(1),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        gradient: disabled
-            ? null
-            : const LinearGradient(
-                colors: [
-                  Colors.blueAccent,
-                  Colors.purpleAccent,
-                ],
-              ),
-        color: disabled ? Colors.grey.withOpacity(0.3) : null,
-        boxShadow: disabled
-            ? []
-            : [
-                BoxShadow(
-                  color: Colors.purple.withOpacity(0.4),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontWeight: FontWeight.w600,
-            color: disabled ? Colors.white54 : Colors.white,
-          ),
-        ),
       ),
     ),
   );
@@ -1185,54 +1106,6 @@ Widget visAmountOthersOnly(
   );
 }
 
-Widget _glassShortcutButton({
-  required String label,
-  required VoidCallback onTap,
-}) {
-  return GestureDetector(
-    onTap: onTap,
-    child: Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        gradient: const LinearGradient(
-          colors: [Colors.pinkAccent, Colors.purpleAccent],
-        ),
-      ),
-      child: Text(
-        label,
-        style: const TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
-          color: Colors.white,
-        ),
-      ),
-    ),
-  );
-}
-
-Widget _glassAddButton({required VoidCallback onTap}) {
-  return GestureDetector(
-    onTap: onTap,
-    child: Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        gradient: const LinearGradient(
-          colors: [Colors.blueAccent, Colors.purpleAccent],
-        ),
-      ),
-      child: const Text(
-        "Add",
-        style: TextStyle(
-          fontWeight: FontWeight.w600,
-          color: Colors.white,
-        ),
-      ),
-    ),
-  );
-}
-
 Visibility visPaidUnPaid(
     BuildContext context, Function setState, JobModelRepository jobRepo) {
   // final List<int> listPaidUnpaid = [
@@ -1443,70 +1316,6 @@ Visibility visPaidUnPaid(
   );
 }
 
-Widget _glassPaymentToggle({
-  required String label,
-  required bool selected,
-  required VoidCallback onTap,
-}) {
-  return GestureDetector(
-    onTap: onTap,
-    child: AnimatedContainer(
-      duration: const Duration(milliseconds: 200),
-      padding: const EdgeInsets.symmetric(vertical: 14),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(18),
-        gradient: selected
-            ? const LinearGradient(
-                colors: [Colors.blueAccent, Colors.purpleAccent],
-              )
-            : null,
-        color: selected ? null : Colors.black.withOpacity(0.2),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.2),
-        ),
-      ),
-      alignment: Alignment.center,
-      child: Text(
-        label,
-        style: TextStyle(
-          fontWeight: FontWeight.w600,
-          color: selected ? Colors.white : Colors.white.withOpacity(0.7),
-        ),
-      ),
-    ),
-  );
-}
-
-Widget _glassAmountField({
-  required String label,
-  required TextEditingController controller,
-}) {
-  return Container(
-    padding: const EdgeInsets.symmetric(horizontal: 12),
-    decoration: BoxDecoration(
-      borderRadius: BorderRadius.circular(16),
-      color: Colors.black.withOpacity(0.25),
-      border: Border.all(
-        color: Colors.white.withOpacity(0.2),
-      ),
-    ),
-    child: TextFormField(
-      controller: controller,
-      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-      textAlign: TextAlign.center,
-      style: const TextStyle(
-        color: Colors.white,
-        fontSize: 13,
-      ),
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: const TextStyle(color: Colors.white70),
-        border: InputBorder.none,
-      ),
-    ),
-  );
-}
-
 Visibility visFold(
   BuildContext context,
   Function setState,
@@ -1545,126 +1354,6 @@ Visibility visMix(
           jobRepo.mix = val;
         });
       },
-    ),
-  );
-}
-
-Widget _glassBinaryToggle({
-  required String title,
-  required String leftLabel,
-  required String rightLabel,
-  required bool value,
-  required ValueChanged<bool> onChanged,
-}) {
-  return Container(
-    padding: const EdgeInsets.all(1),
-    decoration: BoxDecoration(
-      borderRadius: BorderRadius.circular(22),
-      gradient: LinearGradient(
-        colors: [
-          Colors.white.withOpacity(0.12),
-          Colors.white.withOpacity(0.05),
-        ],
-      ),
-      border: Border.all(
-        color: Colors.white.withOpacity(0.25),
-      ),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.black.withOpacity(0.35),
-          blurRadius: 20,
-          offset: const Offset(0, 10),
-        ),
-      ],
-    ),
-    child: Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          title,
-          style: TextStyle(
-            fontSize: 12,
-            letterSpacing: 1,
-            fontWeight: FontWeight.w600,
-            color: Colors.white.withOpacity(0.7),
-          ),
-        ),
-        const SizedBox(height: 12),
-        Container(
-          padding: const EdgeInsets.all(1),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(18),
-            color: Colors.black.withOpacity(0.2),
-            border: Border.all(
-              color: Colors.white.withOpacity(0.2),
-            ),
-          ),
-          child: Row(
-            children: [
-              Expanded(
-                child: GestureDetector(
-                  onTap: () => onChanged(true),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    padding: const EdgeInsets.symmetric(vertical: 10),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(14),
-                      gradient: value
-                          ? const LinearGradient(
-                              colors: [
-                                Colors.blueAccent,
-                                Colors.purpleAccent,
-                              ],
-                            )
-                          : null,
-                    ),
-                    alignment: Alignment.center,
-                    child: Text(
-                      leftLabel,
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        color: value
-                            ? Colors.white
-                            : Colors.white.withOpacity(0.6),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              Expanded(
-                child: GestureDetector(
-                  onTap: () => onChanged(false),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    padding: const EdgeInsets.symmetric(vertical: 10),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(14),
-                      gradient: !value
-                          ? const LinearGradient(
-                              colors: [
-                                Colors.blueAccent,
-                                Colors.purpleAccent,
-                              ],
-                            )
-                          : null,
-                    ),
-                    alignment: Alignment.center,
-                    child: Text(
-                      rightLabel,
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        color: !value
-                            ? Colors.white
-                            : Colors.white.withOpacity(0.6),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
     ),
   );
 }
@@ -1842,121 +1531,6 @@ Widget visAddSpin(
         }
       });
     },
-  );
-}
-
-Widget _glassCounterCard({
-  required String label,
-  required int count,
-  required VoidCallback onIncrement,
-  required VoidCallback onDecrement,
-  bool visible = true,
-  bool highlight = false,
-}) {
-  return Visibility(
-    visible: visible,
-    child: Container(
-      padding: const EdgeInsets.all(1),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(22),
-        gradient: LinearGradient(
-          colors: highlight
-              ? [
-                  Colors.greenAccent.withOpacity(0.4),
-                  Colors.tealAccent.withOpacity(0.3),
-                ]
-              : [
-                  Colors.white.withOpacity(0.12),
-                  Colors.white.withOpacity(0.05),
-                ],
-        ),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.25),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.35),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          /// ➖
-          _glassMiniCounterButton(
-            label: "-",
-            disabled: count <= 0,
-            onTap: onDecrement,
-          ),
-
-          /// LABEL + COUNT
-          Column(
-            children: [
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.white.withOpacity(0.7),
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                "$count pc",
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
-                ),
-              ),
-            ],
-          ),
-
-          /// ➕
-          _glassMiniCounterButton(
-            label: "+",
-            onTap: onIncrement,
-          ),
-        ],
-      ),
-    ),
-  );
-}
-
-Widget _glassMiniCounterButton({
-  required String label,
-  required VoidCallback onTap,
-  bool disabled = false,
-}) {
-  return GestureDetector(
-    onTap: disabled ? null : onTap,
-    child: AnimatedContainer(
-      duration: const Duration(milliseconds: 200),
-      padding: const EdgeInsets.symmetric(
-        horizontal: 18,
-        vertical: 10,
-      ),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        gradient: disabled
-            ? null
-            : const LinearGradient(
-                colors: [
-                  Colors.blueAccent,
-                  Colors.purpleAccent,
-                ],
-              ),
-        color: disabled ? Colors.grey.withOpacity(0.3) : null,
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontWeight: FontWeight.w700,
-          color: disabled ? Colors.white54 : Colors.white,
-        ),
-      ),
-    ),
   );
 }
 
@@ -2556,38 +2130,6 @@ Widget showUploadedImage(
   );
 }
 
-Widget _uploadPlaceholder(IconData icon) {
-  return Container(
-    width: 120,
-    height: 120,
-    decoration: BoxDecoration(
-      borderRadius: BorderRadius.circular(16),
-      color: Colors.black.withOpacity(0.25),
-      border: Border.all(
-        color: Colors.white.withOpacity(0.2),
-      ),
-    ),
-    child: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Icon(
-          icon,
-          size: 30,
-          color: Colors.white70,
-        ),
-        const SizedBox(height: 6),
-        const Text(
-          "Upload Receipt",
-          style: TextStyle(
-            fontSize: 11,
-            color: Colors.white54,
-          ),
-        ),
-      ],
-    ),
-  );
-}
-
 Widget visOnGoingStatus(
   BuildContext context,
   Function setState,
@@ -2913,6 +2455,12 @@ InkWell visPaidUnpaidArea(
   );
 }
 
+//***************************************************************** */
+//                                                                  //
+//                           ALERTS                                 //
+//                                                                  //
+//***************************************************************** */
+
 Future<bool> showCoolConfirmDialog({
   required BuildContext context,
   required String title,
@@ -3040,7 +2588,9 @@ Future<bool> showCoolConfirmDialog({
                           onPressed: () => Navigator.pop(context, true),
                           child: Text(
                             confirmText,
-                            style: const TextStyle(fontWeight: FontWeight.w600),
+                            style: const TextStyle(
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white),
                           ),
                         ),
                       ),
@@ -3065,4 +2615,466 @@ Future<bool> showCoolConfirmDialog({
   );
 
   return result ?? false;
+}
+
+//***************************************************************** */
+//                                                                  //
+//                        NON FINAL VIS ITEMS                       //
+//                      *being call in here                         //
+//***************************************************************** */
+
+Widget _uploadPlaceholder(IconData icon) {
+  return Container(
+    width: 20,
+    height: 20,
+    decoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(16),
+      color: Colors.black.withOpacity(0.25),
+      border: Border.all(
+        color: Colors.white.withOpacity(0.2),
+      ),
+    ),
+    child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(
+          icon,
+          size: 30,
+          color: Colors.white70,
+        ),
+        const SizedBox(height: 6),
+        const Text(
+          "Upload Receipt",
+          style: TextStyle(
+            fontSize: 11,
+            color: Colors.white54,
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+Widget _glassCounterCard({
+  required String label,
+  required int count,
+  required VoidCallback onIncrement,
+  required VoidCallback onDecrement,
+  bool visible = true,
+  bool highlight = false,
+}) {
+  return Visibility(
+    visible: visible,
+    child: Container(
+      padding: const EdgeInsets.all(1),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(22),
+        gradient: LinearGradient(
+          colors: highlight
+              ? [
+                  Colors.greenAccent.withOpacity(0.4),
+                  Colors.tealAccent.withOpacity(0.3),
+                ]
+              : [
+                  Colors.white.withOpacity(0.12),
+                  Colors.white.withOpacity(0.05),
+                ],
+        ),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.25),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.35),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          /// ➖
+          _glassMiniCounterButton(
+            label: "-",
+            disabled: count <= 0,
+            onTap: onDecrement,
+          ),
+
+          /// LABEL + COUNT
+          Column(
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.white.withOpacity(0.7),
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                "$count pc",
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ),
+
+          /// ➕
+          _glassMiniCounterButton(
+            label: "+",
+            onTap: onIncrement,
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+Widget _glassMiniCounterButton({
+  required String label,
+  required VoidCallback onTap,
+  bool disabled = false,
+}) {
+  return GestureDetector(
+    onTap: disabled ? null : onTap,
+    child: AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      padding: const EdgeInsets.symmetric(
+        horizontal: 18,
+        vertical: 10,
+      ),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        gradient: disabled
+            ? null
+            : const LinearGradient(
+                colors: [
+                  Colors.blueAccent,
+                  Colors.purpleAccent,
+                ],
+              ),
+        color: disabled ? Colors.grey.withOpacity(0.3) : null,
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontWeight: FontWeight.w700,
+          color: disabled ? Colors.white54 : Colors.white,
+        ),
+      ),
+    ),
+  );
+}
+
+Widget _glassBinaryToggle({
+  required String title,
+  required String leftLabel,
+  required String rightLabel,
+  required bool value,
+  required ValueChanged<bool> onChanged,
+}) {
+  return Container(
+    padding: const EdgeInsets.all(1),
+    decoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(22),
+      gradient: LinearGradient(
+        colors: [
+          Colors.white.withOpacity(0.12),
+          Colors.white.withOpacity(0.05),
+        ],
+      ),
+      border: Border.all(
+        color: Colors.white.withOpacity(0.25),
+      ),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.35),
+          blurRadius: 20,
+          offset: const Offset(0, 10),
+        ),
+      ],
+    ),
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          title,
+          style: TextStyle(
+            fontSize: 12,
+            letterSpacing: 1,
+            fontWeight: FontWeight.w600,
+            color: Colors.white.withOpacity(0.7),
+          ),
+        ),
+        const SizedBox(height: 12),
+        Container(
+          padding: const EdgeInsets.all(1),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(18),
+            color: Colors.black.withOpacity(0.2),
+            border: Border.all(
+              color: Colors.white.withOpacity(0.2),
+            ),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: GestureDetector(
+                  onTap: () => onChanged(true),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(14),
+                      gradient: value
+                          ? const LinearGradient(
+                              colors: [
+                                Colors.blueAccent,
+                                Colors.purpleAccent,
+                              ],
+                            )
+                          : null,
+                    ),
+                    alignment: Alignment.center,
+                    child: Text(
+                      leftLabel,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        color: value
+                            ? Colors.white
+                            : Colors.white.withOpacity(0.6),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: GestureDetector(
+                  onTap: () => onChanged(false),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(14),
+                      gradient: !value
+                          ? const LinearGradient(
+                              colors: [
+                                Colors.blueAccent,
+                                Colors.purpleAccent,
+                              ],
+                            )
+                          : null,
+                    ),
+                    alignment: Alignment.center,
+                    child: Text(
+                      rightLabel,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        color: !value
+                            ? Colors.white
+                            : Colors.white.withOpacity(0.6),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+Widget _glassPaymentToggle({
+  required String label,
+  required bool selected,
+  required VoidCallback onTap,
+}) {
+  return GestureDetector(
+    onTap: onTap,
+    child: AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      padding: const EdgeInsets.symmetric(vertical: 14),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(18),
+        gradient: selected
+            ? const LinearGradient(
+                colors: [Colors.blueAccent, Colors.purpleAccent],
+              )
+            : null,
+        color: selected ? null : Colors.black.withOpacity(0.2),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.2),
+        ),
+      ),
+      alignment: Alignment.center,
+      child: Text(
+        label,
+        style: TextStyle(
+          fontWeight: FontWeight.w600,
+          color: selected ? Colors.white : Colors.white.withOpacity(0.7),
+        ),
+      ),
+    ),
+  );
+}
+
+Widget _glassAmountField({
+  required String label,
+  required TextEditingController controller,
+}) {
+  return Container(
+    padding: const EdgeInsets.symmetric(horizontal: 12),
+    decoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(16),
+      color: Colors.black.withOpacity(0.25),
+      border: Border.all(
+        color: Colors.white.withOpacity(0.2),
+      ),
+    ),
+    child: TextFormField(
+      controller: controller,
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+      textAlign: TextAlign.center,
+      style: const TextStyle(
+        color: Colors.white,
+        fontSize: 13,
+      ),
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: const TextStyle(color: Colors.white70),
+        border: InputBorder.none,
+      ),
+    ),
+  );
+}
+
+Widget _glassShortcutButton({
+  required String label,
+  required VoidCallback onTap,
+}) {
+  return GestureDetector(
+    onTap: onTap,
+    child: Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        gradient: const LinearGradient(
+          colors: [Colors.pinkAccent, Colors.purpleAccent],
+        ),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+          color: Colors.white,
+        ),
+      ),
+    ),
+  );
+}
+
+Widget _glassAddButton({required VoidCallback onTap}) {
+  return GestureDetector(
+    onTap: onTap,
+    child: Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        gradient: const LinearGradient(
+          colors: [Colors.blueAccent, Colors.purpleAccent],
+        ),
+      ),
+      child: const Text(
+        "Add",
+        style: TextStyle(
+          fontWeight: FontWeight.w600,
+          color: Colors.white,
+        ),
+      ),
+    ),
+  );
+}
+
+Widget _glassActionButton({
+  required String label,
+  required VoidCallback onTap,
+  bool disabled = false,
+}) {
+  return GestureDetector(
+    onTap: disabled ? null : onTap,
+    child: AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        gradient: disabled
+            ? null
+            : const LinearGradient(
+                colors: [
+                  Colors.blueAccent,
+                  Colors.purpleAccent,
+                ],
+              ),
+        color: disabled ? Colors.grey.withOpacity(0.3) : null,
+        boxShadow: disabled
+            ? []
+            : [
+                BoxShadow(
+                  color: Colors.purple.withOpacity(0.4),
+                  blurRadius: 15,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontWeight: FontWeight.w600,
+          color: disabled ? Colors.white54 : Colors.white,
+        ),
+      ),
+    ),
+  );
+}
+
+class PHPhoneFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue, TextEditingValue newValue) {
+    // Remove all spaces
+    String digits = newValue.text.replaceAll(' ', '');
+
+    // Allow digits only
+    digits = digits.replaceAll(RegExp(r'[^0-9]'), '');
+
+    // Limit to 11 digits
+    if (digits.length > 11) {
+      digits = digits.substring(0, 11);
+    }
+
+    String formatted = '';
+
+    for (int i = 0; i < digits.length; i++) {
+      formatted += digits[i];
+
+      // Add spaces after 2, 4, and 7 digits
+      if (i == 1 || i == 3 || i == 6) {
+        if (i != digits.length - 1) {
+          formatted += ' ';
+        }
+      }
+    }
+
+    return TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(offset: formatted.length),
+    );
+  }
 }
