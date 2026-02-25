@@ -8,6 +8,7 @@ import 'package:laundry_firebase/pages/newpages/body/Gcash/readDataGCashDone.dar
 import 'package:laundry_firebase/pages/newpages/body/Gcash/readDataGCashPending.dart';
 import 'package:laundry_firebase/pages/newpages/body/JobOnGoing/readDataJobsOnGoing.dart';
 import 'package:laundry_firebase/pages/newpages/body/JobOnQueue/readDataJobsOnQueue.dart';
+import 'package:laundry_firebase/pages/newpages/body/JobsDone/readDataJobsDone.dart';
 import 'package:laundry_firebase/pages/newpages/body/Supplies/readSuppliesCurrent.dart';
 import 'package:laundry_firebase/pages/newpages/body/Supplies/readSuppliesHist.dart';
 import 'package:laundry_firebase/pages/newpages/header/Employee/showSalaryMaintenance.dart';
@@ -332,6 +333,12 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
               width: 320,
               child: readDataJobsOnGoing(),
               color: LaundryColors.ongoing,
+            ),
+            animatedPanel(
+              visible: empSetup.showLaundry,
+              width: 320,
+              child: readDataJobsDone(),
+              color: LaundryColors.done,
             ),
             animatedPanel(
                 visible: empSetup.showFunds,

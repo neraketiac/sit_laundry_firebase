@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedMethods.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedVisibility.dart';
+import 'package:laundry_firebase/services/newservices/database_jobs.dart';
 import 'package:laundry_firebase/variables/newvariables/jobmodel_repository.dart';
 
 void showOnGoingStatus(BuildContext context, JobModelRepository jobRepo) {
@@ -55,34 +56,78 @@ void showOnGoingStatus(BuildContext context, JobModelRepository jobRepo) {
           // 👇 Bottom buttons
           actionsAlignment: MainAxisAlignment.end,
           actions: [
-            TextButton(
-              onPressed: () {
-                setState(() {
-                  syncRepoToSelectedSmall(jobRepo);
-                });
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (jobRepo.processStep != 'waiting')
+                  Expanded(
+                    child: TextButton(
+                      style: TextButton.styleFrom(
+                        backgroundColor: Colors.green,
+                        foregroundColor: Colors.black,
+                      ),
+                      onPressed: () async {
+                        final confirm = await showDialog<bool>(
+                          context: context,
+                          builder: (context) {
+                            return AlertDialog(
+                              title: const Text('Confirm Action'),
+                              content: Text(
+                                  'Move #${jobRepo.jobId} ${jobRepo.customerName} (${jobRepo.finalLoad}) to Jobs Done?'),
+                              actions: [
+                                TextButton(
+                                  onPressed: () =>
+                                      Navigator.pop(context, false),
+                                  child: const Text('No'),
+                                ),
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context, true),
+                                  child: const Text('Yes'),
+                                ),
+                              ],
+                            );
+                          },
+                        );
 
-                Navigator.pop(context); // close popup
-              },
-              child: const Text(
-                'Cancel',
-                style: TextStyle(color: Colors.black),
-              ),
+                        if (confirm == true) {
+                          await moveOngoingToDone(
+                              jobRepo.docId, jobRepo.riderPickup);
+                          Navigator.pop(context, false);
+                        }
+                      },
+                      child: const Text('Move to Jobs Done?'),
+                    ),
+                  ),
+                TextButton(
+                  onPressed: () {
+                    setState(() {
+                      syncRepoToSelectedSmall(jobRepo);
+                    });
+
+                    Navigator.pop(context); // close popup
+                  },
+                  child: const Text(
+                    'Cancel',
+                    style: TextStyle(color: Colors.black),
+                  ),
+                ),
+                boxButtonElevated(
+                    context: context,
+                    label: 'Save',
+                    onPressed: () async {
+                      if (jobRepo.customerId == 0) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                              content: Text('Please select customer name.')),
+                        );
+                        return false;
+                      } else {
+                        await saveButtonSetRepository();
+                        return true;
+                      }
+                    }),
+              ],
             ),
-            boxButtonElevated(
-                context: context,
-                label: 'Save',
-                onPressed: () async {
-                  if (jobRepo.customerId == 0) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content: Text('Please select customer name.')),
-                    );
-                    return false;
-                  } else {
-                    await saveButtonSetRepository();
-                    return true;
-                  }
-                }),
           ],
         );
       });

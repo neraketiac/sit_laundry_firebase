@@ -354,7 +354,15 @@ String textJobStatus(JobModel jM) {
       return 'Rider Pickup';
     }
   } else {
-    return jM.processStep;
+    if (jM.processStep == 'done') {
+      if (jM.riderPickup) {
+        return '${jM.processStep} 🚲 for delivery';
+      } else {
+        return '${jM.processStep} 🛒';
+      }
+    } else {
+      return jM.processStep;
+    }
   }
 
   return 'no status';
@@ -566,7 +574,11 @@ void syncSelectedToRepositoryALL(JobModelRepository jobRepo) {
 
   //3 queue status
   jobRepo.forSorting = forSorting == jobRepo.selectedRiderPickup;
-  jobRepo.riderPickup = riderPickup == jobRepo.selectedRiderPickup;
+  //only true if still false
+  //once true, should always true
+  if ((riderPickup == jobRepo.selectedRiderPickup)) {
+    jobRepo.riderPickup = riderPickup == jobRepo.selectedRiderPickup;
+  }
 
   //4 package status
   jobRepo.regular = regularPackage == jobRepo.selectedPackage;
@@ -623,7 +635,11 @@ void syncSelectedToRepositoryALL(JobModelRepository jobRepo) {
 void syncSelectedToRepositorySmall(JobModelRepository jobRepo) {
   //3 queue status
   jobRepo.forSorting = forSorting == jobRepo.selectedRiderPickup;
-  jobRepo.riderPickup = riderPickup == jobRepo.selectedRiderPickup;
+  //only true if still false
+  //once true, should always true
+  if (jobRepo.riderPickup || riderPickup == jobRepo.selectedRiderPickup) {
+    jobRepo.riderPickup = riderPickup == jobRepo.selectedRiderPickup;
+  }
 
   //6 payment status
   jobRepo.unpaid = true;

@@ -222,7 +222,7 @@ class DatabaseJobsDone {
 
   /// 🔄 Stream completed jobs
   Stream<List<JobModel>> streamAll() {
-    return _ref.snapshots().map(
+    return _ref.orderBy('A05_DateD', descending: true).snapshots().map(
           (s) => s.docs.map((d) => JobModel.fromJson(d.data())).toList(),
         );
   }
@@ -323,6 +323,7 @@ Future<void> moveQueueToOngoing(String docId, int nextJobId) async {
 
     tx.set(ongoingRef, {
       ...snapshot.data()!,
+      'Q00_ForSorting': true,
       'A00_JobId': nextJobId,
       'O00_ProcessStep': 'waiting', // 👈 initial step
       'A04_DateO': Timestamp.now(),
@@ -332,7 +333,7 @@ Future<void> moveQueueToOngoing(String docId, int nextJobId) async {
 }
 
 /// ▶ Ongoing → Done
-Future<void> moveOngoingToDone(String docId) async {
+Future<void> moveOngoingToDone(String docId, bool forDelivery) async {
   final firestore = FirebaseFirestore.instance;
 
   await firestore.runTransaction((tx) async {
@@ -342,11 +343,22 @@ Future<void> moveOngoingToDone(String docId) async {
     final snapshot = await tx.get(ongoingRef);
     if (!snapshot.exists) return;
 
-    tx.set(doneRef, {
-      ...snapshot.data()!,
-      'O00_ProcessStep': 'done', // 👈 initial step
-      'A05_DateD': Timestamp.now(),
-    });
+    if (forDelivery) {
+      tx.set(doneRef, {
+        ...snapshot.data()!,
+        'Q00_ForSorting': false,
+        'Q01_RiderPickup': true,
+        'O00_ProcessStep': 'done', // 👈 initial step
+        'A05_DateD': Timestamp.now(),
+      });
+    } else {
+      tx.set(doneRef, {
+        ...snapshot.data()!,
+        'O00_ProcessStep': 'done', // 👈 initial step
+        'A05_DateD': Timestamp.now(),
+      });
+    }
+
     tx.delete(ongoingRef);
   });
 }

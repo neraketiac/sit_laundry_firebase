@@ -50,6 +50,41 @@ void showMoveToOnGoing(BuildContext context, JobModelRepository jobRepo) {
           actionsAlignment: MainAxisAlignment.end,
           actions: [
             TextButton(
+              style: TextButton.styleFrom(
+                backgroundColor: Colors.red.shade300,
+                foregroundColor: Colors.black,
+              ),
+              onPressed: () async {
+                final confirm = await showDialog<bool>(
+                  context: context,
+                  builder: (context) {
+                    return AlertDialog(
+                      title: const Text('Confirm Action'),
+                      content: Text(
+                          'Delete ${jobRepo.customerName} (${jobRepo.finalLoad})?'),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context, false),
+                          child: const Text('No'),
+                        ),
+                        TextButton(
+                          onPressed: () => Navigator.pop(context, true),
+                          child: const Text('Yes'),
+                        ),
+                      ],
+                    );
+                  },
+                );
+
+                if (confirm == true) {
+                  DatabaseJobsQueue databaseJobsQueue = DatabaseJobsQueue();
+                  await databaseJobsQueue.delete(jobRepo.docId);
+                  Navigator.pop(context, false);
+                }
+              },
+              child: const Text('Delete?'),
+            ),
+            TextButton(
               onPressed: () {
                 setState(() {
                   syncRepoToSelectedSmall(jobRepo);
@@ -88,15 +123,39 @@ void showMoveToOnGoing(BuildContext context, JobModelRepository jobRepo) {
                   return false; // ❌ keep dialog open
                 }
 
-                await moveQueueToOngoing(jobRepo.docId, jobRepo.jobId);
-
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      '${jobRepo.customerName} ₱ ${jobRepo.finalPrice} added to #${jobRepo.jobId}.',
-                    ),
-                  ),
+                final confirm = await showDialog<bool>(
+                  context: context,
+                  builder: (context) {
+                    return AlertDialog(
+                      title: const Text('Confirm Action'),
+                      content: Text(
+                          'Move ${jobRepo.customerName} (${jobRepo.finalLoad}) to #${jobRepo.jobId} On-Going?'),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context, false),
+                          child: const Text('No'),
+                        ),
+                        TextButton(
+                          onPressed: () => Navigator.pop(context, true),
+                          child: const Text('Yes'),
+                        ),
+                      ],
+                    );
+                  },
                 );
+
+                if (confirm == false) return false;
+
+                if (confirm == true) {
+                  await moveQueueToOngoing(jobRepo.docId, jobRepo.jobId);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        '${jobRepo.customerName} ₱ ${jobRepo.finalPrice} added to #${jobRepo.jobId}.',
+                      ),
+                    ),
+                  );
+                }
 
                 return true; // ✅ close dialog
               },
