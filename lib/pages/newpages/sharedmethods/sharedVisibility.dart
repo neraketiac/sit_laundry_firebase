@@ -277,9 +277,6 @@ Widget visRiderPickup(
                       setState(() {
                         jobRepo.repoVarSelectedIntRiderPickup =
                             listRiderPickup[index];
-                        //reset once change of selection
-                        jobRepo.isCustomerPickedUp = false;
-                        jobRepo.isDeliveredToCustomer = false;
                       });
                     },
                     child: AnimatedContainer(
@@ -328,10 +325,10 @@ Widget visRiderPickup(
             Row(
               children: [
                 Checkbox(
-                  value: jobRepo.isCustomerPickedUp ?? false,
+                  value: jobRepo.selectedIsCustomerPickedUp ?? false,
                   onChanged: (value) {
                     setState(() {
-                      jobRepo.isCustomerPickedUp = value ?? false;
+                      jobRepo.selectedIsCustomerPickedUp = value ?? false;
                     });
                   },
                 ),
@@ -345,10 +342,10 @@ Widget visRiderPickup(
             Row(
               children: [
                 Checkbox(
-                  value: jobRepo.isDeliveredToCustomer ?? false,
+                  value: jobRepo.selectedIsDeliveredToCustomer ?? false,
                   onChanged: (value) {
                     setState(() {
-                      jobRepo.isDeliveredToCustomer = value ?? false;
+                      jobRepo.selectedIsDeliveredToCustomer = value ?? false;
                     });
                   },
                 ),
@@ -429,7 +426,7 @@ Widget visSelectPackage(
                   child: GestureDetector(
                     onTap: () async {
                       // 🔥 Confirmation logic
-                      if (jobRepo.selectedPackagePrev == othersPackage &&
+                      if (jobRepo.selectedPackagePrev == intOthersPackage &&
                           jobRepo.selectedItems.isNotEmpty) {
                         final confirm = await showCoolConfirmDialog(
                           context: context,
@@ -450,7 +447,7 @@ Widget visSelectPackage(
                         jobRepo.selectedPackage = value;
                         jobRepo.selectedPackagePrev = value;
 
-                        if (value == othersPackage) {
+                        if (value == intOthersPackage) {
                           jobRepo.repoVarSelectedItem = listOthItems[0];
                         }
 
@@ -540,7 +537,7 @@ Visibility visAmountRegSSPerKg(
   }
 
   return Visibility(
-    visible: (jobRepo.selectedPackage == othersPackage
+    visible: (jobRepo.selectedPackage == intOthersPackage
         ? false
         : jobRepo.selectedPerKilo),
     child: Container(
@@ -706,9 +703,9 @@ Visibility visAmountRegSSPerKg(
 Visibility visAmountRegSSPerLoad(
     BuildContext context, Function setState, JobModelRepository jobRepo) {
   const prices = {
-    regularPackage: 155,
-    sayoSabonPackage: 125,
-    othersPackage: 0,
+    intRegularPackage: 155,
+    intSayoSabonPackage: 125,
+    intOthersPackage: 0,
   };
 
   jobRepo.repoVarBasePriceAmount = prices[jobRepo.selectedPackage] ?? 155;
@@ -733,7 +730,7 @@ Visibility visAmountRegSSPerLoad(
   }
 
   return Visibility(
-    visible: (jobRepo.selectedPackage == othersPackage
+    visible: (jobRepo.selectedPackage == intOthersPackage
         ? false
         : !jobRepo.selectedPerKilo),
     child: Container(
@@ -908,7 +905,7 @@ Widget visAmountOthersOnly(
   }
 
   return Visibility(
-    visible: (jobRepo.selectedPackage == othersPackage),
+    visible: (jobRepo.selectedPackage == intOthersPackage),
     child: Container(
       padding: const EdgeInsets.all(1),
       decoration: BoxDecoration(
@@ -1126,7 +1123,7 @@ Visibility visPaidUnPaid(
 
     void setPartialAmount(TextEditingController controller) {
       if (jobRepo.finalPrice == 0) {
-        if (jobRepo.selectedPackage == othersPackage) {
+        if (jobRepo.selectedPackage == intOthersPackage) {
           controller.text = jobRepo.repoVarTotalPriceOthers.toString();
         } else {
           controller.text = jobRepo.repoVarTotalPriceRegSS.toString();
@@ -1163,7 +1160,7 @@ Visibility visPaidUnPaid(
     final int valueCash = int.tryParse(jobRepo.repoVarCashAmountVar.text) ?? 0;
     final int valueGCash =
         int.tryParse(jobRepo.repoVarGCashAmountVar.text) ?? 0;
-    final int tempFinalPrice = (jobRepo.selectedPackage == othersPackage
+    final int tempFinalPrice = (jobRepo.selectedPackage == intOthersPackage
         ? jobRepo.repoVarTotalPriceOthers
         : jobRepo.repoVarTotalPriceRegSS);
 
@@ -1328,7 +1325,7 @@ Visibility visFold(
   JobModelRepository jobRepo,
 ) {
   return Visibility(
-    visible: (jobRepo.selectedPackage != othersPackage),
+    visible: (jobRepo.selectedPackage != intOthersPackage),
     child: _glassBinaryToggle(
       title: "Fold Option",
       leftLabel: "Fold",
@@ -1349,7 +1346,7 @@ Visibility visMix(
   JobModelRepository jobRepo,
 ) {
   return Visibility(
-    visible: (jobRepo.selectedPackage != othersPackage),
+    visible: (jobRepo.selectedPackage != intOthersPackage),
     child: _glassBinaryToggle(
       title: "Mix Option",
       leftLabel: "Mix",
@@ -1432,7 +1429,7 @@ Widget visAddFab(
   return _glassCounterCard(
     label: "+Fab (₱${addFabAnyItemModel.itemPrice})",
     count: jobRepo.repoVarAddFabCount,
-    visible: jobRepo.selectedPackage != othersPackage,
+    visible: jobRepo.selectedPackage != intOthersPackage,
     highlight: jobRepo.repoVarAddFabCount > 0,
     onIncrement: () {
       setState(() {
@@ -1462,7 +1459,7 @@ Widget visAddDry(
   return _glassCounterCard(
     label: "+Dry (₱${xDItemModel.itemPrice})",
     count: jobRepo.repoVarAddExtraDryCount,
-    visible: jobRepo.selectedPackage != othersPackage,
+    visible: jobRepo.selectedPackage != intOthersPackage,
     highlight: jobRepo.repoVarAddExtraDryCount > 0,
     onIncrement: () {
       setState(() {
@@ -1491,7 +1488,7 @@ Widget visAddWash(
   return _glassCounterCard(
     label: "+Wash (₱${xWashItemModel.itemPrice})",
     count: jobRepo.repoVarAddExtraWashCount,
-    visible: jobRepo.selectedPackage != othersPackage,
+    visible: jobRepo.selectedPackage != intOthersPackage,
     highlight: jobRepo.repoVarAddExtraWashCount > 0,
     onIncrement: () {
       setState(() {
@@ -1520,7 +1517,7 @@ Widget visAddSpin(
   return _glassCounterCard(
     label: "+Spin (₱${xSpinItemModel.itemPrice})",
     count: jobRepo.repoVarAddExtraSpinCount,
-    visible: jobRepo.selectedPackage != othersPackage,
+    visible: jobRepo.selectedPackage != intOthersPackage,
     highlight: jobRepo.repoVarAddExtraSpinCount > 0,
     onIncrement: () {
       setState(() {
@@ -2210,13 +2207,13 @@ Widget visOnGoingStatus(
                 listOnGoingStatus.length,
                 (index) {
                   final step = listOnGoingStatus[index];
-                  final isSelected = jobRepo.processStep == step;
+                  final isSelected = jobRepo.selectedProcessStep == step;
 
                   return Expanded(
                     child: GestureDetector(
                       onTap: () {
                         setState(() {
-                          jobRepo.processStep = step;
+                          jobRepo.selectedProcessStep = step;
                         });
                       },
                       child: AnimatedContainer(

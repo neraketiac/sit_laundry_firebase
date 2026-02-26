@@ -454,15 +454,16 @@ void syncRepoToSelectedALL(JobModelRepository jobRepo) {
   jobRepo.selectedCustomerNameVar.text = jobRepo.customerName;
 
   //3 queue status
-  if (jobRepo.riderPickup) jobRepo.repoVarSelectedIntRiderPickup = riderPickup;
-  if (jobRepo.forSorting) jobRepo.repoVarSelectedIntRiderPickup = forSorting;
+  if (jobRepo.riderPickup)
+    jobRepo.repoVarSelectedIntRiderPickup = intRiderPickup;
+  if (jobRepo.forSorting) jobRepo.repoVarSelectedIntRiderPickup = intForSorting;
 
   //4 package status
-  if (jobRepo.regular) jobRepo.selectedPackage = regularPackage;
-  if (jobRepo.sayosabon) jobRepo.selectedPackage = sayoSabonPackage;
+  if (jobRepo.regular) jobRepo.selectedPackage = intRegularPackage;
+  if (jobRepo.sayosabon) jobRepo.selectedPackage = intSayoSabonPackage;
   if (jobRepo.addOn) {
-    jobRepo.selectedPackage = othersPackage;
-    jobRepo.selectedPackagePrev = othersPackage;
+    jobRepo.selectedPackage = intOthersPackage;
+    jobRepo.selectedPackagePrev = intOthersPackage;
   }
 
   //5 prices
@@ -496,7 +497,7 @@ void syncRepoToSelectedALL(JobModelRepository jobRepo) {
   );
 
   //10 extras
-  if (jobRepo.selectedPackage != othersPackage) {
+  if (jobRepo.selectedPackage != intOthersPackage) {
     jobRepo.repoVarAddFabCount = jobRepo.items
         .where((e) => e.itemUniqueId == addFabAnyItemModel.itemUniqueId)
         .length;
@@ -525,8 +526,10 @@ void syncRepoToSelectedSmall(JobModelRepository jobRepo) {
   jobRepo.selectedCustomerNameVar.text = jobRepo.customerName;
 
   //3 queue status
-  if (jobRepo.riderPickup) jobRepo.repoVarSelectedIntRiderPickup = riderPickup;
-  if (jobRepo.forSorting) jobRepo.repoVarSelectedIntRiderPickup = forSorting;
+  if (jobRepo.riderPickup) {
+    jobRepo.repoVarSelectedIntRiderPickup = intRiderPickup;
+  }
+  if (jobRepo.forSorting) jobRepo.repoVarSelectedIntRiderPickup = intForSorting;
 
   //6 payment status
   jobRepo.repoVarCashAmountVar.text = jobRepo.paidCashAmount.toString();
@@ -571,20 +574,21 @@ void syncSelectedToRepositoryALL(JobModelRepository jobRepo) {
   //set by autocomplete
 
   //3 queue status
-  jobRepo.forSorting = forSorting == jobRepo.repoVarSelectedIntRiderPickup;
+  jobRepo.forSorting = intForSorting == jobRepo.repoVarSelectedIntRiderPickup;
   //only true if still false
   //once true, should always true
-  if ((riderPickup == jobRepo.repoVarSelectedIntRiderPickup)) {
-    jobRepo.riderPickup = riderPickup == jobRepo.repoVarSelectedIntRiderPickup;
+  if ((intRiderPickup == jobRepo.repoVarSelectedIntRiderPickup)) {
+    jobRepo.riderPickup =
+        intRiderPickup == jobRepo.repoVarSelectedIntRiderPickup;
   }
 
   //4 package status
-  jobRepo.regular = regularPackage == jobRepo.selectedPackage;
-  jobRepo.sayosabon = sayoSabonPackage == jobRepo.selectedPackage;
-  jobRepo.addOn = othersPackage == jobRepo.selectedPackage;
+  jobRepo.regular = intRegularPackage == jobRepo.selectedPackage;
+  jobRepo.sayosabon = intSayoSabonPackage == jobRepo.selectedPackage;
+  jobRepo.addOn = intOthersPackage == jobRepo.selectedPackage;
 
   //5 prices
-  if (jobRepo.selectedPackage == othersPackage) {
+  if (jobRepo.selectedPackage == intOthersPackage) {
     jobRepo.finalPrice = jobRepo.repoVarTotalPriceOthers;
   } else {
     jobRepo.finalPrice = jobRepo.repoVarTotalPriceRegSS;
@@ -633,12 +637,13 @@ void syncSelectedToRepositoryALL(JobModelRepository jobRepo) {
 
 void syncSelectedToRepositorySmall(JobModelRepository jobRepo) {
   //3 queue status
-  jobRepo.forSorting = forSorting == jobRepo.repoVarSelectedIntRiderPickup;
+  jobRepo.forSorting = intForSorting == jobRepo.repoVarSelectedIntRiderPickup;
   //only true if still false
   //once true, should always true
   if (jobRepo.riderPickup ||
-      riderPickup == jobRepo.repoVarSelectedIntRiderPickup) {
-    jobRepo.riderPickup = riderPickup == jobRepo.repoVarSelectedIntRiderPickup;
+      intRiderPickup == jobRepo.repoVarSelectedIntRiderPickup) {
+    jobRepo.riderPickup =
+        intRiderPickup == jobRepo.repoVarSelectedIntRiderPickup;
   }
 
   //6 payment status

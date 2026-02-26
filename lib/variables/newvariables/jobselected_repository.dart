@@ -27,9 +27,7 @@ class JobselectedRepository {
   int _selectedCustomerId = 0;
   //       customerName: '',
   //       forSorting: false,
-  bool _selectedForSorting = false;
   //       riderPickup: false,
-  bool _selectedRiderPickup = false;
   //       isCustomerPickedUp: false,
   bool _selectedIsCustomerPickedUp = false;
   //       isDeliveredToCustomer: false,
@@ -48,8 +46,8 @@ class JobselectedRepository {
   int _selectedPromoCounter = 0;
   //       pricingSetup: '',
   //       regular: false,
-  int _selectedPackage = regularPackage;
-  int _selectedPackagePrev = regularPackage;
+  int _selectedPackage = intRegularPackage;
+  int _selectedPackagePrev = intRegularPackage;
 
   //       sayosabon: false,
   //       addOn: false,
@@ -99,7 +97,7 @@ class JobselectedRepository {
   TextEditingController _repoVarCashAmountVar = TextEditingController();
   //as input for gcash amount, later will be used in finalPrice
   TextEditingController _repoVarGCashAmountVar = TextEditingController();
-  int _repoVarSelectedIntRiderPickup = forSorting; //use of list<int>
+  int _repoVarSelectedIntRiderPickup = intForSorting; //use of list<int>
   int _repoVarBasePriceAmount = 0;
   //as input for price amount regular, later will be used in finalPrice
   int _repoVarTotalPriceRegSS = 155;
@@ -122,8 +120,6 @@ class JobselectedRepository {
   String get selectedCreatedBy => _selectedCreatedBy;
   String get selectedCurrentEmpId => _selectedCurrentEmpId;
   int get selectedCustomerId => _selectedCustomerId;
-  bool get selectedForSorting => _selectedForSorting;
-  bool get selectedRiderPickup => _selectedRiderPickup;
   bool get selectedIsCustomerPickedUp => _selectedIsCustomerPickedUp;
   bool get selectedIsDeliveredToCustomer => _selectedIsDeliveredToCustomer;
   bool get selectedPerKilo => _selectedPerKilo;
@@ -175,8 +171,6 @@ class JobselectedRepository {
   set selectedCreatedBy(String v) => _selectedCreatedBy = v;
   set selectedCurrentEmpId(String v) => _selectedCurrentEmpId = v;
   set selectedCustomerId(int v) => _selectedCustomerId = v;
-  set selectedForSorting(bool v) => _selectedForSorting = v;
-  set selectedRiderPickup(bool v) => _selectedRiderPickup = v;
   set selectedIsCustomerPickedUp(bool v) => _selectedIsCustomerPickedUp = v;
   set selectedIsDeliveredToCustomer(bool v) =>
       _selectedIsDeliveredToCustomer = v;
@@ -234,8 +228,6 @@ class JobselectedRepository {
     selectedCurrentEmpId = '';
     selectedCustomerId = 0;
     selectedCustomerNameVar.text = '';
-    selectedForSorting = false;
-    selectedRiderPickup = false;
     selectedIsCustomerPickedUp = false;
     selectedIsDeliveredToCustomer = false;
     selectedPerKilo = false;
@@ -244,8 +236,8 @@ class JobselectedRepository {
     selectedFinalLoad = 1;
     selectedFinalPrice = 0;
     selectedPromoCounter = 0;
-    selectedPackage = regularPackage;
-    selectedPackagePrev = regularPackage;
+    selectedPackage = intRegularPackage;
+    selectedPackagePrev = intRegularPackage;
     selectedOthers = menuOthDVal;
     selectedFold = false;
     selectedMix = false;
@@ -267,7 +259,7 @@ class JobselectedRepository {
     selectedDisposed = false;
     repoVarCashAmountVar.text = '';
     repoVarGCashAmountVar.text = '';
-    repoVarSelectedIntRiderPickup = forSorting;
+    repoVarSelectedIntRiderPickup = intForSorting;
     repoVarBasePriceAmount = 0;
     repoVarTotalPriceRegSS = 155;
     repoVarTotalPriceShortCutRegSS = 0;

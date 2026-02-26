@@ -118,18 +118,18 @@ const String groupDet = "Det",
 int autoNumber = 0;
 //queuestats
 Map<int, String> mapQueueStat = {};
-const int forSorting = 501,
-    riderPickup = 502,
-    regularPackage = 503,
-    sayoSabonPackage = 504,
-    othersPackage = 505,
-    waitingStat = 601,
-    washingStat = 602,
-    dryingStat = 603,
-    foldingStat = 604,
-    waitCustomerPickup = 701,
-    waitRiderDelivery = 702,
-    nasaCustomerNa = 703;
+const int intForSorting = 501,
+    intRiderPickup = 502,
+    intRegularPackage = 503,
+    intSayoSabonPackage = 504,
+    intOthersPackage = 505,
+    intWaitingStat = 601,
+    intWashingStat = 602,
+    intDryingStat = 603,
+    intFoldingStat = 604,
+    intWaitCustomerPickup = 701,
+    intWaitRiderDelivery = 702,
+    intNasaCustomerNa = 703;
 
 const int processWaiting = 650,
     processWashing = 651,
@@ -247,15 +247,16 @@ void putEntries() {
   addListOthItems();
 
   //queueStat
-  mapQueueStat.addEntries({forSorting: "ForSorting"}.entries);
-  mapQueueStat.addEntries({riderPickup: "RiderPickup"}.entries);
-  mapQueueStat.addEntries({waitingStat: "Waiting"}.entries);
-  mapQueueStat.addEntries({washingStat: "Washing"}.entries);
-  mapQueueStat.addEntries({dryingStat: "Drying"}.entries);
-  mapQueueStat.addEntries({foldingStat: "Folding"}.entries);
-  mapQueueStat.addEntries({waitCustomerPickup: "WaitCustomerPickup"}.entries);
-  mapQueueStat.addEntries({waitRiderDelivery: "WaitRiderDelivery"}.entries);
-  mapQueueStat.addEntries({nasaCustomerNa: "NasaCustomerNa"}.entries);
+  mapQueueStat.addEntries({intForSorting: "ForSorting"}.entries);
+  mapQueueStat.addEntries({intRiderPickup: "RiderPickup"}.entries);
+  mapQueueStat.addEntries({intWaitingStat: "Waiting"}.entries);
+  mapQueueStat.addEntries({intWashingStat: "Washing"}.entries);
+  mapQueueStat.addEntries({intDryingStat: "Drying"}.entries);
+  mapQueueStat.addEntries({intFoldingStat: "Folding"}.entries);
+  mapQueueStat
+      .addEntries({intWaitCustomerPickup: "WaitCustomerPickup"}.entries);
+  mapQueueStat.addEntries({intWaitRiderDelivery: "WaitRiderDelivery"}.entries);
+  mapQueueStat.addEntries({intNasaCustomerNa: "NasaCustomerNa"}.entries);
 
   // //paymentStat
   // mapPaymentStat.addEntries({unpaid: "Unpaid"}.entries);
@@ -303,15 +304,16 @@ void putEntriesWhileEmpIsNull() {
   addListOthItems();
 
   //queueStat
-  mapQueueStat.addEntries({forSorting: "ForSorting"}.entries);
-  mapQueueStat.addEntries({riderPickup: "RiderPickup"}.entries);
-  mapQueueStat.addEntries({waitingStat: "Waiting"}.entries);
-  mapQueueStat.addEntries({washingStat: "Washing"}.entries);
-  mapQueueStat.addEntries({dryingStat: "Drying"}.entries);
-  mapQueueStat.addEntries({foldingStat: "Folding"}.entries);
-  mapQueueStat.addEntries({waitCustomerPickup: "WaitCustomerPickup"}.entries);
-  mapQueueStat.addEntries({waitRiderDelivery: "WaitRiderDelivery"}.entries);
-  mapQueueStat.addEntries({nasaCustomerNa: "NasaCustomerNa"}.entries);
+  mapQueueStat.addEntries({intForSorting: "ForSorting"}.entries);
+  mapQueueStat.addEntries({intRiderPickup: "RiderPickup"}.entries);
+  mapQueueStat.addEntries({intWaitingStat: "Waiting"}.entries);
+  mapQueueStat.addEntries({intWashingStat: "Washing"}.entries);
+  mapQueueStat.addEntries({intDryingStat: "Drying"}.entries);
+  mapQueueStat.addEntries({intFoldingStat: "Folding"}.entries);
+  mapQueueStat
+      .addEntries({intWaitCustomerPickup: "WaitCustomerPickup"}.entries);
+  mapQueueStat.addEntries({intWaitRiderDelivery: "WaitRiderDelivery"}.entries);
+  mapQueueStat.addEntries({intNasaCustomerNa: "NasaCustomerNa"}.entries);
 
   // //paymentStat
   // mapPaymentStat.addEntries({unpaid: "Unpaid"}.entries);

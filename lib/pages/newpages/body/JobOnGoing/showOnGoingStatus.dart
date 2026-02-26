@@ -106,7 +106,7 @@ void showOnGoingStatus(BuildContext context, JobModelRepository jobRepo) {
                   onPressed: () {
                     setState(() {
                       // syncRepoToSelectedSmall(jobRepo);
-                      jobRepo.syncRepoToSelectedMin(jobRepo);
+                      //jobRepo.syncRepoToSelectedMin(jobRepo);
                     });
 
                     Navigator.pop(context); // close popup

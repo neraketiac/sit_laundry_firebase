@@ -21,15 +21,15 @@ final int tier1Increase = 35;
 final int tier2Increase = 105;
 
 const maxPartialOptions = {
-  regularPackage: 3,
-  sayoSabonPackage: 2,
-  othersPackage: 2,
+  intRegularPackage: 3,
+  intSayoSabonPackage: 2,
+  intOthersPackage: 2,
 };
 
 const prices = {
-  regularPackage: 155,
-  sayoSabonPackage: 125,
-  othersPackage: 0,
+  intRegularPackage: 155,
+  intSayoSabonPackage: 125,
+  intOthersPackage: 0,
 };
 
 final List<int> listOthersDropDown = [
@@ -45,9 +45,9 @@ final List<int> listOthersDropDownShortCuts = [
   menuFabWKLDValAny8ml,
 ];
 final List<int> listPackage = [
-  regularPackage,
-  sayoSabonPackage,
-  othersPackage,
+  intRegularPackage,
+  intSayoSabonPackage,
+  intOthersPackage,
 ];
 
 const Map<int, String> itemNameAliases = {
@@ -64,8 +64,8 @@ final List<String> listOnGoingStatus = [
 ];
 
 final List<int> listRiderPickup = [
-  forSorting,
-  riderPickup,
+  intForSorting,
+  intRiderPickup,
 ];
 
 TextEditingController customerAmountVar = TextEditingController();

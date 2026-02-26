@@ -75,7 +75,7 @@ void showDeliverOrCustomerPickup(
               onPressed: () {
                 setState(() {
                   // syncRepoToSelectedSmall(jobRepo);
-                  jobRepo.syncRepoToSelectedMin(jobRepo);
+                  //jobRepo.syncRepoToSelectedMin(jobRepo);
                 });
 
                 Navigator.pop(context); // close popup

@@ -163,9 +163,9 @@ class JobModelRepository {
   }
 
   void setPackage(int value) {
-    regular = value == regularPackage;
-    sayosabon = value == sayoSabonPackage;
-    addOn = value == othersPackage;
+    regular = value == intRegularPackage;
+    sayosabon = value == intSayoSabonPackage;
+    addOn = value == intOthersPackage;
   }
 
   set jobModelData(JobModel value) => jobModel = value;
@@ -265,14 +265,6 @@ class JobModelRepository {
   int get selectedCustomerId => jobselectedRepository.selectedCustomerId;
   set selectedCustomerId(int value) =>
       jobselectedRepository.selectedCustomerId = value;
-
-  bool get selectedForSorting => jobselectedRepository.selectedForSorting;
-  set selectedForSorting(bool value) =>
-      jobselectedRepository.selectedForSorting = value;
-
-  bool get selectedRiderPickup => jobselectedRepository.selectedRiderPickup;
-  set selectedRiderPickup(bool value) =>
-      jobselectedRepository.selectedRiderPickup = value;
 
   bool get selectedIsCustomerPickedUp =>
       jobselectedRepository.selectedIsCustomerPickedUp;
@@ -490,8 +482,8 @@ class JobModelRepository {
     /// 🟡 Customer
     selectedCustomerId = jobRepo.customerId;
     selectedCustomerNameVar.text = jobRepo.customerName;
-    selectedForSorting = jobRepo.forSorting;
-    selectedRiderPickup = jobRepo.riderPickup;
+    if (jobRepo.forSorting) repoVarSelectedIntRiderPickup = intForSorting;
+    if (jobRepo.riderPickup) repoVarSelectedIntRiderPickup = intRiderPickup;
     selectedIsCustomerPickedUp = jobRepo.isCustomerPickedUp;
     selectedIsDeliveredToCustomer = jobRepo.isDeliveredToCustomer;
 
@@ -506,11 +498,11 @@ class JobModelRepository {
 
     /// 🟢 Options
     // selectedRegular = jobRepo.regular;
-    if (jobRepo.regular) selectedPackage = regularPackage;
+    if (jobRepo.regular) selectedPackage = intRegularPackage;
     // selectedSayosabon = jobRepo.sayosabon;
-    if (jobRepo.sayosabon) selectedPackage = sayoSabonPackage;
+    if (jobRepo.sayosabon) selectedPackage = intSayoSabonPackage;
     // selectedAddOn = jobRepo.addOn;
-    if (jobRepo.addOn) selectedPackage = othersPackage;
+    if (jobRepo.addOn) selectedPackage = intOthersPackage;
     selectedFold = jobRepo.fold;
     selectedMix = jobRepo.mix;
 
@@ -566,7 +558,8 @@ class JobModelRepository {
     //selectedCustomerId = jobRepo.customerId;
     //selectedCustomerNameVar.text = jobRepo.customerName;
     //selectedForSorting = jobRepo.forSorting;
-    selectedRiderPickup = jobRepo.riderPickup;
+    if (jobRepo.forSorting) repoVarSelectedIntRiderPickup = intForSorting;
+    if (jobRepo.riderPickup) repoVarSelectedIntRiderPickup = intRiderPickup;
     selectedIsCustomerPickedUp = jobRepo.isCustomerPickedUp;
     selectedIsDeliveredToCustomer = jobRepo.isDeliveredToCustomer;
 
@@ -643,8 +636,8 @@ class JobModelRepository {
     /// 🟡 Customer
     jobRepo.customerId = selectedCustomerId;
     jobRepo.customerName = selectedCustomerNameVar.text;
-    jobRepo.forSorting = selectedForSorting;
-    jobRepo.riderPickup = selectedRiderPickup;
+    jobRepo.forSorting = repoVarSelectedIntRiderPickup == intForSorting;
+    jobRepo.riderPickup = repoVarSelectedIntRiderPickup == intRiderPickup;
     jobRepo.isCustomerPickedUp = selectedIsCustomerPickedUp;
     jobRepo.isDeliveredToCustomer = selectedIsDeliveredToCustomer;
 
@@ -659,11 +652,11 @@ class JobModelRepository {
 
     /// 🟢 Options
     // jobRepo.regular = ?;
-    jobRepo.regular = selectedPackage == regularPackage;
+    jobRepo.regular = selectedPackage == intRegularPackage;
     // jobRepo.sayosabon = ?;
-    jobRepo.sayosabon = selectedPackage == sayoSabonPackage;
+    jobRepo.sayosabon = selectedPackage == intSayoSabonPackage;
     // jobRepo.addOn = ?;
-    jobRepo.addOn = selectedPackage == othersPackage;
+    jobRepo.addOn = selectedPackage == intOthersPackage;
     jobRepo.fold = selectedFold;
     jobRepo.mix = selectedMix;
 
@@ -721,6 +714,8 @@ class JobModelRepository {
     //jobRepo.forSorting = selectedForSorting;
     //jobRepo.riderPickup = selectedRiderPickup;
     //jobRepo.isCustomerPickedUp = selectedIsCustomerPickedUp;
+    jobRepo.forSorting = repoVarSelectedIntRiderPickup == intForSorting;
+    jobRepo.riderPickup = repoVarSelectedIntRiderPickup == intRiderPickup;
     //jobRepo.isDeliveredToCustomer = selectedIsDeliveredToCustomer;
 
     /// 🟤 Pricing

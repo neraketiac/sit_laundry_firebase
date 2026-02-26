@@ -3508,8 +3508,8 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
           'B3_FinalPrice': _giFinalPrice,
           //'QueueStat': _gsQueueStat,
           'QueueStat': (_bRiderPickup
-              ? mapQueueStat[riderPickup].toString()
-              : mapQueueStat[forSorting].toString()),
+              ? mapQueueStat[intRiderPickup].toString()
+              : mapQueueStat[intForSorting].toString()),
           'PaymentStat': _gsPaymentStat,
           'C9_PaymentReceivedBy': _gsPaymentReceivedBy,
           'B9_NeedOn': Timestamp.fromDate(_gdNeedOn),
@@ -3702,23 +3702,23 @@ class _MyQueueMobileState extends State<MyQueueMobile> {
 
   Color _getCOlorStatus(String stat) {
 //JobsOnQueue Colors
-    if (stat == mapQueueStat[riderPickup].toString()) {
+    if (stat == mapQueueStat[intRiderPickup].toString()) {
       return cRiderPickup;
-    } else if (stat == mapQueueStat[forSorting].toString()) {
+    } else if (stat == mapQueueStat[intForSorting].toString()) {
       return cForSorting;
-    } else if (stat == mapQueueStat[waitingStat].toString()) {
+    } else if (stat == mapQueueStat[intWaitingStat].toString()) {
       return cWaiting;
-    } else if (stat == mapQueueStat[washingStat].toString()) {
+    } else if (stat == mapQueueStat[intWashingStat].toString()) {
       return cWashing;
-    } else if (stat == mapQueueStat[dryingStat].toString()) {
+    } else if (stat == mapQueueStat[intDryingStat].toString()) {
       return cDrying;
-    } else if (stat == mapQueueStat[foldingStat].toString()) {
+    } else if (stat == mapQueueStat[intFoldingStat].toString()) {
       return cFolding;
-    } else if (stat == mapQueueStat[waitCustomerPickup].toString()) {
+    } else if (stat == mapQueueStat[intWaitCustomerPickup].toString()) {
       return cWaitCustomerPickup;
-    } else if (stat == mapQueueStat[waitRiderDelivery].toString()) {
+    } else if (stat == mapQueueStat[intWaitRiderDelivery].toString()) {
       return cWaitRiderDelivery;
-    } else if (stat == mapQueueStat[nasaCustomerNa].toString()) {
+    } else if (stat == mapQueueStat[intNasaCustomerNa].toString()) {
       return cNasaCustomerNa;
     } else if (stat == "RiderOnDelivery") {
       return cRiderOnDelivery;
