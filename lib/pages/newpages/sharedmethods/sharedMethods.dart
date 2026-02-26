@@ -54,8 +54,9 @@ String showHowMany155or125Set(
     ];
 
     // Base single
-    if (total == jobRepo.repoVarBasePriceAmount)
+    if (total == jobRepo.repoVarBasePriceAmount) {
       return ' ${jobRepo.repoVarBasePriceAmount}';
+    }
 
     // Extras alone
     if (extras.contains(total)) return ' $total';
@@ -438,9 +439,9 @@ String textDetFabBleExtras(List<OtherItemModel> listItems) {
 
 //reset payment
 void resetPaymentStatus(JobModelRepository jobRepo) {
-  jobRepo.unpaid = true;
-  jobRepo.paidCash = false;
-  jobRepo.paidGCash = false;
+  jobRepo.selectedUnpaid = true;
+  jobRepo.selectedPaidCash = false;
+  jobRepo.selectedPaidGCash = false;
   jobRepo.repoVarCashAmountVar.text = '';
   jobRepo.repoVarCashAmountVar.text = '';
 }
@@ -454,8 +455,9 @@ void syncRepoToSelectedALL(JobModelRepository jobRepo) {
   jobRepo.selectedCustomerNameVar.text = jobRepo.customerName;
 
   //3 queue status
-  if (jobRepo.riderPickup)
+  if (jobRepo.riderPickup) {
     jobRepo.repoVarSelectedIntRiderPickup = intRiderPickup;
+  }
   if (jobRepo.forSorting) jobRepo.repoVarSelectedIntRiderPickup = intForSorting;
 
   //4 package status
@@ -568,7 +570,7 @@ void syncSelectedToRepositoryALL(JobModelRepository jobRepo) {
   }
 
   //1 admin
-  jobRepo.currentEmpId = empIdGlobal;
+  //jobRepo.selectedCurrentEmpId = empIdGlobal;
 
   //2 customer
   //set by autocomplete

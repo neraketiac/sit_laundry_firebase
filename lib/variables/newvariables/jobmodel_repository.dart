@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:laundry_firebase/models/newmodels/jobmodel.dart';
 import 'package:laundry_firebase/models/newmodels/otheritemmodel.dart';
+import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedMethods.dart';
 import 'package:laundry_firebase/variables/newvariables/jobselected_repository.dart';
 import 'package:laundry_firebase/variables/newvariables/variables.dart';
 
@@ -41,7 +42,7 @@ class JobModelRepository {
         finalPrice: 0,
         promoCounter: 0,
         pricingSetup: '',
-        regular: false,
+        regular: true,
         sayosabon: false,
         addOn: false,
         fold: true,
@@ -253,14 +254,6 @@ class JobModelRepository {
 
   int get selectedJobId => jobselectedRepository.selectedJobId;
   set selectedJobId(int value) => jobselectedRepository.selectedJobId = value;
-
-  String get selectedCreatedBy => jobselectedRepository.selectedCreatedBy;
-  set selectedCreatedBy(String value) =>
-      jobselectedRepository.selectedCreatedBy = value;
-
-  String get selectedCurrentEmpId => jobselectedRepository.selectedCurrentEmpId;
-  set selectedCurrentEmpId(String value) =>
-      jobselectedRepository.selectedCurrentEmpId = value;
 
   int get selectedCustomerId => jobselectedRepository.selectedCustomerId;
   set selectedCustomerId(int value) =>
@@ -476,14 +469,17 @@ class JobModelRepository {
     // selectedRiderDeliveryDate = jobRepo.riderDeliveryDate;
 
     /// 🟠 Employee
-    selectedCreatedBy = jobRepo.createdBy;
-    selectedCurrentEmpId = jobRepo.currentEmpId;
 
     /// 🟡 Customer
     selectedCustomerId = jobRepo.customerId;
     selectedCustomerNameVar.text = jobRepo.customerName;
+    //in case both true, set last to sorting
+    if (jobRepo.riderPickup)
+      jobRepo.repoVarSelectedIntRiderPickup = intRiderPickup;
     if (jobRepo.forSorting) repoVarSelectedIntRiderPickup = intForSorting;
-    if (jobRepo.riderPickup) repoVarSelectedIntRiderPickup = intRiderPickup;
+
+    //once true, always true, use for deliver when done
+
     selectedIsCustomerPickedUp = jobRepo.isCustomerPickedUp;
     selectedIsDeliveredToCustomer = jobRepo.isDeliveredToCustomer;
 
@@ -492,6 +488,11 @@ class JobModelRepository {
     selectedPerLoad = jobRepo.perLoad;
     selectedFinalKilo = jobRepo.finalKilo;
     selectedFinalLoad = jobRepo.finalLoad;
+    if (jobRepo.addOn) {
+      jobRepo.repoVarTotalPriceOthers = jobRepo.finalPrice;
+    } else {
+      jobRepo.repoVarTotalPriceRegSS = jobRepo.finalPrice;
+    }
     selectedFinalPrice = jobRepo.finalPrice;
     selectedPromoCounter = jobRepo.promoCounter;
     // selectedPricingSetup = jobRepo.pricingSetup;
@@ -539,7 +540,7 @@ class JobModelRepository {
     //only values to be updated when showPaidUnpaid, isCustomerPickedUp
     // String docId;
 
-    //selectedJobId = jobRepo.jobId;
+    selectedJobId = jobRepo.jobId;
 
     /// 🟣 Dates
     // selectedDateQ = jobRepo.dateQ;
@@ -555,11 +556,13 @@ class JobModelRepository {
     //selectedCurrentEmpId = jobRepo.currentEmpId;
 
     /// 🟡 Customer
-    //selectedCustomerId = jobRepo.customerId;
-    //selectedCustomerNameVar.text = jobRepo.customerName;
-    //selectedForSorting = jobRepo.forSorting;
+    selectedCustomerId = jobRepo.customerId;
+    selectedCustomerNameVar.text = jobRepo.customerName;
+    //in case both true, set last to sorting
+    if (jobRepo.riderPickup) {
+      jobRepo.repoVarSelectedIntRiderPickup = intRiderPickup;
+    }
     if (jobRepo.forSorting) repoVarSelectedIntRiderPickup = intForSorting;
-    if (jobRepo.riderPickup) repoVarSelectedIntRiderPickup = intRiderPickup;
     selectedIsCustomerPickedUp = jobRepo.isCustomerPickedUp;
     selectedIsDeliveredToCustomer = jobRepo.isDeliveredToCustomer;
 
@@ -567,8 +570,14 @@ class JobModelRepository {
     //selectedPerKilo = jobRepo.perKilo;
     //selectedPerLoad = jobRepo.perLoad;
     //selectedFinalKilo = jobRepo.finalKilo;
-    //selectedFinalLoad = jobRepo.finalLoad;
-    //selectedFinalPrice = jobRepo.finalPrice;
+    selectedFinalLoad = jobRepo.finalLoad;
+    if (selectedPackage == intOthersPackage) {
+      jobRepo.selectedFinalPrice = jobRepo.repoVarTotalPriceOthers;
+    } else {
+      jobRepo.selectedFinalPrice = jobRepo.repoVarTotalPriceRegSS;
+    }
+    selectedFinalPrice = jobRepo.finalPrice;
+    selectedFinalPrice = jobRepo.finalPrice;
     //selectedPromoCounter = jobRepo.promoCounter;
     // selectedPricingSetup = jobRepo.pricingSetup;
 
@@ -630,14 +639,18 @@ class JobModelRepository {
     // jobRepo.riderDeliveryDate = ?;
 
     /// 🟠 Employee
-    jobRepo.createdBy = selectedCreatedBy;
-    jobRepo.currentEmpId = selectedCurrentEmpId;
+    //jobRepo.createdBy = ?;
 
     /// 🟡 Customer
     jobRepo.customerId = selectedCustomerId;
     jobRepo.customerName = selectedCustomerNameVar.text;
     jobRepo.forSorting = repoVarSelectedIntRiderPickup == intForSorting;
-    jobRepo.riderPickup = repoVarSelectedIntRiderPickup == intRiderPickup;
+    //once true, always true, used when done auto delivery
+    if (jobRepo.riderPickup ||
+        intRiderPickup == jobRepo.repoVarSelectedIntRiderPickup) {
+      jobRepo.riderPickup =
+          intRiderPickup == jobRepo.repoVarSelectedIntRiderPickup;
+    }
     jobRepo.isCustomerPickedUp = selectedIsCustomerPickedUp;
     jobRepo.isDeliveredToCustomer = selectedIsDeliveredToCustomer;
 
@@ -646,9 +659,17 @@ class JobModelRepository {
     jobRepo.perLoad = selectedPerLoad;
     jobRepo.finalKilo = selectedFinalKilo;
     jobRepo.finalLoad = selectedFinalLoad;
+    if (selectedPackage == intOthersPackage) {
+      jobRepo.selectedFinalPrice = jobRepo.repoVarTotalPriceOthers;
+    } else {
+      jobRepo.selectedFinalPrice = jobRepo.repoVarTotalPriceRegSS;
+    }
+    jobRepo.finalPrice = jobRepo.selectedFinalPrice;
     jobRepo.finalPrice = selectedFinalPrice;
     jobRepo.promoCounter = selectedPromoCounter;
     // jobRepo.pricingSetup = ?;
+    jobRepo.pricingSetup = showHowMany155or125Set(
+        computeTotalPrice(jobRepo.selectedFinalKilo, jobRepo), false, jobRepo);
 
     /// 🟢 Options
     // jobRepo.regular = ?;
@@ -706,7 +727,7 @@ class JobModelRepository {
 
     /// 🟠 Employee
     //jobRepo.createdBy = selectedCreatedBy;
-    jobRepo.currentEmpId = selectedCurrentEmpId;
+    //jobRepo.currentEmpId = selectedCurrentEmpId;
 
     /// 🟡 Customer
     //jobRepo.customerId = selectedCustomerId;
@@ -715,7 +736,11 @@ class JobModelRepository {
     //jobRepo.riderPickup = selectedRiderPickup;
     //jobRepo.isCustomerPickedUp = selectedIsCustomerPickedUp;
     jobRepo.forSorting = repoVarSelectedIntRiderPickup == intForSorting;
-    jobRepo.riderPickup = repoVarSelectedIntRiderPickup == intRiderPickup;
+    if (jobRepo.riderPickup ||
+        intRiderPickup == jobRepo.repoVarSelectedIntRiderPickup) {
+      jobRepo.riderPickup =
+          intRiderPickup == jobRepo.repoVarSelectedIntRiderPickup;
+    }
     //jobRepo.isDeliveredToCustomer = selectedIsDeliveredToCustomer;
 
     /// 🟤 Pricing

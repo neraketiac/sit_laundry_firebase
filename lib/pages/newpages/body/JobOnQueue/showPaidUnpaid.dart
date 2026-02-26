@@ -12,9 +12,10 @@ void showPaidUnpaid(BuildContext context, JobModelRepository jobRepo) {
     if (jobRepo.paidCash || jobRepo.paidGCash) {
       jobRepo.paidD = Timestamp.now();
     }
+    jobRepo.paymentReceivedBy = empIdGlobal;
 
-    syncSelectedToRepositorySmall(jobRepo);
-
+    //syncSelectedToRepositorySmall(jobRepo);
+    jobRepo.syncSelectedToRepoMin(jobRepo);
     await callDatabaseUpdateJob(context, jobRepo.getJobsModel()!);
     //await setRepositoryLaundryPayment(context, 'Show Jobs OnQueue');
   }
@@ -83,7 +84,7 @@ void showPaidUnpaid(BuildContext context, JobModelRepository jobRepo) {
                 context: context,
                 label: 'Save',
                 onPressed: () async {
-                  if (jobRepo.customerId == 0) {
+                  if (jobRepo.selectedCustomerId == 0) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                           content: Text('Please select customer name.')),

@@ -9,8 +9,9 @@ import 'package:laundry_firebase/variables/newvariables/variables.dart';
 void showOnGoingStatus(BuildContext context, JobModelRepository jobRepo) {
   Future<void> saveButtonSetRepository() async {
     jobRepo.currentEmpId = empIdGlobal;
-    syncSelectedToRepositorySmall(jobRepo);
 
+    //syncSelectedToRepositorySmall(jobRepo);
+    jobRepo.syncSelectedToRepoMin(jobRepo);
     await callDatabaseUpdateJob(context, jobRepo.getJobsModel()!);
     //await setRepositoryLaundryPayment(context, 'Show Jobs OnQueue');
   }
@@ -63,7 +64,7 @@ void showOnGoingStatus(BuildContext context, JobModelRepository jobRepo) {
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                if (jobRepo.processStep != 'waiting')
+                if (jobRepo.selectedProcessStep != 'waiting')
                   Expanded(
                     child: TextButton(
                       style: TextButton.styleFrom(
@@ -77,7 +78,7 @@ void showOnGoingStatus(BuildContext context, JobModelRepository jobRepo) {
                             return AlertDialog(
                               title: const Text('Confirm Action'),
                               content: Text(
-                                  'Move #${jobRepo.jobId} ${jobRepo.customerName} (${jobRepo.finalLoad}) to Jobs Done?'),
+                                  'Move #${jobRepo.selectedJobId} ${jobRepo.selectedCustomerNameVar.text} (${jobRepo.selectedFinalLoad}) to Jobs Done?'),
                               actions: [
                                 TextButton(
                                   onPressed: () =>
@@ -95,7 +96,12 @@ void showOnGoingStatus(BuildContext context, JobModelRepository jobRepo) {
 
                         if (confirm == true) {
                           await moveOngoingToDone(
-                              jobRepo.docId, jobRepo.riderPickup);
+                              jobRepo.docId,
+                              (jobRepo.repoVarSelectedIntRiderPickup ==
+                                      intForSorting
+                                  ? false
+                                  : true));
+
                           Navigator.pop(context, false);
                         }
                       },
@@ -120,7 +126,7 @@ void showOnGoingStatus(BuildContext context, JobModelRepository jobRepo) {
                     context: context,
                     label: 'Save',
                     onPressed: () async {
-                      if (jobRepo.customerId == 0) {
+                      if (jobRepo.selectedCustomerId == 0) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                               content: Text('Please select customer name.')),

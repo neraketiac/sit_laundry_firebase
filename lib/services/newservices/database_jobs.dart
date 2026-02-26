@@ -310,6 +310,8 @@ Future<int> getNextJobIdCounterUp() async {
   });
 }
 
+//
+
 Future<int> getNextJobId() async {
   final firestore = FirebaseFirestore.instance;
 
@@ -318,22 +320,21 @@ Future<int> getNextJobId() async {
         .collection(JOBS_ONGOING_REF)
         .where('A00_JobId', isGreaterThanOrEqualTo: 1)
         .where('A00_JobId', isLessThanOrEqualTo: 25)
+        .orderBy('A00_JobId', descending: true)
+        .limit(1)
         .get();
 
-    final usedIds =
-        snapshot.docs.map((doc) => doc.get('A00_JobId') as int).toSet();
-
-    if (usedIds.length >= 25) {
-      return 0;
+    if (snapshot.docs.isEmpty) {
+      return 1;
     }
 
-    for (int i = 1; i <= 25; i++) {
-      if (!usedIds.contains(i)) {
-        return i;
-      }
-    }
+    int highest = snapshot.docs.first.get('A00_JobId') as int;
 
-    return 0;
+    if (highest < 25) {
+      return highest + 1;
+    } else {
+      return 1;
+    }
   });
 }
 

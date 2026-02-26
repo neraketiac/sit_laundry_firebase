@@ -132,8 +132,8 @@ class AutoCompleteCustomer extends StatelessWidget {
 
         SuppliesHistRepository.instance.setCustomerName(selectedModel.name);
 
-        jobRepo.customerName = selectedModel.name;
-        jobRepo.customerId = selectedModel.customerId;
+        jobRepo.selectedCustomerNameVar.text = selectedModel.name;
+        jobRepo.selectedCustomerId = selectedModel.customerId;
 
         bCustomerName = true;
 

@@ -699,6 +699,7 @@ Widget readDataJobsOnGoing() {
 
               JobModelRepository jobRepo = JobModelRepository();
               jobRepo.setJobModel(job);
+              jobRepo.syncRepoToSelectedAll(jobRepo);
 
               final progress = 0;
               final isRunning = progress > 0 && progress < 1;
@@ -731,7 +732,7 @@ Widget readDataJobsOnGoing() {
                           decoration: BoxDecoration(
                             color: blockedIndex == index
                                 ? Colors.red.shade200
-                                : (isLocked(jobRepo.processStep))
+                                : (isLocked(jobRepo.selectedProcessStep))
                                     ? cDontMove
                                     : isSelected
                                         ? Colors.deepPurple.shade50

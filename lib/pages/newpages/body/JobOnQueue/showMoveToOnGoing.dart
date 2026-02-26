@@ -74,9 +74,9 @@ void showMoveToOnGoing(BuildContext context, JobModelRepository jobRepo) {
                           const SizedBox(width: 12),
                           Expanded(
                             child: Text(
-                              jobRepo.jobId == 0
+                              jobRepo.selectedJobId == 0
                                   ? "Jobs On-Going Full"
-                                  : "Move to #${jobRepo.jobId}",
+                                  : "Move to #${jobRepo.selectedJobId}",
                               style: const TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.w700,
@@ -132,7 +132,7 @@ void showMoveToOnGoing(BuildContext context, JobModelRepository jobRepo) {
                                 ),
                               ),
                               onPressed: () async {
-                                if (jobRepo.customerId == 0) {
+                                if (jobRepo.selectedCustomerId == 0) {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
                                       content: Text("Please select customer."),
@@ -144,22 +144,23 @@ void showMoveToOnGoing(BuildContext context, JobModelRepository jobRepo) {
                                 final confirm = await showCoolConfirmDialog(
                                   context: context,
                                   title: "Confirm Move",
-                                  message: "Move ${jobRepo.customerName} "
-                                      "to #${jobRepo.jobId}?",
+                                  message:
+                                      "Move ${jobRepo.selectedCustomerNameVar.text} "
+                                      "to #${jobRepo.selectedJobId}?",
                                   confirmText: "Move",
                                 );
 
                                 if (!confirm) return;
 
                                 await moveQueueToOngoing(
-                                    jobRepo.docId, jobRepo.jobId);
+                                    jobRepo.docId, jobRepo.selectedJobId);
 
                                 Navigator.pop(context);
 
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
                                     content: Text(
-                                      "${jobRepo.customerName} added to #${jobRepo.jobId}.",
+                                      "${jobRepo.selectedCustomerNameVar.text} added to #${jobRepo.selectedJobId}.",
                                     ),
                                   ),
                                 );

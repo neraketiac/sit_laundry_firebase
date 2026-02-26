@@ -12,15 +12,16 @@ void showDeliverOrCustomerPickup(
     jobRepo.currentEmpId = empIdGlobal;
 
     /// 🟣 Dates
-    if (jobRepo.isCustomerPickedUp) {
+    if (jobRepo.selectedIsCustomerPickedUp) {
       jobRepo.customerPickupDate = Timestamp.now();
     }
 
-    if (jobRepo.isDeliveredToCustomer) {
+    if (jobRepo.selectedIsDeliveredToCustomer) {
       jobRepo.riderDeliveryDate = Timestamp.now();
     }
 
-    syncSelectedToRepositorySmall(jobRepo);
+    //syncSelectedToRepositorySmall(jobRepo);
+    jobRepo.syncSelectedToRepoMin(jobRepo);
     await callDatabaseUpdateJob(context, jobRepo.getJobsModel()!);
     //await setRepositoryLaundryPayment(context, 'Show Jobs OnQueue');
   }
@@ -89,7 +90,7 @@ void showDeliverOrCustomerPickup(
                 context: context,
                 label: 'Save',
                 onPressed: () async {
-                  if (jobRepo.customerId == 0) {
+                  if (jobRepo.selectedCustomerId == 0) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                           content: Text('Please select customer name.')),

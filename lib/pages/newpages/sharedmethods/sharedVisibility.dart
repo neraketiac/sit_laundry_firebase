@@ -187,11 +187,11 @@ Widget visCustomerNameNoAutoComplete(
           ),
           child: Text(
             bShort
-                ? '${jobRepo.processStep.isEmpty ? '' : '#${jobRepo.jobId} '}${jobRepo.selectedCustomerNameVar.text}'
-                : '${jobRepo.processStep.isEmpty ? '' : '#${jobRepo.jobId} '}${jobRepo.selectedCustomerNameVar.text} '
-                    '(${jobRepo.finalLoad})\n'
+                ? '${jobRepo.selectedProcessStep.isEmpty ? '' : '#${jobRepo.selectedJobId} '}${jobRepo.selectedCustomerNameVar.text}'
+                : '${jobRepo.selectedProcessStep.isEmpty ? '' : '#${jobRepo.selectedJobId} '}${jobRepo.selectedCustomerNameVar.text} '
+                    '(${jobRepo.selectedFinalLoad})\n'
                     '${textBagDetails(jobRepo.getJobsModel()!)} '
-                    '₱ ${jobRepo.finalPrice}.00',
+                    '₱ ${jobRepo.selectedFinalPrice}.00',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 16,
@@ -241,7 +241,7 @@ Widget visRiderPickup(
       children: [
         /// 🔹 Label
         Text(
-          jobRepo.processStep == 'done'
+          jobRepo.selectedProcessStep == 'done'
               ? "     Final Status"
               : "     Initial Status",
           style: TextStyle(
@@ -297,10 +297,10 @@ Widget visRiderPickup(
                       alignment: Alignment.center,
                       child: Text(
                         index == 0
-                            ? (jobRepo.processStep == 'done'
+                            ? (jobRepo.selectedProcessStep == 'done'
                                 ? 'Customer Pickup'
                                 : "For Sorting")
-                            : (jobRepo.processStep == 'done'
+                            : (jobRepo.selectedProcessStep == 'done'
                                 ? 'Rider Delivery'
                                 : "Rider Pickup"),
                         style: TextStyle(
@@ -319,7 +319,7 @@ Widget visRiderPickup(
         ),
 
         /// 🔽 Dynamic Checkbox
-        if (jobRepo.processStep == 'done') ...[
+        if (jobRepo.selectedProcessStep == 'done') ...[
           const SizedBox(height: 6),
           if (jobRepo.repoVarSelectedIntRiderPickup == listRiderPickup[0])
             Row(
@@ -1129,7 +1129,7 @@ Visibility visPaidUnPaid(
           controller.text = jobRepo.repoVarTotalPriceRegSS.toString();
         }
       } else {
-        controller.text = jobRepo.finalPrice.toString();
+        controller.text = jobRepo.selectedFinalPrice.toString();
       }
       // if (jobRepo.selectedPackage == othersPackage) {
       //   if ((int.tryParse(controller.text) ?? 0) < jobRepo.totalPriceOthers) {
@@ -1142,43 +1142,18 @@ Visibility visPaidUnPaid(
       // }
     }
 
-    if (jobRepo.paidCash && jobRepo.paidGCash) {
+    if (jobRepo.selectedPaidCash && jobRepo.selectedPaidGCash) {
       resetPartialAmount();
       return 'Split payment';
-    } else if (jobRepo.paidCash) {
+    } else if (jobRepo.selectedPaidCash) {
       setPartialAmount(jobRepo.repoVarCashAmountVar);
       return 'Paid Cash';
-    } else if (jobRepo.paidGCash) {
+    } else if (jobRepo.selectedPaidGCash) {
       setPartialAmount(jobRepo.repoVarGCashAmountVar);
       return 'Paid GCash';
     }
     resetPartialAmount();
     return 'Unpaid';
-  }
-
-  void validatePaymentWhenVarChange() {
-    final int valueCash = int.tryParse(jobRepo.repoVarCashAmountVar.text) ?? 0;
-    final int valueGCash =
-        int.tryParse(jobRepo.repoVarGCashAmountVar.text) ?? 0;
-    final int tempFinalPrice = (jobRepo.selectedPackage == intOthersPackage
-        ? jobRepo.repoVarTotalPriceOthers
-        : jobRepo.repoVarTotalPriceRegSS);
-
-    // debugPrint(
-    //     'valueCash=$valueCash valueGCash=$valueGCash finaPrice=$tempFinalPrice');
-
-    int totalPaid = (jobRepo.paidCash ? valueCash : 0) +
-        (jobRepo.paidGCash ? valueGCash : 0);
-
-    bool isFullyPaid = totalPaid >= tempFinalPrice;
-
-    actualPaymentStatus = !isFullyPaid
-        ? 'Unpaid (Kulang)'
-        : (jobRepo.paidCash && jobRepo.paidGCash)
-            ? 'Paid (Split)'
-            : 'Paid';
-
-    jobRepo.unpaid = !isFullyPaid;
   }
 
   actualPaymentStatus = returnPaymentStatusDuringToggle();
@@ -1215,7 +1190,7 @@ Visibility visPaidUnPaid(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(20),
               gradient: LinearGradient(
-                colors: jobRepo.unpaid
+                colors: jobRepo.selectedUnpaid
                     ? [Colors.redAccent, Colors.orangeAccent]
                     : [Colors.greenAccent, Colors.tealAccent],
               ),
@@ -1238,10 +1213,10 @@ Visibility visPaidUnPaid(
               Expanded(
                 child: _glassPaymentToggle(
                   label: "Cash",
-                  selected: jobRepo.paidCash,
+                  selected: jobRepo.selectedPaidCash,
                   onTap: () {
                     setState(() {
-                      jobRepo.paidCash = !jobRepo.paidCash;
+                      jobRepo.selectedPaidCash = !jobRepo.selectedPaidCash;
                       actualPaymentStatus = returnPaymentStatusDuringToggle();
                     });
                   },
@@ -1251,10 +1226,10 @@ Visibility visPaidUnPaid(
               Expanded(
                 child: _glassPaymentToggle(
                   label: "GCash",
-                  selected: jobRepo.paidGCash,
+                  selected: jobRepo.selectedPaidGCash,
                   onTap: () {
                     setState(() {
-                      jobRepo.paidGCash = !jobRepo.paidGCash;
+                      jobRepo.selectedPaidGCash = !jobRepo.selectedPaidGCash;
                       actualPaymentStatus = returnPaymentStatusDuringToggle();
                     });
                   },
@@ -1268,16 +1243,16 @@ Visibility visPaidUnPaid(
           /// 💵 AMOUNT FIELDS
           Row(
             children: [
-              if (jobRepo.paidCash)
+              if (jobRepo.selectedPaidCash)
                 Expanded(
                   child: _glassAmountField(
                     label: "Cash Amount",
                     controller: jobRepo.repoVarCashAmountVar,
                   ),
                 ),
-              if (jobRepo.paidCash && jobRepo.paidGCash)
+              if (jobRepo.selectedPaidCash && jobRepo.selectedPaidGCash)
                 const SizedBox(width: 12),
-              if (jobRepo.paidGCash)
+              if (jobRepo.selectedPaidGCash)
                 Expanded(
                   child: _glassAmountField(
                     label: "GCash Amount",
@@ -1290,7 +1265,7 @@ Visibility visPaidUnPaid(
           const SizedBox(height: 16),
 
           /// ✅ GCASH VERIFIED
-          if (jobRepo.paidGCash)
+          if (jobRepo.selectedPaidGCash)
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -1303,11 +1278,11 @@ Visibility visPaidUnPaid(
                 ),
                 const SizedBox(width: 6),
                 Switch(
-                  value: jobRepo.paidGCashVerified,
+                  value: jobRepo.selectedPaidGCashVerified,
                   activeColor: Colors.greenAccent,
                   onChanged: (value) {
                     setState(() {
-                      jobRepo.paidGCashVerified = value;
+                      jobRepo.selectedPaidGCashVerified = value;
                     });
                   },
                 ),
@@ -1330,10 +1305,10 @@ Visibility visFold(
       title: "Fold Option",
       leftLabel: "Fold",
       rightLabel: "No Fold",
-      value: jobRepo.fold,
+      value: jobRepo.selectedFold,
       onChanged: (val) {
         setState(() {
-          jobRepo.fold = val;
+          jobRepo.selectedFold = val;
         });
       },
     ),
@@ -1351,10 +1326,10 @@ Visibility visMix(
       title: "Mix Option",
       leftLabel: "Mix",
       rightLabel: "Don't Mix",
-      value: jobRepo.mix,
+      value: jobRepo.selectedMix,
       onChanged: (val) {
         setState(() {
-          jobRepo.mix = val;
+          jobRepo.selectedMix = val;
         });
       },
     ),
@@ -1368,14 +1343,14 @@ Widget visBasket(
 ) {
   return _glassCounterCard(
     label: "Basket",
-    count: jobRepo.basket,
-    highlight: jobRepo.basket > 0,
+    count: jobRepo.selectedBasket,
+    highlight: jobRepo.selectedBasket > 0,
     onIncrement: () {
-      setState(() => jobRepo.basket++);
+      setState(() => jobRepo.selectedBasket++);
     },
     onDecrement: () {
       setState(() {
-        if (jobRepo.basket > 0) jobRepo.basket--;
+        if (jobRepo.selectedBasket > 0) jobRepo.selectedBasket--;
       });
     },
   );
@@ -1388,14 +1363,14 @@ Widget visEcoBag(
 ) {
   return _glassCounterCard(
     label: "EcoBag",
-    count: jobRepo.ebag,
-    highlight: jobRepo.ebag > 0,
+    count: jobRepo.selectedEbag,
+    highlight: jobRepo.selectedEbag > 0,
     onIncrement: () {
-      setState(() => jobRepo.ebag++);
+      setState(() => jobRepo.selectedEbag++);
     },
     onDecrement: () {
       setState(() {
-        if (jobRepo.ebag > 0) jobRepo.ebag--;
+        if (jobRepo.selectedEbag > 0) jobRepo.selectedEbag--;
       });
     },
   );
@@ -1408,14 +1383,14 @@ Widget visSako(
 ) {
   return _glassCounterCard(
     label: "Sako",
-    count: jobRepo.sako,
-    highlight: jobRepo.sako > 0,
+    count: jobRepo.selectedSako,
+    highlight: jobRepo.selectedSako > 0,
     onIncrement: () {
-      setState(() => jobRepo.sako++);
+      setState(() => jobRepo.selectedSako++);
     },
     onDecrement: () {
       setState(() {
-        if (jobRepo.sako > 0) jobRepo.sako--;
+        if (jobRepo.selectedSako > 0) jobRepo.selectedSako--;
       });
     },
   );
@@ -2265,22 +2240,22 @@ InkWell visIconArea(BuildContext context, JobModelRepository jobRepo,
           width: 38,
           height: 38,
           child: CircularProgressIndicator(
-            value: jobRepo.allStatus,
+            value: jobRepo.selectedAllStatus,
             strokeWidth: 6,
             backgroundColor: backGroundStatusColor(job),
             color: isSelected ? Colors.deepPurple : Colors.deepPurple.shade300,
           ),
         ),
         AnimatedRotation(
-          turns: jobRepo.allStatus,
+          turns: jobRepo.selectedAllStatus,
           duration: const Duration(seconds: 2),
           curve: Curves.linear,
           child: Text(
-            jobRepo.processStep.isNotEmpty
+            jobRepo.selectedProcessStep.isNotEmpty
                 ? '#${jobRepo.jobId}'
-                : jobRepo.forSorting
+                : jobRepo.repoVarSelectedIntRiderPickup == intForSorting
                     ? '🔃'
-                    : jobRepo.riderPickup
+                    : jobRepo.repoVarSelectedIntRiderPickup == intRiderPickup
                         ? '🚲'
                         : '',
             style: const TextStyle(
@@ -2422,7 +2397,7 @@ InkWell visPaidUnpaidArea(
       children: [
         /// 💰 AMOUNT
         Text(
-          "₱ ${job.finalPrice}",
+          "₱ ${jobRepo.selectedFinalPrice}",
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w800,

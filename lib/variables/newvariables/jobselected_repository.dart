@@ -20,9 +20,7 @@ class JobselectedRepository {
   //       customerPickupDate: timestamp1900,                                   //no need selected, dont sync
   //       riderDeliveryDate: timestamp1900,                                    //no need selected, dont sync
   //       createdBy: '',
-  String _selectedCreatedBy = '';
   //       currentEmpId: '',
-  String _selectedCurrentEmpId = '';
   //       customerId: 0,
   int _selectedCustomerId = 0;
   //       customerName: '',
@@ -48,7 +46,6 @@ class JobselectedRepository {
   //       regular: false,
   int _selectedPackage = intRegularPackage;
   int _selectedPackagePrev = intRegularPackage;
-
   //       sayosabon: false,
   //       addOn: false,
   int _selectedOthers = menuOthDVal;
@@ -117,8 +114,6 @@ class JobselectedRepository {
   //================= GETTERS =================
 
   int get selectedJobId => _selectedJobId;
-  String get selectedCreatedBy => _selectedCreatedBy;
-  String get selectedCurrentEmpId => _selectedCurrentEmpId;
   int get selectedCustomerId => _selectedCustomerId;
   bool get selectedIsCustomerPickedUp => _selectedIsCustomerPickedUp;
   bool get selectedIsDeliveredToCustomer => _selectedIsDeliveredToCustomer;
@@ -168,8 +163,6 @@ class JobselectedRepository {
   //================= SETTERS =================
 
   set selectedJobId(int v) => _selectedJobId = v;
-  set selectedCreatedBy(String v) => _selectedCreatedBy = v;
-  set selectedCurrentEmpId(String v) => _selectedCurrentEmpId = v;
   set selectedCustomerId(int v) => _selectedCustomerId = v;
   set selectedIsCustomerPickedUp(bool v) => _selectedIsCustomerPickedUp = v;
   set selectedIsDeliveredToCustomer(bool v) =>
@@ -224,13 +217,11 @@ class JobselectedRepository {
 
   void reset() {
     selectedJobId = 0;
-    selectedCreatedBy = '';
-    selectedCurrentEmpId = '';
     selectedCustomerId = 0;
     selectedCustomerNameVar.text = '';
     selectedIsCustomerPickedUp = false;
     selectedIsDeliveredToCustomer = false;
-    selectedPerKilo = false;
+    selectedPerKilo = true;
     selectedPerLoad = false;
     selectedFinalKilo = 8;
     selectedFinalLoad = 1;
@@ -239,12 +230,12 @@ class JobselectedRepository {
     selectedPackage = intRegularPackage;
     selectedPackagePrev = intRegularPackage;
     selectedOthers = menuOthDVal;
-    selectedFold = false;
-    selectedMix = false;
+    selectedFold = true;
+    selectedMix = true;
     selectedBasket = 0;
     selectedEbag = 0;
     selectedSako = 0;
-    selectedUnpaid = false;
+    selectedUnpaid = true;
     selectedPaidCash = false;
     selectedPaidGCash = false;
     selectedPaidGCashVerified = false;

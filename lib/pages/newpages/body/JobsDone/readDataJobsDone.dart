@@ -42,6 +42,7 @@ Widget readDataJobsDone() {
               final job = jobs[index];
               JobModelRepository jobRepo = JobModelRepository();
               jobRepo.setJobModel(job);
+              jobRepo.syncRepoToSelectedAll(jobRepo);
 
               final isSelected = selectedIndex == index;
 

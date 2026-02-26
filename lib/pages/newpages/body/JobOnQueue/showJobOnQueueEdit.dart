@@ -100,7 +100,7 @@ void showJobOnQueueEdit(BuildContext context, JobModelRepository jobRepo) {
                 context: context,
                 label: 'Save',
                 onPressed: () async {
-                  if (jobRepo.customerId == 0) {
+                  if (jobRepo.selectedCustomerId == 0) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                           content: Text('Please select customer name.')),
