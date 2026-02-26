@@ -4,16 +4,19 @@ import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedVisibility.d
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedmethodsdatabase.dart';
 import 'package:laundry_firebase/services/newservices/database_jobs.dart';
 import 'package:laundry_firebase/variables/newvariables/jobmodel_repository.dart';
+import 'package:laundry_firebase/variables/newvariables/variables.dart';
 
 void showOnGoingStatus(BuildContext context, JobModelRepository jobRepo) {
   Future<void> saveButtonSetRepository() async {
+    jobRepo.currentEmpId = empIdGlobal;
     syncSelectedToRepositorySmall(jobRepo);
 
     await callDatabaseUpdateJob(context, jobRepo.getJobsModel()!);
     //await setRepositoryLaundryPayment(context, 'Show Jobs OnQueue');
   }
 
-  syncRepoToSelectedSmall(jobRepo);
+  //syncRepoToSelectedSmall(jobRepo);
+  jobRepo.syncRepoToSelectedMin(jobRepo);
   showDialog(
     context: context,
     builder: (BuildContext context) {
@@ -102,7 +105,8 @@ void showOnGoingStatus(BuildContext context, JobModelRepository jobRepo) {
                 TextButton(
                   onPressed: () {
                     setState(() {
-                      syncRepoToSelectedSmall(jobRepo);
+                      // syncRepoToSelectedSmall(jobRepo);
+                      jobRepo.syncRepoToSelectedMin(jobRepo);
                     });
 
                     Navigator.pop(context); // close popup

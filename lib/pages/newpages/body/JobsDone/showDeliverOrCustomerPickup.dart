@@ -4,10 +4,13 @@ import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedMethods.dart
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedVisibility.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedmethodsdatabase.dart';
 import 'package:laundry_firebase/variables/newvariables/jobmodel_repository.dart';
+import 'package:laundry_firebase/variables/newvariables/variables.dart';
 
 void showDeliverOrCustomerPickup(
     BuildContext context, JobModelRepository jobRepo) {
   Future<void> saveButtonSetRepository() async {
+    jobRepo.currentEmpId = empIdGlobal;
+
     /// 🟣 Dates
     if (jobRepo.isCustomerPickedUp) {
       jobRepo.customerPickupDate = Timestamp.now();
@@ -22,7 +25,8 @@ void showDeliverOrCustomerPickup(
     //await setRepositoryLaundryPayment(context, 'Show Jobs OnQueue');
   }
 
-  syncRepoToSelectedSmall(jobRepo);
+  // syncRepoToSelectedSmall(jobRepo);
+  jobRepo.syncRepoToSelectedMin(jobRepo);
   showDialog(
     context: context,
     builder: (BuildContext context) {
@@ -58,7 +62,7 @@ void showDeliverOrCustomerPickup(
                     visCustomerNameNoAutoComplete(
                         context, setState, jobRepo, false),
                     visRiderPickup(context, setState, jobRepo),
-                    conRemarks(context, setState, jobRepo.remarksVar),
+                    conRemarks(context, setState, jobRepo.selectedRemarksVar),
                   ],
                 ),
               ),
@@ -70,7 +74,8 @@ void showDeliverOrCustomerPickup(
             TextButton(
               onPressed: () {
                 setState(() {
-                  syncRepoToSelectedSmall(jobRepo);
+                  // syncRepoToSelectedSmall(jobRepo);
+                  jobRepo.syncRepoToSelectedMin(jobRepo);
                 });
 
                 Navigator.pop(context); // close popup

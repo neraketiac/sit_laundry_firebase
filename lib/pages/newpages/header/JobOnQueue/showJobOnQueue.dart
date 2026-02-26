@@ -16,8 +16,10 @@ void showJobOnQueue(BuildContext context, JobModelRepository jobRepo) {
 
     //admin
     jobRepo.createdBy = empIdGlobal;
+    jobRepo.currentEmpId = empIdGlobal;
 
-    syncSelectedToRepositoryALL(jobRepo);
+    //syncSelectedToRepositoryALL(jobRepo);
+    jobRepo.syncSelectedToRepoAll(jobRepo);
 
     await callDatabaseJobsQueueAdd(context, jobRepo);
     //await setRepositoryLaundryPayment(context, 'Show Jobs OnQueue');
@@ -60,7 +62,7 @@ void showJobOnQueue(BuildContext context, JobModelRepository jobRepo) {
                     visCustomerName(context, setState, jobRepo),
                     visRiderPickup(context, setState, jobRepo),
                     visSelectPackage(context, setState, jobRepo),
-                    (jobRepo.isPerKg
+                    (jobRepo.selectedPerKilo
                         ? visAmountRegSSPerKg(context, setState, jobRepo)
                         : visAmountRegSSPerLoad(context, setState, jobRepo)),
                     visAmountOthersOnly(context, setState, jobRepo),
@@ -82,7 +84,7 @@ void showJobOnQueue(BuildContext context, JobModelRepository jobRepo) {
                     visAddFab(context, setState, jobRepo),
                     visAddWash(context, setState, jobRepo),
                     visAddSpin(context, setState, jobRepo),
-                    conRemarks(context, setState, jobRepo.remarksVar),
+                    conRemarks(context, setState, jobRepo.selectedRemarksVar),
                   ],
                 ),
               ),

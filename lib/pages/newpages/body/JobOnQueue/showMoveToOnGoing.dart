@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedMethods.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedVisibility.dart';
 import 'package:laundry_firebase/services/newservices/database_jobs.dart';
 import 'package:laundry_firebase/variables/newvariables/jobmodel_repository.dart';
@@ -7,7 +6,8 @@ import 'package:laundry_firebase/variables/newvariables/jobmodel_repository.dart
 import 'dart:ui';
 
 void showMoveToOnGoing(BuildContext context, JobModelRepository jobRepo) {
-  syncRepoToSelectedSmall(jobRepo);
+  //syncRepoToSelectedSmall(jobRepo);
+  jobRepo.syncRepoToSelectedMin(jobRepo);
 
   showGeneralDialog(
     context: context,

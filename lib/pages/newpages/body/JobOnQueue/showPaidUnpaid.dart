@@ -8,6 +8,7 @@ import 'package:laundry_firebase/variables/newvariables/variables.dart';
 
 void showPaidUnpaid(BuildContext context, JobModelRepository jobRepo) {
   Future<void> saveButtonSetRepository() async {
+    jobRepo.currentEmpId = empIdGlobal;
     if (jobRepo.paidCash || jobRepo.paidGCash) {
       jobRepo.paidD = Timestamp.now();
     }
@@ -18,7 +19,8 @@ void showPaidUnpaid(BuildContext context, JobModelRepository jobRepo) {
     //await setRepositoryLaundryPayment(context, 'Show Jobs OnQueue');
   }
 
-  syncRepoToSelectedSmall(jobRepo);
+  jobRepo.syncRepoToSelectedMin(jobRepo);
+  // syncRepoToSelectedSmall(jobRepo);
   showDialog(
     context: context,
     builder: (BuildContext context) {
@@ -54,7 +56,7 @@ void showPaidUnpaid(BuildContext context, JobModelRepository jobRepo) {
                     visCustomerNameNoAutoComplete(
                         context, setState, jobRepo, false),
                     visPaidUnPaid(context, setState, jobRepo),
-                    conRemarks(context, setState, jobRepo.remarksVar),
+                    conRemarks(context, setState, jobRepo.selectedRemarksVar),
                   ],
                 ),
               ),
@@ -66,7 +68,8 @@ void showPaidUnpaid(BuildContext context, JobModelRepository jobRepo) {
             TextButton(
               onPressed: () {
                 setState(() {
-                  syncRepoToSelectedSmall(jobRepo);
+                  // syncRepoToSelectedSmall(jobRepo);
+                  jobRepo.syncRepoToSelectedMin(jobRepo);
                 });
 
                 Navigator.pop(context); // close popup

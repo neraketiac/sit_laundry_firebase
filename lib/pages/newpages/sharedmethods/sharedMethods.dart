@@ -49,12 +49,13 @@ String showHowMany155or125Set(
   } else {
 //int base = pricePerSet;
     List<int> extras = [
-      jobRepo.pricePerSet + tier1Increase,
-      jobRepo.pricePerSet + tier2Increase
+      jobRepo.repoVarBasePriceAmount + tier1Increase,
+      jobRepo.repoVarBasePriceAmount + tier2Increase
     ];
 
     // Base single
-    if (total == jobRepo.pricePerSet) return ' ${jobRepo.pricePerSet}';
+    if (total == jobRepo.repoVarBasePriceAmount)
+      return ' ${jobRepo.repoVarBasePriceAmount}';
 
     // Extras alone
     if (extras.contains(total)) return ' $total';
@@ -63,27 +64,27 @@ String showHowMany155or125Set(
       final remaining = total - extra;
 
       if (remaining <= 0) continue;
-      if (remaining % jobRepo.pricePerSet != 0) continue;
+      if (remaining % jobRepo.repoVarBasePriceAmount != 0) continue;
 
-      final multiplier = remaining ~/ jobRepo.pricePerSet;
+      final multiplier = remaining ~/ jobRepo.repoVarBasePriceAmount;
 
       if (multiplier == 1 && extra == 0) {
-        return ' ${jobRepo.pricePerSet}';
+        return ' ${jobRepo.repoVarBasePriceAmount}';
       }
 
       if (multiplier == 1 && extra != 0) {
-        return ' ${jobRepo.pricePerSet}\n + $extra';
+        return ' ${jobRepo.repoVarBasePriceAmount}\n + $extra';
       }
 
       if (multiplier > 1 && extra == 0) {
-        return ' (${jobRepo.pricePerSet} * $multiplier)';
+        return ' (${jobRepo.repoVarBasePriceAmount} * $multiplier)';
       }
 
       if (multiplier > 1 && extra != 0) {
         if (bSeparate) {
-          return ' (${jobRepo.pricePerSet} * $multiplier)\n + $extra';
+          return ' (${jobRepo.repoVarBasePriceAmount} * $multiplier)\n + $extra';
         } else {
-          return ' (${jobRepo.pricePerSet} * $multiplier) + $extra';
+          return ' (${jobRepo.repoVarBasePriceAmount} * $multiplier) + $extra';
         }
       }
     }
@@ -109,12 +110,12 @@ int computeTotalPrice(double q, JobModelRepository jobRepo) {
     } else if (remaining < jobRepo.maxPartial) {
       remainingPrice = tier2Increase;
     } else if (remaining >= jobRepo.maxPartial) {
-      remainingPrice = jobRepo.pricePerSet;
+      remainingPrice = jobRepo.repoVarBasePriceAmount;
     }
 //    debugPrint('c=$counter rP=$remainingPrice r=$remaining');
   }
 
-  return (counter * jobRepo.pricePerSet) + remainingPrice;
+  return (counter * jobRepo.repoVarBasePriceAmount) + remainingPrice;
 }
 
 void showImagePreview(BuildContext context, String imageUrl) {
@@ -440,8 +441,8 @@ void resetPaymentStatus(JobModelRepository jobRepo) {
   jobRepo.unpaid = true;
   jobRepo.paidCash = false;
   jobRepo.paidGCash = false;
-  jobRepo.cashAmountVar.text = '';
-  jobRepo.cashAmountVar.text = '';
+  jobRepo.repoVarCashAmountVar.text = '';
+  jobRepo.repoVarCashAmountVar.text = '';
 }
 
 //only all edit should call this
@@ -450,11 +451,11 @@ void syncRepoToSelectedALL(JobModelRepository jobRepo) {
   jobRepo.currentEmpId = empIdGlobal;
 
   //2 customer
-  jobRepo.customerNameVar.text = jobRepo.customerName;
+  jobRepo.selectedCustomerNameVar.text = jobRepo.customerName;
 
   //3 queue status
-  if (jobRepo.riderPickup) jobRepo.selectedRiderPickup = riderPickup;
-  if (jobRepo.forSorting) jobRepo.selectedRiderPickup = forSorting;
+  if (jobRepo.riderPickup) jobRepo.repoVarSelectedIntRiderPickup = riderPickup;
+  if (jobRepo.forSorting) jobRepo.repoVarSelectedIntRiderPickup = forSorting;
 
   //4 package status
   if (jobRepo.regular) jobRepo.selectedPackage = regularPackage;
@@ -466,79 +467,79 @@ void syncRepoToSelectedALL(JobModelRepository jobRepo) {
 
   //5 prices
   if (jobRepo.addOn) {
-    jobRepo.totalPriceOthers = jobRepo.finalPrice;
-    jobRepo.totalPriceRegSS = 0;
+    jobRepo.repoVarTotalPriceOthers = jobRepo.finalPrice;
+    jobRepo.repoVarTotalPriceRegSS = 0;
   } else {
-    jobRepo.totalPriceRegSS = jobRepo.finalPrice;
-    jobRepo.totalPriceOthers = 0;
+    jobRepo.repoVarTotalPriceRegSS = jobRepo.finalPrice;
+    jobRepo.repoVarTotalPriceOthers = 0;
   }
 
   //6 payment status
   // jobRepo.selectedPaidGCashVerified = jobRepo.paidGCashVerified;
 
   //6 payment status
-  jobRepo.cashAmountVar.text = jobRepo.paidCashAmount.toString();
-  jobRepo.gCashAmountVar.text = jobRepo.paidGCashAmount.toString();
+  jobRepo.repoVarCashAmountVar.text = jobRepo.paidCashAmount.toString();
+  jobRepo.repoVarGCashAmountVar.text = jobRepo.paidGCashAmount.toString();
 
   //7 weight status
-  if (jobRepo.perKilo) jobRepo.isPerKg = true;
-  if (jobRepo.perLoad) jobRepo.isPerKg = false;
+  if (jobRepo.perKilo) jobRepo.selectedPerKilo = true;
+  if (jobRepo.perLoad) jobRepo.selectedPerKilo = false;
 
-  jobRepo.quantityKg = jobRepo.finalKilo;
-  jobRepo.quantityLoad = jobRepo.finalLoad;
+  jobRepo.selectedFinalKilo = jobRepo.finalKilo;
+  jobRepo.selectedFinalLoad = jobRepo.finalLoad;
 
   //8 list other items
-  jobRepo.listSelectedItemModel = List.from(jobRepo.items);
-  jobRepo.totalPriceShortCutRegSS = jobRepo.items.fold(
+  jobRepo.selectedItems = List.from(jobRepo.items);
+  jobRepo.repoVarTotalPriceShortCutRegSS = jobRepo.items.fold(
     0,
     (sum, item) => sum + item.itemPrice,
   );
 
   //10 extras
   if (jobRepo.selectedPackage != othersPackage) {
-    jobRepo.addFabCount = jobRepo.items
+    jobRepo.repoVarAddFabCount = jobRepo.items
         .where((e) => e.itemUniqueId == addFabAnyItemModel.itemUniqueId)
         .length;
-    jobRepo.addExtraDryCount = jobRepo.items
+    jobRepo.repoVarAddExtraDryCount = jobRepo.items
         .where((e) => e.itemUniqueId == xDItemModel.itemUniqueId)
         .length;
-    jobRepo.addExtraWashCount = jobRepo.items
+    jobRepo.repoVarAddExtraWashCount = jobRepo.items
         .where((e) => e.itemUniqueId == xWashItemModel.itemUniqueId)
         .length;
-    jobRepo.addExtraSpinCount = jobRepo.items
+    jobRepo.repoVarAddExtraSpinCount = jobRepo.items
         .where((e) => e.itemUniqueId == xSpinItemModel.itemUniqueId)
         .length;
   } else {
-    jobRepo.addFabCount = 0;
-    jobRepo.addExtraDryCount = 0;
-    jobRepo.addExtraWashCount = 0;
-    jobRepo.addExtraSpinCount = 0;
+    jobRepo.repoVarAddFabCount = 0;
+    jobRepo.repoVarAddExtraDryCount = 0;
+    jobRepo.repoVarAddExtraWashCount = 0;
+    jobRepo.repoVarAddExtraSpinCount = 0;
   }
 
   //12 Remarks
-  jobRepo.remarksVar.text = jobRepo.remarks;
+  jobRepo.selectedRemarksVar.text = jobRepo.remarks;
 }
 
 void syncRepoToSelectedSmall(JobModelRepository jobRepo) {
   //2 customer
-  jobRepo.customerNameVar.text = jobRepo.customerName;
+  jobRepo.selectedCustomerNameVar.text = jobRepo.customerName;
 
   //3 queue status
-  if (jobRepo.riderPickup) jobRepo.selectedRiderPickup = riderPickup;
-  if (jobRepo.forSorting) jobRepo.selectedRiderPickup = forSorting;
+  if (jobRepo.riderPickup) jobRepo.repoVarSelectedIntRiderPickup = riderPickup;
+  if (jobRepo.forSorting) jobRepo.repoVarSelectedIntRiderPickup = forSorting;
 
   //6 payment status
-  jobRepo.cashAmountVar.text = jobRepo.paidCashAmount.toString();
-  jobRepo.gCashAmountVar.text = jobRepo.paidGCashAmount.toString();
+  jobRepo.repoVarCashAmountVar.text = jobRepo.paidCashAmount.toString();
+  jobRepo.repoVarGCashAmountVar.text = jobRepo.paidGCashAmount.toString();
 
   //8 list other items
-  jobRepo.listSelectedItemModel = List.from(jobRepo.items);
-  jobRepo.totalPriceShortCutRegSS = jobRepo.items.fold(
+  jobRepo.selectedItems = List.from(jobRepo.items);
+  jobRepo.repoVarTotalPriceShortCutRegSS = jobRepo.items.fold(
     0,
     (sum, item) => sum + item.itemPrice,
   );
 
-  jobRepo.remarksVar.text = jobRepo.remarks;
+  jobRepo.selectedRemarksVar.text = jobRepo.remarks;
 }
 
 //set selected to repository
@@ -570,11 +571,11 @@ void syncSelectedToRepositoryALL(JobModelRepository jobRepo) {
   //set by autocomplete
 
   //3 queue status
-  jobRepo.forSorting = forSorting == jobRepo.selectedRiderPickup;
+  jobRepo.forSorting = forSorting == jobRepo.repoVarSelectedIntRiderPickup;
   //only true if still false
   //once true, should always true
-  if ((riderPickup == jobRepo.selectedRiderPickup)) {
-    jobRepo.riderPickup = riderPickup == jobRepo.selectedRiderPickup;
+  if ((riderPickup == jobRepo.repoVarSelectedIntRiderPickup)) {
+    jobRepo.riderPickup = riderPickup == jobRepo.repoVarSelectedIntRiderPickup;
   }
 
   //4 package status
@@ -584,15 +585,16 @@ void syncSelectedToRepositoryALL(JobModelRepository jobRepo) {
 
   //5 prices
   if (jobRepo.selectedPackage == othersPackage) {
-    jobRepo.finalPrice = jobRepo.totalPriceOthers;
+    jobRepo.finalPrice = jobRepo.repoVarTotalPriceOthers;
   } else {
-    jobRepo.finalPrice = jobRepo.totalPriceRegSS;
+    jobRepo.finalPrice = jobRepo.repoVarTotalPriceRegSS;
   }
 
   //6 payment status
   jobRepo.unpaid = true;
-  jobRepo.paidCashAmount = int.tryParse(jobRepo.cashAmountVar.text) ?? 0;
-  jobRepo.paidGCashAmount = int.tryParse(jobRepo.gCashAmountVar.text) ?? 0;
+  jobRepo.paidCashAmount = int.tryParse(jobRepo.repoVarCashAmountVar.text) ?? 0;
+  jobRepo.paidGCashAmount =
+      int.tryParse(jobRepo.repoVarGCashAmountVar.text) ?? 0;
   //check if paidCash is enough vs bill
   if (jobRepo.paidCash) {
     //received by
@@ -606,44 +608,46 @@ void syncSelectedToRepositoryALL(JobModelRepository jobRepo) {
   //7 weight status
   jobRepo.perKilo = false;
   jobRepo.perLoad = false;
-  if (jobRepo.isPerKg) {
+  if (jobRepo.selectedPerKilo) {
     jobRepo.perKilo = true;
-    jobRepo.finalKilo = jobRepo.quantityKg;
-    jobRepo.finalLoad = computeLoadForKg(jobRepo.quantityKg);
+    jobRepo.finalKilo = jobRepo.selectedFinalKilo;
+    jobRepo.finalLoad = computeLoadForKg(jobRepo.selectedFinalKilo);
     jobRepo.promoCounter = computePromoCounter;
     jobRepo.pricingSetup = showHowMany155or125Set(
-        computeTotalPrice(jobRepo.quantityKg, jobRepo), false, jobRepo);
+        computeTotalPrice(jobRepo.selectedFinalKilo, jobRepo), false, jobRepo);
   } else {
     jobRepo.perLoad = true;
-    jobRepo.finalLoad = jobRepo.quantityLoad;
-    jobRepo.promoCounter = jobRepo.quantityLoad;
-    jobRepo.pricingSetup = 'Load(s): ${jobRepo.quantityLoad}';
+    jobRepo.finalLoad = jobRepo.selectedFinalLoad;
+    jobRepo.promoCounter = jobRepo.selectedFinalLoad;
+    jobRepo.pricingSetup = 'Load(s): ${jobRepo.selectedFinalLoad}';
   }
 
   //8 list other items
-  if (jobRepo.listSelectedItemModel.isNotEmpty) {
-    jobRepo.items = List.from(jobRepo.listSelectedItemModel);
+  if (jobRepo.selectedItems.isNotEmpty) {
+    jobRepo.items = List.from(jobRepo.selectedItems);
   }
 
   //12
-  jobRepo.remarks = jobRepo.remarksVar.text;
+  jobRepo.remarks = jobRepo.selectedRemarksVar.text;
 }
 
 void syncSelectedToRepositorySmall(JobModelRepository jobRepo) {
   //3 queue status
-  jobRepo.forSorting = forSorting == jobRepo.selectedRiderPickup;
+  jobRepo.forSorting = forSorting == jobRepo.repoVarSelectedIntRiderPickup;
   //only true if still false
   //once true, should always true
-  if (jobRepo.riderPickup || riderPickup == jobRepo.selectedRiderPickup) {
-    jobRepo.riderPickup = riderPickup == jobRepo.selectedRiderPickup;
+  if (jobRepo.riderPickup ||
+      riderPickup == jobRepo.repoVarSelectedIntRiderPickup) {
+    jobRepo.riderPickup = riderPickup == jobRepo.repoVarSelectedIntRiderPickup;
   }
 
   //6 payment status
   jobRepo.unpaid = true;
   // jobRepo.paidCash;
   // jobRepo.paidGCash;
-  jobRepo.paidCashAmount = int.tryParse(jobRepo.cashAmountVar.text) ?? 0;
-  jobRepo.paidGCashAmount = int.tryParse(jobRepo.gCashAmountVar.text) ?? 0;
+  jobRepo.paidCashAmount = int.tryParse(jobRepo.repoVarCashAmountVar.text) ?? 0;
+  jobRepo.paidGCashAmount =
+      int.tryParse(jobRepo.repoVarGCashAmountVar.text) ?? 0;
   //check if paidCash is enough vs bill
   if (jobRepo.paidCash) {
     //received by

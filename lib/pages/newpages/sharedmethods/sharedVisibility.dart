@@ -187,8 +187,8 @@ Widget visCustomerNameNoAutoComplete(
           ),
           child: Text(
             bShort
-                ? '${jobRepo.processStep.isEmpty ? '' : '#${jobRepo.jobId} '}${jobRepo.customerNameVar.text}'
-                : '${jobRepo.processStep.isEmpty ? '' : '#${jobRepo.jobId} '}${jobRepo.customerNameVar.text} '
+                ? '${jobRepo.processStep.isEmpty ? '' : '#${jobRepo.jobId} '}${jobRepo.selectedCustomerNameVar.text}'
+                : '${jobRepo.processStep.isEmpty ? '' : '#${jobRepo.jobId} '}${jobRepo.selectedCustomerNameVar.text} '
                     '(${jobRepo.finalLoad})\n'
                     '${textBagDetails(jobRepo.getJobsModel()!)} '
                     '₱ ${jobRepo.finalPrice}.00',
@@ -197,7 +197,7 @@ Widget visCustomerNameNoAutoComplete(
               fontSize: 16,
               height: 1.4,
               fontWeight: FontWeight.w600,
-              color: jobRepo.customerNameVar.text.isEmpty
+              color: jobRepo.selectedCustomerNameVar.text.isEmpty
                   ? Colors.white.withOpacity(0.5)
                   : Colors.white,
             ),
@@ -268,14 +268,15 @@ Widget visRiderPickup(
             children: List.generate(
               listRiderPickup.length,
               (index) {
-                final isSelected =
-                    jobRepo.selectedRiderPickup == listRiderPickup[index];
+                final isSelected = jobRepo.repoVarSelectedIntRiderPickup ==
+                    listRiderPickup[index];
 
                 return Expanded(
                   child: GestureDetector(
                     onTap: () {
                       setState(() {
-                        jobRepo.selectedRiderPickup = listRiderPickup[index];
+                        jobRepo.repoVarSelectedIntRiderPickup =
+                            listRiderPickup[index];
                         //reset once change of selection
                         jobRepo.isCustomerPickedUp = false;
                         jobRepo.isDeliveredToCustomer = false;
@@ -323,7 +324,7 @@ Widget visRiderPickup(
         /// 🔽 Dynamic Checkbox
         if (jobRepo.processStep == 'done') ...[
           const SizedBox(height: 6),
-          if (jobRepo.selectedRiderPickup == listRiderPickup[0])
+          if (jobRepo.repoVarSelectedIntRiderPickup == listRiderPickup[0])
             Row(
               children: [
                 Checkbox(
@@ -340,7 +341,7 @@ Widget visRiderPickup(
                 ),
               ],
             ),
-          if (jobRepo.selectedRiderPickup == listRiderPickup[1])
+          if (jobRepo.repoVarSelectedIntRiderPickup == listRiderPickup[1])
             Row(
               children: [
                 Checkbox(
@@ -429,7 +430,7 @@ Widget visSelectPackage(
                     onTap: () async {
                       // 🔥 Confirmation logic
                       if (jobRepo.selectedPackagePrev == othersPackage &&
-                          jobRepo.listSelectedItemModel.isNotEmpty) {
+                          jobRepo.selectedItems.isNotEmpty) {
                         final confirm = await showCoolConfirmDialog(
                           context: context,
                           title: "Change Package?",
@@ -440,8 +441,8 @@ Widget visSelectPackage(
                         if (!confirm) return;
 
                         setState(() {
-                          jobRepo.listSelectedItemModel.clear();
-                          jobRepo.totalPriceOthers = 0;
+                          jobRepo.selectedItems.clear();
+                          jobRepo.repoVarTotalPriceOthers = 0;
                         });
                       }
 
@@ -450,7 +451,7 @@ Widget visSelectPackage(
                         jobRepo.selectedPackagePrev = value;
 
                         if (value == othersPackage) {
-                          jobRepo.selectedItemModel = listOthItems[0];
+                          jobRepo.repoVarSelectedItem = listOthItems[0];
                         }
 
                         resetPaymentStatus(jobRepo);
@@ -501,45 +502,47 @@ Widget visSelectPackage(
 
 Visibility visAmountRegSSPerKg(
     BuildContext context, Function setState, JobModelRepository jobRepo) {
-  jobRepo.pricePerSet = prices[jobRepo.selectedPackage] ?? 155;
+  jobRepo.repoVarBasePriceAmount = prices[jobRepo.selectedPackage] ?? 155;
   jobRepo.maxPartial = maxPartialOptions[jobRepo.selectedPackage] ?? 3;
   // 🧠 UI rules
 
-  final bool showPointOne =
-      jobRepo.quantityKg >= 8 && (jobRepo.quantityKg % 8) < jobRepo.maxPartial;
+  final bool showPointOne = jobRepo.selectedFinalKilo >= 8 &&
+      (jobRepo.selectedFinalKilo % 8) < jobRepo.maxPartial;
 
-  jobRepo.totalPriceRegSS = computeTotalPrice(jobRepo.quantityKg, jobRepo) +
-      jobRepo.totalPriceShortCutRegSS;
+  jobRepo.repoVarTotalPriceRegSS =
+      computeTotalPrice(jobRepo.selectedFinalKilo, jobRepo) +
+          jobRepo.repoVarTotalPriceShortCutRegSS;
 
   // ➕➖ handlers
   void incrementOne() {
     setState(() {
-      jobRepo.quantityKg += 1;
-      jobRepo.quantityKg = jobRepo.quantityKg.floorToDouble();
+      jobRepo.selectedFinalKilo += 1;
+      jobRepo.selectedFinalKilo = jobRepo.selectedFinalKilo.floorToDouble();
       resetPaymentStatus(jobRepo);
     });
   }
 
   void incrementPointOne() {
     setState(() {
-      jobRepo.quantityKg =
-          double.parse((jobRepo.quantityKg + 0.1).toStringAsFixed(1));
+      jobRepo.selectedFinalKilo =
+          double.parse((jobRepo.selectedFinalKilo + 0.1).toStringAsFixed(1));
       resetPaymentStatus(jobRepo);
     });
   }
 
   void decrementOne() {
     setState(() {
-      jobRepo.quantityKg -= 1;
-      if (jobRepo.quantityKg < 1) jobRepo.quantityKg = 1;
-      jobRepo.quantityKg = jobRepo.quantityKg.floorToDouble();
+      jobRepo.selectedFinalKilo -= 1;
+      if (jobRepo.selectedFinalKilo < 1) jobRepo.selectedFinalKilo = 1;
+      jobRepo.selectedFinalKilo = jobRepo.selectedFinalKilo.floorToDouble();
       resetPaymentStatus(jobRepo);
     });
   }
 
   return Visibility(
-    visible:
-        (jobRepo.selectedPackage == othersPackage ? false : jobRepo.isPerKg),
+    visible: (jobRepo.selectedPackage == othersPackage
+        ? false
+        : jobRepo.selectedPerKilo),
     child: Container(
       padding: const EdgeInsets.all(1),
       decoration: BoxDecoration(
@@ -580,7 +583,7 @@ Visibility visAmountRegSSPerKg(
               ),
               const SizedBox(height: 4),
               Text(
-                formatter.format(jobRepo.totalPriceRegSS),
+                formatter.format(jobRepo.repoVarTotalPriceRegSS),
                 style: const TextStyle(
                   fontSize: fontSizeTotalPrice,
                   fontWeight: FontWeight.w800,
@@ -615,8 +618,8 @@ Visibility visAmountRegSSPerKg(
             child: Column(
               children: [
                 Text(
-                  "${jobRepo.quantityKg.toStringAsFixed(
-                    jobRepo.quantityKg % 1 == 0 ? 0 : 1,
+                  "${jobRepo.selectedFinalKilo.toStringAsFixed(
+                    jobRepo.selectedFinalKilo % 1 == 0 ? 0 : 1,
                   )} kg",
                   style: const TextStyle(
                     fontSize: fontSizeKiloLoad,
@@ -628,7 +631,7 @@ Visibility visAmountRegSSPerKg(
                 GestureDetector(
                     onTap: () {
                       setState(() {
-                        jobRepo.isPerKg = false;
+                        jobRepo.selectedPerKilo = false;
                         resetPaymentStatus(jobRepo);
                       });
                     },
@@ -674,7 +677,7 @@ Visibility visAmountRegSSPerKg(
               _glassActionButton(
                 label: "−1",
                 onTap: decrementOne,
-                disabled: jobRepo.quantityKg <= 1,
+                disabled: jobRepo.selectedFinalKilo <= 1,
               ),
               const SizedBox(width: 12),
               _glassActionButton(
@@ -708,29 +711,31 @@ Visibility visAmountRegSSPerLoad(
     othersPackage: 0,
   };
 
-  jobRepo.pricePerSet = prices[jobRepo.selectedPackage] ?? 155;
+  jobRepo.repoVarBasePriceAmount = prices[jobRepo.selectedPackage] ?? 155;
 
-  jobRepo.totalPriceRegSS = (jobRepo.pricePerSet * jobRepo.quantityLoad) +
-      jobRepo.totalPriceShortCutRegSS;
+  jobRepo.repoVarTotalPriceRegSS =
+      (jobRepo.repoVarBasePriceAmount * jobRepo.selectedFinalLoad) +
+          jobRepo.repoVarTotalPriceShortCutRegSS;
 
   void incrementOne() {
     setState(() {
-      jobRepo.quantityLoad += 1;
+      jobRepo.selectedFinalLoad += 1;
       resetPaymentStatus(jobRepo);
     });
   }
 
   void decrementOne() {
     setState(() {
-      jobRepo.quantityLoad -= 1;
-      if (jobRepo.quantityLoad < 1) jobRepo.quantityLoad = 1;
+      jobRepo.selectedFinalLoad -= 1;
+      if (jobRepo.selectedFinalLoad < 1) jobRepo.selectedFinalLoad = 1;
       resetPaymentStatus(jobRepo);
     });
   }
 
   return Visibility(
-    visible:
-        (jobRepo.selectedPackage == othersPackage ? false : !jobRepo.isPerKg),
+    visible: (jobRepo.selectedPackage == othersPackage
+        ? false
+        : !jobRepo.selectedPerKilo),
     child: Container(
       padding: const EdgeInsets.all(1),
       decoration: BoxDecoration(
@@ -771,7 +776,7 @@ Visibility visAmountRegSSPerLoad(
               ),
               const SizedBox(height: 4),
               Text(
-                formatter.format(jobRepo.totalPriceRegSS),
+                formatter.format(jobRepo.repoVarTotalPriceRegSS),
                 style: const TextStyle(
                   fontSize: fontSizeTotalPrice,
                   fontWeight: FontWeight.w800,
@@ -806,7 +811,7 @@ Visibility visAmountRegSSPerLoad(
             child: Column(
               children: [
                 Text(
-                  "${jobRepo.quantityLoad} load",
+                  "${jobRepo.selectedFinalLoad} load",
                   style: const TextStyle(
                     fontSize: fontSizeKiloLoad, // ← SAME AS KG
                     fontWeight: FontWeight.w700,
@@ -817,7 +822,7 @@ Visibility visAmountRegSSPerLoad(
                 GestureDetector(
                     onTap: () {
                       setState(() {
-                        jobRepo.isPerKg = true;
+                        jobRepo.selectedPerKilo = true;
                         resetPaymentStatus(jobRepo);
                       });
                     },
@@ -862,7 +867,7 @@ Visibility visAmountRegSSPerLoad(
               _glassActionButton(
                 label: "−1",
                 onTap: decrementOne,
-                disabled: jobRepo.quantityLoad <= 1,
+                disabled: jobRepo.selectedFinalLoad <= 1,
               ),
               const SizedBox(width: 12),
               _glassActionButton(
@@ -883,8 +888,8 @@ Widget visAmountOthersOnly(
   JobModelRepository jobRepo,
 ) {
   void addOtherItem(OtherItemModel item) {
-    jobRepo.listSelectedItemModel.add(item);
-    jobRepo.totalPriceOthers += item.itemPrice;
+    jobRepo.selectedItems.add(item);
+    jobRepo.repoVarTotalPriceOthers += item.itemPrice;
   }
 
   String getShortcutLabel(int value) {
@@ -941,7 +946,7 @@ Widget visAmountOthersOnly(
               ),
               const SizedBox(height: 6),
               Text(
-                formatter.format(jobRepo.totalPriceOthers),
+                formatter.format(jobRepo.repoVarTotalPriceOthers),
                 style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.w800,
@@ -1004,7 +1009,7 @@ Widget visAmountOthersOnly(
                     ),
                   ),
                   child: DropdownButton<OtherItemModel>(
-                    value: jobRepo.selectedItemModel,
+                    value: jobRepo.repoVarSelectedItem,
                     isExpanded: true,
                     dropdownColor: Colors.black87,
                     underline: const SizedBox(),
@@ -1030,7 +1035,7 @@ Widget visAmountOthersOnly(
                         .toList(),
                     onChanged: (val) {
                       setState(() {
-                        jobRepo.selectedItemModel = val!;
+                        jobRepo.repoVarSelectedItem = val!;
                       });
                     },
                   ),
@@ -1040,7 +1045,7 @@ Widget visAmountOthersOnly(
               _glassAddButton(
                 onTap: () {
                   setState(() {
-                    addOtherItem(jobRepo.selectedItemModel);
+                    addOtherItem(jobRepo.repoVarSelectedItem);
                   });
                 },
               ),
@@ -1051,7 +1056,7 @@ Widget visAmountOthersOnly(
 
           /// 🧾 SELECTED ITEMS LIST
           Column(
-            children: jobRepo.listSelectedItemModel.map((e) {
+            children: jobRepo.selectedItems.map((e) {
               return Container(
                 margin: const EdgeInsets.only(bottom: 6),
                 padding:
@@ -1068,8 +1073,8 @@ Widget visAmountOthersOnly(
                     GestureDetector(
                       onTap: () {
                         setState(() {
-                          jobRepo.totalPriceOthers -= e.itemPrice;
-                          jobRepo.listSelectedItemModel.remove(e);
+                          jobRepo.repoVarTotalPriceOthers -= e.itemPrice;
+                          jobRepo.selectedItems.remove(e);
                         });
                       },
                       child: const Icon(
@@ -1115,16 +1120,16 @@ Visibility visPaidUnPaid(
 
   String returnPaymentStatusDuringToggle() {
     void resetPartialAmount() {
-      jobRepo.cashAmountVar.text = '';
-      jobRepo.gCashAmountVar.text = '';
+      jobRepo.repoVarCashAmountVar.text = '';
+      jobRepo.repoVarGCashAmountVar.text = '';
     }
 
     void setPartialAmount(TextEditingController controller) {
       if (jobRepo.finalPrice == 0) {
         if (jobRepo.selectedPackage == othersPackage) {
-          controller.text = jobRepo.totalPriceOthers.toString();
+          controller.text = jobRepo.repoVarTotalPriceOthers.toString();
         } else {
-          controller.text = jobRepo.totalPriceRegSS.toString();
+          controller.text = jobRepo.repoVarTotalPriceRegSS.toString();
         }
       } else {
         controller.text = jobRepo.finalPrice.toString();
@@ -1144,10 +1149,10 @@ Visibility visPaidUnPaid(
       resetPartialAmount();
       return 'Split payment';
     } else if (jobRepo.paidCash) {
-      setPartialAmount(jobRepo.cashAmountVar);
+      setPartialAmount(jobRepo.repoVarCashAmountVar);
       return 'Paid Cash';
     } else if (jobRepo.paidGCash) {
-      setPartialAmount(jobRepo.gCashAmountVar);
+      setPartialAmount(jobRepo.repoVarGCashAmountVar);
       return 'Paid GCash';
     }
     resetPartialAmount();
@@ -1155,11 +1160,12 @@ Visibility visPaidUnPaid(
   }
 
   void validatePaymentWhenVarChange() {
-    final int valueCash = int.tryParse(jobRepo.cashAmountVar.text) ?? 0;
-    final int valueGCash = int.tryParse(jobRepo.gCashAmountVar.text) ?? 0;
+    final int valueCash = int.tryParse(jobRepo.repoVarCashAmountVar.text) ?? 0;
+    final int valueGCash =
+        int.tryParse(jobRepo.repoVarGCashAmountVar.text) ?? 0;
     final int tempFinalPrice = (jobRepo.selectedPackage == othersPackage
-        ? jobRepo.totalPriceOthers
-        : jobRepo.totalPriceRegSS);
+        ? jobRepo.repoVarTotalPriceOthers
+        : jobRepo.repoVarTotalPriceRegSS);
 
     // debugPrint(
     //     'valueCash=$valueCash valueGCash=$valueGCash finaPrice=$tempFinalPrice');
@@ -1269,7 +1275,7 @@ Visibility visPaidUnPaid(
                 Expanded(
                   child: _glassAmountField(
                     label: "Cash Amount",
-                    controller: jobRepo.cashAmountVar,
+                    controller: jobRepo.repoVarCashAmountVar,
                   ),
                 ),
               if (jobRepo.paidCash && jobRepo.paidGCash)
@@ -1278,7 +1284,7 @@ Visibility visPaidUnPaid(
                 Expanded(
                   child: _glassAmountField(
                     label: "GCash Amount",
-                    controller: jobRepo.gCashAmountVar,
+                    controller: jobRepo.repoVarGCashAmountVar,
                   ),
                 ),
             ],
@@ -1425,22 +1431,23 @@ Widget visAddFab(
 ) {
   return _glassCounterCard(
     label: "+Fab (₱${addFabAnyItemModel.itemPrice})",
-    count: jobRepo.addFabCount,
+    count: jobRepo.repoVarAddFabCount,
     visible: jobRepo.selectedPackage != othersPackage,
-    highlight: jobRepo.addFabCount > 0,
+    highlight: jobRepo.repoVarAddFabCount > 0,
     onIncrement: () {
       setState(() {
-        jobRepo.addFabCount++;
-        jobRepo.listSelectedItemModel.add(addFabAnyItemModel);
-        jobRepo.totalPriceShortCutRegSS += addFabAnyItemModel.itemPrice;
+        jobRepo.repoVarAddFabCount++;
+        jobRepo.selectedItems.add(addFabAnyItemModel);
+        jobRepo.repoVarTotalPriceShortCutRegSS += addFabAnyItemModel.itemPrice;
       });
     },
     onDecrement: () {
       setState(() {
-        if (jobRepo.addFabCount > 0) {
-          jobRepo.addFabCount--;
-          jobRepo.listSelectedItemModel.remove(addFabAnyItemModel);
-          jobRepo.totalPriceShortCutRegSS -= addFabAnyItemModel.itemPrice;
+        if (jobRepo.repoVarAddFabCount > 0) {
+          jobRepo.repoVarAddFabCount--;
+          jobRepo.selectedItems.remove(addFabAnyItemModel);
+          jobRepo.repoVarTotalPriceShortCutRegSS -=
+              addFabAnyItemModel.itemPrice;
         }
       });
     },
@@ -1454,22 +1461,22 @@ Widget visAddDry(
 ) {
   return _glassCounterCard(
     label: "+Dry (₱${xDItemModel.itemPrice})",
-    count: jobRepo.addExtraDryCount,
+    count: jobRepo.repoVarAddExtraDryCount,
     visible: jobRepo.selectedPackage != othersPackage,
-    highlight: jobRepo.addExtraDryCount > 0,
+    highlight: jobRepo.repoVarAddExtraDryCount > 0,
     onIncrement: () {
       setState(() {
-        jobRepo.addExtraDryCount++;
-        jobRepo.listSelectedItemModel.add(xDItemModel);
-        jobRepo.totalPriceShortCutRegSS += xDItemModel.itemPrice;
+        jobRepo.repoVarAddExtraDryCount++;
+        jobRepo.selectedItems.add(xDItemModel);
+        jobRepo.repoVarTotalPriceShortCutRegSS += xDItemModel.itemPrice;
       });
     },
     onDecrement: () {
       setState(() {
-        if (jobRepo.addExtraDryCount > 0) {
-          jobRepo.addExtraDryCount--;
-          jobRepo.listSelectedItemModel.remove(xDItemModel);
-          jobRepo.totalPriceShortCutRegSS -= xDItemModel.itemPrice;
+        if (jobRepo.repoVarAddExtraDryCount > 0) {
+          jobRepo.repoVarAddExtraDryCount--;
+          jobRepo.selectedItems.remove(xDItemModel);
+          jobRepo.repoVarTotalPriceShortCutRegSS -= xDItemModel.itemPrice;
         }
       });
     },
@@ -1483,22 +1490,22 @@ Widget visAddWash(
 ) {
   return _glassCounterCard(
     label: "+Wash (₱${xWashItemModel.itemPrice})",
-    count: jobRepo.addExtraWashCount,
+    count: jobRepo.repoVarAddExtraWashCount,
     visible: jobRepo.selectedPackage != othersPackage,
-    highlight: jobRepo.addExtraWashCount > 0,
+    highlight: jobRepo.repoVarAddExtraWashCount > 0,
     onIncrement: () {
       setState(() {
-        jobRepo.addExtraWashCount++;
-        jobRepo.listSelectedItemModel.add(xWashItemModel);
-        jobRepo.totalPriceShortCutRegSS += xWashItemModel.itemPrice;
+        jobRepo.repoVarAddExtraWashCount++;
+        jobRepo.selectedItems.add(xWashItemModel);
+        jobRepo.repoVarTotalPriceShortCutRegSS += xWashItemModel.itemPrice;
       });
     },
     onDecrement: () {
       setState(() {
-        if (jobRepo.addExtraWashCount > 0) {
-          jobRepo.addExtraWashCount--;
-          jobRepo.listSelectedItemModel.remove(xWashItemModel);
-          jobRepo.totalPriceShortCutRegSS -= xWashItemModel.itemPrice;
+        if (jobRepo.repoVarAddExtraWashCount > 0) {
+          jobRepo.repoVarAddExtraWashCount--;
+          jobRepo.selectedItems.remove(xWashItemModel);
+          jobRepo.repoVarTotalPriceShortCutRegSS -= xWashItemModel.itemPrice;
         }
       });
     },
@@ -1512,22 +1519,22 @@ Widget visAddSpin(
 ) {
   return _glassCounterCard(
     label: "+Spin (₱${xSpinItemModel.itemPrice})",
-    count: jobRepo.addExtraSpinCount,
+    count: jobRepo.repoVarAddExtraSpinCount,
     visible: jobRepo.selectedPackage != othersPackage,
-    highlight: jobRepo.addExtraSpinCount > 0,
+    highlight: jobRepo.repoVarAddExtraSpinCount > 0,
     onIncrement: () {
       setState(() {
-        jobRepo.addExtraSpinCount++;
-        jobRepo.listSelectedItemModel.add(xSpinItemModel);
-        jobRepo.totalPriceShortCutRegSS += xSpinItemModel.itemPrice;
+        jobRepo.repoVarAddExtraSpinCount++;
+        jobRepo.selectedItems.add(xSpinItemModel);
+        jobRepo.repoVarTotalPriceShortCutRegSS += xSpinItemModel.itemPrice;
       });
     },
     onDecrement: () {
       setState(() {
-        if (jobRepo.addExtraSpinCount > 0) {
-          jobRepo.addExtraSpinCount--;
-          jobRepo.listSelectedItemModel.remove(xSpinItemModel);
-          jobRepo.totalPriceShortCutRegSS -= xSpinItemModel.itemPrice;
+        if (jobRepo.repoVarAddExtraSpinCount > 0) {
+          jobRepo.repoVarAddExtraSpinCount--;
+          jobRepo.selectedItems.remove(xSpinItemModel);
+          jobRepo.repoVarTotalPriceShortCutRegSS -= xSpinItemModel.itemPrice;
         }
       });
     },

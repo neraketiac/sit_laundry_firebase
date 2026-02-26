@@ -3,10 +3,13 @@ import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedMethods.dart
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedVisibility.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedmethodsdatabase.dart';
 import 'package:laundry_firebase/variables/newvariables/jobmodel_repository.dart';
+import 'package:laundry_firebase/variables/newvariables/variables.dart';
 
 void showJobOnQueueEdit(BuildContext context, JobModelRepository jobRepo) {
   Future<void> saveButtonSetRepository() async {
-    syncSelectedToRepositoryALL(jobRepo);
+    //syncSelectedToRepositoryALL(jobRepo);
+    jobRepo.currentEmpId = empIdGlobal;
+    jobRepo.syncSelectedToRepoAll(jobRepo);
 
     await callDatabaseUpdateJob(context, jobRepo.getJobsModel()!);
     //await setRepositoryLaundryPayment(context, 'Show Jobs OnQueue');
@@ -49,7 +52,7 @@ void showJobOnQueueEdit(BuildContext context, JobModelRepository jobRepo) {
                         context, setState, jobRepo, true),
                     visRiderPickup(context, setState, jobRepo),
                     visSelectPackage(context, setState, jobRepo),
-                    (jobRepo.isPerKg
+                    (jobRepo.selectedPerKilo
                         ? visAmountRegSSPerKg(context, setState, jobRepo)
                         : visAmountRegSSPerLoad(context, setState, jobRepo)),
                     visAmountOthersOnly(context, setState, jobRepo),
@@ -71,7 +74,7 @@ void showJobOnQueueEdit(BuildContext context, JobModelRepository jobRepo) {
                     visAddFab(context, setState, jobRepo),
                     visAddWash(context, setState, jobRepo),
                     visAddSpin(context, setState, jobRepo),
-                    conRemarks(context, setState, jobRepo.remarksVar),
+                    conRemarks(context, setState, jobRepo.selectedRemarksVar),
                   ],
                 ),
               ),

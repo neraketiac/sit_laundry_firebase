@@ -224,100 +224,550 @@ class JobModelRepository {
 
   // Add item
   void addListSelectedItemModel(OtherItemModel value) {
-    jobselectedRepository.listSelectedItemModel.add(value);
+    jobselectedRepository.selectedItems.add(value);
   }
 
   // Delete item by index
   void delListSelectedItemModel(int value) {
-    if (value >= 0 &&
-        value < jobselectedRepository.listSelectedItemModel.length) {
-      jobselectedRepository.listSelectedItemModel.removeAt(value);
+    if (value >= 0 && value < jobselectedRepository.selectedItems.length) {
+      jobselectedRepository.selectedItems.removeAt(value);
     }
   }
 
   // Delete item by matching condition
   void delItemListSelectedItemModel(OtherItemModel value) {
-    jobselectedRepository.listSelectedItemModel.remove(value);
+    jobselectedRepository.selectedItems.remove(value);
   }
 
   // Clear all items
   void clearListSelectedItemModel() {
-    jobselectedRepository.listSelectedItemModel.clear();
+    jobselectedRepository.selectedItems.clear();
   }
 
   /////////////////////////////////////////////////////////////
-  //                          SETTER                         //
+  //                    GETTER SETTER                         //
   //                          JOBSELECTED                    //
   /////////////////////////////////////////////////////////////
-  set selectedRiderPickup(int value) =>
+
+  // ================= SELECTED =================
+
+  int get selectedJobId => jobselectedRepository.selectedJobId;
+  set selectedJobId(int value) => jobselectedRepository.selectedJobId = value;
+
+  String get selectedCreatedBy => jobselectedRepository.selectedCreatedBy;
+  set selectedCreatedBy(String value) =>
+      jobselectedRepository.selectedCreatedBy = value;
+
+  String get selectedCurrentEmpId => jobselectedRepository.selectedCurrentEmpId;
+  set selectedCurrentEmpId(String value) =>
+      jobselectedRepository.selectedCurrentEmpId = value;
+
+  int get selectedCustomerId => jobselectedRepository.selectedCustomerId;
+  set selectedCustomerId(int value) =>
+      jobselectedRepository.selectedCustomerId = value;
+
+  bool get selectedForSorting => jobselectedRepository.selectedForSorting;
+  set selectedForSorting(bool value) =>
+      jobselectedRepository.selectedForSorting = value;
+
+  bool get selectedRiderPickup => jobselectedRepository.selectedRiderPickup;
+  set selectedRiderPickup(bool value) =>
       jobselectedRepository.selectedRiderPickup = value;
+
+  bool get selectedIsCustomerPickedUp =>
+      jobselectedRepository.selectedIsCustomerPickedUp;
+  set selectedIsCustomerPickedUp(bool value) =>
+      jobselectedRepository.selectedIsCustomerPickedUp = value;
+
+  bool get selectedIsDeliveredToCustomer =>
+      jobselectedRepository.selectedIsDeliveredToCustomer;
+  set selectedIsDeliveredToCustomer(bool value) =>
+      jobselectedRepository.selectedIsDeliveredToCustomer = value;
+
+  bool get selectedPerKilo => jobselectedRepository.selectedPerKilo;
+  set selectedPerKilo(bool value) =>
+      jobselectedRepository.selectedPerKilo = value;
+
+  bool get selectedPerLoad => jobselectedRepository.selectedPerLoad;
+  set selectedPerLoad(bool value) =>
+      jobselectedRepository.selectedPerLoad = value;
+
+  double get selectedFinalKilo => jobselectedRepository.selectedFinalKilo;
+  set selectedFinalKilo(double value) =>
+      jobselectedRepository.selectedFinalKilo = value;
+
+  int get selectedFinalLoad => jobselectedRepository.selectedFinalLoad;
+  set selectedFinalLoad(int value) =>
+      jobselectedRepository.selectedFinalLoad = value;
+
+  int get selectedFinalPrice => jobselectedRepository.selectedFinalPrice;
+  set selectedFinalPrice(int value) =>
+      jobselectedRepository.selectedFinalPrice = value;
+
+  int get selectedPromoCounter => jobselectedRepository.selectedPromoCounter;
+  set selectedPromoCounter(int value) =>
+      jobselectedRepository.selectedPromoCounter = value;
+
+  int get selectedPackage => jobselectedRepository.selectedPackage;
   set selectedPackage(int value) =>
       jobselectedRepository.selectedPackage = value;
+
+  int get selectedPackagePrev => jobselectedRepository.selectedPackagePrev;
   set selectedPackagePrev(int value) =>
       jobselectedRepository.selectedPackagePrev = value;
-  set selectedOthers(int value) => jobselectedRepository.selectedOthers = value;
-  set isPerKg(bool value) => jobselectedRepository.isPerKg = value;
-  set quantityKg(double value) => jobselectedRepository.quantityKg = value;
-  set quantityLoad(int value) => jobselectedRepository.quantityLoad = value;
-  set totalPriceRegSS(int value) =>
-      jobselectedRepository.totalPriceRegSS = value;
-  set totalPriceShortCutRegSS(int value) =>
-      jobselectedRepository.totalPriceShortCutRegSS = value;
-  set totalPriceOthers(int value) =>
-      jobselectedRepository.totalPriceOthers = value;
-  set pricePerSet(int value) => jobselectedRepository.pricePerSet = value;
-  set maxPartial(int value) => jobselectedRepository.maxPartial = value;
-  set selectedItemModel(OtherItemModel value) =>
-      jobselectedRepository.selectedItemModel = value;
-  set selectedOthersShortCut(int value) =>
-      jobselectedRepository.selectedOthersShortCut = value;
-  set addFabCount(int value) => jobselectedRepository.addFabCount = value;
-  set addExtraDryCount(int value) =>
-      jobselectedRepository.addExtraDryCount = value;
-  set addExtraWashCount(int value) =>
-      jobselectedRepository.addExtraWashCount = value;
-  set addExtraSpinCount(int value) =>
-      jobselectedRepository.addExtraSpinCount = value;
-  set listSelectedItemModel(List<OtherItemModel> value) =>
-      jobselectedRepository.listSelectedItemModel = value;
 
-  /////////////////////////////////////////////////////////////
-  //                          GETTER                         //
-  //                        JOBSELECTED                      //
-  /////////////////////////////////////////////////////////////
-
-  ///expose controller
-  TextEditingController get customerAmountVar =>
-      jobselectedRepository.customerAmountVar;
-  TextEditingController get customerNameVar =>
-      jobselectedRepository.customerNameVar;
-  TextEditingController get cashAmountVar =>
-      jobselectedRepository.cashAmountVar;
-  TextEditingController get gCashAmountVar =>
-      jobselectedRepository.gCashAmountVar;
-  TextEditingController get remarksVar => jobselectedRepository.remarksVar;
-
-  int get selectedRiderPickup => jobselectedRepository.selectedRiderPickup;
-  int get selectedPackage => jobselectedRepository.selectedPackage;
-  int get selectedPackagePrev => jobselectedRepository.selectedPackagePrev;
   int get selectedOthers => jobselectedRepository.selectedOthers;
-  bool get isPerKg => jobselectedRepository.isPerKg;
-  double get quantityKg => jobselectedRepository.quantityKg;
-  int get quantityLoad => jobselectedRepository.quantityLoad;
-  int get totalPriceRegSS => jobselectedRepository.totalPriceRegSS;
-  int get totalPriceShortCutRegSS =>
-      jobselectedRepository.totalPriceShortCutRegSS;
-  int get totalPriceOthers => jobselectedRepository.totalPriceOthers;
-  int get pricePerSet => jobselectedRepository.pricePerSet;
+  set selectedOthers(int value) => jobselectedRepository.selectedOthers = value;
+
+  bool get selectedFold => jobselectedRepository.selectedFold;
+  set selectedFold(bool value) => jobselectedRepository.selectedFold = value;
+
+  bool get selectedMix => jobselectedRepository.selectedMix;
+  set selectedMix(bool value) => jobselectedRepository.selectedMix = value;
+
+  int get selectedBasket => jobselectedRepository.selectedBasket;
+  set selectedBasket(int value) => jobselectedRepository.selectedBasket = value;
+
+  int get selectedEbag => jobselectedRepository.selectedEbag;
+  set selectedEbag(int value) => jobselectedRepository.selectedEbag = value;
+
+  int get selectedSako => jobselectedRepository.selectedSako;
+  set selectedSako(int value) => jobselectedRepository.selectedSako = value;
+
+  bool get selectedUnpaid => jobselectedRepository.selectedUnpaid;
+  set selectedUnpaid(bool value) =>
+      jobselectedRepository.selectedUnpaid = value;
+
+  bool get selectedPaidCash => jobselectedRepository.selectedPaidCash;
+  set selectedPaidCash(bool value) =>
+      jobselectedRepository.selectedPaidCash = value;
+
+  bool get selectedPaidGCash => jobselectedRepository.selectedPaidGCash;
+  set selectedPaidGCash(bool value) =>
+      jobselectedRepository.selectedPaidGCash = value;
+
+  bool get selectedPaidGCashVerified =>
+      jobselectedRepository.selectedPaidGCashVerified;
+  set selectedPaidGCashVerified(bool value) =>
+      jobselectedRepository.selectedPaidGCashVerified = value;
+
+  int get selectedPaidCashAmount =>
+      jobselectedRepository.selectedPaidCashAmount;
+  set selectedPaidCashAmount(int value) =>
+      jobselectedRepository.selectedPaidCashAmount = value;
+
+  int get selectedPaidGCashAmount =>
+      jobselectedRepository.selectedPaidGCashAmount;
+  set selectedPaidGCashAmount(int value) =>
+      jobselectedRepository.selectedPaidGCashAmount = value;
+
+  String get selectedPaymentReceivedBy =>
+      jobselectedRepository.selectedPaymentReceivedBy;
+  set selectedPaymentReceivedBy(String value) =>
+      jobselectedRepository.selectedPaymentReceivedBy = value;
+
+  TextEditingController get selectedRemarksVar =>
+      jobselectedRepository.selectedRemarksVar;
+  set selectedRemarksVar(TextEditingController value) =>
+      jobselectedRepository.selectedRemarksVar = value;
+
+  List<OtherItemModel> get selectedItems => jobselectedRepository.selectedItems;
+  set selectedItems(List<OtherItemModel> value) =>
+      jobselectedRepository.selectedItems = value;
+
+  String get selectedProcessStep => jobselectedRepository.selectedProcessStep;
+  set selectedProcessStep(String value) =>
+      jobselectedRepository.selectedProcessStep = value;
+
+  double get selectedAllStatus => jobselectedRepository.selectedAllStatus;
+  set selectedAllStatus(double value) =>
+      jobselectedRepository.selectedAllStatus = value;
+
+  bool get selectedForDisposal => jobselectedRepository.selectedForDisposal;
+  set selectedForDisposal(bool value) =>
+      jobselectedRepository.selectedForDisposal = value;
+
+  bool get selectedDisposed => jobselectedRepository.selectedDisposed;
+  set selectedDisposed(bool value) =>
+      jobselectedRepository.selectedDisposed = value;
+
+// ================= REPO VAR =================
+
+  TextEditingController get selectedCustomerNameVar =>
+      jobselectedRepository.selectedCustomerNameVar;
+  set selectedCustomerNameVar(TextEditingController value) =>
+      jobselectedRepository.selectedCustomerNameVar = value;
+
+  TextEditingController get repoVarCashAmountVar =>
+      jobselectedRepository.repoVarCashAmountVar;
+  set repoVarCashAmountVar(TextEditingController value) =>
+      jobselectedRepository.repoVarCashAmountVar = value;
+
+  TextEditingController get repoVarGCashAmountVar =>
+      jobselectedRepository.repoVarGCashAmountVar;
+  set repoVarGCashAmountVar(TextEditingController value) =>
+      jobselectedRepository.repoVarGCashAmountVar = value;
+
+  int get repoVarSelectedIntRiderPickup =>
+      jobselectedRepository.repoVarSelectedIntRiderPickup;
+  set repoVarSelectedIntRiderPickup(int value) =>
+      jobselectedRepository.repoVarSelectedIntRiderPickup = value;
+
+  int get repoVarBasePriceAmount =>
+      jobselectedRepository.repoVarBasePriceAmount;
+  set repoVarBasePriceAmount(int value) =>
+      jobselectedRepository.repoVarBasePriceAmount = value;
+
+  int get repoVarTotalPriceRegSS =>
+      jobselectedRepository.repoVarTotalPriceRegSS;
+  set repoVarTotalPriceRegSS(int value) =>
+      jobselectedRepository.repoVarTotalPriceRegSS = value;
+
+  int get repoVarTotalPriceShortCutRegSS =>
+      jobselectedRepository.repoVarTotalPriceShortCutRegSS;
+  set repoVarTotalPriceShortCutRegSS(int value) =>
+      jobselectedRepository.repoVarTotalPriceShortCutRegSS = value;
+
+  int get repoVarTotalPriceOthers =>
+      jobselectedRepository.repoVarTotalPriceOthers;
+  set repoVarTotalPriceOthers(int value) =>
+      jobselectedRepository.repoVarTotalPriceOthers = value;
+
+  OtherItemModel get repoVarSelectedItem =>
+      jobselectedRepository.repoVarSelectedItem;
+  set repoVarSelectedItem(OtherItemModel value) =>
+      jobselectedRepository.repoVarSelectedItem = value;
+
+  int get repoVarAddFabCount => jobselectedRepository.repoVarAddFabCount;
+  set repoVarAddFabCount(int value) =>
+      jobselectedRepository.repoVarAddFabCount = value;
+
+  int get repoVarAddExtraDryCount =>
+      jobselectedRepository.repoVarAddExtraDryCount;
+  set repoVarAddExtraDryCount(int value) =>
+      jobselectedRepository.repoVarAddExtraDryCount = value;
+
+  int get repoVarAddExtraWashCount =>
+      jobselectedRepository.repoVarAddExtraWashCount;
+  set repoVarAddExtraWashCount(int value) =>
+      jobselectedRepository.repoVarAddExtraWashCount = value;
+
+  int get repoVarAddExtraSpinCount =>
+      jobselectedRepository.repoVarAddExtraSpinCount;
+  set repoVarAddExtraSpinCount(int value) =>
+      jobselectedRepository.repoVarAddExtraSpinCount = value;
+
   int get maxPartial => jobselectedRepository.maxPartial;
-  OtherItemModel get selectedItemModel =>
-      jobselectedRepository.selectedItemModel;
+  set maxPartial(int value) => jobselectedRepository.maxPartial = value;
+
   int get selectedOthersShortCut =>
       jobselectedRepository.selectedOthersShortCut;
-  int get addFabCount => jobselectedRepository.addFabCount;
-  int get addExtraDryCount => jobselectedRepository.addExtraDryCount;
-  int get addExtraWashCount => jobselectedRepository.addExtraWashCount;
-  int get addExtraSpinCount => jobselectedRepository.addExtraSpinCount;
-  List<OtherItemModel> get listSelectedItemModel =>
-      jobselectedRepository.listSelectedItemModel;
+  set selectedOthersShortCut(int value) =>
+      jobselectedRepository.selectedOthersShortCut = value;
+
+  /////////////////////////////////////////////////////////////
+  //                         SYNC TO                         //
+  //                     JOBMODEL TO SELECTED                //
+  /////////////////////////////////////////////////////////////
+  void syncRepoToSelectedAll(JobModelRepository jobRepo) {
+    // String docId;
+
+    selectedJobId = jobRepo.jobId;
+
+    /// 🟣 Dates
+    // selectedDateQ = jobRepo.dateQ;
+    // selectedNeedOn = jobRepo.needOn;
+    // selectedDateO = jobRepo.dateO;
+    // selectedPaidD = jobRepo.paidD;
+    // selectedDateD = jobRepo.dateD;
+    // selectedCustomerPickupDate = jobRepo.customerPickupDate;
+    // selectedRiderDeliveryDate = jobRepo.riderDeliveryDate;
+
+    /// 🟠 Employee
+    selectedCreatedBy = jobRepo.createdBy;
+    selectedCurrentEmpId = jobRepo.currentEmpId;
+
+    /// 🟡 Customer
+    selectedCustomerId = jobRepo.customerId;
+    selectedCustomerNameVar.text = jobRepo.customerName;
+    selectedForSorting = jobRepo.forSorting;
+    selectedRiderPickup = jobRepo.riderPickup;
+    selectedIsCustomerPickedUp = jobRepo.isCustomerPickedUp;
+    selectedIsDeliveredToCustomer = jobRepo.isDeliveredToCustomer;
+
+    /// 🟤 Pricing
+    selectedPerKilo = jobRepo.perKilo;
+    selectedPerLoad = jobRepo.perLoad;
+    selectedFinalKilo = jobRepo.finalKilo;
+    selectedFinalLoad = jobRepo.finalLoad;
+    selectedFinalPrice = jobRepo.finalPrice;
+    selectedPromoCounter = jobRepo.promoCounter;
+    // selectedPricingSetup = jobRepo.pricingSetup;
+
+    /// 🟢 Options
+    // selectedRegular = jobRepo.regular;
+    if (jobRepo.regular) selectedPackage = regularPackage;
+    // selectedSayosabon = jobRepo.sayosabon;
+    if (jobRepo.sayosabon) selectedPackage = sayoSabonPackage;
+    // selectedAddOn = jobRepo.addOn;
+    if (jobRepo.addOn) selectedPackage = othersPackage;
+    selectedFold = jobRepo.fold;
+    selectedMix = jobRepo.mix;
+
+    /// 🔴 Containers
+    selectedBasket = jobRepo.basket;
+    selectedEbag = jobRepo.ebag;
+    selectedSako = jobRepo.sako;
+
+    /// 🔵 Payment
+    selectedUnpaid = jobRepo.unpaid;
+    selectedPaidCash = jobRepo.paidCash;
+    selectedPaidGCash = jobRepo.paidGCash;
+    selectedPaidGCashVerified = jobRepo.paidGCashVerified;
+    selectedPaidCashAmount = jobRepo.paidCashAmount;
+    selectedPaidGCashAmount = jobRepo.paidGCashAmount;
+    selectedPaymentReceivedBy = jobRepo.paymentReceivedBy;
+
+    /// 🟣 Remarks
+    selectedRemarksVar.text = jobRepo.remarks;
+
+    /// 🟢 Items
+    selectedItems = jobRepo.items;
+
+    /// 🟠 Workflow Step
+    selectedProcessStep = jobRepo.processStep;
+    selectedAllStatus = jobRepo.allStatus;
+
+    /// 🔴 Disposal
+    selectedForDisposal = jobRepo.forDisposal;
+    selectedDisposed = jobRepo.disposed;
+  }
+
+  void syncRepoToSelectedMin(JobModelRepository jobRepo) {
+    //only values to be updated when showPaidUnpaid, isCustomerPickedUp
+    // String docId;
+
+    //selectedJobId = jobRepo.jobId;
+
+    /// 🟣 Dates
+    // selectedDateQ = jobRepo.dateQ;
+    // selectedNeedOn = jobRepo.needOn;
+    // selectedDateO = jobRepo.dateO;
+    // selectedPaidD = jobRepo.paidD;
+    // selectedDateD = jobRepo.dateD;
+    // selectedCustomerPickupDate = jobRepo.customerPickupDate;
+    // selectedRiderDeliveryDate = jobRepo.riderDeliveryDate;
+
+    /// 🟠 Employee
+    //selectedCreatedBy = jobRepo.createdBy;
+    //selectedCurrentEmpId = jobRepo.currentEmpId;
+
+    /// 🟡 Customer
+    //selectedCustomerId = jobRepo.customerId;
+    //selectedCustomerNameVar.text = jobRepo.customerName;
+    //selectedForSorting = jobRepo.forSorting;
+    selectedRiderPickup = jobRepo.riderPickup;
+    selectedIsCustomerPickedUp = jobRepo.isCustomerPickedUp;
+    selectedIsDeliveredToCustomer = jobRepo.isDeliveredToCustomer;
+
+    /// 🟤 Pricing
+    //selectedPerKilo = jobRepo.perKilo;
+    //selectedPerLoad = jobRepo.perLoad;
+    //selectedFinalKilo = jobRepo.finalKilo;
+    //selectedFinalLoad = jobRepo.finalLoad;
+    //selectedFinalPrice = jobRepo.finalPrice;
+    //selectedPromoCounter = jobRepo.promoCounter;
+    // selectedPricingSetup = jobRepo.pricingSetup;
+
+    /// 🟢 Options
+    // selectedRegular = jobRepo.regular;
+    //if (jobRepo.regular) selectedPackage = regularPackage;
+    // selectedSayosabon = jobRepo.sayosabon;
+    //if (jobRepo.sayosabon) selectedPackage = sayoSabonPackage;
+    // selectedAddOn = jobRepo.addOn;
+    //if (jobRepo.addOn) selectedPackage = othersPackage;
+    //selectedFold = jobRepo.fold;
+    //selectedMix = jobRepo.mix;
+
+    /// 🔴 Containers
+    //selectedBasket = jobRepo.basket;
+    //selectedEbag = jobRepo.ebag;
+    //selectedSako = jobRepo.sako;
+
+    /// 🔵 Payment
+    selectedUnpaid = jobRepo.unpaid;
+    selectedPaidCash = jobRepo.paidCash;
+    selectedPaidGCash = jobRepo.paidGCash;
+    selectedPaidGCashVerified = jobRepo.paidGCashVerified;
+    selectedPaidCashAmount = jobRepo.paidCashAmount;
+    selectedPaidGCashAmount = jobRepo.paidGCashAmount;
+    selectedPaymentReceivedBy = jobRepo.paymentReceivedBy;
+
+    /// 🟣 Remarks
+    selectedRemarksVar.text = jobRepo.remarks;
+
+    /// 🟢 Items
+    //selectedItems = jobRepo.items;
+
+    /// 🟠 Workflow Step
+    selectedProcessStep = jobRepo.processStep;
+    selectedAllStatus = jobRepo.allStatus;
+
+    /// 🔴 Disposal
+    //selectedForDisposal = jobRepo.forDisposal;
+    //selectedDisposed = jobRepo.disposed;
+  }
+
+  /////////////////////////////////////////////////////////////
+  //                         SYNC TO                         //
+  //                     SELECTED TO JOBMODEL                //
+  /////////////////////////////////////////////////////////////
+  void syncSelectedToRepoAll(JobModelRepository jobRepo) {
+    //String docId;
+
+    jobRepo.jobId = selectedJobId;
+
+    /// 🟣 Dates
+    // jobRepo.dateQ = ?;
+    // jobRepo.needOn = ?;
+    // jobRepo.dateO = ?;
+    // jobRepo.paidD = ?;
+    // jobRepo.dateD = ?;
+    // jobRepo.customerPickupDate = ?;
+    // jobRepo.riderDeliveryDate = ?;
+
+    /// 🟠 Employee
+    jobRepo.createdBy = selectedCreatedBy;
+    jobRepo.currentEmpId = selectedCurrentEmpId;
+
+    /// 🟡 Customer
+    jobRepo.customerId = selectedCustomerId;
+    jobRepo.customerName = selectedCustomerNameVar.text;
+    jobRepo.forSorting = selectedForSorting;
+    jobRepo.riderPickup = selectedRiderPickup;
+    jobRepo.isCustomerPickedUp = selectedIsCustomerPickedUp;
+    jobRepo.isDeliveredToCustomer = selectedIsDeliveredToCustomer;
+
+    /// 🟤 Pricing
+    jobRepo.perKilo = selectedPerKilo;
+    jobRepo.perLoad = selectedPerLoad;
+    jobRepo.finalKilo = selectedFinalKilo;
+    jobRepo.finalLoad = selectedFinalLoad;
+    jobRepo.finalPrice = selectedFinalPrice;
+    jobRepo.promoCounter = selectedPromoCounter;
+    // jobRepo.pricingSetup = ?;
+
+    /// 🟢 Options
+    // jobRepo.regular = ?;
+    jobRepo.regular = selectedPackage == regularPackage;
+    // jobRepo.sayosabon = ?;
+    jobRepo.sayosabon = selectedPackage == sayoSabonPackage;
+    // jobRepo.addOn = ?;
+    jobRepo.addOn = selectedPackage == othersPackage;
+    jobRepo.fold = selectedFold;
+    jobRepo.mix = selectedMix;
+
+    /// 🔴 Containers
+    jobRepo.basket = selectedBasket;
+    jobRepo.ebag = selectedEbag;
+    jobRepo.sako = selectedSako;
+
+    /// 🔵 Payment
+    jobRepo.unpaid = selectedUnpaid;
+    jobRepo.paidCash = selectedPaidCash;
+    jobRepo.paidGCash = selectedPaidGCash;
+    jobRepo.paidGCashVerified = selectedPaidGCashVerified;
+    jobRepo.paidCashAmount = selectedPaidCashAmount;
+    jobRepo.paidGCashAmount = selectedPaidGCashAmount;
+    jobRepo.paymentReceivedBy = selectedPaymentReceivedBy;
+
+    /// 🟣 Remarks
+    jobRepo.remarks = selectedRemarksVar.text;
+
+    /// 🟢 Items
+    jobRepo.items = selectedItems;
+
+    /// 🟠 Workflow Step
+    jobRepo.processStep = selectedProcessStep;
+    jobRepo.allStatus = selectedAllStatus;
+
+    /// 🔴 Disposal
+    jobRepo.forDisposal = selectedForDisposal;
+    jobRepo.disposed = selectedDisposed;
+  }
+
+  void syncSelectedToRepoMin(JobModelRepository jobRepo) {
+    //only values to be updated when showPaidUnpaid, isCustomerPickedUp
+    //String docId;
+
+    //jobRepo.jobId = selectedJobId;
+
+    /// 🟣 Dates
+    // jobRepo.dateQ = ?;
+    // jobRepo.needOn = ?;
+    // jobRepo.dateO = ?;
+    // jobRepo.paidD = ?;
+    // jobRepo.dateD = ?;
+    // jobRepo.customerPickupDate = ?;
+    // jobRepo.riderDeliveryDate = ?;
+
+    /// 🟠 Employee
+    //jobRepo.createdBy = selectedCreatedBy;
+    jobRepo.currentEmpId = selectedCurrentEmpId;
+
+    /// 🟡 Customer
+    //jobRepo.customerId = selectedCustomerId;
+    //jobRepo.customerName = selectedCustomerNameVar.text;
+    //jobRepo.forSorting = selectedForSorting;
+    //jobRepo.riderPickup = selectedRiderPickup;
+    //jobRepo.isCustomerPickedUp = selectedIsCustomerPickedUp;
+    //jobRepo.isDeliveredToCustomer = selectedIsDeliveredToCustomer;
+
+    /// 🟤 Pricing
+    //jobRepo.perKilo = selectedPerKilo;
+    //jobRepo.perLoad = selectedPerLoad;
+    //jobRepo.finalKilo = selectedFinalKilo;
+    //jobRepo.finalLoad = selectedFinalLoad;
+    //jobRepo.finalPrice = selectedFinalPrice;
+    //jobRepo.promoCounter = selectedPromoCounter;
+    // jobRepo.pricingSetup = ?;
+
+    /// 🟢 Options
+    // jobRepo.regular = ?;
+    //jobRepo.regular = selectedPackage == regularPackage;
+    // jobRepo.sayosabon = ?;
+    //jobRepo.sayosabon = selectedPackage == sayoSabonPackage;
+    // jobRepo.addOn = ?;
+    //jobRepo.addOn = selectedPackage == othersPackage;
+    //jobRepo.fold = selectedFold;
+    //jobRepo.mix = selectedMix;
+
+    /// 🔴 Containers
+    //jobRepo.basket = selectedBasket;
+    //jobRepo.ebag = selectedEbag;
+    //jobRepo.sako = selectedSako;
+
+    /// 🔵 Payment
+    jobRepo.unpaid = selectedUnpaid;
+    jobRepo.paidCash = selectedPaidCash;
+    jobRepo.paidGCash = selectedPaidGCash;
+    jobRepo.paidGCashVerified = selectedPaidGCashVerified;
+    jobRepo.paidCashAmount = selectedPaidCashAmount;
+    jobRepo.paidGCashAmount = selectedPaidGCashAmount;
+    jobRepo.paymentReceivedBy = selectedPaymentReceivedBy;
+
+    /// 🟣 Remarks
+    jobRepo.remarks = selectedRemarksVar.text;
+
+    /// 🟢 Items
+    //jobRepo.items = selectedItems;
+
+    /// 🟠 Workflow Step
+    jobRepo.processStep = selectedProcessStep;
+    jobRepo.allStatus = selectedAllStatus;
+
+    /// 🔴 Disposal
+    //jobRepo.forDisposal = selectedForDisposal;
+    //jobRepo.disposed = selectedDisposed;
+  }
 }
