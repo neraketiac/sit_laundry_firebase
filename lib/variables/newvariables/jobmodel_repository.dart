@@ -756,14 +756,14 @@ class JobModelRepository {
     //jobRepo.customerName = selectedCustomerNameVar.text;
     //jobRepo.forSorting = selectedForSorting;
     //jobRepo.riderPickup = selectedRiderPickup;
-    //jobRepo.isCustomerPickedUp = selectedIsCustomerPickedUp;
     jobRepo.forSorting = repoVarSelectedIntRiderPickup == intForSorting;
     if (jobRepo.riderPickup ||
         intRiderPickup == jobRepo.repoVarSelectedIntRiderPickup) {
       jobRepo.riderPickup =
           intRiderPickup == jobRepo.repoVarSelectedIntRiderPickup;
     }
-    //jobRepo.isDeliveredToCustomer = selectedIsDeliveredToCustomer;
+    jobRepo.isDeliveredToCustomer = selectedIsDeliveredToCustomer;
+    jobRepo.isCustomerPickedUp = selectedIsCustomerPickedUp;
 
     /// 🟤 Pricing
     //jobRepo.perKilo = selectedPerKilo;
