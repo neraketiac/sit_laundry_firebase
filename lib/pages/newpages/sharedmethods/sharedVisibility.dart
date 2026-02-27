@@ -333,7 +333,7 @@ Widget visRiderPickup(
                   },
                 ),
                 const Text(
-                  "Napickup ni customer",
+                  "Nakuha na ni customer",
                   style: TextStyle(color: Colors.white),
                 ),
               ],
@@ -350,7 +350,7 @@ Widget visRiderPickup(
                   },
                 ),
                 const Text(
-                  "Nadelivery kay customer",
+                  "Nadeliver na kay customer",
                   style: TextStyle(color: Colors.white),
                 ),
               ],
@@ -1122,14 +1122,17 @@ Visibility visPaidUnPaid(
     }
 
     void setPartialAmount(TextEditingController controller) {
-      if (jobRepo.finalPrice == 0) {
-        if (jobRepo.selectedPackage == intOthersPackage) {
-          controller.text = jobRepo.repoVarTotalPriceOthers.toString();
+      //only changed to final price if still no input
+      if (controller.text == '' || controller.text == '0') {
+        if (jobRepo.finalPrice == 0) {
+          if (jobRepo.selectedPackage == intOthersPackage) {
+            controller.text = jobRepo.repoVarTotalPriceOthers.toString();
+          } else {
+            controller.text = jobRepo.repoVarTotalPriceRegSS.toString();
+          }
         } else {
-          controller.text = jobRepo.repoVarTotalPriceRegSS.toString();
+          controller.text = jobRepo.selectedFinalPrice.toString();
         }
-      } else {
-        controller.text = jobRepo.selectedFinalPrice.toString();
       }
       // if (jobRepo.selectedPackage == othersPackage) {
       //   if ((int.tryParse(controller.text) ?? 0) < jobRepo.totalPriceOthers) {
@@ -2345,11 +2348,13 @@ Expanded visNameArea(JobModel job, bool isSelected) {
         ),
 
         /// 🔹 PRICING / REMARKS
-        if (job.pricingSetup.isNotEmpty || job.remarks.isNotEmpty)
+        if (job.pricingSetup.isNotEmpty ||
+            job.remarks.isNotEmpty ||
+            (job.unpaid && job.paidCash || job.unpaid && job.paidGCash))
           Padding(
             padding: const EdgeInsets.only(top: 2),
             child: Text(
-              '${job.pricingSetup} ${job.remarks}',
+              textPricingSetupRemarksUnpaidRemakrs(job),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
@@ -2368,9 +2373,8 @@ InkWell visPaidUnpaidArea(
   BuildContext context,
   JobModelRepository jobRepo,
   bool isSelected,
-  JobModel job,
 ) {
-  final bool isPaid = !job.unpaid;
+  final bool isPaid = !jobRepo.selectedUnpaid;
 
   final Color paidColor = isSelected ? Colors.deepPurple : Colors.black87;
 
@@ -2378,13 +2382,20 @@ InkWell visPaidUnpaidArea(
 
   final Color statusColor = isPaid ? paidColor : unpaidColor;
 
-  final String statusText = job.unpaid
+  final String statusText = jobRepo.selectedUnpaid
       ? "Unpaid"
-      : job.paidCash
+      : jobRepo.selectedPaidCash
           ? "Paid • Cash"
-          : job.paidGCash
+          : jobRepo.selectedPaidGCash
               ? "Paid • GCash"
               : "Paid";
+
+  //prioritize order check
+  // unpaid = cash not enough
+  // unpaid = gcash not enough
+  // unpaid = cash + gcash not enough
+  // unpaid = gcash not verified
+  // unpaid = cash + gcash + not verified
 
   return InkWell(
     borderRadius: BorderRadius.circular(14),

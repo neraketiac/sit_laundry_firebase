@@ -124,7 +124,6 @@ Widget readDataJobsDone() {
                             context,
                             jobRepo,
                             isSelected,
-                            jobRepo.getJobsModel()!,
                           ),
 
                           const SizedBox(width: 20),

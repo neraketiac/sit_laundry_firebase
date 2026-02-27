@@ -314,48 +314,121 @@ Future<int> getNextJobIdCounterUp() async {
 
 Future<int> getNextJobId() async {
   final firestore = FirebaseFirestore.instance;
+  final counterRef = firestore.collection('counters').doc('jobQueue');
+  final ongoingCollection = firestore.collection(JOBS_ONGOING_REF);
 
-  return firestore.runTransaction<int>((transaction) async {
-    final snapshot = await firestore
-        .collection(JOBS_ONGOING_REF)
-        .where('A00_JobId', isGreaterThanOrEqualTo: 1)
-        .where('A00_JobId', isLessThanOrEqualTo: 25)
-        .orderBy('A00_JobId', descending: true)
-        .limit(1)
-        .get();
+  return firestore.runTransaction<int>((tx) async {
+    final counterSnap = await tx.get(counterRef);
 
-    if (snapshot.docs.isEmpty) {
-      return 1;
+    int nextAvailable = 1;
+
+    if (counterSnap.exists) {
+      nextAvailable = counterSnap.get('nextavailable') ?? 1;
     }
 
-    int highest = snapshot.docs.first.get('A00_JobId') as int;
+    // 1️⃣ Check if ongoing is empty
+    final ongoingCheck = await ongoingCollection.limit(1).get();
 
-    if (highest < 25) {
-      return highest + 1;
-    } else {
-      return 1;
+    // 🟢 If empty → just return nextAvailable
+    if (ongoingCheck.docs.isEmpty) {
+      return nextAvailable;
     }
+
+    // 2️⃣ Collect used IDs
+    final ongoingSnapshot = await ongoingCollection.get();
+
+    final usedIds = ongoingSnapshot.docs
+        .map((doc) => doc.data()['A00_JobId'] as int?)
+        .whereType<int>()
+        .toSet();
+
+    if (usedIds.length >= 25) {
+      return 0;
+    }
+
+    int candidate = nextAvailable;
+
+    // 3️⃣ If candidate not used → return it
+    if (!usedIds.contains(candidate)) {
+      return candidate;
+    }
+
+    // 4️⃣ Otherwise keep incrementing cyclic
+    for (int i = 0; i < 25; i++) {
+      candidate = candidate >= 25 ? 1 : candidate + 1;
+
+      if (!usedIds.contains(candidate)) {
+        return candidate;
+      }
+    }
+
+    return 0;
   });
 }
 
 /// ▶ Queue → Ongoing (start washing)
-Future<void> moveQueueToOngoing(String docId, int nextJobId) async {
+Future<void> moveQueueToOngoing(String docId) async {
   final firestore = FirebaseFirestore.instance;
+  final counterRef = firestore.collection('counters').doc('jobQueue');
 
   await firestore.runTransaction((tx) async {
     final queueRef = firestore.collection(JOBS_QUEUE_REF).doc(docId);
-    final ongoingRef = firestore.collection(JOBS_ONGOING_REF).doc(docId);
+    final ongoingCollection = firestore.collection(JOBS_ONGOING_REF);
+    final ongoingRef = ongoingCollection.doc(docId);
 
-    final snapshot = await tx.get(queueRef);
-    if (!snapshot.exists) return;
+    final queueSnap = await tx.get(queueRef);
+    if (!queueSnap.exists) return;
 
+    // 1️⃣ Get nextavailable
+    final counterSnap = await tx.get(counterRef);
+
+    int nextAvailable = 1;
+
+    if (!counterSnap.exists) {
+      tx.set(counterRef, {'nextavailable': 1});
+    } else {
+      nextAvailable = counterSnap.get('nextavailable') ?? 1;
+    }
+
+    // 2️⃣ Check ongoing
+    final ongoingCheck = await ongoingCollection.limit(1).get();
+
+    int finalId = nextAvailable;
+
+    if (ongoingCheck.docs.isNotEmpty) {
+      final allOngoing = await ongoingCollection.get();
+      final usedIds = allOngoing.docs
+          .map((doc) => doc.get('A00_JobId') as int?)
+          .whereType<int>()
+          .toSet();
+
+      if (usedIds.length >= 25) return;
+
+      if (usedIds.contains(finalId)) {
+        for (int i = 0; i < 25; i++) {
+          finalId = finalId >= 25 ? 1 : finalId + 1;
+
+          if (!usedIds.contains(finalId)) {
+            break;
+          }
+        }
+      }
+    }
+
+    // 3️⃣ Advance pointer AFTER assigning
+    int newNextAvailable = finalId >= 25 ? 1 : finalId + 1;
+
+    tx.set(counterRef, {'nextavailable': newNextAvailable});
+
+    // 4️⃣ Move document
     tx.set(ongoingRef, {
-      ...snapshot.data()!,
+      ...queueSnap.data()!,
       'Q00_ForSorting': true,
-      'A00_JobId': nextJobId,
-      'O00_ProcessStep': 'waiting', // 👈 initial step
+      'A00_JobId': finalId,
+      'O00_ProcessStep': 'waiting',
       'A04_DateO': Timestamp.now(),
     });
+
     tx.delete(queueRef);
   });
 }

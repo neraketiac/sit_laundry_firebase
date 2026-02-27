@@ -474,8 +474,9 @@ class JobModelRepository {
     selectedCustomerId = jobRepo.customerId;
     selectedCustomerNameVar.text = jobRepo.customerName;
     //in case both true, set last to sorting
-    if (jobRepo.riderPickup)
+    if (jobRepo.riderPickup) {
       jobRepo.repoVarSelectedIntRiderPickup = intRiderPickup;
+    }
     if (jobRepo.forSorting) repoVarSelectedIntRiderPickup = intForSorting;
 
     //once true, always true, use for deliver when done
@@ -686,8 +687,29 @@ class JobModelRepository {
     jobRepo.ebag = selectedEbag;
     jobRepo.sako = selectedSako;
 
-    /// 🔵 Payment
-    jobRepo.unpaid = selectedUnpaid;
+    /// 🔵 Payment: unpaid only false if paidcash and amount > finalprice
+    /// 🔵 Payment: unpaid only false if paidgcash and amount > finalprice and verified
+    jobRepo.unpaid = true;
+    selectedPaidCashAmount = int.tryParse(repoVarCashAmountVar.text) ?? 0;
+    selectedPaidGCashAmount = int.tryParse(repoVarGCashAmountVar.text) ?? 0;
+    if (selectedPaidCash &&
+        selectedPaidGCash &&
+        selectedPaidGCashVerified &&
+        (selectedPaidCashAmount + selectedPaidGCashAmount >=
+            selectedFinalPrice)) {
+      selectedUnpaid = false;
+      jobRepo.unpaid = false;
+    } else if (selectedPaidCash &&
+        selectedPaidCashAmount >= selectedFinalPrice) {
+      selectedUnpaid = false;
+      jobRepo.unpaid = false;
+    } else if (selectedPaidGCash &&
+        selectedPaidGCashAmount >= selectedFinalPrice &&
+        selectedPaidGCashVerified) {
+      selectedUnpaid = false;
+      jobRepo.unpaid = false;
+    }
+    //jobRepo.unpaid = selectedUnpaid;
     jobRepo.paidCash = selectedPaidCash;
     jobRepo.paidGCash = selectedPaidGCash;
     jobRepo.paidGCashVerified = selectedPaidGCashVerified;
@@ -767,8 +789,29 @@ class JobModelRepository {
     //jobRepo.ebag = selectedEbag;
     //jobRepo.sako = selectedSako;
 
-    /// 🔵 Payment
-    jobRepo.unpaid = selectedUnpaid;
+    /// 🔵 Payment: unpaid only false if paidcash and amount > finalprice
+    /// 🔵 Payment: unpaid only false if paidgcash and amount > finalprice and verified
+    jobRepo.unpaid = true;
+    selectedPaidCashAmount = int.tryParse(repoVarCashAmountVar.text) ?? 0;
+    selectedPaidGCashAmount = int.tryParse(repoVarGCashAmountVar.text) ?? 0;
+    if (selectedPaidCash &&
+        selectedPaidGCash &&
+        selectedPaidGCashVerified &&
+        (selectedPaidCashAmount + selectedPaidGCashAmount >=
+            selectedFinalPrice)) {
+      selectedUnpaid = false;
+      jobRepo.unpaid = false;
+    } else if (selectedPaidCash &&
+        selectedPaidCashAmount >= selectedFinalPrice) {
+      selectedUnpaid = false;
+      jobRepo.unpaid = false;
+    } else if (selectedPaidGCash &&
+        selectedPaidGCashAmount >= selectedFinalPrice &&
+        selectedPaidGCashVerified) {
+      selectedUnpaid = false;
+      jobRepo.unpaid = false;
+    }
+    //jobRepo.unpaid = selectedUnpaid;
     jobRepo.paidCash = selectedPaidCash;
     jobRepo.paidGCash = selectedPaidGCash;
     jobRepo.paidGCashVerified = selectedPaidGCashVerified;

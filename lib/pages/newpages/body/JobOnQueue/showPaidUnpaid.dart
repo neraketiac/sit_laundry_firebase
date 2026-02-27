@@ -16,7 +16,7 @@ void showPaidUnpaid(BuildContext context, JobModelRepository jobRepo) {
 
     //syncSelectedToRepositorySmall(jobRepo);
     jobRepo.syncSelectedToRepoMin(jobRepo);
-    await callDatabaseUpdateJob(context, jobRepo.getJobsModel()!);
+    await callDatabaseUpdateJob(context, jobRepo.jobModelData);
     //await setRepositoryLaundryPayment(context, 'Show Jobs OnQueue');
   }
 

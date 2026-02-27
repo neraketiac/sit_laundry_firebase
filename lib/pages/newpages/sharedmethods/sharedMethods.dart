@@ -367,6 +367,34 @@ String textJobStatus(JobModel jM) {
   return 'no status';
 }
 
+String textPricingSetupRemarksUnpaidRemakrs(JobModel jM) {
+  String unpaidDetails = '';
+  if (jM.unpaid) {
+    if (jM.paidCash && jM.paidGCash) {
+      if (jM.paidGCashverified) {
+        unpaidDetails = 'paid Cash+GCash not enough';
+      } else {
+        unpaidDetails = 'paid Cash+GCash not verified';
+      }
+    } else if (jM.paidCash) {
+      unpaidDetails = 'paid Cash not enough';
+    } else if (jM.paidGCash) {
+      if (jM.paidGCashverified) {
+        unpaidDetails = 'paid GCash not enough';
+      } else {
+        unpaidDetails = 'paid GCash not verified';
+      }
+    }
+  }
+  //return '${jM.pricingSetup} ${jM.remarks} $unpaidDetails';
+
+  return [
+    jM.pricingSetup,
+    jM.remarks,
+    unpaidDetails,
+  ].where((e) => e.trim().isNotEmpty).join(' ');
+}
+
 String displayCustomerName(String? name) {
   if (name == null || name.isEmpty) return '';
   return name.length > 7 ? name.substring(0, 7) : name;

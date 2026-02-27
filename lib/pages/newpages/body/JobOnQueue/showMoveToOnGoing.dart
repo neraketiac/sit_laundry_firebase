@@ -152,8 +152,7 @@ void showMoveToOnGoing(BuildContext context, JobModelRepository jobRepo) {
 
                                 if (!confirm) return;
 
-                                await moveQueueToOngoing(
-                                    jobRepo.docId, jobRepo.selectedJobId);
+                                await moveQueueToOngoing(jobRepo.docId);
 
                                 Navigator.pop(context);
 

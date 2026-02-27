@@ -141,12 +141,7 @@ Widget readDataJobsOnQueue() {
                           visNameArea(jobRepo.getJobsModel()!, isSelected),
 
                           /// 💰 PRICE
-                          visPaidUnpaidArea(
-                            context,
-                            jobRepo,
-                            isSelected,
-                            jobRepo.getJobsModel()!,
-                          ),
+                          visPaidUnpaidArea(context, jobRepo, isSelected),
 
                           const SizedBox(width: 20),
                         ],

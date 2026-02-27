@@ -851,8 +851,7 @@ Widget readDataJobsOnGoing() {
 
                               visNameArea(jobRepo.getJobsModel()!, isSelected),
 
-                              visPaidUnpaidArea(context, jobRepo, isSelected,
-                                  jobRepo.getJobsModel()!),
+                              visPaidUnpaidArea(context, jobRepo, isSelected),
 
                               const SizedBox(width: 20),
                             ],
