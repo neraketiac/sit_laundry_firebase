@@ -10,8 +10,18 @@ void showOnGoingStatus(BuildContext context, JobModelRepository jobRepo) {
   Future<void> saveButtonSetRepository() async {
     jobRepo.currentEmpId = empIdGlobal;
 
-    //syncSelectedToRepositorySmall(jobRepo);
+    if (jobRepo.selectedProcessStep == 'waiting') {
+      jobRepo.selectedAllStatus = 0.3;
+    } else if (jobRepo.selectedProcessStep == 'washing') {
+      jobRepo.selectedAllStatus = 0.4;
+    } else if (jobRepo.selectedProcessStep == 'drying') {
+      jobRepo.selectedAllStatus = 0.5;
+    } else if (jobRepo.selectedProcessStep == 'folding') {
+      jobRepo.selectedAllStatus = 0.6;
+    }
+
     jobRepo.syncSelectedToRepoMin(jobRepo);
+
     await callDatabaseUpdateJob(context, jobRepo.getJobsModel()!);
     //await setRepositoryLaundryPayment(context, 'Show Jobs OnQueue');
   }

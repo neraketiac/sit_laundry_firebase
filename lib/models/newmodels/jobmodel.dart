@@ -50,6 +50,7 @@ class JobModel {
   Timestamp dateO; //On-Going date
   Timestamp paidD; //Paid Date / GCash Date
   Timestamp dateD; //Done Date
+  Timestamp dateC; //Completed Date
   Timestamp customerPickupDate; //Done - pickup ni customer Date
   Timestamp riderDeliveryDate; //Done - delivery date ni rider
 
@@ -126,6 +127,7 @@ class JobModel {
     required this.dateO,
     required this.paidD,
     required this.dateD,
+    required this.dateC,
     required this.customerPickupDate,
     required this.riderDeliveryDate,
     required this.createdBy,
@@ -175,6 +177,7 @@ class JobModel {
       dateO: Timestamp.now(),
       paidD: Timestamp.now(),
       dateD: Timestamp.now(),
+      dateC: Timestamp.now(),
       customerPickupDate: Timestamp.now(),
       riderDeliveryDate: Timestamp.now(),
       createdBy: '',
@@ -225,6 +228,7 @@ class JobModel {
     Timestamp? dateO,
     Timestamp? paidD,
     Timestamp? dateD,
+    Timestamp? dateC,
     Timestamp? customerPickupDate,
     Timestamp? riderDeliveryDate,
     String? createdBy,
@@ -272,6 +276,7 @@ class JobModel {
       dateO: dateO ?? this.dateO,
       paidD: paidD ?? this.paidD,
       dateD: dateD ?? this.dateD,
+      dateC: dateC ?? this.dateC,
       customerPickupDate: customerPickupDate ?? this.customerPickupDate,
       riderDeliveryDate: riderDeliveryDate ?? this.riderDeliveryDate,
       createdBy: createdBy ?? this.createdBy,
@@ -354,6 +359,7 @@ class JobModel {
         paidD: json['A03_PaidD'],
         dateO: json['A04_DateO'],
         dateD: json['A05_DateD'],
+        dateC: json['A06_DateC'],
         customerPickupDate: json['A06_CustomerPickupDate'],
         riderDeliveryDate: json['A07_RiderDeliveryDate'],
         items: (json['items'] as List)
@@ -405,6 +411,7 @@ class JobModel {
         'A03_PaidD': paidD,
         'A04_DateO': dateO,
         'A05_DateD': dateD,
+        'A06_DateC': dateC,
         'A06_CustomerPickupDate': customerPickupDate,
         'A07_RiderDeliveryDate': riderDeliveryDate,
         'items': items.map((e) => e.toJson()).toList(),

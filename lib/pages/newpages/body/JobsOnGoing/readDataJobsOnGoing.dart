@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:laundry_firebase/models/newmodels/jobmodel.dart';
-import 'package:laundry_firebase/pages/newpages/body/JobOnGoing/showOnGoingStatus.dart';
-import 'package:laundry_firebase/pages/newpages/body/JobOnQueue/showJobOnQueueEdit.dart';
+import 'package:laundry_firebase/pages/newpages/body/JobsOnGoing/showOnGoingStatus.dart';
+import 'package:laundry_firebase/pages/newpages/body/JobsOnQueue/showJobOnQueueEdit.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedVisibility.dart';
 import 'package:laundry_firebase/services/newservices/database_jobs.dart';
 import 'package:laundry_firebase/variables/newvariables/jobmodel_repository.dart';
@@ -851,7 +851,8 @@ Widget readDataJobsOnGoing() {
 
                               visNameArea(jobRepo.getJobsModel()!, isSelected),
 
-                              visPaidUnpaidArea(context, jobRepo, isSelected),
+                              visPaidUnpaidArea(
+                                  context, jobRepo, isSelected, true),
 
                               const SizedBox(width: 20),
                             ],

@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:laundry_firebase/models/newmodels/jobmodel.dart';
 import 'package:laundry_firebase/models/newmodels/otheritemmodel.dart';
-import 'package:laundry_firebase/pages/newpages/body/JobOnQueue/showPaidUnpaid.dart';
+import 'package:laundry_firebase/pages/newpages/body/JobsOnQueue/showPaidUnpaid.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/autocompletecustomer.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedConstantsFinal.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedMethods.dart';
@@ -2243,14 +2243,14 @@ InkWell visIconArea(BuildContext context, JobModelRepository jobRepo,
           width: 38,
           height: 38,
           child: CircularProgressIndicator(
-            value: jobRepo.selectedAllStatus,
+            value: jobRepo.allStatus,
             strokeWidth: 6,
-            backgroundColor: backGroundStatusColor(job),
-            color: isSelected ? Colors.deepPurple : Colors.deepPurple.shade300,
+            // backgroundColor: backGroundStatusColor(job),
+            // color: Colors.transparent,
           ),
         ),
         AnimatedRotation(
-          turns: jobRepo.selectedAllStatus,
+          turns: 0.05,
           duration: const Duration(seconds: 2),
           curve: Curves.linear,
           child: Text(
@@ -2373,6 +2373,7 @@ InkWell visPaidUnpaidArea(
   BuildContext context,
   JobModelRepository jobRepo,
   bool isSelected,
+  bool alterPaidUnpaid,
 ) {
   final bool isPaid = !jobRepo.selectedUnpaid;
 
@@ -2400,7 +2401,7 @@ InkWell visPaidUnpaidArea(
   return InkWell(
     borderRadius: BorderRadius.circular(14),
     onTap: () {
-      showPaidUnpaid(context, jobRepo);
+      if (alterPaidUnpaid) showPaidUnpaid(context, jobRepo);
     },
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.end,

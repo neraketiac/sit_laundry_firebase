@@ -11,14 +11,27 @@ void showDeliverOrCustomerPickup(
   Future<void> saveButtonSetRepository() async {
     jobRepo.currentEmpId = empIdGlobal;
 
-    /// 🟣 Dates
-    if (jobRepo.selectedIsCustomerPickedUp) {
-      jobRepo.customerPickupDate = Timestamp.now();
-    }
+    // //ALLSTATUS = 1
+    // /// 🟣 Dates
+    // if (jobRepo.selectedIsCustomerPickedUp) {
+    //   jobRepo.customerPickupDate = Timestamp.now();
+    //   if (!jobRepo.selectedUnpaid) {
+    //     if (jobRepo.selectedPaidCash ||
+    //         (jobRepo.selectedPaidGCash && jobRepo.selectedPaidGCashVerified)) {
+    //       jobRepo.selectedAllStatus = 1;
+    //     }
+    //   }
+    // }
 
-    if (jobRepo.selectedIsDeliveredToCustomer) {
-      jobRepo.riderDeliveryDate = Timestamp.now();
-    }
+    // if (jobRepo.selectedIsDeliveredToCustomer) {
+    //   jobRepo.riderDeliveryDate = Timestamp.now();
+    //   if (!jobRepo.selectedUnpaid) {
+    //     if (jobRepo.selectedPaidCash ||
+    //         (jobRepo.selectedPaidGCash && jobRepo.selectedPaidGCashVerified)) {
+    //       jobRepo.selectedAllStatus = 1;
+    //     }
+    //   }
+    // }
 
     //syncSelectedToRepositorySmall(jobRepo);
     jobRepo.syncSelectedToRepoMin(jobRepo);

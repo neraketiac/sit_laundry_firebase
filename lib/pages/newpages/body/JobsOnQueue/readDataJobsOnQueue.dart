@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:laundry_firebase/models/newmodels/jobmodel.dart';
-import 'package:laundry_firebase/pages/newpages/body/JobOnQueue/showJobOnQueueEdit.dart';
-import 'package:laundry_firebase/pages/newpages/body/JobOnQueue/showMoveToOnGoing.dart';
+import 'package:laundry_firebase/pages/newpages/body/JobsOnQueue/showJobOnQueueEdit.dart';
+import 'package:laundry_firebase/pages/newpages/body/JobsOnQueue/showMoveToOnGoing.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedVisibility.dart';
 import 'package:laundry_firebase/services/newservices/database_jobs.dart';
 import 'package:laundry_firebase/variables/newvariables/jobmodel_repository.dart';
+import 'package:laundry_firebase/variables/newvariables/variables.dart';
 
 Widget readDataJobsOnQueue() {
   DatabaseJobsQueue databaseJobsQueue = DatabaseJobsQueue();
@@ -129,9 +130,18 @@ Widget readDataJobsOnQueue() {
                             isSelected,
                             false,
                             () async {
-                              final nextJobId = await getNextJobId();
-                              jobRepo.jobId = nextJobId;
-                              showMoveToOnGoing(context, jobRepo);
+                              if (isProcessing) return;
+
+                              setState(() => isProcessing = true);
+
+                              try {
+                                final nextJobId = await getNextJobId();
+                                jobRepo.jobId = nextJobId;
+
+                                showMoveToOnGoing(context, jobRepo);
+                              } finally {
+                                setState(() => isProcessing = false);
+                              }
                             },
                           ),
 
@@ -141,7 +151,7 @@ Widget readDataJobsOnQueue() {
                           visNameArea(jobRepo.getJobsModel()!, isSelected),
 
                           /// 💰 PRICE
-                          visPaidUnpaidArea(context, jobRepo, isSelected),
+                          visPaidUnpaidArea(context, jobRepo, isSelected, true),
 
                           const SizedBox(width: 20),
                         ],

@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:laundry_firebase/models/newmodels/jobmodel.dart';
+import 'package:laundry_firebase/variables/newvariables/variables.dart';
 
 /// 🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦
 /// 🔹 COLLECTION REFERENCES
@@ -7,6 +8,8 @@ import 'package:laundry_firebase/models/newmodels/jobmodel.dart';
 const String JOBS_QUEUE_REF = "Jobs_queue";
 const String JOBS_ONGOING_REF = "Jobs_ongoing";
 const String JOBS_DONE_REF = "Jobs_done";
+const String JOBS_COMPLETED_REF =
+    "Jobs_completed"; //paidcash or paidgcash + verified , clothes delivered or pickedup done.
 
 /// 🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦
 /// 🔹 DATABASE : JOBS QUEUE
@@ -245,8 +248,179 @@ class DatabaseJobsDone {
   }
 }
 
+/// 🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩
+/// 🔹 DATABASE : JOBS COMPLETED
+/// (Completed / Archived)
+/// 🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩
+class DatabaseJobsCompleted {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  late final CollectionReference<Map<String, dynamic>> _ref =
+      _firestore.collection(JOBS_COMPLETED_REF);
+
+  /// 🔄 Stream completed jobs
+  Stream<List<JobModel>> streamAll(int intOrderBy) {
+    print("New stream created with sort: $intOrderBy");
+    if (intOrderBy == intSortByDateC) {
+      return _ref.orderBy('A06_DateC', descending: true).snapshots().map(
+            (s) => s.docs.map((d) => JobModel.fromJson(d.data())).toList(),
+          );
+    }
+    if (intOrderBy == intSortByCustomerName) {
+      return _ref
+          .orderBy('C01_CustomerName', descending: false)
+          .snapshots()
+          .map(
+            (s) => s.docs.map((d) => JobModel.fromJson(d.data())).toList(),
+          );
+    }
+    return _ref.orderBy('A06_DateC', descending: true).snapshots().map(
+          (s) => s.docs.map((d) => JobModel.fromJson(d.data())).toList(),
+        );
+  }
+}
+
 /// 🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥
 /// 🔥 JOB MOVEMENT (TRANSACTIONS)
+/// 🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥
+
+/// ▶ Queue → Ongoing (start washing)
+Future<void> moveQueueToOngoing(String docId) async {
+  final firestore = FirebaseFirestore.instance;
+  final counterRef = firestore.collection('counters').doc('jobQueue');
+
+  await firestore.runTransaction((tx) async {
+    final queueRef = firestore.collection(JOBS_QUEUE_REF).doc(docId);
+    final ongoingCollection = firestore.collection(JOBS_ONGOING_REF);
+    final ongoingRef = ongoingCollection.doc(docId);
+
+    final queueSnap = await tx.get(queueRef);
+    if (!queueSnap.exists) return;
+
+    // 1️⃣ Get nextavailable
+    final counterSnap = await tx.get(counterRef);
+
+    int nextAvailable = 1;
+
+    if (!counterSnap.exists) {
+      tx.set(counterRef, {'nextavailable': 1});
+    } else {
+      nextAvailable = counterSnap.get('nextavailable') ?? 1;
+    }
+
+    // 2️⃣ Check ongoing
+    final ongoingCheck = await ongoingCollection.limit(1).get();
+
+    int finalId = nextAvailable;
+
+    if (ongoingCheck.docs.isNotEmpty) {
+      final allOngoing = await ongoingCollection.get();
+      final usedIds = allOngoing.docs
+          .map((doc) => doc.get('A00_JobId') as int?)
+          .whereType<int>()
+          .toSet();
+
+      if (usedIds.length >= 25) return;
+
+      if (usedIds.contains(finalId)) {
+        for (int i = 0; i < 25; i++) {
+          finalId = finalId >= 25 ? 1 : finalId + 1;
+
+          if (!usedIds.contains(finalId)) {
+            break;
+          }
+        }
+      }
+    }
+
+    // 3️⃣ Advance pointer AFTER assigning
+    int newNextAvailable = finalId >= 25 ? 1 : finalId + 1;
+
+    tx.set(counterRef, {'nextavailable': newNextAvailable});
+
+    // 4️⃣ Move document
+    tx.set(ongoingRef, {
+      ...queueSnap.data()!,
+      'Q00_ForSorting': true,
+      'A00_JobId': finalId,
+      'O00_ProcessStep': 'waiting',
+      'O01_AllStatus': 0.3,
+      'A04_DateO': Timestamp.now(),
+    });
+
+    tx.delete(queueRef);
+  });
+}
+
+/// ▶ Ongoing → Done
+Future<void> moveOngoingToDone(String docId, bool forDelivery) async {
+  final firestore = FirebaseFirestore.instance;
+
+  await firestore.runTransaction((tx) async {
+    final ongoingRef = firestore.collection(JOBS_ONGOING_REF).doc(docId);
+    final doneRef = firestore.collection(JOBS_DONE_REF).doc(docId);
+
+    final snapshot = await tx.get(ongoingRef);
+    if (!snapshot.exists) return;
+
+    if (forDelivery) {
+      tx.set(doneRef, {
+        ...snapshot.data()!,
+        'Q00_ForSorting': false,
+        'Q01_RiderPickup': true,
+        'O00_ProcessStep': 'done', // 👈 initial step
+        'O01_AllStatus': 0.7,
+        'A05_DateD': Timestamp.now(),
+      });
+    } else {
+      tx.set(doneRef, {
+        ...snapshot.data()!,
+        'O01_AllStatus': 0.7,
+        'O00_ProcessStep': 'done', // 👈 initial step
+        'A05_DateD': Timestamp.now(),
+      });
+    }
+
+    tx.delete(ongoingRef);
+  });
+}
+
+/// ▶ Done → Completed
+Future<void> moveAllDoneToCompleted() async {
+  final firestore = FirebaseFirestore.instance;
+
+  final doneCollection = firestore.collection(JOBS_DONE_REF);
+  final completedCollection = firestore.collection(JOBS_COMPLETED_REF);
+
+  // 🔥 Only get PAID jobs
+  final snapshot =
+      await doneCollection.where('O01_AllStatus', isEqualTo: 1).get();
+
+  if (snapshot.docs.isEmpty) {
+    print("No paid documents to move.");
+    return;
+  }
+
+  final batch = firestore.batch();
+
+  for (final doc in snapshot.docs) {
+    final completedRef = completedCollection.doc(doc.id);
+
+    batch.set(completedRef, {
+      ...doc.data(),
+      'O00_ProcessStep': 'completed',
+      'A06_DateC': Timestamp.now(),
+    });
+
+    batch.delete(doc.reference);
+  }
+
+  await batch.commit();
+
+  print("Paid documents moved successfully.");
+}
+
+/// 🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥
+/// 🔥 JOB ONGOING JOBID
 /// 🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥
 
 Future<int> getMaxJobId() async {
@@ -363,103 +537,5 @@ Future<int> getNextJobId() async {
     }
 
     return 0;
-  });
-}
-
-/// ▶ Queue → Ongoing (start washing)
-Future<void> moveQueueToOngoing(String docId) async {
-  final firestore = FirebaseFirestore.instance;
-  final counterRef = firestore.collection('counters').doc('jobQueue');
-
-  await firestore.runTransaction((tx) async {
-    final queueRef = firestore.collection(JOBS_QUEUE_REF).doc(docId);
-    final ongoingCollection = firestore.collection(JOBS_ONGOING_REF);
-    final ongoingRef = ongoingCollection.doc(docId);
-
-    final queueSnap = await tx.get(queueRef);
-    if (!queueSnap.exists) return;
-
-    // 1️⃣ Get nextavailable
-    final counterSnap = await tx.get(counterRef);
-
-    int nextAvailable = 1;
-
-    if (!counterSnap.exists) {
-      tx.set(counterRef, {'nextavailable': 1});
-    } else {
-      nextAvailable = counterSnap.get('nextavailable') ?? 1;
-    }
-
-    // 2️⃣ Check ongoing
-    final ongoingCheck = await ongoingCollection.limit(1).get();
-
-    int finalId = nextAvailable;
-
-    if (ongoingCheck.docs.isNotEmpty) {
-      final allOngoing = await ongoingCollection.get();
-      final usedIds = allOngoing.docs
-          .map((doc) => doc.get('A00_JobId') as int?)
-          .whereType<int>()
-          .toSet();
-
-      if (usedIds.length >= 25) return;
-
-      if (usedIds.contains(finalId)) {
-        for (int i = 0; i < 25; i++) {
-          finalId = finalId >= 25 ? 1 : finalId + 1;
-
-          if (!usedIds.contains(finalId)) {
-            break;
-          }
-        }
-      }
-    }
-
-    // 3️⃣ Advance pointer AFTER assigning
-    int newNextAvailable = finalId >= 25 ? 1 : finalId + 1;
-
-    tx.set(counterRef, {'nextavailable': newNextAvailable});
-
-    // 4️⃣ Move document
-    tx.set(ongoingRef, {
-      ...queueSnap.data()!,
-      'Q00_ForSorting': true,
-      'A00_JobId': finalId,
-      'O00_ProcessStep': 'waiting',
-      'A04_DateO': Timestamp.now(),
-    });
-
-    tx.delete(queueRef);
-  });
-}
-
-/// ▶ Ongoing → Done
-Future<void> moveOngoingToDone(String docId, bool forDelivery) async {
-  final firestore = FirebaseFirestore.instance;
-
-  await firestore.runTransaction((tx) async {
-    final ongoingRef = firestore.collection(JOBS_ONGOING_REF).doc(docId);
-    final doneRef = firestore.collection(JOBS_DONE_REF).doc(docId);
-
-    final snapshot = await tx.get(ongoingRef);
-    if (!snapshot.exists) return;
-
-    if (forDelivery) {
-      tx.set(doneRef, {
-        ...snapshot.data()!,
-        'Q00_ForSorting': false,
-        'Q01_RiderPickup': true,
-        'O00_ProcessStep': 'done', // 👈 initial step
-        'A05_DateD': Timestamp.now(),
-      });
-    } else {
-      tx.set(doneRef, {
-        ...snapshot.data()!,
-        'O00_ProcessStep': 'done', // 👈 initial step
-        'A05_DateD': Timestamp.now(),
-      });
-    }
-
-    tx.delete(ongoingRef);
   });
 }

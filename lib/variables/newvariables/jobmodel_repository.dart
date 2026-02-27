@@ -25,6 +25,7 @@ class JobModelRepository {
         dateO: timestamp1900,
         paidD: timestamp1900,
         dateD: timestamp1900,
+        dateC: timestamp1900,
         customerPickupDate: timestamp1900,
         riderDeliveryDate: timestamp1900,
         createdBy: '',
@@ -115,6 +116,7 @@ class JobModelRepository {
   Timestamp get dateO => jobModel.dateO;
   Timestamp get paidD => jobModel.paidD;
   Timestamp get dateD => jobModel.dateD;
+  Timestamp get dateC => jobModel.dateC;
   Timestamp get customerPickupDate => jobModel.customerPickupDate;
   Timestamp get riderDeliveryDate => jobModel.riderDeliveryDate;
   String get createdBy => jobModel.createdBy;
@@ -177,6 +179,7 @@ class JobModelRepository {
   set dateO(Timestamp value) => jobModel.dateO = value;
   set paidD(Timestamp value) => jobModel.paidD = value;
   set dateD(Timestamp value) => jobModel.dateD = value;
+  set dateC(Timestamp value) => jobModel.dateC = value;
   set customerPickupDate(Timestamp value) =>
       jobModel.customerPickupDate = value;
   set riderDeliveryDate(Timestamp value) => jobModel.riderDeliveryDate = value;
@@ -465,6 +468,7 @@ class JobModelRepository {
     // selectedDateO = jobRepo.dateO;
     // selectedPaidD = jobRepo.paidD;
     // selectedDateD = jobRepo.dateD;
+    // selectedDateC = jobRepo.dateC;
     // selectedCustomerPickupDate = jobRepo.customerPickupDate;
     // selectedRiderDeliveryDate = jobRepo.riderDeliveryDate;
 
@@ -689,7 +693,6 @@ class JobModelRepository {
 
     /// 🔵 Payment: unpaid only false if paidcash and amount > finalprice
     /// 🔵 Payment: unpaid only false if paidgcash and amount > finalprice and verified
-    jobRepo.unpaid = true;
     selectedPaidCashAmount = int.tryParse(repoVarCashAmountVar.text) ?? 0;
     selectedPaidGCashAmount = int.tryParse(repoVarGCashAmountVar.text) ?? 0;
     if (selectedPaidCash &&
@@ -709,7 +712,7 @@ class JobModelRepository {
       selectedUnpaid = false;
       jobRepo.unpaid = false;
     }
-    //jobRepo.unpaid = selectedUnpaid;
+    jobRepo.unpaid = selectedUnpaid;
     jobRepo.paidCash = selectedPaidCash;
     jobRepo.paidGCash = selectedPaidGCash;
     jobRepo.paidGCashVerified = selectedPaidGCashVerified;
@@ -791,7 +794,6 @@ class JobModelRepository {
 
     /// 🔵 Payment: unpaid only false if paidcash and amount > finalprice
     /// 🔵 Payment: unpaid only false if paidgcash and amount > finalprice and verified
-    jobRepo.unpaid = true;
     selectedPaidCashAmount = int.tryParse(repoVarCashAmountVar.text) ?? 0;
     selectedPaidGCashAmount = int.tryParse(repoVarGCashAmountVar.text) ?? 0;
     if (selectedPaidCash &&
@@ -827,6 +829,29 @@ class JobModelRepository {
 
     /// 🟠 Workflow Step
     jobRepo.processStep = selectedProcessStep;
+
+    //ALLSTATUS = 1
+    /// 🟣 Dates
+    if (jobRepo.selectedIsCustomerPickedUp) {
+      jobRepo.customerPickupDate = Timestamp.now();
+      if (!jobRepo.selectedUnpaid) {
+        if (jobRepo.selectedPaidCash ||
+            (jobRepo.selectedPaidGCash && jobRepo.selectedPaidGCashVerified)) {
+          jobRepo.selectedAllStatus = 1;
+        }
+      }
+    }
+
+    if (jobRepo.selectedIsDeliveredToCustomer) {
+      jobRepo.riderDeliveryDate = Timestamp.now();
+      if (!jobRepo.selectedUnpaid) {
+        if (jobRepo.selectedPaidCash ||
+            (jobRepo.selectedPaidGCash && jobRepo.selectedPaidGCashVerified)) {
+          jobRepo.selectedAllStatus = 1;
+        }
+      }
+    }
+
     jobRepo.allStatus = selectedAllStatus;
 
     /// 🔴 Disposal

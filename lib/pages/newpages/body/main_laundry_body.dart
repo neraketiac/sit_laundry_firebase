@@ -6,8 +6,9 @@ import 'package:laundry_firebase/pages/newpages/body/Employee/readDataEmployeeCu
 import 'package:laundry_firebase/pages/newpages/body/Employee/readDataEmployeeHist.dart';
 import 'package:laundry_firebase/pages/newpages/body/Gcash/readDataGCashDone.dart';
 import 'package:laundry_firebase/pages/newpages/body/Gcash/readDataGCashPending.dart';
-import 'package:laundry_firebase/pages/newpages/body/JobOnGoing/readDataJobsOnGoing.dart';
-import 'package:laundry_firebase/pages/newpages/body/JobOnQueue/readDataJobsOnQueue.dart';
+import 'package:laundry_firebase/pages/newpages/body/JobsCompleted/readDataJobsCompleted.dart';
+import 'package:laundry_firebase/pages/newpages/body/JobsOnGoing/readDataJobsOnGoing.dart';
+import 'package:laundry_firebase/pages/newpages/body/JobsOnQueue/readDataJobsOnQueue.dart';
 import 'package:laundry_firebase/pages/newpages/body/JobsDone/readDataJobsDone.dart';
 import 'package:laundry_firebase/pages/newpages/body/Supplies/readSuppliesCurrent.dart';
 import 'package:laundry_firebase/pages/newpages/body/Supplies/readSuppliesHist.dart';
@@ -18,6 +19,7 @@ import 'package:laundry_firebase/pages/newpages/header/Funds/showFundsInFundsOut
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedMethods.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedmethodsdatabase.dart';
 import 'package:laundry_firebase/services/newservices/database_employee_setup.dart';
+import 'package:laundry_firebase/services/newservices/database_jobs.dart';
 import 'package:laundry_firebase/variables/newvariables/variables.dart';
 import 'package:web/web.dart' as web;
 
@@ -25,6 +27,7 @@ class LaundryColors {
   static const Color onQueue = Color(0xFFF4B400); // Amber
   static const Color ongoing = Color(0xFF2196F3); // Blue
   static const Color done = Color(0xFF4CAF50); // Green
+  static const Color completed = Color(0xFF673AB7); // Deep Purple
 }
 
 class MyMainLaundryBody extends StatefulWidget {
@@ -135,6 +138,54 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
             );
           },
           menuChildren: [
+            MenuItemButton(
+              style: MenuItemButton.styleFrom(
+                backgroundColor: const Color(0xFF673AB7), // Deep Purple
+                foregroundColor: Colors.white,
+              ),
+              onPressed: () async {
+                if (isProcessing) return;
+
+                final bool? confirm = await showDialog<bool>(
+                  context: context,
+                  builder: (context) {
+                    return AlertDialog(
+                      title: const Text("Confirm Action"),
+                      content: const Text(
+                        "Move ALL Done jobs to Completed?\n\nThis action cannot be undone.",
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context, false),
+                          child: const Text("No"),
+                        ),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF673AB7),
+                            foregroundColor: Colors.white,
+                          ),
+                          onPressed: () => Navigator.pop(context, true),
+                          child: const Text("Yes"),
+                        ),
+                      ],
+                    );
+                  },
+                );
+
+                if (confirm != true) return;
+
+                setState(() => isProcessing = true);
+
+                try {
+                  await moveAllDoneToCompleted();
+                } finally {
+                  if (mounted) {
+                    setState(() => isProcessing = false);
+                  }
+                }
+              },
+              child: const Text("🧺 Done → Completed"),
+            ),
             MenuItemButton(
               style: MenuItemButton.styleFrom(
                 backgroundColor: Colors.blueGrey.shade600,
@@ -305,65 +356,78 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        clipBehavior: Clip.hardEdge,
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            animatedPanel(
-              visible: empSetup.showFundsHistory,
-              width: 350,
-              child: Column(
+      body: Stack(
+        children: [
+          AbsorbPointer(
+            absorbing: isProcessing,
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              clipBehavior: Clip.hardEdge,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 1),
-                  readDataGCashPending(),
-                  readDataGCashDone(),
+                  animatedPanel(
+                    visible: empSetup.showFundsHistory,
+                    width: 350,
+                    child: Column(
+                      children: [
+                        const SizedBox(height: 1),
+                        readDataGCashPending(),
+                        readDataGCashDone(),
+                      ],
+                    ),
+                    color: Colors.blue,
+                  ),
+                  animatedPanel(
+                    visible: empSetup.showLaundry,
+                    width: 320,
+                    child: readDataJobsOnQueue(),
+                    color: LaundryColors.onQueue,
+                  ),
+                  animatedPanel(
+                    visible: empSetup.showLaundry,
+                    width: 320,
+                    child: readDataJobsOnGoing(),
+                    color: LaundryColors.ongoing,
+                  ),
+                  animatedPanel(
+                    visible: empSetup.showLaundry,
+                    width: 320,
+                    child: readDataJobsDone(),
+                    color: LaundryColors.done,
+                  ),
+                  animatedPanel(
+                    visible: empSetup.showLaundry,
+                    width: 320,
+                    child: readDataJobsCompleted(setState),
+                    color: LaundryColors.completed,
+                  ),
+                  animatedPanel(
+                      visible: empSetup.showFunds,
+                      width: 250,
+                      child: readDataSuppliesCurrent(),
+                      color: cFundsInFundsOut),
+                  animatedPanel(
+                      visible: empSetup.showFunds,
+                      width: 600,
+                      child: readDataSuppliesHistory(),
+                      color: cFundsInFundsOut),
+                  animatedPanel(
+                      visible: empSetup.showEmployee,
+                      width: 600,
+                      child: Column(
+                        children: [
+                          const SizedBox(height: 1),
+                          readDataEmployeeCurr(),
+                          readDataEmployeeHist(),
+                        ],
+                      ),
+                      color: cEmployeeMaintenance),
                 ],
               ),
-              color: Colors.blue,
             ),
-            animatedPanel(
-              visible: empSetup.showLaundry,
-              width: 320,
-              child: readDataJobsOnQueue(),
-              color: LaundryColors.onQueue,
-            ),
-            animatedPanel(
-              visible: empSetup.showLaundry,
-              width: 320,
-              child: readDataJobsOnGoing(),
-              color: LaundryColors.ongoing,
-            ),
-            animatedPanel(
-              visible: empSetup.showLaundry,
-              width: 320,
-              child: readDataJobsDone(),
-              color: LaundryColors.done,
-            ),
-            animatedPanel(
-                visible: empSetup.showFunds,
-                width: 250,
-                child: readDataSuppliesCurrent(),
-                color: cFundsInFundsOut),
-            animatedPanel(
-                visible: empSetup.showFunds,
-                width: 600,
-                child: readDataSuppliesHistory(),
-                color: cFundsInFundsOut),
-            animatedPanel(
-                visible: empSetup.showEmployee,
-                width: 600,
-                child: Column(
-                  children: [
-                    const SizedBox(height: 1),
-                    readDataEmployeeCurr(),
-                    readDataEmployeeHist(),
-                  ],
-                ),
-                color: cEmployeeMaintenance),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

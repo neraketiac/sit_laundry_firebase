@@ -1,16 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:laundry_firebase/models/newmodels/jobmodel.dart';
-import 'package:laundry_firebase/pages/newpages/body/JobsDone/showDeliverOrCustomerPickup.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedVisibility.dart';
 import 'package:laundry_firebase/services/newservices/database_jobs.dart';
 import 'package:laundry_firebase/variables/newvariables/jobmodel_repository.dart';
+import 'package:laundry_firebase/variables/newvariables/variables.dart';
 
-Widget readDataJobsDone() {
-  DatabaseJobsDone databaseJobsDone = DatabaseJobsDone();
+Widget readDataJobsCompleted(Function setState) {
+  DatabaseJobsCompleted databaseJobsCompleted = DatabaseJobsCompleted();
   int? selectedIndex;
 
+  void cycleSort() {
+    final sortOptions = [
+      intSortByDateC,
+      intSortByCustomerName,
+      intSortByDateD,
+    ];
+
+    final currentIndex = sortOptions.indexOf(intSelectedSort);
+    final nextIndex = (currentIndex + 1) % sortOptions.length;
+
+    setState(() {
+      intSelectedSort = sortOptions[nextIndex];
+    });
+  }
+
   return StreamBuilder<List<JobModel>>(
-    stream: databaseJobsDone.streamAll(),
+    stream: databaseJobsCompleted.streamAll(intSelectedSort),
     builder: (context, snapshot) {
       if (snapshot.hasError) {
         return const Center(child: Text('Error loading jobs'));
@@ -22,9 +37,30 @@ Widget readDataJobsDone() {
 
       final jobs = snapshot.data!;
 
-      return StatefulBuilder(
-        builder: (context, setState) {
-          return ReorderableListView(
+      // return StatefulBuilder(
+      //   builder: (context, setState) {
+      return Column(
+        children: [
+          /// 🔥 STRETCHED BUTTON ON TOP
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF673AB7),
+                padding: const EdgeInsets.symmetric(vertical: 14),
+              ),
+              onPressed: () {
+                cycleSort();
+                // your action here
+              },
+              child: Text(
+                "Sorting by",
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          ReorderableListView(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             buildDefaultDragHandles: false,
@@ -110,7 +146,7 @@ Widget readDataJobsDone() {
                             isSelected,
                             false,
                             () async {
-                              showDeliverOrCustomerPickup(context, jobRepo);
+                              //showDeliverOrCustomerPickup(context, jobRepo);
                             },
                           ),
 
@@ -121,11 +157,7 @@ Widget readDataJobsDone() {
 
                           /// PRICE
                           visPaidUnpaidArea(
-                            context,
-                            jobRepo,
-                            isSelected,
-                            true,
-                          ),
+                              context, jobRepo, isSelected, false),
 
                           const SizedBox(width: 20),
                         ],
@@ -135,9 +167,11 @@ Widget readDataJobsDone() {
                 ),
               );
             }),
-          );
-        },
+          ),
+        ],
       );
+      //   },
+      // );
     },
   );
 }

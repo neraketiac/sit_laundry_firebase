@@ -24,8 +24,11 @@ import 'package:laundry_firebase/variables/oldvariables/variables_jobsongoing.da
 import 'package:laundry_firebase/variables/newvariables/variables_oth.dart';
 import 'package:laundry_firebase/variables/newvariables/variables_supplies.dart';
 
+bool isProcessing = false;
 bool bFirebaseInitialized = false;
 const String storageKey = 'customer_code';
+int intSortByDateC = 1, intSortByCustomerName = 2, intSortByDateD = 3;
+int intSelectedSort = 1;
 
 bool isLoading = true;
 String? cachedToken;

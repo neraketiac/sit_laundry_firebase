@@ -17,6 +17,11 @@ void showJobOnQueue(BuildContext context, JobModelRepository jobRepo) {
     //admin
     jobRepo.createdBy = empIdGlobal;
     jobRepo.currentEmpId = empIdGlobal;
+    if (jobRepo.repoVarSelectedIntRiderPickup == intRiderPickup) {
+      jobRepo.selectedAllStatus = 0.10;
+    } else {
+      jobRepo.selectedAllStatus = 0.20;
+    }
 
     //syncSelectedToRepositoryALL(jobRepo);
     jobRepo.syncSelectedToRepoAll(jobRepo);
