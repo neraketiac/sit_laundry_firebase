@@ -258,21 +258,7 @@ class DatabaseJobsCompleted {
       _firestore.collection(JOBS_COMPLETED_REF);
 
   /// 🔄 Stream completed jobs
-  Stream<List<JobModel>> streamAll(int intOrderBy) {
-    print("New stream created with sort: $intOrderBy");
-    if (intOrderBy == intSortByDateC) {
-      return _ref.orderBy('A06_DateC', descending: true).snapshots().map(
-            (s) => s.docs.map((d) => JobModel.fromJson(d.data())).toList(),
-          );
-    }
-    if (intOrderBy == intSortByCustomerName) {
-      return _ref
-          .orderBy('C01_CustomerName', descending: false)
-          .snapshots()
-          .map(
-            (s) => s.docs.map((d) => JobModel.fromJson(d.data())).toList(),
-          );
-    }
+  Stream<List<JobModel>> streamAll() {
     return _ref.orderBy('A06_DateC', descending: true).snapshots().map(
           (s) => s.docs.map((d) => JobModel.fromJson(d.data())).toList(),
         );

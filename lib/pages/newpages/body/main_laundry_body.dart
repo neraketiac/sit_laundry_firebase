@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:laundry_firebase/models/newmodels/jobmodel.dart';
 import 'package:laundry_firebase/models/oldmodels/employeesetupmodel.dart';
 import 'package:laundry_firebase/pages/enterloyaltycode.dart';
 import 'package:laundry_firebase/pages/newpages/body/Employee/readDataEmployeeCurr.dart';
@@ -393,7 +394,7 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                   animatedPanel(
                     visible: empSetup.showLaundry,
                     width: 320,
-                    child: readDataJobsDone(),
+                    child: readDataJobsDone(setState),
                     color: LaundryColors.done,
                   ),
                   animatedPanel(

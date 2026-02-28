@@ -1,31 +1,117 @@
 import 'package:flutter/material.dart';
 import 'package:laundry_firebase/models/newmodels/jobmodel.dart';
+import 'package:laundry_firebase/pages/newpages/sharedmethods/autocompletecustomer.dart';
+import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedConstantsFinal.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedVisibility.dart';
 import 'package:laundry_firebase/services/newservices/database_jobs.dart';
 import 'package:laundry_firebase/variables/newvariables/jobmodel_repository.dart';
 import 'package:laundry_firebase/variables/newvariables/variables.dart';
 
-Widget readDataJobsCompleted(Function setState) {
+Widget readDataJobsCompleted(
+  Function setState,
+) {
   DatabaseJobsCompleted databaseJobsCompleted = DatabaseJobsCompleted();
-  int? selectedIndex;
 
-  void cycleSort() {
+  Future<void> showSearchDialog(
+    BuildContext context,
+    Function setState,
+    List<JobModel> sortedJobs,
+    List<JobModel> originalJobs,
+  ) async {
+    JobModelRepository jobRepox = JobModelRepository();
+    jobRepox.reset();
+
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Find by Customer ID"),
+          content: AutoCompleteCustomer(jobRepo: jobRepox),
+          // TextField(
+          //   controller: controller,
+          //   decoration: const InputDecoration(
+          //     hintText: "Enter Customer ID",
+          //   ),
+          // ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("No"),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                //debugPrint('jobRepox.customerId=${jobRepox.customerId}');
+                setState(() {
+                  sortedJobs
+                    ..clear()
+                    ..addAll(
+                      originalJobs.where(
+                        (job) => job.customerId == jobRepox.selectedCustomerId,
+                      ),
+                    );
+                });
+
+                Navigator.pop(context);
+              },
+              child: const Text("Yes"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void sortJobs(List<JobModel> jobs) {
+    switch (intSelectedSortCompleted) {
+      case intSortByDateC:
+        jobs.sort((a, b) => b.dateC.compareTo(a.dateC));
+        break;
+
+      case intSortByCustomerName:
+        jobs.sort((a, b) => a.customerName
+            .toLowerCase()
+            .compareTo(b.customerName.toLowerCase()));
+        break;
+
+      case intSortByDateD:
+        jobs.sort((a, b) => b.dateD.compareTo(a.dateD));
+        break;
+
+      case intFindCustomerNameId:
+        break;
+    }
+  }
+
+  Future<void> cycleSort(BuildContext context) async {
+    //default sort by Date Complete or Find name
     final sortOptions = [
       intSortByDateC,
-      intSortByCustomerName,
-      intSortByDateD,
+      //intSortByCustomerName,
+      //intSortByDateD,
+      intFindCustomerNameId,
     ];
 
-    final currentIndex = sortOptions.indexOf(intSelectedSort);
+    final currentIndex = sortOptions.indexOf(intSelectedSortCompleted);
     final nextIndex = (currentIndex + 1) % sortOptions.length;
 
-    setState(() {
-      intSelectedSort = sortOptions[nextIndex];
-    });
+    intSelectedSortCompleted = sortOptions[nextIndex];
+
+    /// 🔥 If search mode → show dialog
+    if (intSelectedSortCompleted == intFindCustomerNameId) {
+      await showSearchDialog(
+          context, setState, sortedJobsCompleted, originalJobsCompleted);
+    } else {
+      setState(() {
+        sortedJobsCompleted
+          ..clear()
+          ..addAll(originalJobsCompleted);
+        sortJobs(sortedJobsCompleted);
+      });
+    }
   }
 
   return StreamBuilder<List<JobModel>>(
-    stream: databaseJobsCompleted.streamAll(intSelectedSort),
+    stream: databaseJobsCompleted.streamAll(),
     builder: (context, snapshot) {
       if (snapshot.hasError) {
         return const Center(child: Text('Error loading jobs'));
@@ -35,7 +121,18 @@ Widget readDataJobsCompleted(Function setState) {
         return const Center(child: CircularProgressIndicator());
       }
 
-      final jobs = snapshot.data!;
+      /// 🔥 Sync Firestore → original + sorted
+      if (originalJobsCompleted.length != snapshot.data!.length) {
+        originalJobsCompleted
+          ..clear()
+          ..addAll(snapshot.data!);
+
+        sortedJobsCompleted
+          ..clear()
+          ..addAll(originalJobsCompleted);
+
+        sortJobs(sortedJobsCompleted);
+      }
 
       // return StatefulBuilder(
       //   builder: (context, setState) {
@@ -43,18 +140,17 @@ Widget readDataJobsCompleted(Function setState) {
         children: [
           /// 🔥 STRETCHED BUTTON ON TOP
           SizedBox(
-            width: double.infinity,
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF673AB7),
-                padding: const EdgeInsets.symmetric(vertical: 14),
+                backgroundColor: const Color.fromARGB(255, 143, 86, 239),
               ),
-              onPressed: () {
-                cycleSort();
-                // your action here
+              onPressed: () async {
+                await cycleSort(context);
               },
               child: Text(
-                "Sorting by",
+                intSortByDateC == intSelectedSortCompleted
+                    ? 'Find?'
+                    : 'Sort Date Completed',
                 style: TextStyle(color: Colors.white),
               ),
             ),
@@ -74,13 +170,13 @@ Widget readDataJobsCompleted(Function setState) {
             onReorder: (oldIndex, newIndex) {
               setState(() {});
             },
-            children: List.generate(jobs.length, (index) {
-              final job = jobs[index];
+            children: List.generate(sortedJobsCompleted.length, (index) {
+              final job = sortedJobsCompleted[index];
               JobModelRepository jobRepo = JobModelRepository();
               jobRepo.setJobModel(job);
               jobRepo.syncRepoToSelectedAll(jobRepo);
 
-              final isSelected = selectedIndex == index;
+              final isSelected = selectedIndexCompleted == index;
 
               return ReorderableDelayedDragStartListener(
                 key: ValueKey(job.docId),
@@ -91,7 +187,7 @@ Widget readDataJobsCompleted(Function setState) {
                     borderRadius: BorderRadius.circular(18),
                     onTap: () {
                       setState(() {
-                        selectedIndex = index;
+                        selectedIndexCompleted = index;
                       });
                     },
                     child: AnimatedContainer(

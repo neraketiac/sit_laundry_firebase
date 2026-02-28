@@ -1,9 +1,18 @@
 //
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:laundry_firebase/models/newmodels/jobmodel.dart';
 import 'package:laundry_firebase/variables/newvariables/variables.dart';
 import 'package:laundry_firebase/variables/newvariables/variables_fab.dart';
 import 'package:laundry_firebase/variables/newvariables/variables_oth.dart';
+
+//sorting
+List<JobModel> sortedJobsCompleted = [];
+List<JobModel> originalJobsCompleted = [];
+int selectedIndexCompleted = intSortByDateC;
+List<JobModel> sortedJobsDone = [];
+List<JobModel> originalJobsDone = [];
+int selectedIndexDone = intSortByDateD;
 
 const double fieldIndentWidth = 40;
 bool isGcashCredit = false;
