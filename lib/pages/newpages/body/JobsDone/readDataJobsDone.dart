@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:laundry_firebase/models/newmodels/jobmodel.dart';
+import 'package:laundry_firebase/pages/newpages/body/JobsCompleted/readDataJobsCompleted.dart';
 import 'package:laundry_firebase/pages/newpages/body/JobsDone/showDeliverOrCustomerPickup.dart';
 import 'package:laundry_firebase/pages/newpages/body/JobsDone/showJobOnQueueNoEdit.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/autocompletecustomer.dart';
@@ -42,6 +43,7 @@ Widget readDataJobsDone(Function setState) {
               onPressed: () {
                 //debugPrint('jobRepox.customerId=${jobRepox.customerId}');
                 setState(() {
+                  //for jobs done
                   sortedJobs
                     ..clear()
                     ..addAll(
@@ -49,6 +51,8 @@ Widget readDataJobsDone(Function setState) {
                         (job) => job.customerId == jobRepox.selectedCustomerId,
                       ),
                     );
+                  //for jobs completed
+                  runFindCompleted(context, setState, jobRepox);
                 });
 
                 Navigator.pop(context);
@@ -101,12 +105,15 @@ Widget readDataJobsDone(Function setState) {
       await showSearchDialog(
           context, setState, sortedJobsDone, originalJobsDone);
     } else {
+      //jobs done
       setState(() {
         sortedJobsDone
           ..clear()
           ..addAll(originalJobsDone);
         sortJobs(sortedJobsDone);
       });
+      //jobs complete
+      runSortCompleted(context, setState);
     }
   }
 

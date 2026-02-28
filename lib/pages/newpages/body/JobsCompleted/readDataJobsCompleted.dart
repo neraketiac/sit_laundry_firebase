@@ -61,27 +61,6 @@ Widget readDataJobsCompleted(
     );
   }
 
-  void sortJobs(List<JobModel> jobs) {
-    switch (intSelectedSortCompleted) {
-      case intSortByDateC:
-        jobs.sort((a, b) => b.dateC.compareTo(a.dateC));
-        break;
-
-      case intSortByCustomerName:
-        jobs.sort((a, b) => a.customerName
-            .toLowerCase()
-            .compareTo(b.customerName.toLowerCase()));
-        break;
-
-      case intSortByDateD:
-        jobs.sort((a, b) => b.dateD.compareTo(a.dateD));
-        break;
-
-      case intFindCustomerNameId:
-        break;
-    }
-  }
-
   Future<void> cycleSort(BuildContext context) async {
     //default sort by Date Complete or Find name
     final sortOptions = [
@@ -139,23 +118,23 @@ Widget readDataJobsCompleted(
       return Column(
         children: [
           /// 🔥 STRETCHED BUTTON ON TOP
-          SizedBox(
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color.fromARGB(255, 143, 86, 239),
-              ),
-              onPressed: () async {
-                await cycleSort(context);
-              },
-              child: Text(
-                intSortByDateC == intSelectedSortCompleted
-                    ? 'Find?'
-                    : 'Sort Date Completed',
-                style: TextStyle(color: Colors.white),
-              ),
-            ),
-          ),
-          const SizedBox(height: 8),
+          // SizedBox(
+          //   child: ElevatedButton(
+          //     style: ElevatedButton.styleFrom(
+          //       backgroundColor: const Color.fromARGB(255, 143, 86, 239),
+          //     ),
+          //     onPressed: () async {
+          //       await cycleSort(context);
+          //     },
+          //     child: Text(
+          //       intSortByDateC == intSelectedSortCompleted
+          //           ? 'Find?'
+          //           : 'Sort Date Completed',
+          //       style: TextStyle(color: Colors.white),
+          //     ),
+          //   ),
+          // ),
+          // const SizedBox(height: 8),
           ReorderableListView(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
@@ -270,4 +249,55 @@ Widget readDataJobsCompleted(
       // );
     },
   );
+}
+
+void sortJobs(List<JobModel> jobs) {
+  switch (intSelectedSortCompleted) {
+    case intSortByDateC:
+      jobs.sort((a, b) => b.dateC.compareTo(a.dateC));
+      break;
+
+    case intSortByCustomerName:
+      jobs.sort((a, b) =>
+          a.customerName.toLowerCase().compareTo(b.customerName.toLowerCase()));
+      break;
+
+    case intSortByDateD:
+      jobs.sort((a, b) => b.dateD.compareTo(a.dateD));
+      break;
+
+    case intFindCustomerNameId:
+      break;
+  }
+}
+
+Future<void> runFindCompleted(BuildContext context, Function setState,
+    JobModelRepository jobRepox) async {
+  if (intSelectedSortDone == intFindCustomerNameId) {
+    setState(() {
+      sortedJobsCompleted
+        ..clear()
+        ..addAll(
+          originalJobsCompleted.where(
+            (job) => job.customerId == jobRepox.selectedCustomerId,
+          ),
+        );
+    });
+  } else {
+    setState(() {
+      sortedJobsCompleted
+        ..clear()
+        ..addAll(originalJobsCompleted);
+      sortJobs(sortedJobsCompleted);
+    });
+  }
+}
+
+Future<void> runSortCompleted(BuildContext context, Function setState) async {
+  setState(() {
+    sortedJobsCompleted
+      ..clear()
+      ..addAll(originalJobsCompleted);
+    sortJobs(sortedJobsCompleted);
+  });
 }

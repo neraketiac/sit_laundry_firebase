@@ -32,7 +32,8 @@ const int intSortByDateC = 1,
     intSortByCustomerName = 2,
     intSortByDateD = 3,
     intFindCustomerNameId = 9;
-int intSelectedSortCompleted = 1, intSelectedSortDone = 3;
+int intSelectedSortCompleted = 1;
+int intSelectedSortDone = 3;
 
 bool isLoading = true;
 String? cachedToken;
