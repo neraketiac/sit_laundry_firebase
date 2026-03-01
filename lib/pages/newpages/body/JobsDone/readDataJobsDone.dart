@@ -95,17 +95,16 @@ Widget readDataJobsDone(Function setState) {
       }
 
       /// 🔥 Sync Firestore → original + sorted
-      if (originalJobsDone.length != snapshot.data!.length) {
-        originalJobsDone
-          ..clear()
-          ..addAll(snapshot.data!);
 
-        sortedJobsDone
-          ..clear()
-          ..addAll(originalJobsDone);
+      originalJobsDone
+        ..clear()
+        ..addAll(snapshot.data!);
 
-        //sortJobs(sortedJobsDone);
-      }
+      sortedJobsDone
+        ..clear()
+        ..addAll(originalJobsDone);
+
+      //sortJobs(sortedJobsDone);
 
       return StatefulBuilder(
         builder: (context, setState) {

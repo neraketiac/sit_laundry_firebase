@@ -22,17 +22,16 @@ Widget readDataJobsCompleted(
       }
 
       /// 🔥 Sync Firestore → original + sorted
-      if (originalJobsCompleted.length != snapshot.data!.length) {
-        originalJobsCompleted
-          ..clear()
-          ..addAll(snapshot.data!);
 
-        sortedJobsCompleted
-          ..clear()
-          ..addAll(originalJobsCompleted);
+      originalJobsCompleted
+        ..clear()
+        ..addAll(snapshot.data!);
 
-        // sortJobs(sortedJobsCompleted);
-      }
+      sortedJobsCompleted
+        ..clear()
+        ..addAll(originalJobsCompleted);
+
+      // sortJobs(sortedJobsCompleted);
 
       return Column(
         children: [

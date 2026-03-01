@@ -1246,13 +1246,34 @@ Visibility visPaidUnPaid(
     }
 
     if (jobRepo.selectedPaidCash && jobRepo.selectedPaidGCash) {
-      resetPartialAmount();
+      if (jobRepo.selectedPaidCashAmount == 0 &&
+          jobRepo.selectedPaidGCashAmount == 0) {
+        resetPartialAmount();
+      } else {
+        jobRepo.repoVarCashAmountVar.text =
+            jobRepo.selectedPaidCashAmount.toString();
+        jobRepo.repoVarGCashAmountVar.text =
+            jobRepo.selectedPaidGCashAmount.toString();
+      }
+
       return 'Split payment';
     } else if (jobRepo.selectedPaidCash) {
-      setPartialAmount(jobRepo.repoVarCashAmountVar);
+      if (jobRepo.selectedPaidCashAmount == 0) {
+        setPartialAmount(jobRepo.repoVarCashAmountVar);
+      } else {
+        jobRepo.repoVarCashAmountVar.text =
+            jobRepo.selectedPaidCashAmount.toString();
+      }
+
       return 'Paid Cash';
     } else if (jobRepo.selectedPaidGCash) {
-      setPartialAmount(jobRepo.repoVarGCashAmountVar);
+      if (jobRepo.selectedPaidGCashAmount == 0) {
+        setPartialAmount(jobRepo.repoVarGCashAmountVar);
+      } else {
+        jobRepo.repoVarGCashAmountVar.text =
+            jobRepo.selectedPaidGCashAmount.toString();
+      }
+
       return 'Paid GCash';
     }
     resetPartialAmount();

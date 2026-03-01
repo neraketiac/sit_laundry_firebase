@@ -41,7 +41,7 @@ void showPaidUnpaid(BuildContext context, JobModelRepository jobRepo) {
             vertical: 5,
           ),
           title: Text(
-            "Enter Laundry",
+            "Payment",
             textAlign: TextAlign.center,
           ),
           content: SingleChildScrollView(
