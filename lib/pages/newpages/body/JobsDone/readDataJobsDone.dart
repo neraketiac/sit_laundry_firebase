@@ -1,23 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:laundry_firebase/models/newmodels/jobmodel.dart';
-import 'package:laundry_firebase/pages/newpages/body/JobsCompleted/readDataJobsCompleted.dart';
 import 'package:laundry_firebase/pages/newpages/body/JobsDone/showDeliverOrCustomerPickup.dart';
 import 'package:laundry_firebase/pages/newpages/body/JobsDone/showJobOnQueueNoEdit.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/autocompletecustomer.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedConstantsFinal.dart';
+import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedMethods.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedVisibility.dart';
 import 'package:laundry_firebase/services/newservices/database_jobs.dart';
 import 'package:laundry_firebase/variables/newvariables/jobmodel_repository.dart';
-import 'package:laundry_firebase/variables/newvariables/variables.dart';
 
 Widget readDataJobsDone(Function setState) {
   DatabaseJobsDone databaseJobsDone = DatabaseJobsDone();
 
   Future<void> showSearchDialog(
     BuildContext context,
-    Function setState,
-    List<JobModel> sortedJobs,
-    List<JobModel> originalJobs,
   ) async {
     JobModelRepository jobRepox = JobModelRepository();
     jobRepox.reset();
@@ -28,12 +24,6 @@ Widget readDataJobsDone(Function setState) {
         return AlertDialog(
           title: const Text("Find by Customer ID"),
           content: AutoCompleteCustomer(jobRepo: jobRepox),
-          // TextField(
-          //   controller: controller,
-          //   decoration: const InputDecoration(
-          //     hintText: "Enter Customer ID",
-          //   ),
-          // ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
@@ -41,18 +31,22 @@ Widget readDataJobsDone(Function setState) {
             ),
             ElevatedButton(
               onPressed: () {
-                //debugPrint('jobRepox.customerId=${jobRepox.customerId}');
                 setState(() {
-                  //for jobs done
-                  sortedJobs
+                  sortedJobsDone
                     ..clear()
                     ..addAll(
-                      originalJobs.where(
+                      originalJobsDone.where(
                         (job) => job.customerId == jobRepox.selectedCustomerId,
                       ),
                     );
                   //for jobs completed
-                  runFindCompleted(context, setState, jobRepox);
+                  sortedJobsCompleted
+                    ..clear()
+                    ..addAll(
+                      originalJobsCompleted.where(
+                        (job) => job.customerId == jobRepox.selectedCustomerId,
+                      ),
+                    );
                 });
 
                 Navigator.pop(context);
@@ -65,56 +59,9 @@ Widget readDataJobsDone(Function setState) {
     );
   }
 
-  void sortJobs(List<JobModel> jobs) {
-    switch (intSelectedSortDone) {
-      case intSortByDateC:
-        jobs.sort((a, b) => b.dateC.compareTo(a.dateC));
-        break;
-
-      case intSortByCustomerName:
-        jobs.sort((a, b) => a.customerName
-            .toLowerCase()
-            .compareTo(b.customerName.toLowerCase()));
-        break;
-
-      case intSortByDateD:
-        jobs.sort((a, b) => b.dateD.compareTo(a.dateD));
-        break;
-
-      case intFindCustomerNameId:
-        break;
-    }
-  }
-
   Future<void> cycleSort(BuildContext context) async {
-    //default sort by Date Complete or Find name
-    final sortOptions = [
-      //intSortByDateC,
-      //intSortByCustomerName,
-      intSortByDateD,
-      intFindCustomerNameId,
-    ];
-
-    final currentIndex = sortOptions.indexOf(intSelectedSortDone);
-    final nextIndex = (currentIndex + 1) % sortOptions.length;
-
-    intSelectedSortDone = sortOptions[nextIndex];
-
-    /// 🔥 If search mode → show dialog
-    if (intSelectedSortDone == intFindCustomerNameId) {
-      await showSearchDialog(
-          context, setState, sortedJobsDone, originalJobsDone);
-    } else {
-      //jobs done
-      setState(() {
-        sortedJobsDone
-          ..clear()
-          ..addAll(originalJobsDone);
-        sortJobs(sortedJobsDone);
-      });
-      //jobs complete
-      runSortCompleted(context, setState);
-    }
+    // await showSearchDialog(context, setState, sortedJobsDone, originalJobsDone);
+    //await showSearchDialog(context);
   }
 
   return StreamBuilder<List<JobModel>>(
@@ -138,7 +85,7 @@ Widget readDataJobsDone(Function setState) {
           ..clear()
           ..addAll(originalJobsDone);
 
-        sortJobs(sortedJobsDone);
+        //sortJobs(sortedJobsDone);
       }
 
       return StatefulBuilder(
@@ -152,12 +99,11 @@ Widget readDataJobsDone(Function setState) {
                     backgroundColor: const Color.fromARGB(255, 22, 198, 84),
                   ),
                   onPressed: () async {
-                    await cycleSort(context);
+                    // await cycleSort(context);
+                    await showSearchDialog(context);
                   },
                   child: Text(
-                    intSortByDateD == intSelectedSortDone
-                        ? 'Find?'
-                        : 'Sort Date Done',
+                    '🔍',
                     style: TextStyle(color: Colors.white),
                   ),
                 ),

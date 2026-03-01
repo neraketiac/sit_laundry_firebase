@@ -817,3 +817,11 @@ Future<Uint8List> compressImage(Uint8List bytes) async {
 
   return compressed;
 }
+
+Future<void> runSortCompleted(BuildContext context, Function setState) async {
+  setState(() {
+    sortedJobsCompleted
+      ..clear()
+      ..addAll(originalJobsCompleted);
+  });
+}
