@@ -889,6 +889,11 @@ Widget visAmountOthersOnly(
     jobRepo.repoVarTotalPriceOthers += item.itemPrice;
   }
 
+  void removeOtherItem(OtherItemModel item) {
+    jobRepo.selectedItems.remove(item);
+    jobRepo.repoVarTotalPriceOthers -= item.itemPrice;
+  }
+
   String getShortcutLabel(int value) {
     switch (value) {
       case menuOth155:
@@ -904,12 +909,35 @@ Widget visAmountOthersOnly(
     }
   }
 
+  List<OtherItemModel> getCurrentDropdownItems() {
+    if (jobRepo.selectedOthers == menuOthDVal) {
+      return listOthItems;
+    } else if (jobRepo.selectedOthers == menuDetDVal) {
+      return listDetItems;
+    } else if (jobRepo.selectedOthers == menuFabDVal) {
+      return listFabItems;
+    } else {
+      return listBleItems;
+    }
+  }
+
+  final currentItems = getCurrentDropdownItems();
+
+  // 🔐 SAFETY: ensure selected item always exists in current list
+  if (!currentItems.contains(jobRepo.repoVarSelectedItem)) {
+    // if (currentItems.isNotEmpty) {
+    jobRepo.repoVarSelectedItem = currentItems.first;
+    // } else {
+    //   jobRepo.repoVarSelectedItem = null;
+    // }
+  }
+
   return Visibility(
-    visible: (jobRepo.selectedPackage == intOthersPackage),
+    visible: jobRepo.selectedPackage == intOthersPackage,
     child: Container(
-      padding: const EdgeInsets.all(1),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(26),
+        borderRadius: BorderRadius.circular(22),
         gradient: LinearGradient(
           colors: [
             Colors.white.withOpacity(0.12),
@@ -930,7 +958,8 @@ Widget visAmountOthersOnly(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          /// 💰 TOTAL
+          // ================= TOTAL =================
+
           Column(
             children: [
               Text(
@@ -945,36 +974,35 @@ Widget visAmountOthersOnly(
               Text(
                 formatter.format(jobRepo.repoVarTotalPriceOthers),
                 style: const TextStyle(
-                  fontSize: 24,
+                  fontSize: fontSizeTotalPrice,
                   fontWeight: FontWeight.w800,
                   color: Colors.white,
                 ),
               ),
+              const SizedBox(height: 6),
               Container(
                 height: 3,
                 width: 120,
                 decoration: const BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [Colors.pinkAccent, Colors.purpleAccent],
+                    colors: [Colors.cyanAccent, Colors.purpleAccent],
                   ),
                 ),
               ),
             ],
           ),
 
-          const SizedBox(height: 20),
+          const SizedBox(height: 24),
 
-          /// ⚡ SHORTCUT BUTTONS
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
+          // ================= SHORTCUTS =================
+
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: listOthersDropDownShortCuts.map((shortcut) {
               return _glassShortcutButton(
                 label: getShortcutLabel(shortcut),
                 onTap: () {
                   setState(() {
-                    jobRepo.selectedOthersShortCut = shortcut;
-
                     if (shortcut == menuOth155) {
                       addOtherItem(reg155ItemModel);
                     } else if (shortcut == menuOth125) {
@@ -990,17 +1018,78 @@ Widget visAmountOthersOnly(
             }).toList(),
           ),
 
-          const SizedBox(height: 20),
+          const SizedBox(height: 24),
 
-          /// 🧊 DROPDOWN + ADD BUTTON
+          // ================= ALL ITEMS CATEGORY =================
+
+          Column(
+            children: [
+              Text(
+                'ALL ITEMS',
+                style: TextStyle(
+                  fontSize: 10,
+                  letterSpacing: 1.2,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white.withOpacity(0.7),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(18),
+                  color: Colors.black.withOpacity(0.25),
+                  border: Border.all(
+                    color: Colors.white.withOpacity(0.25),
+                  ),
+                ),
+                child: ToggleButtons(
+                  isSelected: List.generate(
+                    listOthersDropDown.length,
+                    (i) => jobRepo.selectedOthers == listOthersDropDown[i],
+                  ),
+                  onPressed: (index) {
+                    setState(() {
+                      jobRepo.selectedOthers = listOthersDropDown[index];
+
+                      final newItems = getCurrentDropdownItems();
+                      jobRepo.repoVarSelectedItem =
+                          (newItems.isNotEmpty ? newItems.first : null)!;
+                    });
+                  },
+                  borderRadius: BorderRadius.circular(14),
+                  selectedColor: Colors.black,
+                  fillColor: Colors.cyanAccent,
+                  color: Colors.white70,
+                  borderColor: Colors.white24,
+                  selectedBorderColor: Colors.cyanAccent,
+                  constraints: const BoxConstraints(
+                    minWidth: 60,
+                    minHeight: 32,
+                  ),
+                  children: const [
+                    Text('Oth'),
+                    Text('Det'),
+                    Text('Fab'),
+                    Text('Ble'),
+                  ],
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 24),
+
+          // ================= DROPDOWN + ADD =================
+
           Row(
             children: [
               Expanded(
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(16),
-                    color: Colors.black.withOpacity(0.2),
+                    color: Colors.black.withOpacity(0.25),
                     border: Border.all(
                       color: Colors.white.withOpacity(0.2),
                     ),
@@ -1014,15 +1103,9 @@ Widget visAmountOthersOnly(
                       color: Colors.white,
                       fontSize: 13,
                     ),
-                    items: (jobRepo.selectedOthers == menuOthDVal
-                            ? listOthItems
-                            : jobRepo.selectedOthers == menuDetDVal
-                                ? listDetItems
-                                : jobRepo.selectedOthers == menuFabDVal
-                                    ? listFabItems
-                                    : listBleItems)
+                    items: currentItems
                         .map(
-                          (e) => DropdownMenuItem(
+                          (e) => DropdownMenuItem<OtherItemModel>(
                             value: e,
                             child: Text(
                               "${e.itemName}  ₱${e.itemPrice}",
@@ -1030,34 +1113,52 @@ Widget visAmountOthersOnly(
                           ),
                         )
                         .toList(),
-                    onChanged: (val) {
-                      setState(() {
-                        jobRepo.repoVarSelectedItem = val!;
-                      });
-                    },
+                    onChanged: currentItems.isEmpty
+                        ? null
+                        : (val) {
+                            setState(() {
+                              jobRepo.repoVarSelectedItem = val!;
+                            });
+                          },
                   ),
                 ),
               ),
-              const SizedBox(width: 10),
-              _glassAddButton(
-                onTap: () {
-                  setState(() {
-                    addOtherItem(jobRepo.repoVarSelectedItem);
-                  });
-                },
+              const SizedBox(width: 12),
+              GestureDetector(
+                onTap: jobRepo.repoVarSelectedItem == null
+                    ? null
+                    : () {
+                        setState(() {
+                          addOtherItem(jobRepo.repoVarSelectedItem!);
+                        });
+                      },
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: jobRepo.repoVarSelectedItem == null
+                        ? Colors.grey
+                        : Colors.cyanAccent,
+                  ),
+                  child: const Icon(
+                    Icons.add,
+                    color: Colors.black,
+                  ),
+                ),
               ),
             ],
           ),
 
-          const SizedBox(height: 20),
+          const SizedBox(height: 24),
 
-          /// 🧾 SELECTED ITEMS LIST
+          // ================= SELECTED ITEMS =================
+
           Column(
             children: jobRepo.selectedItems.map((e) {
               return Container(
-                margin: const EdgeInsets.only(bottom: 6),
+                margin: const EdgeInsets.only(bottom: 8),
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(16),
                   color: Colors.black.withOpacity(0.25),
@@ -1070,8 +1171,7 @@ Widget visAmountOthersOnly(
                     GestureDetector(
                       onTap: () {
                         setState(() {
-                          jobRepo.repoVarTotalPriceOthers -= e.itemPrice;
-                          jobRepo.selectedItems.remove(e);
+                          removeOtherItem(e);
                         });
                       },
                       child: const Icon(
@@ -2949,22 +3049,42 @@ Widget _glassShortcutButton({
   required String label,
   required VoidCallback onTap,
 }) {
-  return GestureDetector(
-    onTap: onTap,
-    child: Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        gradient: const LinearGradient(
-          colors: [Colors.pinkAccent, Colors.purpleAccent],
+  return Material(
+    color: Colors.transparent,
+    borderRadius: BorderRadius.circular(16),
+    child: InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      splashColor: Colors.white24,
+      highlightColor: Colors.white10,
+      child: Ink(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          gradient: const LinearGradient(
+            colors: [Colors.pinkAccent, Colors.purpleAccent],
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.purpleAccent.withOpacity(0.4),
+              blurRadius: 12,
+              offset: const Offset(0, 6),
+            ),
+          ],
         ),
-      ),
-      child: Text(
-        label,
-        style: const TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
-          color: Colors.white,
+        child: Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 14,
+            vertical: 10,
+          ),
+          alignment: Alignment.center,
+          child: Text(
+            label,
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
+            ),
+          ),
         ),
       ),
     ),
