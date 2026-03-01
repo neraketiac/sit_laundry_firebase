@@ -4,6 +4,7 @@ import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedConstantsFin
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedVisibility.dart';
 import 'package:laundry_firebase/services/newservices/database_jobs.dart';
 import 'package:laundry_firebase/variables/newvariables/jobmodel_repository.dart';
+import 'package:laundry_firebase/variables/newvariables/variables.dart';
 
 Widget readDataJobsCompleted(
   Function setState,
@@ -22,15 +23,15 @@ Widget readDataJobsCompleted(
       }
 
       /// 🔥 Sync Firestore → original + sorted
+      if (originalJobsCompleted.length != snapshot.data!.length) {
+        originalJobsCompleted
+          ..clear()
+          ..addAll(snapshot.data!);
 
-      originalJobsCompleted
-        ..clear()
-        ..addAll(snapshot.data!);
-
-      sortedJobsCompleted
-        ..clear()
-        ..addAll(originalJobsCompleted);
-
+        sortedJobsCompleted
+          ..clear()
+          ..addAll(originalJobsCompleted);
+      }
       // sortJobs(sortedJobsCompleted);
 
       return Column(

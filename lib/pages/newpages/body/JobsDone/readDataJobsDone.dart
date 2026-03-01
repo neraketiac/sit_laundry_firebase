@@ -7,6 +7,7 @@ import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedConstantsFin
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedVisibility.dart';
 import 'package:laundry_firebase/services/newservices/database_jobs.dart';
 import 'package:laundry_firebase/variables/newvariables/jobmodel_repository.dart';
+import 'package:laundry_firebase/variables/newvariables/variables.dart';
 
 Widget readDataJobsDone(Function setState) {
   DatabaseJobsDone databaseJobsDone = DatabaseJobsDone();
@@ -22,17 +23,19 @@ Widget readDataJobsDone(Function setState) {
     });
   }
 
+  Future<void> sortClothesStillInHere(BuildContext context) async {
+    setState(() {
+      sortedJobsDone
+        ..clear()
+        ..addAll(sortedJobsDoneClothesHere);
+    });
+  }
+
   Future<void> sortNotice(BuildContext context) async {
     setState(() {
       sortedJobsDone
         ..clear()
-        ..addAll(
-          originalJobsDone.where(
-            (job) =>
-                job.unpaid &&
-                (job.isCustomerPickedUp || job.isDeliveredToCustomer),
-          ),
-        );
+        ..addAll(sortedJobsDoneClothesGone);
     });
   }
 
@@ -95,14 +98,37 @@ Widget readDataJobsDone(Function setState) {
       }
 
       /// 🔥 Sync Firestore → original + sorted
+      if (originalJobsDone.length != snapshot.data!.length) {
+        originalJobsDone
+          ..clear()
+          ..addAll(snapshot.data!);
 
-      originalJobsDone
-        ..clear()
-        ..addAll(snapshot.data!);
+        sortedJobsDone
+          ..clear()
+          ..addAll(originalJobsDone);
 
-      sortedJobsDone
-        ..clear()
-        ..addAll(originalJobsDone);
+        sortedJobsDoneClothesGone
+          ..clear()
+          ..addAll(
+            originalJobsDone.where(
+              (job) =>
+                  job.unpaid &&
+                  (job.isCustomerPickedUp || job.isDeliveredToCustomer),
+            ),
+          );
+
+        sortedJobsDoneClothesHere
+          ..clear()
+          ..addAll(
+            originalJobsDone.where(
+              (job) => !job.isCustomerPickedUp && !job.isDeliveredToCustomer,
+            ),
+          );
+
+        intJobsDoneDefault = originalJobsDone.length;
+        intJobsDoneClothesGone = sortedJobsDoneClothesGone.length;
+        intJobsDoneClothesHere = sortedJobsDoneClothesHere.length;
+      }
 
       //sortJobs(sortedJobsDone);
 
@@ -117,13 +143,48 @@ Widget readDataJobsDone(Function setState) {
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color.fromARGB(255, 22, 198, 84),
+                        padding: EdgeInsets.zero, // important for Stack layout
                       ),
                       onPressed: () async {
                         sortOriginal(context);
                       },
-                      child: Text(
-                        '📶',
-                        style: TextStyle(color: Colors.white),
+                      child: Stack(
+                        clipBehavior: Clip.none,
+                        alignment: Alignment.center,
+                        children: [
+                          // Main Icon (emoji)
+                          const Text(
+                            '📶',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 22,
+                            ),
+                          ),
+
+                          // Floating small text badge
+                          Positioned(
+                            top: -4,
+                            right: -5,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 5,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.red,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Text(
+                                '$intJobsDoneDefault',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -131,13 +192,97 @@ Widget readDataJobsDone(Function setState) {
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color.fromARGB(255, 22, 198, 84),
+                        padding: EdgeInsets.zero, // important for Stack layout
+                      ),
+                      onPressed: () async {
+                        sortClothesStillInHere(context);
+                      },
+                      child: Stack(
+                        clipBehavior: Clip.none,
+                        alignment: Alignment.center,
+                        children: [
+                          // Main Icon (emoji)
+                          const Text(
+                            '👕',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 22,
+                            ),
+                          ),
+
+                          // Floating small text badge
+                          Positioned(
+                            top: -4,
+                            right: -5,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 5,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.red,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Text(
+                                '$intJobsDoneClothesHere',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color.fromARGB(255, 22, 198, 84),
+                        padding: EdgeInsets.zero, // important for Stack layout
                       ),
                       onPressed: () async {
                         sortNotice(context);
                       },
-                      child: Text(
-                        '⚠️',
-                        style: TextStyle(color: Colors.white),
+                      child: Stack(
+                        clipBehavior: Clip.none,
+                        alignment: Alignment.center,
+                        children: [
+                          // Main Icon (emoji)
+                          const Text(
+                            '⚠️',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 22,
+                            ),
+                          ),
+
+                          // Floating small text badge
+                          Positioned(
+                            top: -4,
+                            right: -5,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 5,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.red,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Text(
+                                '$intJobsDoneClothesGone',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),

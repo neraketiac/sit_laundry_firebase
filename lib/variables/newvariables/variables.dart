@@ -5,6 +5,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:laundry_firebase/models/newmodels/gcashmodel.dart';
+import 'package:laundry_firebase/models/newmodels/jobmodel.dart';
 import 'package:laundry_firebase/models/oldmodels/customermodel.dart';
 import 'package:laundry_firebase/models/newmodels/employeemodel.dart';
 import 'package:laundry_firebase/models/oldmodels/employeesetupmodel.dart';
@@ -32,6 +33,22 @@ const int intSortByDateC = 1,
     intSortByDateD = 3,
     intFindCustomerNameId = 9;
 const int intSortUnpaidClothesGone = 4;
+
+//sorting
+//completed
+List<JobModel> originalJobsCompleted = [];
+List<JobModel> sortedJobsCompleted = [];
+int selectedIndexCompleted = intSortByDateC;
+//done
+List<JobModel> originalJobsDone = [];
+List<JobModel> sortedJobsDone = [];
+List<JobModel> sortedJobsDoneClothesHere = [];
+List<JobModel> sortedJobsDoneClothesGone = [];
+int selectedIndexDone = intSortByDateD;
+
+int intJobsDoneDefault = 0,
+    intJobsDoneClothesHere = 0,
+    intJobsDoneClothesGone = 0;
 
 int intSelectedSortCompleted = 1;
 int intSelectedSortDone = 3;

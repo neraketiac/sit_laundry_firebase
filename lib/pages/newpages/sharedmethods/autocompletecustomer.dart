@@ -232,10 +232,11 @@ class _AutoCompleteCustomerState extends State<AutoCompleteCustomer> {
   // ================= SELECTION =================
 
   void _onCustomerSelected(CustomerModel selected) {
-    autocompleteSelected = selected;
+    //autocompleteSelected = selected;
 
     SuppliesHistRepository.instance.setCustomerName(selected.name);
-
+    debugPrint(
+        'selected.name=${selected.name} selected.customerId=${selected.customerId}');
     widget.jobRepo.selectedCustomerNameVar.text = selected.name;
     widget.jobRepo.selectedCustomerId = selected.customerId;
 
