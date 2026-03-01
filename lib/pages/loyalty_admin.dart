@@ -1,11 +1,8 @@
 import 'dart:math';
-import 'dart:ui';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:laundry_firebase/models/newmodels/loyaltymodel.dart';
 import 'package:laundry_firebase/services/newservices/database_loyalty.dart';
-import 'package:laundry_firebase/variables/newvariables/variables.dart';
 
 class LoyaltyAdmin extends StatefulWidget {
   const LoyaltyAdmin({super.key});
@@ -15,566 +12,416 @@ class LoyaltyAdmin extends StatefulWidget {
 }
 
 class _LoyaltyAdminState extends State<LoyaltyAdmin> {
-  String docIdMax = "0";
-  String streamName = "0";
-  int randomNum = 0;
-  TextEditingController docIdFbController = TextEditingController();
-  TextEditingController nameController = TextEditingController();
-  TextEditingController contactController = TextEditingController();
-  TextEditingController addressController = TextEditingController();
-  TextEditingController remarksController = TextEditingController();
-  TextEditingController countController = TextEditingController();
-  final ScrollController scrollController = ScrollController();
-  int nextId = 1000; // default if empty collection
+  // ================= VARIABLES =================
+
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  final TextEditingController _docIdController = TextEditingController();
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _contactController = TextEditingController();
+  final TextEditingController _addressController = TextEditingController();
+  final TextEditingController _remarksController = TextEditingController();
+
+  int _nextId = 1000;
+
+  // ================= LIFECYCLE =================
+
+  @override
+  void dispose() {
+    _docIdController.dispose();
+    _nameController.dispose();
+    _contactController.dispose();
+    _addressController.dispose();
+    _remarksController.dispose();
+    super.dispose();
+  }
+
+  // ================= BUILD =================
 
   @override
   Widget build(BuildContext context) {
-    getMaxId();
     return Scaffold(
-      backgroundColor: Colors.blueAccent,
+      extendBodyBehindAppBar: true,
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
-        title: const Column(
-          children: [Text("Wash Ko Lang"), Text("Loyalty Admin")],
-        ),
-        toolbarHeight: 60,
-      ),
-      body: ScrollConfiguration(
-        behavior: ScrollConfiguration.of(context).copyWith(dragDevices: {
-          PointerDeviceKind.touch,
-          PointerDeviceKind.mouse,
-        }),
-        child: ListView.builder(itemBuilder: (context, index) {
-          return _readData("loyalty");
-        }),
-      ),
-
-      /*
-      Column(
-        children: [
-          Container(
-            width: 100,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                SizedBox(
-                  height: 20,
-                ),
-              ],
-            ),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        centerTitle: true,
+        title: const Text(
+          "LOYALTY ADMIN",
+          style: TextStyle(
+            letterSpacing: 2,
+            fontWeight: FontWeight.w600,
           ),
-          Expanded(child: ListView.builder(itemBuilder: (context, index) {
-            return _readData("loyalty");
-          })),
+        ),
+      ),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xFF0F2027),
+              Color(0xFF203A43),
+              Color(0xFF2C5364),
+            ],
+          ),
+        ),
+        child: SafeArea(
+          child: _buildLoyaltyStream(),
+        ),
+      ),
+      floatingActionButton: _buildFloatingButton(),
+    );
+  }
+
+  // ================= STREAM =================
+
+  Widget _buildLoyaltyStream() {
+    return StreamBuilder<QuerySnapshot>(
+      stream:
+          _firestore.collection('loyalty').orderBy('cardNumber').snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return const Center(
+              child: Text("Something went wrong",
+                  style: TextStyle(color: Colors.white)));
+        }
+
+        if (!snapshot.hasData) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        final docs = snapshot.data!.docs;
+
+        if (docs.isEmpty) {
+          return const Center(
+              child: Text("No loyalty members yet",
+                  style: TextStyle(color: Colors.white)));
+        }
+
+        return ListView(
+          padding: const EdgeInsets.all(20),
+          children: docs.map((doc) {
+            final data = doc.data() as Map<String, dynamic>;
+
+            return _buildCustomerCard(
+              docId: doc.id,
+              name: data['Name'] ?? '',
+              contact: data['Contact'] ?? '',
+              address: data['Address'] ?? '',
+              remarks: data['C5_Remarks'] ?? '',
+              count: data['Count'] ?? 0,
+            );
+          }).toList(),
+        );
+      },
+    );
+  }
+
+  // ================= FLOATING BUTTON =================
+
+  Widget _buildFloatingButton() {
+    return Container(
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.cyanAccent.withOpacity(0.6),
+            blurRadius: 20,
+            spreadRadius: 2,
+          ),
         ],
       ),
-      */
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          docIdFbController.text = nextId.toString();
-          docIdMax = nextId.toString();
-
-          openNewCustomerBox();
-        },
-        child: const Icon(Icons.add_circle_outline_rounded),
+      child: FloatingActionButton(
+        backgroundColor: Colors.black,
+        onPressed: _openCreateDialog,
+        child: const Icon(Icons.add, color: Colors.cyanAccent),
       ),
     );
   }
 
-  Future<void> migrateLoyaltyCollection() async {
-    final collection = FirebaseFirestore.instance.collection('loyalty');
+  // ================= CUSTOMER CARD =================
 
-    final snapshot = await collection.get();
-
-    for (var doc in snapshot.docs) {
-      int? docIdAsInt = int.tryParse(doc.id);
-
-      if (docIdAsInt != null && !doc.data().containsKey('cardNumber')) {
-        await collection.doc(doc.id).update({
-          'cardNumber': docIdAsInt,
-          'logDate': Timestamp.now(),
-        });
-      }
-    }
-
-    print("Safe loyalty migration completed");
+  Widget _buildCustomerCard({
+    required String docId,
+    required String name,
+    required String contact,
+    required String address,
+    required String remarks,
+    required int count,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 20),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            gradient: LinearGradient(
+              colors: [
+                Colors.white.withOpacity(0.08),
+                Colors.white.withOpacity(0.02),
+              ],
+            ),
+            border: Border.all(
+              color: Colors.white.withOpacity(0.1),
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildHeader(name, docId),
+                const SizedBox(height: 12),
+                _buildInfoRow(Icons.phone, contact),
+                _buildInfoRow(Icons.location_on, address),
+                const SizedBox(height: 20),
+                _buildStarButtons(
+                    docId, name, contact, address, remarks, count),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
-  Future<void> getMaxId() async {
-    final snapshot = await FirebaseFirestore.instance
+  Widget _buildHeader(String name, String docId) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          name,
+          style: const TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+            letterSpacing: 1,
+          ),
+        ),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: Colors.cyanAccent.withOpacity(0.15),
+            borderRadius: BorderRadius.circular(30),
+          ),
+          child: Text(
+            "#$docId",
+            style: const TextStyle(
+              color: Colors.cyanAccent,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        )
+      ],
+    );
+  }
+
+  Widget _buildInfoRow(IconData icon, String text) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          Icon(icon, size: 16, color: Colors.white70),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              text,
+              style: const TextStyle(color: Colors.white70),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ================= STARS =================
+
+  Widget _buildStarButtons(
+    String docId,
+    String name,
+    String contact,
+    String address,
+    String remarks,
+    int count,
+  ) {
+    return Wrap(
+      spacing: 10,
+      runSpacing: 10,
+      children: List.generate(10, (index) {
+        final starNumber = index + 1;
+        final isActive = count >= starNumber;
+
+        return GestureDetector(
+          onTap: () => _confirmUpdate(
+              docId, name, contact, address, remarks, starNumber),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: isActive
+                  ? Colors.cyanAccent.withOpacity(0.2)
+                  : Colors.white.withOpacity(0.05),
+              boxShadow: isActive
+                  ? [
+                      BoxShadow(
+                        color: Colors.cyanAccent.withOpacity(0.6),
+                        blurRadius: 15,
+                        spreadRadius: 2,
+                      ),
+                    ]
+                  : [],
+            ),
+            child: Icon(
+              isActive ? Icons.star : Icons.star_border,
+              color: isActive ? Colors.cyanAccent : Colors.white38,
+            ),
+          ),
+        );
+      }),
+    );
+  }
+
+  // ================= CREATE =================
+
+  Future<void> _openCreateDialog() async {
+    await _generateNextId();
+    _docIdController.text = _nextId.toString();
+
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: const Color(0xFF1E2A38),
+        title: const Text("Create Loyalty Member",
+            style: TextStyle(color: Colors.white)),
+        content: SingleChildScrollView(
+          child: Column(
+            children: [
+              Text("Card #: $_nextId",
+                  style: const TextStyle(color: Colors.cyanAccent)),
+              const SizedBox(height: 10),
+              _buildTextField(_nameController, "Name"),
+              _buildTextField(_contactController, "Contact"),
+              _buildTextField(_addressController, "Address"),
+              _buildTextField(_remarksController, "Remarks"),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child:
+                const Text("Cancel", style: TextStyle(color: Colors.white70)),
+          ),
+          TextButton(
+            onPressed: () async {
+              await _createCustomer();
+              Navigator.pop(context);
+            },
+            child:
+                const Text("Save", style: TextStyle(color: Colors.cyanAccent)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTextField(TextEditingController controller, String label) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: TextField(
+        controller: controller,
+        style: const TextStyle(color: Colors.white),
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: const TextStyle(color: Colors.white70),
+          enabledBorder: const UnderlineInputBorder(
+            borderSide: BorderSide(color: Colors.white30),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _generateNextId() async {
+    final snapshot = await _firestore
         .collection('loyalty')
         .orderBy('cardNumber', descending: true)
         .limit(1)
         .get();
 
-    final maxNumber =
-        snapshot.docs.isNotEmpty ? snapshot.docs.first.get('cardNumber') : 1000;
+    final maxNumber = snapshot.docs.isNotEmpty
+        ? snapshot.docs.first['cardNumber'] as int
+        : 1000;
 
-    nextId = maxNumber + (Random().nextInt(90) + 10);
+    _nextId = maxNumber + (Random().nextInt(90) + 10);
   }
 
-  void openNewCustomerBox() {
+  Future<void> _createCustomer() async {
+    final id = _docIdController.text;
+
+    DatabaseLoyalty().addCustomerWithId(
+      LoyaltyModel(
+        name: _nameController.text.trim(),
+        contact: _contactController.text.trim(),
+        address: _addressController.text.trim(),
+        remarks: _remarksController.text.trim(),
+        count: 0,
+        cardNumber: int.tryParse(id) ?? 0,
+        logDate: Timestamp.now(),
+      ),
+      id,
+    );
+
+    _nameController.clear();
+    _contactController.clear();
+    _addressController.clear();
+    _remarksController.clear();
+  }
+
+  // ================= UPDATE =================
+
+  void _confirmUpdate(
+    String docId,
+    String name,
+    String contact,
+    String address,
+    String remarks,
+    int count,
+  ) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("Create New"),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              enabled: false,
-              controller: docIdFbController,
-              decoration: InputDecoration(
-                hintText: 'Card Number$docIdMax',
-              ),
-            ),
-            TextField(
-              controller: nameController,
-              decoration: const InputDecoration(hintText: 'Name'),
-            ),
-            TextField(
-              controller: contactController,
-              decoration: const InputDecoration(hintText: 'Contact'),
-            ),
-            TextField(
-              controller: addressController,
-              decoration: const InputDecoration(hintText: 'Address'),
-            ),
-            TextField(
-              controller: remarksController,
-              decoration: const InputDecoration(hintText: 'C5_Remarks'),
-            ),
-          ],
+      builder: (_) => AlertDialog(
+        backgroundColor: const Color(0xFF1E2A38),
+        title:
+            const Text("Update Stars", style: TextStyle(color: Colors.white)),
+        content: Text(
+          "Update $name to $count stars?",
+          style: const TextStyle(color: Colors.white70),
         ),
         actions: [
-          //cancel button
-          _cancelButton(),
-
-          //save button
-          _createNewRecord(),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child:
+                const Text("Cancel", style: TextStyle(color: Colors.white70)),
+          ),
+          TextButton(
+            onPressed: () async {
+              await _updateStars(docId, count);
+              Navigator.pop(context);
+            },
+            child: const Text("Confirm",
+                style: TextStyle(color: Colors.cyanAccent)),
+          ),
         ],
       ),
     );
   }
 
-  Widget _cancelButton() {
-    return MaterialButton(
-        onPressed: () {
-          //pop box
-          Navigator.pop(context);
-        },
-        child: const Text("Cancel"));
-  }
-
-  Widget _createNewRecord() {
-    return MaterialButton(
-      onPressed: () async {
-        //pop box
-        Navigator.pop(context);
-        //run firebase add
-        await _addDataJson(docIdFbController.text);
-        fetchUsers();
-      },
-      child: const Text("Save"),
-    );
-  }
-
-  void toggleButtonIcon() {}
-
-  Widget _readData(String s) {
-    //read
-    return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance.collection(s).limit(10).snapshots(),
-      builder: (context, snapshot) {
-        if (snapshot.hasError) {
-          return const Text('Something went wrong');
-        }
-
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Text("Loading");
-        }
-        List<Row> listWidgets = [];
-
-        if (snapshot.hasData) {
-          //body
-          final buffRecords = snapshot.data?.docs.toList();
-          int buffCounter = 0;
-
-          for (var buffRecord in buffRecords!) {
-            final String docid =
-                snapshot.data!.docs[buffCounter].reference.id.toString();
-            if (int.parse(docIdMax) < int.parse(docid)) {
-              docIdMax = docid;
-            }
-
-            buffCounter += 1;
-
-            int loyaltyCount = buffRecord['Count'] as int; //mod 10
-
-            final listWidget = Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Column(
-                  children: [
-                    const SizedBox(
-                      width: 500,
-                      child: Divider(
-                        height: 20,
-                        color: Colors.black,
-                      ),
-                    ),
-                    Row(
-                      children: [
-                        const Text("Name:"),
-                        Text(buffRecord["Name"],
-                            style:
-                                const TextStyle(fontWeight: FontWeight.bold)),
-                        const SizedBox(
-                          width: 20,
-                        ),
-                        const Text("Card Id:"),
-                        Text(docid,
-                            style:
-                                const TextStyle(fontWeight: FontWeight.bold)),
-                      ],
-                    ),
-                    Row(
-                      children: [
-                        const Text("Contact:"),
-                        Text(buffRecord["Contact"],
-                            style:
-                                const TextStyle(fontWeight: FontWeight.bold)),
-                        const SizedBox(
-                          width: 20,
-                        ),
-                        const Text("Address:"),
-                        Text(buffRecord["Address"],
-                            style:
-                                const TextStyle(fontWeight: FontWeight.bold)),
-                      ],
-                    ),
-                    Row(
-                      children: [
-                        ElevatedButton.icon(
-                          onPressed: () {
-                            showAlertDialog(
-                                context,
-                                docid,
-                                buffRecord['Name'],
-                                buffRecord['Contact'],
-                                buffRecord['Address'],
-                                buffRecord['C5_Remarks'],
-                                1);
-                          },
-                          icon: Icon((loyaltyCount) >= 1
-                              ? Icons.star_border_purple500_outlined
-                              : Icons.circle_outlined),
-                          label: const Text("1"),
-                        ),
-                        ElevatedButton.icon(
-                          onPressed: () {
-                            showAlertDialog(
-                                context,
-                                docid,
-                                buffRecord['Name'],
-                                buffRecord['Contact'],
-                                buffRecord['Address'],
-                                buffRecord['C5_Remarks'],
-                                2);
-                          },
-                          icon: Icon((loyaltyCount) >= 2
-                              ? Icons.star_border_purple500_outlined
-                              : Icons.circle_outlined),
-                          label: const Text("2"),
-                        ),
-                        ElevatedButton.icon(
-                          onPressed: () {
-                            showAlertDialog(
-                                context,
-                                docid,
-                                buffRecord['Name'],
-                                buffRecord['Contact'],
-                                buffRecord['Address'],
-                                buffRecord['C5_Remarks'],
-                                3);
-                          },
-                          icon: Icon((loyaltyCount) >= 3
-                              ? Icons.star_border_purple500_outlined
-                              : Icons.circle_outlined),
-                          label: const Text("3"),
-                        ),
-                        ElevatedButton.icon(
-                          onPressed: () {
-                            showAlertDialog(
-                                context,
-                                docid,
-                                buffRecord['Name'],
-                                buffRecord['Contact'],
-                                buffRecord['Address'],
-                                buffRecord['C5_Remarks'],
-                                4);
-                          },
-                          icon: Icon((loyaltyCount) >= 4
-                              ? Icons.star_border_purple500_outlined
-                              : Icons.circle_outlined),
-                          label: const Text("4"),
-                        ),
-                      ],
-                    ),
-                    Row(
-                      children: [
-                        ElevatedButton.icon(
-                          onPressed: () {
-                            showAlertDialog(
-                                context,
-                                docid,
-                                buffRecord['Name'],
-                                buffRecord['Contact'],
-                                buffRecord['Address'],
-                                buffRecord['C5_Remarks'],
-                                5);
-                          },
-                          icon: Icon((loyaltyCount) >= 5
-                              ? Icons.star_border_purple500_outlined
-                              : Icons.circle_outlined),
-                          label: const Text("5"),
-                        ),
-                        ElevatedButton.icon(
-                          onPressed: () {
-                            showAlertDialog(
-                                context,
-                                docid,
-                                buffRecord['Name'],
-                                buffRecord['Contact'],
-                                buffRecord['Address'],
-                                buffRecord['C5_Remarks'],
-                                6);
-                          },
-                          icon: Icon((loyaltyCount) >= 6
-                              ? Icons.star_border_purple500_outlined
-                              : Icons.circle_outlined),
-                          label: const Text("6"),
-                        ),
-                        ElevatedButton.icon(
-                          onPressed: () {
-                            showAlertDialog(
-                                context,
-                                docid,
-                                buffRecord['Name'],
-                                buffRecord['Contact'],
-                                buffRecord['Address'],
-                                buffRecord['C5_Remarks'],
-                                7);
-                          },
-                          icon: Icon((loyaltyCount) >= 7
-                              ? Icons.star_border_purple500_outlined
-                              : Icons.circle_outlined),
-                          label: const Text("7"),
-                        ),
-                        ElevatedButton.icon(
-                          onPressed: () {
-                            showAlertDialog(
-                                context,
-                                docid,
-                                buffRecord['Name'],
-                                buffRecord['Contact'],
-                                buffRecord['Address'],
-                                buffRecord['C5_Remarks'],
-                                8);
-                          },
-                          icon: Icon((loyaltyCount) >= 8
-                              ? Icons.star_border_purple500_outlined
-                              : Icons.circle_outlined),
-                          label: const Text("8"),
-                        ),
-                      ],
-                    ),
-                    Row(
-                      children: [
-                        ElevatedButton.icon(
-                          onPressed: () {
-                            showAlertDialog(
-                                context,
-                                docid,
-                                buffRecord['Name'],
-                                buffRecord['Contact'],
-                                buffRecord['Address'],
-                                buffRecord['C5_Remarks'],
-                                9);
-                          },
-                          icon: Icon((loyaltyCount) >= 9
-                              ? Icons.star_border_purple500_outlined
-                              : Icons.circle_outlined),
-                          label: const Text("9"),
-                        ),
-                        ElevatedButton.icon(
-                          onPressed: () {
-                            showAlertDialog(
-                                context,
-                                docid,
-                                buffRecord['Name'],
-                                buffRecord['Contact'],
-                                buffRecord['Address'],
-                                buffRecord['C5_Remarks'],
-                                10);
-                          },
-                          icon: Icon((loyaltyCount) >= 10
-                              ? Icons.star_border_purple500_outlined
-                              : Icons.circle_outlined),
-                          label: const Text("10"),
-                        ),
-                        ElevatedButton(
-                          onPressed: () {},
-                          child: const Wrap(
-                            children: <Widget>[
-                              Icon(
-                                Icons.star_border_purple500_outlined,
-                              ),
-                              SizedBox(
-                                width: 5,
-                              ),
-                              Text("Bonus!", style: TextStyle(fontSize: 15)),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ],
-            );
-            listWidgets.add(listWidget);
-          }
-        }
-
-        return
-            //Expanded(
-            //child:
-            ListView(
-          shrinkWrap: true,
-          children: listWidgets,
-        );
-        //);
-      },
-    );
-  }
-
-  void _addData(String docIdFb) {
-    CollectionReference collRef =
-        FirebaseFirestore.instance.collection('loyalty');
-    collRef
-        .doc(docIdFb)
-        .set({
-          'Name': nameController.text,
-          'Contact': contactController.text,
-          'Address': addressController.text,
-          'C5_Remarks': remarksController.text,
-          'cardNumber': nextId,
-          'logDate': Timestamp.now(),
-          //'cotime': DateTime.now(),
-        })
-        .then((value) => {
-              docIdFbController.clear(),
-              nameController.clear(),
-              contactController.clear(),
-              addressController.clear(),
-              remarksController.clear(),
-              getMaxId(),
-              showMessage(context, "New Customer Added"),
-            })
-        // ignore: invalid_return_type_for_catch_error
-        .catchError((error) => showMessage(context, "Failed : $error"));
-  }
-
-  Future<void> _addDataJson(String docIdFb) async {
-    DatabaseLoyalty databaseLoyalty = DatabaseLoyalty();
-    databaseLoyalty.addCustomerWithId(
-        LoyaltyModel(
-          name: nameController.text,
-          contact: contactController.text,
-          address: addressController.text,
-          remarks: remarksController.text,
-          count: 0,
-        ),
-        docIdFb);
-    docIdFbController.clear();
-    nameController.clear();
-    contactController.clear();
-    addressController.clear();
-    remarksController.clear();
-  }
-
-  void _updateData(String docIdFb, String name, String contact, String address,
-      String remarks, int count) {
-    CollectionReference collRef =
-        FirebaseFirestore.instance.collection('loyalty');
-    collRef
-        .doc(docIdFb)
-        .set({
-          'Name': name,
-          'Contact': contact,
-          'Address': address,
-          'C5_Remarks': remarks,
-          'Count': count
-          //'cotime': DateTime.now(),
-        })
-        .then((value) => {
-              showMessage(
-                  context, "Customer $name stars updated to $count stars."),
-            })
-        // ignore: invalid_return_type_for_catch_error
-        .catchError((error) => showMessage(context, "Failed : $error"));
-  }
-
-//open message
-  void showMessage(BuildContext context, String sMsg) {
-    showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-              content: Text(sMsg),
-              actions: [
-                MaterialButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text("Ok"),
-                ),
-              ],
-            ));
-  }
-
-  showAlertDialog(BuildContext context, String docIdFb, String name,
-      String contact, String address, String remarks, int count) {
-    // set up the buttons
-    Widget cancelButton = TextButton(
-      child: const Text("Cancel"),
-      onPressed: () {
-        Navigator.of(context).pop();
-      },
-    );
-    Widget continueButton = TextButton(
-      child: const Text("Continue"),
-      onPressed: () {
-        setState(() {
-          _updateData(docIdFb, name, contact, address, remarks, count);
-        });
-        Navigator.of(context).pop();
-      },
-    );
-
-    // set up the AlertDialog
-    AlertDialog alert = AlertDialog(
-      title: const Text("Loyalty Card Update"),
-      content: Text("Would you like to update the stars of $name to $count?"),
-      actions: [
-        cancelButton,
-        continueButton,
-      ],
-    );
-
-    // show the dialog
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return alert;
-      },
-    );
+  Future<void> _updateStars(String docId, int count) async {
+    await _firestore.collection('loyalty').doc(docId).update({'Count': count});
   }
 }

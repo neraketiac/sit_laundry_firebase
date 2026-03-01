@@ -1,52 +1,40 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-
-class LoyaltyModel {
+class LoyaltyModelOld {
   final String name;
   final String contact;
   final String address;
   final String remarks;
   final int count;
-  final int cardNumber;
-  final Timestamp logDate;
 
-  LoyaltyModel({
+  LoyaltyModelOld({
     required this.name,
     required this.contact,
     required this.address,
     required this.remarks,
     required this.count,
-    required this.cardNumber,
-    required this.logDate,
   });
 
-  LoyaltyModel.fromJson(Map<String, dynamic> json)
+  LoyaltyModelOld.fromJson(Map<String, dynamic> json)
       : this(
           name: json['Name']! as String,
           contact: json['Contact']! as String,
           address: json['Address']! as String,
-          remarks: json['LogBy']! as String,
+          remarks: json['C5_Remarks']! as String,
           count: json['Count']! as int,
-          cardNumber: json['cardNumber']! as int,
-          logDate: json['logDate']! as Timestamp,
         );
 
-  LoyaltyModel copyWith({
+  LoyaltyModelOld coyWith({
     String? name,
     String? contact,
     String? address,
     String? remarks,
     int? count,
-    int? cardNumber,
-    Timestamp? logDate,
   }) {
-    return LoyaltyModel(
+    return LoyaltyModelOld(
       name: name ?? this.name,
       contact: contact ?? this.contact,
       address: address ?? this.address,
       remarks: remarks ?? this.remarks,
       count: count ?? this.count,
-      cardNumber: cardNumber ?? this.cardNumber,
-      logDate: logDate ?? this.logDate,
     );
   }
 
@@ -56,7 +44,23 @@ class LoyaltyModel {
         'Address': address,
         'C5_Remarks': remarks,
         'Count': count,
-        'cardNumber': cardNumber,
-        'logDate': logDate,
       };
+
+  String toStringLoyaltyModel() {
+    return '$name, $address';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (other.runtimeType != runtimeType) {
+      return false;
+    }
+    return other is LoyaltyModelOld &&
+        other.name == name &&
+        other.address == address &&
+        other.remarks == remarks;
+  }
+
+  @override
+  int get hashCode => Object.hash(address, name);
 }
