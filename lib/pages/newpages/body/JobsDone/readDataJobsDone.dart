@@ -4,13 +4,37 @@ import 'package:laundry_firebase/pages/newpages/body/JobsDone/showDeliverOrCusto
 import 'package:laundry_firebase/pages/newpages/body/JobsDone/showJobOnQueueNoEdit.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/autocompletecustomer.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedConstantsFinal.dart';
-import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedMethods.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedVisibility.dart';
 import 'package:laundry_firebase/services/newservices/database_jobs.dart';
 import 'package:laundry_firebase/variables/newvariables/jobmodel_repository.dart';
 
 Widget readDataJobsDone(Function setState) {
   DatabaseJobsDone databaseJobsDone = DatabaseJobsDone();
+
+  Future<void> sortOriginal(BuildContext context) async {
+    setState(() {
+      sortedJobsDone
+        ..clear()
+        ..addAll(originalJobsDone);
+      sortedJobsCompleted
+        ..clear()
+        ..addAll(originalJobsCompleted);
+    });
+  }
+
+  Future<void> sortNotice(BuildContext context) async {
+    setState(() {
+      sortedJobsDone
+        ..clear()
+        ..addAll(
+          originalJobsDone.where(
+            (job) =>
+                job.unpaid &&
+                (job.isCustomerPickedUp || job.isDeliveredToCustomer),
+          ),
+        );
+    });
+  }
 
   Future<void> showSearchDialog(
     BuildContext context,
@@ -59,11 +83,6 @@ Widget readDataJobsDone(Function setState) {
     );
   }
 
-  Future<void> cycleSort(BuildContext context) async {
-    // await showSearchDialog(context, setState, sortedJobsDone, originalJobsDone);
-    //await showSearchDialog(context);
-  }
-
   return StreamBuilder<List<JobModel>>(
     stream: databaseJobsDone.streamAll(),
     builder: (context, snapshot) {
@@ -92,23 +111,54 @@ Widget readDataJobsDone(Function setState) {
         builder: (context, setState) {
           return Column(
             children: [
-              /// 🔥 STRETCHED BUTTON ON TOP
-              SizedBox(
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color.fromARGB(255, 22, 198, 84),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color.fromARGB(255, 22, 198, 84),
+                      ),
+                      onPressed: () async {
+                        sortOriginal(context);
+                      },
+                      child: Text(
+                        '📶',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
                   ),
-                  onPressed: () async {
-                    // await cycleSort(context);
-                    await showSearchDialog(context);
-                  },
-                  child: Text(
-                    '🔍',
-                    style: TextStyle(color: Colors.white),
+                  SizedBox(
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color.fromARGB(255, 22, 198, 84),
+                      ),
+                      onPressed: () async {
+                        sortNotice(context);
+                      },
+                      child: Text(
+                        '⚠️',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
                   ),
-                ),
+                  SizedBox(
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color.fromARGB(255, 22, 198, 84),
+                      ),
+                      onPressed: () async {
+                        // await cycleSort(context);
+                        await showSearchDialog(context);
+                      },
+                      child: Text(
+                        '🔍',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 8),
               ReorderableListView(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
