@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:laundry_firebase/models/newmodels/jobmodel.dart';
 import 'package:laundry_firebase/pages/newpages/body/JobsDone/showDeliverOrCustomerPickup.dart';
-import 'package:laundry_firebase/pages/newpages/body/JobsDone/showJobOnQueueNoEdit.dart';
+import 'package:laundry_firebase/pages/newpages/body/JobsDone/showReceipt.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/autocompletecustomer.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedConstantsFinal.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedVisibility.dart';
@@ -31,11 +31,19 @@ Widget readDataJobsDone(Function setState) {
     });
   }
 
-  Future<void> sortNotice(BuildContext context) async {
+  Future<void> sortNoticeCash(BuildContext context) async {
     setState(() {
       sortedJobsDone
         ..clear()
-        ..addAll(sortedJobsDoneClothesGone);
+        ..addAll(sortedJobsDoneClothesGoneCash);
+    });
+  }
+
+  Future<void> sortNoticeGCash(BuildContext context) async {
+    setState(() {
+      sortedJobsDone
+        ..clear()
+        ..addAll(sortedJobsDoneClothesGoneGCash);
     });
   }
 
@@ -107,12 +115,24 @@ Widget readDataJobsDone(Function setState) {
           ..clear()
           ..addAll(originalJobsDone);
 
-        sortedJobsDoneClothesGone
+        sortedJobsDoneClothesGoneCash
           ..clear()
           ..addAll(
             originalJobsDone.where(
               (job) =>
                   job.unpaid &&
+                  !job.paidGCash &&
+                  (job.isCustomerPickedUp || job.isDeliveredToCustomer),
+            ),
+          );
+
+        sortedJobsDoneClothesGoneGCash
+          ..clear()
+          ..addAll(
+            originalJobsDone.where(
+              (job) =>
+                  job.unpaid &&
+                  job.paidGCash &&
                   (job.isCustomerPickedUp || job.isDeliveredToCustomer),
             ),
           );
@@ -126,8 +146,9 @@ Widget readDataJobsDone(Function setState) {
           );
 
         intJobsDoneDefault = originalJobsDone.length;
-        intJobsDoneClothesGone = sortedJobsDoneClothesGone.length;
         intJobsDoneClothesHere = sortedJobsDoneClothesHere.length;
+        intJobsDoneClothesGoneCash = sortedJobsDoneClothesGoneCash.length;
+        intJobsDoneClothesGoneGCash = sortedJobsDoneClothesGoneGCash.length;
       }
 
       //sortJobs(sortedJobsDone);
@@ -244,7 +265,56 @@ Widget readDataJobsDone(Function setState) {
                         padding: EdgeInsets.zero, // important for Stack layout
                       ),
                       onPressed: () async {
-                        sortNotice(context);
+                        sortNoticeGCash(context);
+                      },
+                      child: Stack(
+                        clipBehavior: Clip.none,
+                        alignment: Alignment.center,
+                        children: [
+                          // Main Icon (emoji)
+                          const Text(
+                            '💳',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 22,
+                            ),
+                          ),
+
+                          // Floating small text badge
+                          Positioned(
+                            top: -4,
+                            right: -5,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 5,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.red,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Text(
+                                '$intJobsDoneClothesGoneGCash',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color.fromARGB(255, 22, 198, 84),
+                        padding: EdgeInsets.zero, // important for Stack layout
+                      ),
+                      onPressed: () async {
+                        sortNoticeCash(context);
                       },
                       child: Stack(
                         clipBehavior: Clip.none,
@@ -273,7 +343,7 @@ Widget readDataJobsDone(Function setState) {
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: Text(
-                                '$intJobsDoneClothesGone',
+                                '$intJobsDoneClothesGoneCash',
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 9,
@@ -336,7 +406,7 @@ Widget readDataJobsDone(Function setState) {
                           setState(() {
                             selectedIndexDone = index;
                           });
-                          showJobOnQueueNoEdit(context, jobRepo);
+                          showReceipt(context, jobRepo);
                         },
                         child: AnimatedContainer(
                           duration: const Duration(milliseconds: 250),

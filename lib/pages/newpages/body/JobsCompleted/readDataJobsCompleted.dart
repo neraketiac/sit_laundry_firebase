@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:laundry_firebase/models/newmodels/jobmodel.dart';
+import 'package:laundry_firebase/pages/newpages/body/JobsDone/showReceipt.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedConstantsFinal.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedVisibility.dart';
 import 'package:laundry_firebase/services/newservices/database_jobs.dart';
@@ -69,6 +70,7 @@ Widget readDataJobsCompleted(
                       setState(() {
                         selectedIndexCompleted = index;
                       });
+                      showReceipt(context, jobRepo);
                     },
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 250),

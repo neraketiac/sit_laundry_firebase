@@ -118,6 +118,7 @@ class JobModel {
   /// 🔴 Disposal
   bool forDisposal;
   bool disposed;
+  bool isSyncToDB2; //tels if sync to db2
 
   JobModel({
     required this.docId,
@@ -166,6 +167,7 @@ class JobModel {
     required this.allStatus,
     required this.forDisposal,
     required this.disposed,
+    required this.isSyncToDB2,
   });
 
   factory JobModel.makeEmpty() {
@@ -216,6 +218,7 @@ class JobModel {
       allStatus: 0,
       forDisposal: false,
       disposed: false,
+      isSyncToDB2: false,
     );
   }
 
@@ -267,6 +270,7 @@ class JobModel {
     double? allStatus,
     bool? forDisposal,
     bool? disposed,
+    bool? isSyncToDB2,
   }) {
     return JobModel(
       docId: docId ?? this.docId,
@@ -316,6 +320,7 @@ class JobModel {
       allStatus: allStatus ?? this.allStatus,
       forDisposal: forDisposal ?? this.forDisposal,
       disposed: disposed ?? this.disposed,
+      isSyncToDB2: isSyncToDB2 ?? this.isSyncToDB2,
     );
   }
 
@@ -369,6 +374,7 @@ class JobModel {
         allStatus: json['O01_AllStatus'],
         forDisposal: json['R01_ForDisposal'],
         disposed: json['R02_Disposed'],
+        isSyncToDB2: json['Z00_IsSyncToDB2'] ?? false,
       );
 
   /// 🟧 TO FIRESTORE
@@ -419,5 +425,6 @@ class JobModel {
         'O01_AllStatus': allStatus,
         'R01_ForDisposal': forDisposal,
         'R02_Disposed': disposed,
+        'Z00_IsSyncToDB2': isSyncToDB2,
       };
 }

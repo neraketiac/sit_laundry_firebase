@@ -1,17 +1,30 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:laundry_firebase/pages/enterloyaltycode.dart';
 import 'firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
 
+late FirebaseApp secondaryApp;
+late FirebaseFirestore secondaryFirestore;
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // Initialize Firebase
 
+  // 🔹 MAIN project
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  print("Firebase initialized properly");
+  // 🔹 SECONDARY project (web only in your case)
+  secondaryApp = await Firebase.initializeApp(
+    name: 'secondary',
+    options: DefaultFirebaseOptions.secondaryWeb,
+  );
+
+  secondaryFirestore = FirebaseFirestore.instanceFor(app: secondaryApp);
+
+  print("Both Firebase projects initialized properly");
 
   runApp(const MyApp());
 }
@@ -27,6 +40,17 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
+
+    testSecondary();
+  }
+
+  Future<void> testSecondary() async {
+    await secondaryFirestore.collection('test').add({
+      'message': 'Hello secondary',
+      'timestamp': DateTime.now(),
+    });
+
+    debugPrint("Secondary write success");
   }
 
   @override

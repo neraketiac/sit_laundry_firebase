@@ -2505,7 +2505,7 @@ InkWell visPaidUnpaidArea(
   final Color statusColor = isPaid ? paidColor : unpaidColor;
 
   final String statusText = jobRepo.selectedUnpaid
-      ? "Unpaid"
+      ? (jobRepo.selectedPaidGCash ? "GCash Pending" : "Unpaid")
       : jobRepo.selectedPaidCash
           ? "Paid • Cash"
           : jobRepo.selectedPaidGCash

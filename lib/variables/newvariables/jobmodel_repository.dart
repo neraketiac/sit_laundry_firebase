@@ -18,52 +18,54 @@ class JobModelRepository {
 
   Future<void> reset() async {
     jobModel = JobModel(
-        docId: '',
-        jobId: 0,
-        dateQ: timestamp1900,
-        needOn: timestamp1900,
-        dateO: timestamp1900,
-        paidD: timestamp1900,
-        dateD: timestamp1900,
-        dateC: timestamp1900,
-        customerPickupDate: timestamp1900,
-        riderDeliveryDate: timestamp1900,
-        createdBy: '',
-        currentEmpId: '',
-        customerId: 0,
-        customerName: '',
-        forSorting: false,
-        riderPickup: false,
-        isCustomerPickedUp: false,
-        isDeliveredToCustomer: false,
-        perKilo: false,
-        perLoad: false,
-        finalKilo: 0,
-        finalLoad: 0,
-        finalPrice: 0,
-        promoCounter: 0,
-        pricingSetup: '',
-        regular: true,
-        sayosabon: false,
-        addOn: false,
-        fold: true,
-        mix: true,
-        basket: 0,
-        ebag: 0,
-        sako: 0,
-        unpaid: true,
-        paidCash: false,
-        paidGCash: false,
-        paidGCashverified: false,
-        paidCashAmount: 0,
-        paidGCashAmount: 0,
-        paymentReceivedBy: '',
-        remarks: '',
-        items: [],
-        processStep: '',
-        allStatus: 0,
-        forDisposal: false,
-        disposed: false);
+      docId: '',
+      jobId: 0,
+      dateQ: timestamp1900,
+      needOn: timestamp1900,
+      dateO: timestamp1900,
+      paidD: timestamp1900,
+      dateD: timestamp1900,
+      dateC: timestamp1900,
+      customerPickupDate: timestamp1900,
+      riderDeliveryDate: timestamp1900,
+      createdBy: '',
+      currentEmpId: '',
+      customerId: 0,
+      customerName: '',
+      forSorting: false,
+      riderPickup: false,
+      isCustomerPickedUp: false,
+      isDeliveredToCustomer: false,
+      perKilo: false,
+      perLoad: false,
+      finalKilo: 0,
+      finalLoad: 0,
+      finalPrice: 0,
+      promoCounter: 0,
+      pricingSetup: '',
+      regular: true,
+      sayosabon: false,
+      addOn: false,
+      fold: true,
+      mix: true,
+      basket: 0,
+      ebag: 0,
+      sako: 0,
+      unpaid: true,
+      paidCash: false,
+      paidGCash: false,
+      paidGCashverified: false,
+      paidCashAmount: 0,
+      paidGCashAmount: 0,
+      paymentReceivedBy: '',
+      remarks: '',
+      items: [],
+      processStep: '',
+      allStatus: 0,
+      forDisposal: false,
+      disposed: false,
+      isSyncToDB2: false,
+    );
 
     jobselectedRepository.reset();
   }
@@ -155,6 +157,7 @@ class JobModelRepository {
   double get allStatus => jobModel.allStatus;
   bool get forDisposal => jobModel.forDisposal;
   bool get disposed => jobModel.disposed;
+  bool get isSyncToDB2 => jobModel.isSyncToDB2;
 
   /////////////////////////////////////////////////////////////
   //                          SETTER                         //
@@ -220,6 +223,7 @@ class JobModelRepository {
   set allStatus(double value) => jobModel.allStatus = value;
   set forDisposal(bool value) => jobModel.forDisposal = value;
   set disposed(bool value) => jobModel.disposed = value;
+  set isSyncToDB2(bool value) => jobModel.isSyncToDB2 = value;
 
   /////////////////////////////////////////////////////////////
   //                          ITEMS                          //

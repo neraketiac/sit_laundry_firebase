@@ -21,13 +21,13 @@ class LoyaltyModel {
 
   LoyaltyModel.fromJson(Map<String, dynamic> json)
       : this(
-          name: json['Name']! as String,
-          contact: json['Contact']! as String,
-          address: json['Address']! as String,
-          remarks: json['LogBy']! as String,
-          count: json['Count']! as int,
-          cardNumber: json['cardNumber']! as int,
-          logDate: json['logDate']! as Timestamp,
+          name: json['Name'] as String,
+          contact: json['Contact'] as String,
+          address: json['Address'] as String,
+          remarks: json['C5_Remarks'] as String,
+          count: json['Count'] as int,
+          cardNumber: json['cardNumber'] as int,
+          logDate: json['logDate'] as Timestamp,
         );
 
   LoyaltyModel copyWith({

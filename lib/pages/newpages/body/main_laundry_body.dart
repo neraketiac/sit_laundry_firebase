@@ -1,5 +1,9 @@
+import 'dart:io';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:laundry_firebase/main.dart';
 import 'package:laundry_firebase/models/newmodels/jobmodel.dart';
 import 'package:laundry_firebase/models/oldmodels/employeesetupmodel.dart';
 import 'package:laundry_firebase/pages/enterloyaltycode.dart';
@@ -23,6 +27,9 @@ import 'package:laundry_firebase/services/newservices/database_employee_setup.da
 import 'package:laundry_firebase/services/newservices/database_jobs.dart';
 import 'package:laundry_firebase/variables/newvariables/variables.dart';
 import 'package:web/web.dart' as web;
+
+// import 'dart:convert';
+// import 'dart:html' as html;
 
 class LaundryColors {
   static const Color onQueue = Color(0xFFF4B400); // Amber
@@ -230,6 +237,309 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
               },
               child: const Text("Calendar"),
             ),
+            if (isAdmin)
+              MenuItemButton(
+                style: MenuItemButton.styleFrom(
+                  backgroundColor: Colors.white70,
+                  foregroundColor: Colors.black,
+                ),
+                leadingIcon: const Icon(Icons.calendar_month, size: 18),
+                onPressed: () async {
+                  //******************************************************* START ADMIN  */
+                  //******************************************************* delete jobs field in loyalty */
+                  //final firestore = FirebaseFirestore.instance;
+                  // final firestore = secondaryFirestore;
+
+                  // debugPrint("===== START CLEANING LOYALTY =====");
+
+                  // final snapshot = await firestore.collection('loyalty').get();
+
+                  // int updatedCount = 0;
+
+                  // for (final doc in snapshot.docs) {
+                  //   final data = doc.data();
+
+                  //   if (data.containsKey('jobs')) {
+                  //     await doc.reference.update({
+                  //       'jobs': FieldValue.delete(),
+                  //     });
+
+                  //     updatedCount++;
+                  //     debugPrint(
+                  //         "Removed jobs field from cardNumber: ${doc.id}");
+                  //   } else {
+                  //     debugPrint("No jobs field in cardNumber: ${doc.id}");
+                  //   }
+                  // }
+
+                  // debugPrint("===== CLEANING COMPLETED =====");
+                  // debugPrint("Total updated: $updatedCount");
+                  //******************************************************* backup to file */
+                  // try {
+                  //   final snapshot = await FirebaseFirestore.instance
+                  //       .collection('loyalty')
+                  //       .get();
+
+                  //   StringBuffer buffer = StringBuffer();
+
+                  //   buffer.writeln("LOYALTY COLLECTION EXPORT");
+                  //   buffer.writeln("Generated at: ${DateTime.now()}");
+                  //   buffer.writeln("====================================\n");
+
+                  //   for (var doc in snapshot.docs) {
+                  //     buffer.writeln("Document ID: ${doc.id}");
+                  //     buffer.writeln("------------------------------------");
+
+                  //     doc.data().forEach((key, value) {
+                  //       buffer.writeln("$key: $value");
+                  //     });
+
+                  //     buffer
+                  //         .writeln("\n====================================\n");
+                  //   }
+
+                  //   // Convert string to bytes
+                  //   final bytes = utf8.encode(buffer.toString());
+                  //   final blob = html.Blob([bytes]);
+                  //   final url = html.Url.createObjectUrlFromBlob(blob);
+
+                  //   final anchor = html.AnchorElement(href: url)
+                  //     ..setAttribute("download", "loyalty_export.txt")
+                  //     ..click();
+
+                  //   html.Url.revokeObjectUrl(url);
+
+                  //   print("Download triggered!");
+                  // } catch (e) {
+                  //   print("Export failed: $e");
+                  // }
+
+                  //******************************************************* delete non-numeric loyalty ids */
+                  // final collection =
+                  //     FirebaseFirestore.instance.collection('loyalty');
+
+                  // final snapshot = await collection.get();
+
+                  // WriteBatch batch = FirebaseFirestore.instance.batch();
+
+                  // for (var doc in snapshot.docs) {
+                  //   final docId = doc.id;
+
+                  //   // Check if docId is NOT purely numeric
+                  //   final isNumeric = RegExp(r'^[0-9]+$').hasMatch(docId);
+
+                  //   if (!isNumeric) {
+                  //     batch.delete(doc.reference);
+                  //     print("Deleting: $docId");
+                  //   }
+                  // }
+
+                  // await batch.commit();
+
+                  // print("Non-numeric document IDs deleted successfully.");
+                  //******************************************************* delete secondary non-numeric */
+                  // final collection = secondaryFirestore.collection('loyalty');
+
+                  // final snapshot = await collection.get();
+
+                  // WriteBatch batch = secondaryFirestore.batch();
+
+                  // for (var doc in snapshot.docs) {
+                  //   final docId = doc.id;
+
+                  //   final isNumeric = RegExp(r'^[0-9]+$').hasMatch(docId);
+
+                  //   if (!isNumeric) {
+                  //     batch.delete(doc.reference);
+                  //     print("Deleting: $docId");
+                  //   }
+                  // }
+
+                  // await batch.commit();
+
+                  // print(
+                  //     "Non-numeric document IDs deleted successfully from SECONDARY DB.");
+
+                  //******************************************************* update loyalty to current jobs (queue, ongoing, done, completed) */
+                  // final firestore = FirebaseFirestore.instance;
+                  // // final firestore = secondaryFirestore;
+
+                  // const jobCollections = [
+                  //   JOBS_QUEUE_REF,
+                  //   JOBS_ONGOING_REF,
+                  //   JOBS_DONE_REF,
+                  //   JOBS_COMPLETED_REF,
+                  // ];
+
+                  // int insertedCount = 0;
+                  // const int limit = 2; // 🔥 ONLY PROCESS 2 RECORDS
+
+                  // debugPrint("===== START TEST SYNC =====");
+
+                  // for (final jobCollection in jobCollections) {
+                  //   if (insertedCount >= limit) break;
+
+                  //   debugPrint("Checking collection: $jobCollection");
+
+                  //   final jobSnapshot = await firestore
+                  //       .collection(jobCollection)
+                  //       .limit(2)
+                  //       .get();
+
+                  //   for (final jobDoc in jobSnapshot.docs) {
+                  //     if (insertedCount >= limit) break;
+
+                  //     final jobData = jobDoc.data();
+                  //     final String jobId = jobDoc.id;
+                  //     final dynamic rawCustomerId = jobData['C00_CustomerId'];
+
+                  //     if (rawCustomerId == null) {
+                  //       debugPrint("❌ Skipped: CustomerId is null");
+                  //       continue;
+                  //     }
+
+                  //     final String customerId = rawCustomerId.toString();
+
+                  //     debugPrint("-----------------------------------");
+                  //     debugPrint("Found Job:");
+                  //     debugPrint("Collection : $jobCollection");
+                  //     debugPrint("Job ID     : $jobId");
+                  //     debugPrint("CustomerID : $customerId");
+
+                  //     if (customerId == null || customerId.isEmpty) {
+                  //       debugPrint("❌ Skipped: CustomerId is null/empty");
+                  //       continue;
+                  //     }
+
+                  //     final loyaltyRef =
+                  //         firestore.collection('loyalty').doc(customerId);
+
+                  //     final loyaltySnap = await loyaltyRef.get();
+
+                  //     if (!loyaltySnap.exists) {
+                  //       debugPrint("❌ Loyalty NOT FOUND for card: $customerId");
+                  //       continue;
+                  //     }
+
+                  //     // 🔥 SAFE INSERT (NO DUPLICATES)
+                  //     await loyaltyRef.set({
+                  //       'jobs': {jobId: "$jobCollection/$jobId"}
+                  //     }, SetOptions(merge: true));
+
+                  //     insertedCount++;
+
+                  //     debugPrint("✅ Linked Job $jobId to Loyalty $customerId");
+                  //     debugPrint("Progress: $insertedCount / $limit");
+                  //   }
+                  // }
+
+                  // debugPrint("===== TEST SYNC COMPLETED =====");
+                  // debugPrint("Total Inserted: $insertedCount");
+
+                  //******************************************************* duplicate jobs to secondary */
+                  final main = FirebaseFirestore.instance;
+                  final secondary = secondaryFirestore;
+
+                  const collectionsToMigrate = [
+                    'loyalty',
+                    JOBS_QUEUE_REF,
+                    JOBS_ONGOING_REF,
+                    JOBS_DONE_REF,
+                    JOBS_COMPLETED_REF,
+                  ];
+
+                  debugPrint("========== START MIGRATION ==========");
+
+                  try {
+                    for (final collectionName in collectionsToMigrate) {
+                      debugPrint("🔄 Migrating collection: $collectionName");
+
+                      final snapshot =
+                          await main.collection(collectionName).get();
+
+                      WriteBatch batch = secondary.batch();
+                      int operationCount = 0;
+                      int totalDocs = 0;
+
+                      for (final doc in snapshot.docs) {
+                        final secondaryRef =
+                            secondary.collection(collectionName).doc(doc.id);
+
+                        // 🔥 SAFE: deterministic docId (no duplicates)
+                        batch.set(
+                          secondaryRef,
+                          doc.data(),
+                          SetOptions(merge: false), // full overwrite
+                        );
+
+                        operationCount++;
+                        totalDocs++;
+
+                        // Firestore batch limit = 500
+                        if (operationCount == 500) {
+                          await batch.commit();
+                          batch = secondary.batch();
+                          operationCount = 0;
+                        }
+                      }
+
+                      // Commit remaining operations
+                      if (operationCount > 0) {
+                        await batch.commit();
+                      }
+
+                      debugPrint(
+                          "✅ Finished $collectionName | Documents: $totalDocs");
+                    }
+
+                    debugPrint("🎉 MIGRATION COMPLETED SUCCESSFULLY");
+                  } catch (e) {
+                    debugPrint("❌ MIGRATION FAILED: $e");
+                  }
+
+                  debugPrint("========== END MIGRATION ==========");
+
+                  //******************************************************* duplicate loyalty to secondary */
+                  final mainFirestore = FirebaseFirestore.instance;
+
+                  try {
+                    // 1️⃣ Get all loyalty documents from MAIN
+                    final snapshot =
+                        await mainFirestore.collection('loyalty').get();
+
+                    WriteBatch batch = secondaryFirestore.batch();
+                    int counter = 0;
+
+                    for (var doc in snapshot.docs) {
+                      final secondaryRef =
+                          secondaryFirestore.collection('loyalty').doc(doc.id);
+
+                      // 2️⃣ Copy full document data
+                      batch.set(secondaryRef, doc.data());
+
+                      counter++;
+
+                      // Firestore batch limit = 500 operations
+                      if (counter == 500) {
+                        await batch.commit();
+                        batch = secondaryFirestore.batch();
+                        counter = 0;
+                      }
+                    }
+
+                    // Commit remaining
+                    if (counter > 0) {
+                      await batch.commit();
+                    }
+
+                    debugPrint("✅ Loyalty collection copied to secondary DB");
+                  } catch (e) {
+                    debugPrint("❌ Copy failed: $e");
+                  }
+                  //******************************************************* END ADMIN  */
+                },
+                child: const Text("Refresh Secondary"),
+              ),
             MenuItemButton(
               leadingIcon: const Icon(Icons.logout, size: 18),
               onPressed: () {

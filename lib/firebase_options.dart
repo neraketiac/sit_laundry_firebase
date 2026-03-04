@@ -50,6 +50,15 @@ class DefaultFirebaseOptions {
     measurementId: 'G-S5RTGDB4DL',
   );
 
+  static const FirebaseOptions secondaryWeb = FirebaseOptions(
+    apiKey: 'AIzaSyAY9RKLaW6ngSCHvQqiujNxpRwJ9kzssgU',
+    appId: '1:368198382683:web:1c00691fe118faa041fb7e',
+    messagingSenderId: '368198382683',
+    projectId: 'zpos-d985c',
+    authDomain: 'zpos-d985c.firebaseapp.com',
+    storageBucket: 'zpos-d985c.firebasestorage.app',
+  );
+
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyABXoKDWC1JUR1FwE4es4O-glGHGpDFbI8',
     appId: '1:248306194923:android:246830746ad13f22b7a1ae',
