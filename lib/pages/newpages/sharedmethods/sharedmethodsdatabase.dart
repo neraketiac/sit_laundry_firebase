@@ -279,7 +279,19 @@ Future<void> notifyAllUsers({
 }
 
 Future<void> callDatabaseUpdateJob(BuildContext context, JobModel jM) async {
-  if (jM.processStep == 'done') {
+  if (jM.processStep == 'completed') {
+    DatabaseJobsCompleted dbJ = DatabaseJobsCompleted();
+
+    if (await dbJ.update(jM)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Update on job completed.')),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error update Jobs Done.')),
+      );
+    }
+  } else if (jM.processStep == 'done') {
     DatabaseJobsDone dbJ = DatabaseJobsDone();
 
     if (await dbJ.update(jM)) {

@@ -246,6 +246,39 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                 leadingIcon: const Icon(Icons.calendar_month, size: 18),
                 onPressed: () async {
                   //******************************************************* START ADMIN  */
+                  //******************************************************* update all status to 1 */
+                  // final firestore = FirebaseFirestore.instance;
+
+                  // print("🔄 Starting update of 001_AllStatus...");
+
+                  // final collections = [
+                  //   JOBS_DONE_REF,
+                  //   // JOBS_COMPLETED_REF,
+                  // ];
+
+                  // final batch = firestore.batch();
+                  // int totalUpdated = 0;
+
+                  // for (String col in collections) {
+                  //   print("📂 Reading collection: $col");
+
+                  //   final snapshot = await firestore.collection(col).get();
+                  //   print("📄 Found ${snapshot.docs.length} documents");
+
+                  //   for (var doc in snapshot.docs) {
+                  //     batch.update(doc.reference, {
+                  //       'O01_AllStatus': 0.7,
+                  //     });
+
+                  //     totalUpdated++;
+                  //   }
+                  // }
+
+                  // print("🚀 Committing batch update...");
+                  // await batch.commit();
+
+                  // print(
+                  //     "✅ Update finished! Total documents updated: $totalUpdated");
                   //******************************************************* delete jobs field in loyalty */
                   //final firestore = FirebaseFirestore.instance;
                   // final firestore = secondaryFirestore;
@@ -499,43 +532,43 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
 
                   debugPrint("========== END MIGRATION ==========");
 
-                  //******************************************************* duplicate loyalty to secondary */
-                  final mainFirestore = FirebaseFirestore.instance;
+                  // //******************************************************* duplicate loyalty to secondary */
+                  // final mainFirestore = FirebaseFirestore.instance;
 
-                  try {
-                    // 1️⃣ Get all loyalty documents from MAIN
-                    final snapshot =
-                        await mainFirestore.collection('loyalty').get();
+                  // try {
+                  //   // 1️⃣ Get all loyalty documents from MAIN
+                  //   final snapshot =
+                  //       await mainFirestore.collection('loyalty').get();
 
-                    WriteBatch batch = secondaryFirestore.batch();
-                    int counter = 0;
+                  //   WriteBatch batch = secondaryFirestore.batch();
+                  //   int counter = 0;
 
-                    for (var doc in snapshot.docs) {
-                      final secondaryRef =
-                          secondaryFirestore.collection('loyalty').doc(doc.id);
+                  //   for (var doc in snapshot.docs) {
+                  //     final secondaryRef =
+                  //         secondaryFirestore.collection('loyalty').doc(doc.id);
 
-                      // 2️⃣ Copy full document data
-                      batch.set(secondaryRef, doc.data());
+                  //     // 2️⃣ Copy full document data
+                  //     batch.set(secondaryRef, doc.data());
 
-                      counter++;
+                  //     counter++;
 
-                      // Firestore batch limit = 500 operations
-                      if (counter == 500) {
-                        await batch.commit();
-                        batch = secondaryFirestore.batch();
-                        counter = 0;
-                      }
-                    }
+                  //     // Firestore batch limit = 500 operations
+                  //     if (counter == 500) {
+                  //       await batch.commit();
+                  //       batch = secondaryFirestore.batch();
+                  //       counter = 0;
+                  //     }
+                  //   }
 
-                    // Commit remaining
-                    if (counter > 0) {
-                      await batch.commit();
-                    }
+                  //   // Commit remaining
+                  //   if (counter > 0) {
+                  //     await batch.commit();
+                  //   }
 
-                    debugPrint("✅ Loyalty collection copied to secondary DB");
-                  } catch (e) {
-                    debugPrint("❌ Copy failed: $e");
-                  }
+                  //   debugPrint("✅ Loyalty collection copied to secondary DB");
+                  // } catch (e) {
+                  //   debugPrint("❌ Copy failed: $e");
+                  // }
                   //******************************************************* END ADMIN  */
                 },
                 child: const Text("Refresh Secondary"),

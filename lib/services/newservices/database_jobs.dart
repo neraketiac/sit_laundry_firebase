@@ -262,6 +262,24 @@ class DatabaseJobsCompleted {
           (s) => s.docs.map((d) => JobModel.fromJson(d.data())).toList(),
         );
   }
+
+  //admin only
+  Future<bool> update(JobModel jM) async {
+    bool bSuccess = false;
+    await _ref
+        .doc(jM.docId)
+        .update(jM.toJson())
+        .then((value) => {
+              print("Update Done"),
+              bSuccess = true,
+            })
+        .catchError((error) => {
+              print("Failed Update Jobs Done : $error ${jM.customerName}"),
+              bSuccess = false,
+            });
+    ;
+    return bSuccess;
+  }
 }
 
 /// 🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥

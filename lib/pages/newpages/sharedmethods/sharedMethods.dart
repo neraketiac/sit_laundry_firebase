@@ -646,6 +646,7 @@ void syncSelectedToRepositoryALL(JobModelRepository jobRepo) {
     jobRepo.perKilo = true;
     jobRepo.finalKilo = jobRepo.selectedFinalKilo;
     jobRepo.finalLoad = computeLoadForKg(jobRepo.selectedFinalKilo);
+    debugPrint('jobRepo.finalLoad=${jobRepo.finalLoad}');
     jobRepo.promoCounter = computePromoCounter;
     jobRepo.pricingSetup = showHowMany155or125Set(
         computeTotalPrice(jobRepo.selectedFinalKilo, jobRepo), false, jobRepo);

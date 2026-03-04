@@ -169,13 +169,14 @@ void showReceipt(BuildContext context, JobModelRepository jobRepo) {
                   ),
 
                 /// BALANCE / UNPAID
-                if (remaining > 0)
-                  receiptRow(
-                    jobRepo.unpaid ? "UNPAID" : "BALANCE",
-                    "₱$remaining",
-                    bold: true,
-                    color: jobRepo.unpaid ? Colors.red : null,
-                  ),
+                if (jobRepo.unpaid)
+                  if (remaining > 0)
+                    receiptRow(
+                      jobRepo.unpaid ? "UNPAID" : "BALANCE",
+                      "₱$remaining",
+                      bold: true,
+                      color: jobRepo.unpaid ? Colors.red : null,
+                    ),
 
                 receiptDivider(),
 

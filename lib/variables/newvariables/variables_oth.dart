@@ -177,7 +177,7 @@ void addListOthItems() {
     itemUniqueId: menuOthNF125,
     itemGroup: groupOth,
     itemName: "NF125",
-    itemPrice: -17,
+    itemPrice: 108,
     stocksAlert: 5,
     stocksType: "pcs",
   ));
@@ -187,7 +187,7 @@ void addListOthItems() {
     itemUniqueId: menuOthNF165,
     itemGroup: groupOth,
     itemName: "NF165",
-    itemPrice: -8,
+    itemPrice: 157,
     stocksAlert: 5,
     stocksType: "pcs",
   ));
@@ -197,7 +197,7 @@ void addListOthItems() {
     itemUniqueId: menuOthNF155,
     itemGroup: groupOth,
     itemName: "NF155",
-    itemPrice: -12,
+    itemPrice: 143,
     stocksAlert: 5,
     stocksType: "pcs",
   ));
@@ -207,7 +207,7 @@ void addListOthItems() {
     itemUniqueId: menuOthNF195,
     itemGroup: groupOth,
     itemName: "NF195",
-    itemPrice: -3,
+    itemPrice: 192,
     stocksAlert: 5,
     stocksType: "pcs",
   ));

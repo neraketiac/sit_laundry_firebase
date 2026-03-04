@@ -5,6 +5,7 @@ import 'package:laundry_firebase/models/newmodels/otheritemmodel.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedMethods.dart';
 import 'package:laundry_firebase/variables/newvariables/jobselected_repository.dart';
 import 'package:laundry_firebase/variables/newvariables/variables.dart';
+import 'package:laundry_firebase/variables/newvariables/variables_oth.dart';
 
 class JobModelRepository {
   // JobModelRepository._();
@@ -462,6 +463,24 @@ class JobModelRepository {
   //                     JOBMODEL TO SELECTED                //
   /////////////////////////////////////////////////////////////
   void syncRepoToSelectedAll(JobModelRepository jobRepo) {
+    int computePromoCounter = 0;
+    int computeLoadForKg(double kg) {
+      double remainder = kg % 8;
+      int wholeEight = kg ~/ 8;
+      int lastCounter = 0;
+      if (remainder < 1) {
+        lastCounter = 0;
+      } else {
+        lastCounter = 1;
+      }
+      if (remainder >= 3) {
+        computePromoCounter = wholeEight + 1;
+      } else {
+        computePromoCounter = wholeEight;
+      }
+
+      return wholeEight + lastCounter;
+    }
     // String docId;
 
     selectedJobId = jobRepo.jobId;
@@ -504,7 +523,9 @@ class JobModelRepository {
     }
     selectedFinalPrice = jobRepo.finalPrice;
     selectedPromoCounter = jobRepo.promoCounter;
-    // selectedPricingSetup = jobRepo.pricingSetup;
+    //selectedPricingSetup = jobRepo.pricingSetup;
+
+    //weight status to repo not needed
 
     /// 🟢 Options
     // selectedRegular = jobRepo.regular;
@@ -634,6 +655,25 @@ class JobModelRepository {
   //                     SELECTED TO JOBMODEL                //
   /////////////////////////////////////////////////////////////
   void syncSelectedToRepoAll(JobModelRepository jobRepo) {
+    int computePromoCounter = 0;
+    int computeLoadForKg(double kg) {
+      double remainder = kg % 8;
+      int wholeEight = kg ~/ 8;
+      int lastCounter = 0;
+      if (remainder < 1) {
+        lastCounter = 0;
+      } else {
+        lastCounter = 1;
+      }
+      if (remainder >= 3) {
+        computePromoCounter = wholeEight + 1;
+      } else {
+        computePromoCounter = wholeEight;
+      }
+
+      return wholeEight + lastCounter;
+    }
+
     //String docId;
 
     jobRepo.jobId = selectedJobId;
@@ -667,7 +707,6 @@ class JobModelRepository {
     jobRepo.perKilo = selectedPerKilo;
     jobRepo.perLoad = selectedPerLoad;
     jobRepo.finalKilo = selectedFinalKilo;
-    jobRepo.finalLoad = selectedFinalLoad;
     if (selectedPackage == intOthersPackage) {
       jobRepo.selectedFinalPrice = jobRepo.repoVarTotalPriceOthers;
     } else {
@@ -675,10 +714,26 @@ class JobModelRepository {
     }
     jobRepo.finalPrice = jobRepo.selectedFinalPrice;
     jobRepo.finalPrice = selectedFinalPrice;
-    jobRepo.promoCounter = selectedPromoCounter;
-    // jobRepo.pricingSetup = ?;
-    jobRepo.pricingSetup = showHowMany155or125Set(
-        computeTotalPrice(jobRepo.selectedFinalKilo, jobRepo), false, jobRepo);
+
+    //7 weight status
+    if (selectedPackage == intRegularPackage) {
+      if (jobRepo.selectedPerKilo) {
+        jobRepo.finalLoad = computeLoadForKg(jobRepo.selectedFinalKilo);
+        jobRepo.promoCounter = computePromoCounter;
+        jobRepo.pricingSetup = showHowMany155or125Set(
+            computeTotalPrice(jobRepo.selectedFinalKilo, jobRepo),
+            false,
+            jobRepo);
+      } else {
+        jobRepo.finalLoad = jobRepo.selectedFinalLoad;
+        jobRepo.promoCounter = jobRepo.selectedFinalLoad;
+        jobRepo.pricingSetup = 'Load(s): ${jobRepo.selectedFinalLoad}';
+      }
+    }
+    if (selectedPackage == intOthersPackage) {
+      jobRepo.promoCounter =
+          selectedItems.where((v) => v.itemId == menuOth155).length;
+    }
 
     /// 🟢 Options
     // jobRepo.regular = ?;
