@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedMethods.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedVisibility.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedmethodsdatabase.dart';
@@ -88,7 +89,8 @@ void showOnGoingStatus(BuildContext context, JobModelRepository jobRepo) {
                             return AlertDialog(
                               title: const Text('Confirm Action'),
                               content: Text(
-                                  'Move #${jobRepo.selectedJobId} ${jobRepo.selectedCustomerNameVar.text} (${jobRepo.selectedFinalLoad}) to Jobs Done?'),
+                                  'Move #${jobRepo.selectedJobId} ${jobRepo.selectedCustomerNameVar.text} (${jobRepo.selectedFinalLoad}) to Jobs Done?'
+                                  '${useAdminTimestampDateD ? DateFormat('MMM dd, yyyy').format(adminTimestampDateD.toDate()) : ''}'),
                               actions: [
                                 TextButton(
                                   onPressed: () =>

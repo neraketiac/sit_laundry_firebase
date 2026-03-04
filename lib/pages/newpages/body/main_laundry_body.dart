@@ -4,7 +4,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:laundry_firebase/main.dart';
-import 'package:laundry_firebase/models/newmodels/jobmodel.dart';
 import 'package:laundry_firebase/models/oldmodels/employeesetupmodel.dart';
 import 'package:laundry_firebase/pages/enterloyaltycode.dart';
 import 'package:laundry_firebase/pages/newpages/body/Employee/readDataEmployeeCurr.dart';
@@ -17,6 +16,8 @@ import 'package:laundry_firebase/pages/newpages/body/JobsOnQueue/readDataJobsOnQ
 import 'package:laundry_firebase/pages/newpages/body/JobsDone/readDataJobsDone.dart';
 import 'package:laundry_firebase/pages/newpages/body/Supplies/readSuppliesCurrent.dart';
 import 'package:laundry_firebase/pages/newpages/body/Supplies/readSuppliesHist.dart';
+import 'package:laundry_firebase/pages/newpages/header/Admin/showAdminDateDPage.dart';
+import 'package:laundry_firebase/pages/newpages/header/Admin/showEditCounter.dart';
 import 'package:laundry_firebase/pages/newpages/header/Employee/showSalaryMaintenance.dart';
 import 'package:laundry_firebase/pages/newpages/header/Funds/showCalendarDialog.dart';
 import 'package:laundry_firebase/pages/newpages/header/Funds/showFundCheck.dart';
@@ -237,6 +238,39 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
               },
               child: const Text("Calendar"),
             ),
+            MenuItemButton(
+              style: MenuItemButton.styleFrom(
+                backgroundColor: Colors.white70,
+                foregroundColor: Colors.black,
+              ),
+              leadingIcon: const Icon(Icons.edit, size: 18),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const EditCounter(),
+                  ),
+                );
+              },
+              child: const Text("Edit Counter"),
+            ),
+            if (isAdmin)
+              MenuItemButton(
+                style: MenuItemButton.styleFrom(
+                  backgroundColor: Colors.white70,
+                  foregroundColor: Colors.black,
+                ),
+                leadingIcon: const Icon(Icons.edit, size: 18),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const AdminDateDPage(),
+                    ),
+                  );
+                },
+                child: const Text("Set DateD"),
+              ),
             if (isAdmin)
               MenuItemButton(
                 style: MenuItemButton.styleFrom(

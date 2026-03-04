@@ -41,17 +41,17 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
 
-    testSecondary();
+    // testSecondary();
   }
 
-  Future<void> testSecondary() async {
-    await secondaryFirestore.collection('test').add({
-      'message': 'Hello secondary',
-      'timestamp': DateTime.now(),
-    });
+  // Future<void> testSecondary() async {
+  //   await secondaryFirestore.collection('test').add({
+  //     'message': 'Hello secondary',
+  //     'timestamp': DateTime.now(),
+  //   });
 
-    debugPrint("Secondary write success");
-  }
+  //   debugPrint("Secondary write success");
+  // }
 
   @override
   Widget build(BuildContext context) {

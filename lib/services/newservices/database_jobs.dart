@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:laundry_firebase/models/newmodels/jobmodel.dart';
+import 'package:laundry_firebase/variables/newvariables/variables.dart';
 
 /// 🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦
 /// 🔹 COLLECTION REFERENCES
@@ -365,6 +366,10 @@ Future<void> moveOngoingToDone(String docId, bool forDelivery) async {
     final snapshot = await tx.get(ongoingRef);
     if (!snapshot.exists) return;
 
+    if (!useAdminTimestampDateD) {
+      adminTimestampDateD = Timestamp.now();
+    }
+
     if (forDelivery) {
       tx.set(doneRef, {
         ...snapshot.data()!,
@@ -372,14 +377,14 @@ Future<void> moveOngoingToDone(String docId, bool forDelivery) async {
         'Q01_RiderPickup': true,
         'O00_ProcessStep': 'done', // 👈 initial step
         'O01_AllStatus': 0.7,
-        'A05_DateD': Timestamp.now(),
+        'A05_DateD': adminTimestampDateD,
       });
     } else {
       tx.set(doneRef, {
         ...snapshot.data()!,
         'O01_AllStatus': 0.7,
         'O00_ProcessStep': 'done', // 👈 initial step
-        'A05_DateD': Timestamp.now(),
+        'A05_DateD': adminTimestampDateD,
       });
     }
 

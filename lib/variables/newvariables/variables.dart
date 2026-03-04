@@ -34,6 +34,8 @@ const int intSortByDateC = 1,
     intFindCustomerNameId = 9;
 const int intSortUnpaidClothesGone = 4;
 
+Timestamp adminTimestampDateD = Timestamp.now();
+bool useAdminTimestampDateD = false;
 //sorting
 //completed
 List<JobModel> originalJobsCompleted = [];

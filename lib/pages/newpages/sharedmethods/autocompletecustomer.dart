@@ -232,7 +232,7 @@ class _AutoCompleteCustomerState extends State<AutoCompleteCustomer> {
   // ================= SELECTION =================
 
   void _onCustomerSelected(CustomerModel selected) {
-    //autocompleteSelected = selected;
+    autocompleteSelected = selected;
 
     SuppliesHistRepository.instance.setCustomerName(selected.name);
     debugPrint(
