@@ -341,6 +341,10 @@ Future<void> moveQueueToOngoing(String docId) async {
 
     tx.set(counterRef, {'nextavailable': newNextAvailable});
 
+    if (!useAdminTimestampDateD) {
+      adminTimestampDateD = Timestamp.now();
+    }
+
     // 4️⃣ Move document
     tx.set(ongoingRef, {
       ...queueSnap.data()!,
@@ -348,7 +352,7 @@ Future<void> moveQueueToOngoing(String docId) async {
       'A00_JobId': finalId,
       'O00_ProcessStep': 'waiting',
       'O01_AllStatus': 0.3,
-      'A04_DateO': Timestamp.now(),
+      'A04_DateO': adminTimestampDateD,
     });
 
     tx.delete(queueRef);
@@ -410,13 +414,17 @@ Future<void> moveAllDoneToCompleted() async {
 
   final batch = firestore.batch();
 
+  if (!useAdminTimestampDateD) {
+    adminTimestampDateD = Timestamp.now();
+  }
+
   for (final doc in snapshot.docs) {
     final completedRef = completedCollection.doc(doc.id);
 
     batch.set(completedRef, {
       ...doc.data(),
       'O00_ProcessStep': 'completed',
-      'A06_DateC': Timestamp.now(),
+      'A06_DateC': adminTimestampDateD,
     });
 
     batch.delete(doc.reference);
