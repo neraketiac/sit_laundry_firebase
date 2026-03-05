@@ -259,7 +259,7 @@ class DatabaseJobsCompleted {
 
   /// 🔄 Stream completed jobs
   Stream<List<JobModel>> streamAll() {
-    return _ref.orderBy('A06_DateC', descending: true).snapshots().map(
+    return _ref.orderBy('A05_DateD', descending: true).snapshots().map(
           (s) => s.docs.map((d) => JobModel.fromJson(d.data())).toList(),
         );
   }
