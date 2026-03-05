@@ -1217,6 +1217,7 @@ Visibility visPaidUnPaid(
 
   String returnPaymentStatusDuringToggle() {
     void resetPartialAmount() {
+      jobRepo.selectedUnpaid = true;
       jobRepo.repoVarCashAmountVar.text = '';
       jobRepo.repoVarGCashAmountVar.text = '';
     }

@@ -889,10 +889,14 @@ class JobModelRepository {
     /// 🟠 Workflow Step
     jobRepo.processStep = selectedProcessStep;
 
+    if (!useAdminTimestampDateD) {
+      adminTimestampDateD = Timestamp.now();
+    }
+
     //ALLSTATUS = 1
     /// 🟣 Dates
     if (jobRepo.selectedIsCustomerPickedUp) {
-      jobRepo.customerPickupDate = Timestamp.now();
+      jobRepo.customerPickupDate = adminTimestampDateD;
       if (!jobRepo.selectedUnpaid) {
         if (jobRepo.selectedPaidCash ||
             (jobRepo.selectedPaidGCash && jobRepo.selectedPaidGCashVerified)) {
@@ -902,7 +906,7 @@ class JobModelRepository {
     }
 
     if (jobRepo.selectedIsDeliveredToCustomer) {
-      jobRepo.riderDeliveryDate = Timestamp.now();
+      jobRepo.riderDeliveryDate = adminTimestampDateD;
       if (!jobRepo.selectedUnpaid) {
         if (jobRepo.selectedPaidCash ||
             (jobRepo.selectedPaidGCash && jobRepo.selectedPaidGCashVerified)) {

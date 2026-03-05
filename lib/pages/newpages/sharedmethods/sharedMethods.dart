@@ -339,24 +339,24 @@ ElevatedButton boxButtonElevated({
 String textJobStatus(JobModel jM) {
   if (jM.processStep == '') {
     if (jM.forSorting) {
-      return 'For Sorting';
+      return 'For Sorting\n${DateFormat('MMMM dd').format(jM.dateQ.toDate())}';
     }
     if (jM.riderPickup) {
-      return 'Rider Pickup';
+      return 'Rider Pickup\n${DateFormat('MMMM dd').format(jM.dateQ.toDate())}';
     }
   } else {
-    if (jM.processStep == 'done') {
+    if (jM.processStep == 'done' || jM.processStep == 'completed') {
       if (jM.riderPickup) {
         if (jM.isDeliveredToCustomer) {
-          return '${jM.processStep} 🚲 delivered\n${DateFormat('MM/dd hh:mm a').format(jM.riderDeliveryDate.toDate())}';
+          return '${jM.processStep} 🚲 delivered\n${DateFormat('MMMM dd').format(jM.riderDeliveryDate.toDate())}';
         } else {
-          return '${jM.processStep} 🚲 for delivery';
+          return '${jM.processStep} 🚲 for delivery\n${DateFormat('MMMM dd').format(jM.dateD.toDate())}';
         }
       } else {
         if (jM.isCustomerPickedUp) {
-          return '${jM.processStep} 🛒 pickedup\n${DateFormat('MM/dd hh:mm a').format(jM.customerPickupDate.toDate())}';
+          return '${jM.processStep} 🛒 pickedup\n${DateFormat('MMMM dd').format(jM.customerPickupDate.toDate())}';
         } else {
-          return '${jM.processStep} 🛒 wait customer pickup';
+          return '${jM.processStep} 🛒 wait customer pickup\n${DateFormat('MMMM dd').format(jM.dateD.toDate())}';
         }
       }
     } else {
