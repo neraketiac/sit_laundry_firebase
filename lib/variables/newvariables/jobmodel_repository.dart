@@ -548,7 +548,9 @@ class JobModelRepository {
     selectedPaidGCash = jobRepo.paidGCash;
     selectedPaidGCashVerified = jobRepo.paidGCashVerified;
     selectedPaidCashAmount = jobRepo.paidCashAmount;
+    repoVarCashAmountVar.text = selectedPaidCashAmount.toString();
     selectedPaidGCashAmount = jobRepo.paidGCashAmount;
+    repoVarGCashAmountVar.text = selectedPaidGCashAmount.toString();
     selectedPaymentReceivedBy = jobRepo.paymentReceivedBy;
 
     /// 🟣 Remarks
@@ -632,7 +634,9 @@ class JobModelRepository {
     selectedPaidGCash = jobRepo.paidGCash;
     selectedPaidGCashVerified = jobRepo.paidGCashVerified;
     selectedPaidCashAmount = jobRepo.paidCashAmount;
+    repoVarCashAmountVar.text = selectedPaidCashAmount.toString();
     selectedPaidGCashAmount = jobRepo.paidGCashAmount;
+    repoVarGCashAmountVar.text = selectedPaidGCashAmount.toString();
     selectedPaymentReceivedBy = jobRepo.paymentReceivedBy;
 
     /// 🟣 Remarks
@@ -754,6 +758,9 @@ class JobModelRepository {
     /// 🔵 Payment: unpaid only false if paidgcash and amount > finalprice and verified
     selectedPaidCashAmount = int.tryParse(repoVarCashAmountVar.text) ?? 0;
     selectedPaidGCashAmount = int.tryParse(repoVarGCashAmountVar.text) ?? 0;
+    //always reset to check
+    selectedUnpaid = true;
+    jobRepo.unpaid = true;
     if (selectedPaidCash &&
         selectedPaidGCash &&
         selectedPaidGCashVerified &&
@@ -771,7 +778,6 @@ class JobModelRepository {
       selectedUnpaid = false;
       jobRepo.unpaid = false;
     }
-    jobRepo.unpaid = selectedUnpaid;
     jobRepo.paidCash = selectedPaidCash;
     jobRepo.paidGCash = selectedPaidGCash;
     jobRepo.paidGCashVerified = selectedPaidGCashVerified;
@@ -855,6 +861,9 @@ class JobModelRepository {
     /// 🔵 Payment: unpaid only false if paidgcash and amount > finalprice and verified
     selectedPaidCashAmount = int.tryParse(repoVarCashAmountVar.text) ?? 0;
     selectedPaidGCashAmount = int.tryParse(repoVarGCashAmountVar.text) ?? 0;
+    //always reset to check
+    selectedUnpaid = true;
+    jobRepo.unpaid = true;
     if (selectedPaidCash &&
         selectedPaidGCash &&
         selectedPaidGCashVerified &&
@@ -872,7 +881,6 @@ class JobModelRepository {
       selectedUnpaid = false;
       jobRepo.unpaid = false;
     }
-    //jobRepo.unpaid = selectedUnpaid;
     jobRepo.paidCash = selectedPaidCash;
     jobRepo.paidGCash = selectedPaidGCash;
     jobRepo.paidGCashVerified = selectedPaidGCashVerified;
@@ -895,23 +903,25 @@ class JobModelRepository {
 
     //ALLSTATUS = 1
     /// 🟣 Dates
-    if (jobRepo.selectedIsCustomerPickedUp) {
-      jobRepo.customerPickupDate = adminTimestampDateD;
-      if (!jobRepo.selectedUnpaid) {
-        if (jobRepo.selectedPaidCash ||
-            (jobRepo.selectedPaidGCash && jobRepo.selectedPaidGCashVerified)) {
-          jobRepo.selectedAllStatus = 1;
-        }
-      }
-    }
+    /// no one calls min of this method in done and completed
+    if (jobRepo.processStep == 'done') {
+      final bool isPaid = !jobRepo.selectedUnpaid &&
+          (jobRepo.selectedPaidCash ||
+              (jobRepo.selectedPaidGCash && jobRepo.selectedPaidGCashVerified));
 
-    if (jobRepo.selectedIsDeliveredToCustomer) {
-      jobRepo.riderDeliveryDate = adminTimestampDateD;
-      if (!jobRepo.selectedUnpaid) {
-        if (jobRepo.selectedPaidCash ||
-            (jobRepo.selectedPaidGCash && jobRepo.selectedPaidGCashVerified)) {
-          jobRepo.selectedAllStatus = 1;
-        }
+      if (jobRepo.selectedIsCustomerPickedUp) {
+        jobRepo.customerPickupDate = adminTimestampDateD;
+      }
+
+      if (jobRepo.selectedIsDeliveredToCustomer) {
+        jobRepo.riderDeliveryDate = adminTimestampDateD;
+      }
+
+      if (jobRepo.selectedIsCustomerPickedUp ||
+          jobRepo.selectedIsDeliveredToCustomer) {
+        jobRepo.selectedAllStatus = isPaid ? 1 : 0.7;
+      } else {
+        jobRepo.selectedAllStatus = 0.7;
       }
     }
 
