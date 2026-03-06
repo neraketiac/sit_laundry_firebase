@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedMethods.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedVisibility.dart';
@@ -5,14 +6,18 @@ import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedmethodsdatab
 import 'package:laundry_firebase/variables/newvariables/jobmodel_repository.dart';
 import 'package:laundry_firebase/variables/newvariables/variables.dart';
 
-void showUpdateDates(BuildContext context, JobModelRepository jobRepo) {
+void showUpdateDatesEachJobs(BuildContext context, JobModelRepository jobRepo) {
   Future<void> saveButtonSetRepository() async {
     //jobRepo.dateO = adminTimestampDateD;
-    jobRepo.dateD = adminTimestampDateD;
     //jobRepo.dateC = adminTimestampDateD;
     //jobRepo.customerPickupDate = adminTimestampDateD;
     //jobRepo.riderDeliveryDate = adminTimestampDateD;
     jobRepo.syncSelectedToRepoAll(jobRepo);
+    if (!useAdminTimestampDateD) {
+      adminTimestampDateD = Timestamp.now();
+    }
+    jobRepo.dateD = adminTimestampDateD;
+
     await callDatabaseUpdateJob(context, jobRepo.getJobsModel()!);
     //await setRepositoryLaundryPayment(context, 'Show Jobs OnQueue');
   }

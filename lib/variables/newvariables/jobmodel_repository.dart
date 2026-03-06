@@ -66,6 +66,7 @@ class JobModelRepository {
       forDisposal: false,
       disposed: false,
       isSyncToDB2: false,
+      isPromoCounter: true,
     );
 
     jobselectedRepository.reset();
@@ -738,6 +739,14 @@ class JobModelRepository {
       jobRepo.promoCounter =
           selectedItems.where((v) => v.itemId == menuOth155).length;
     }
+
+    //even paying is 0, promocounter still added
+    final promoFreeCount =
+        jobRepo.items.where((item) => item.itemId == menuOthFree).length;
+
+    if (promoFreeCount > 0) jobRepo.promoCounter += promoFreeCount;
+
+    //add promoCounter for every otheritemmodel 155 promo
 
     /// 🟢 Options
     // jobRepo.regular = ?;

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:laundry_firebase/models/newmodels/jobmodel.dart';
+import 'package:laundry_firebase/pages/newpages/body/JobsDone/showDeliverOrCustomerPickup.dart';
 import 'package:laundry_firebase/pages/newpages/body/JobsDone/showReceipt.dart';
-import 'package:laundry_firebase/pages/newpages/header/Admin/showUpdateDates.dart';
+import 'package:laundry_firebase/pages/newpages/header/Admin/showUpdateDatesEachJobs.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedVisibility.dart';
 import 'package:laundry_firebase/services/newservices/database_jobs.dart';
 import 'package:laundry_firebase/variables/newvariables/jobmodel_repository.dart';
@@ -125,7 +126,9 @@ Widget readDataJobsCompleted(
                             isSelected,
                             false,
                             () async {
-                              //showDeliverOrCustomerPickup(context, jobRepo);
+                              if (isAdmin) {
+                                showDeliverOrCustomerPickup(context, jobRepo);
+                              }
                             },
                           ),
 

@@ -26,7 +26,8 @@ const int menuOthWash = 401,
     menuOthW9t10 = 419,
     menuOthW10t11 = 420,
     menuOthW11t12 = 421,
-    menuOthXS = 422;
+    menuOthXS = 422,
+    menuOthFree = 423;
 const int menuOthUniqIdCashIn = 4401,
     menuOthUniqIdCashOut = 4402,
     menuOthUniqIdFundsIn = 4403,
@@ -41,6 +42,17 @@ final reg155ItemModel = OtherItemModel(
   itemGroup: groupOth,
   itemName: "Reg155",
   itemPrice: 155,
+  stocksAlert: 5,
+  stocksType: "pcs",
+);
+
+final promoFree = OtherItemModel(
+  docId: "",
+  itemId: menuOthFree,
+  itemUniqueId: menuOthFree,
+  itemGroup: groupOth,
+  itemName: "Free",
+  itemPrice: -155,
   stocksAlert: 5,
   stocksType: "pcs",
 );
@@ -216,11 +228,32 @@ void addListOthItems() {
     itemId: menuOthW8t9,
     itemUniqueId: menuOthW8t9,
     itemGroup: groupOth,
-    itemName: "Ex 8-9kg",
-    itemPrice: 25,
+    itemName: "Reg190",
+    itemPrice: 35,
     stocksAlert: 5,
     stocksType: "pcs",
   ));
+  listOthItems.add(OtherItemModel(
+    docId: "",
+    itemId: menuOthW9t10,
+    itemUniqueId: menuOthW9t10,
+    itemGroup: groupOth,
+    itemName: "Reg260",
+    itemPrice: 105,
+    stocksAlert: 5,
+    stocksType: "pcs",
+  ));
+  listOthItems.add(OtherItemModel(
+    docId: "",
+    itemId: menuOthW10t11,
+    itemUniqueId: menuOthW10t11,
+    itemGroup: groupOth,
+    itemName: "Plastic",
+    itemPrice: 2,
+    stocksAlert: 10,
+    stocksType: "pcs",
+  ));
+  listOthItems.add(promoFree);
 
   //oth names
   mapOthNames.addEntries({menuOthWash: "Wash"}.entries);

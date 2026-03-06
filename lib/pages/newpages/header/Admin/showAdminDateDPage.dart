@@ -39,7 +39,8 @@ class _AdminDateDPageState extends State<AdminDateDPage> {
           children: [
             CheckboxListTile(
               value: useAdminTimestampDateD,
-              title: const Text("Use admin timestamp for DateO DateD DateC"),
+              title: const Text(
+                  "Use admin timestamp for DateD(moveToDone) and PaidD in showPaidUnpaid"),
               onChanged: (v) {
                 setState(() {
                   useAdminTimestampDateD = v ?? false;

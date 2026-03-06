@@ -9,13 +9,18 @@ import 'package:laundry_firebase/variables/newvariables/variables.dart';
 void showPaidUnpaid(BuildContext context, JobModelRepository jobRepo) {
   Future<void> saveButtonSetRepository() async {
     jobRepo.currentEmpId = empIdGlobal;
-    if (jobRepo.paidCash || jobRepo.paidGCash) {
-      jobRepo.paidD = Timestamp.now();
-    }
-    jobRepo.paymentReceivedBy = empIdGlobal;
 
     //syncSelectedToRepositorySmall(jobRepo);
     jobRepo.syncSelectedToRepoMin(jobRepo);
+
+    if (jobRepo.paidCash || (jobRepo.paidGCash && jobRepo.paidGCashVerified)) {
+      if (!useAdminTimestampDateD) {
+        adminTimestampDateD = Timestamp.now();
+      }
+      jobRepo.paidD = adminTimestampDateD;
+    }
+
+    jobRepo.paymentReceivedBy = empIdGlobal;
 
     await callDatabaseUpdateJob(context, jobRepo.jobModelData);
     //await setRepositoryLaundryPayment(context, 'Show Jobs OnQueue');
