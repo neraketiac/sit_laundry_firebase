@@ -3,6 +3,71 @@ import 'package:flutter/material.dart';
 import 'package:laundry_firebase/main.dart';
 import 'package:laundry_firebase/services/newservices/database_jobs.dart';
 
+class RunMigration extends StatelessWidget {
+  const RunMigration({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Divider(),
+        const SizedBox(height: 20),
+        const Text(
+          "Migration",
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 10),
+        const Text("Move data to secondary"),
+        const SizedBox(height: 15),
+        ElevatedButton(
+          onPressed: () => runMigration(context),
+          child: const Text("Run Migration"),
+        ),
+      ],
+    );
+  }
+}
+
+class MigrationProgressDialog extends StatefulWidget {
+  const MigrationProgressDialog({super.key});
+
+  @override
+  State<MigrationProgressDialog> createState() =>
+      MigrationProgressDialogState();
+}
+
+class MigrationProgressDialogState extends State<MigrationProgressDialog> {
+  double progress = 0;
+  int processed = 0;
+  int total = 0;
+
+  void update(double value, int p, int t) {
+    setState(() {
+      progress = value;
+      processed = p;
+      total = t;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text("Running Migration"),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          LinearProgressIndicator(value: progress),
+          const SizedBox(height: 15),
+          Text("${(progress * 100).toStringAsFixed(0)}%"),
+          const SizedBox(height: 5),
+          Text("$processed / $total docs"),
+        ],
+      ),
+    );
+  }
+}
+
 Future<void> runMigration(BuildContext context) async {
   final confirm = await showDialog<bool>(
     context: context,
@@ -25,13 +90,13 @@ Future<void> runMigration(BuildContext context) async {
 
   if (confirm != true) return;
 
-  /// SHOW LOADING
+  final progressKey = GlobalKey<MigrationProgressDialogState>();
+
+  /// SHOW PROGRESS DIALOG
   showDialog(
     context: context,
     barrierDismissible: false,
-    builder: (_) => const Center(
-      child: CircularProgressIndicator(),
-    ),
+    builder: (_) => MigrationProgressDialog(key: progressKey),
   );
 
   final main = FirebaseFirestore.instance;
@@ -47,6 +112,17 @@ Future<void> runMigration(BuildContext context) async {
   String resultMessage = "";
 
   try {
+    /// STEP 1: Count total docs
+    int totalDocsAll = 0;
+
+    for (final collectionName in collectionsToMigrate) {
+      final snapshot = await main.collection(collectionName).get();
+      totalDocsAll += snapshot.docs.length;
+    }
+
+    int processedDocs = 0;
+
+    /// STEP 2: Migration
     for (final collectionName in collectionsToMigrate) {
       debugPrint("🔄 Migrating collection: $collectionName");
 
@@ -67,6 +143,16 @@ Future<void> runMigration(BuildContext context) async {
 
         operationCount++;
         totalDocs++;
+        processedDocs++;
+
+        /// UPDATE PROGRESS
+        double progress = processedDocs / totalDocsAll;
+
+        progressKey.currentState?.update(
+          progress,
+          processedDocs,
+          totalDocsAll,
+        );
 
         if (operationCount == 500) {
           await batch.commit();
@@ -88,10 +174,10 @@ Future<void> runMigration(BuildContext context) async {
     resultMessage = "Error: $e";
   }
 
-  /// CLOSE LOADING
+  /// CLOSE PROGRESS DIALOG
   Navigator.pop(context);
 
-  /// SHOW RESULT
+  /// RESULT
   showDialog(
     context: context,
     builder: (_) => AlertDialog(

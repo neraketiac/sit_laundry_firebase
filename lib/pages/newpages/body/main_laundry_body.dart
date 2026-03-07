@@ -16,10 +16,10 @@ import 'package:laundry_firebase/pages/newpages/body/JobsOnQueue/readDataJobsOnQ
 import 'package:laundry_firebase/pages/newpages/body/JobsDone/readDataJobsDone.dart';
 import 'package:laundry_firebase/pages/newpages/body/Supplies/readSuppliesCurrent.dart';
 import 'package:laundry_firebase/pages/newpages/body/Supplies/readSuppliesHist.dart';
-import 'package:laundry_firebase/pages/newpages/header/Admin/runMigration.dart';
-import 'package:laundry_firebase/pages/newpages/header/Admin/showAdminDateDPage.dart';
-import 'package:laundry_firebase/pages/newpages/header/Admin/showBatchTwoWeeksChecking.dart';
-import 'package:laundry_firebase/pages/newpages/header/Admin/showEditCounter.dart';
+import 'package:laundry_firebase/pages/newpages/header/Admin/submigration/runMigration.dart';
+import 'package:laundry_firebase/pages/newpages/header/Admin/submigration/showAdminDateDPage.dart';
+import 'package:laundry_firebase/pages/newpages/header/Admin/submigration/showBatchPromo.dart';
+import 'package:laundry_firebase/pages/newpages/header/Admin/showAdminMainPage.dart';
 import 'package:laundry_firebase/pages/newpages/header/Employee/showSalaryMaintenance.dart';
 import 'package:laundry_firebase/pages/newpages/header/Funds/showCalendarDialog.dart';
 import 'package:laundry_firebase/pages/newpages/header/Funds/showFundCheck.dart';
@@ -250,53 +250,53 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const EditCounter(),
+                    builder: (context) => const ShowAdminMainPage(),
                   ),
                 );
               },
-              child: const Text("Edit Counter"),
+              child: const Text("Tool"),
             ),
-            if (isAdmin)
-              MenuItemButton(
-                style: MenuItemButton.styleFrom(
-                  backgroundColor: Colors.white70,
-                  foregroundColor: Colors.black,
-                ),
-                leadingIcon: const Icon(Icons.calendar_month, size: 18),
-                onPressed: () {
-                  showBatchTwoWeeksChecking(context);
-                },
-                child: const Text("Batch for Promo"),
-              ),
-            if (isAdmin)
-              MenuItemButton(
-                style: MenuItemButton.styleFrom(
-                  backgroundColor: Colors.white70,
-                  foregroundColor: Colors.black,
-                ),
-                leadingIcon: const Icon(Icons.calendar_month, size: 18),
-                onPressed: () {
-                  runMigration(context);
-                },
-                child: const Text("Transfer To Secondary"),
-              ),
-            if (isAdmin)
-              MenuItemButton(
-                style: MenuItemButton.styleFrom(
-                  backgroundColor: Colors.white70,
-                  foregroundColor: Colors.black,
-                ),
-                leadingIcon: const Icon(Icons.edit, size: 18),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const AdminDateDPage(),
-                    ),
-                  );
-                },
-                child: const Text("Set DateD"),
-              ),
+            // if (isAdmin)
+            //   MenuItemButton(
+            //     style: MenuItemButton.styleFrom(
+            //       backgroundColor: Colors.white70,
+            //       foregroundColor: Colors.black,
+            //     ),
+            //     leadingIcon: const Icon(Icons.calendar_month, size: 18),
+            //     onPressed: () {
+            //       showBatchTwoWeeksChecking(context);
+            //     },
+            //     child: const Text("Batch for Promo"),
+            //   ),
+            // if (isAdmin)
+            //   MenuItemButton(
+            //     style: MenuItemButton.styleFrom(
+            //       backgroundColor: Colors.white70,
+            //       foregroundColor: Colors.black,
+            //     ),
+            //     leadingIcon: const Icon(Icons.calendar_month, size: 18),
+            //     onPressed: () {
+            //       runMigration(context);
+            //     },
+            //     child: const Text("Transfer To Secondary"),
+            //   ),
+            // if (isAdmin)
+            //   MenuItemButton(
+            //     style: MenuItemButton.styleFrom(
+            //       backgroundColor: Colors.white70,
+            //       foregroundColor: Colors.black,
+            //     ),
+            //     leadingIcon: const Icon(Icons.edit, size: 18),
+            //     onPressed: () {
+            //       Navigator.push(
+            //         context,
+            //         MaterialPageRoute(
+            //           builder: (context) => const AdminDateDPage(),
+            //         ),
+            //       );
+            //     },
+            //     child: const Text("Set DateD"),
+            //   ),
             // if (isAdmin)
             //   MenuItemButton(
             //     style: MenuItemButton.styleFrom(

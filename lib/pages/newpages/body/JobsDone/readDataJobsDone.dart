@@ -4,6 +4,7 @@ import 'package:laundry_firebase/pages/newpages/body/JobsDone/showDeliverOrCusto
 import 'package:laundry_firebase/pages/newpages/body/JobsDone/showReceipt.dart';
 import 'package:laundry_firebase/pages/newpages/body/JobsOnQueue/showJobOnQueueEdit.dart';
 import 'package:laundry_firebase/pages/newpages/header/Admin/showUpdateDatesEachJobs.dart';
+import 'package:laundry_firebase/pages/newpages/header/Admin/submigration/showAdminJob.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/autocompletecustomer.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedConstantsFinal.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedVisibility.dart';
@@ -404,6 +405,15 @@ Widget readDataJobsDone(Function setState) {
                       cursor: SystemMouseCursors.click,
                       child: InkWell(
                         borderRadius: BorderRadius.circular(18),
+                        onDoubleTap: () {
+                          if (isAdmin) {
+                            showDialog(
+                              context: context,
+                              builder: (_) =>
+                                  AdminJobRepoViewer(jobRepo: jobRepo),
+                            );
+                          }
+                        },
                         onTap: () {
                           setState(() {
                             selectedIndexDone = index;
