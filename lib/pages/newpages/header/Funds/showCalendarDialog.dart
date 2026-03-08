@@ -37,6 +37,56 @@ Future<Map<DateTime, DaySelection>?> showCalendarDialog(BuildContext context) {
   DateTime month = DateTime(DateTime.now().year, DateTime.now().month);
 
   String? selectedEmp;
+  bool initialized = false;
+
+  Future<void> queryDropDown(Function setState, String v) async {
+    setState(() {
+      selectedEmp = v;
+    });
+
+    if (v == null) return;
+
+    final empName = mapEmpId[v]!;
+    final db = DatabaseCoverage();
+
+    final records = await db.getAll(empName);
+
+    setState(() {
+      selections.clear();
+
+      for (final r in records) {
+        final dateStr = r.coverageDate.toString();
+
+        final date = DateTime(
+          int.parse(dateStr.substring(0, 4)),
+          int.parse(dateStr.substring(4, 6)),
+          int.parse(dateStr.substring(6, 8)),
+        );
+
+        bool am = false;
+        bool pm = false;
+
+        switch (r.absent) {
+          case 0:
+            am = true;
+            pm = true;
+            break;
+          case 1:
+            pm = true;
+            break;
+          case 2:
+            am = true;
+            break;
+          case 3:
+            am = false;
+            pm = false;
+            break;
+        }
+
+        selections[date] = DaySelection(a: am, b: pm);
+      }
+    });
+  }
 
   return showDialog<Map<DateTime, DaySelection>>(
     context: context,
@@ -50,6 +100,14 @@ Future<Map<DateTime, DaySelection>?> showCalendarDialog(BuildContext context) {
           final daysInMonth = DateTime(month.year, month.month + 1, 0).day;
           final offset = firstDay.weekday % 7;
           bool isGenerating = false;
+
+          if (!isAdmin && !initialized) {
+            initialized = true;
+
+            Future.microtask(() {
+              queryDropDown(setState, empNameToId[empIdGlobal]!);
+            });
+          }
           return Dialog(
             insetPadding: isSmall ? EdgeInsets.zero : const EdgeInsets.all(24),
             child: SizedBox(
@@ -214,53 +272,55 @@ Future<Map<DateTime, DaySelection>?> showCalendarDialog(BuildContext context) {
                                   )
                                   .toList(),
                               onChanged: (v) async {
-                                setState(() {
-                                  selectedEmp = v;
-                                });
+                                queryDropDown(setState, v!);
 
-                                if (v == null) return;
+                                // setState(() {
+                                //   selectedEmp = v;
+                                // });
 
-                                final empName = mapEmpId[v]!;
-                                final db = DatabaseCoverage();
+                                // if (v == null) return;
 
-                                final records = await db.getAll(empName);
+                                // final empName = mapEmpId[v]!;
+                                // final db = DatabaseCoverage();
 
-                                setState(() {
-                                  selections.clear();
+                                // final records = await db.getAll(empName);
 
-                                  for (final r in records) {
-                                    final dateStr = r.coverageDate.toString();
+                                // setState(() {
+                                //   selections.clear();
 
-                                    final date = DateTime(
-                                      int.parse(dateStr.substring(0, 4)),
-                                      int.parse(dateStr.substring(4, 6)),
-                                      int.parse(dateStr.substring(6, 8)),
-                                    );
+                                //   for (final r in records) {
+                                //     final dateStr = r.coverageDate.toString();
 
-                                    bool am = false;
-                                    bool pm = false;
+                                //     final date = DateTime(
+                                //       int.parse(dateStr.substring(0, 4)),
+                                //       int.parse(dateStr.substring(4, 6)),
+                                //       int.parse(dateStr.substring(6, 8)),
+                                //     );
 
-                                    switch (r.absent) {
-                                      case 0:
-                                        am = true;
-                                        pm = true;
-                                        break;
-                                      case 1:
-                                        pm = true;
-                                        break;
-                                      case 2:
-                                        am = true;
-                                        break;
-                                      case 3:
-                                        am = false;
-                                        pm = false;
-                                        break;
-                                    }
+                                //     bool am = false;
+                                //     bool pm = false;
 
-                                    selections[date] =
-                                        DaySelection(a: am, b: pm);
-                                  }
-                                });
+                                //     switch (r.absent) {
+                                //       case 0:
+                                //         am = true;
+                                //         pm = true;
+                                //         break;
+                                //       case 1:
+                                //         pm = true;
+                                //         break;
+                                //       case 2:
+                                //         am = true;
+                                //         break;
+                                //       case 3:
+                                //         am = false;
+                                //         pm = false;
+                                //         break;
+                                //     }
+
+                                //     selections[date] =
+                                //         DaySelection(a: am, b: pm);
+                                //   }
+                                // });
                               },
                             ),
                           ),
@@ -270,6 +330,8 @@ Future<Map<DateTime, DaySelection>?> showCalendarDialog(BuildContext context) {
                                 ? null
                                 : () async {
                                     if (selectedEmp == null) return;
+
+                                    if (!context.mounted) return;
 
                                     setState(() {
                                       isGenerating = true;
@@ -367,6 +429,7 @@ Future<Map<DateTime, DaySelection>?> showCalendarDialog(BuildContext context) {
 
                                     /// No changes
                                     if (changedDays.isEmpty) {
+                                      if (!context.mounted) return;
                                       setState(() {
                                         isGenerating = false;
                                       });
@@ -413,6 +476,7 @@ Future<Map<DateTime, DaySelection>?> showCalendarDialog(BuildContext context) {
                                       }
                                     }
 
+                                    if (!context.mounted) return;
                                     setState(() {
                                       isGenerating = false;
                                     });
