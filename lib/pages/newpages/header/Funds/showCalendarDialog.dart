@@ -1,5 +1,13 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:laundry_firebase/models/newmodels/coveragerecordmodel.dart';
+import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedMethods.dart';
+import 'package:laundry_firebase/services/newservices/database_coverage.dart';
+import 'package:laundry_firebase/variables/newvariables/supplies_hist_repository.dart';
+import 'package:laundry_firebase/variables/newvariables/variables.dart';
+import 'package:laundry_firebase/variables/newvariables/variables_oth.dart';
+import 'package:laundry_firebase/variables/newvariables/variables_supplies.dart';
 
 class DaySelection {
   bool a;
@@ -15,8 +23,10 @@ class _W extends StatelessWidget {
   Widget build(BuildContext context) {
     return Expanded(
       child: Center(
-        child: Text(t,
-            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+        child: Text(
+          t,
+          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+        ),
       ),
     );
   }
@@ -25,6 +35,8 @@ class _W extends StatelessWidget {
 Future<Map<DateTime, DaySelection>?> showCalendarDialog(BuildContext context) {
   final selections = <DateTime, DaySelection>{};
   DateTime month = DateTime(DateTime.now().year, DateTime.now().month);
+
+  String? selectedEmp;
 
   return showDialog<Map<DateTime, DaySelection>>(
     context: context,
@@ -37,21 +49,22 @@ Future<Map<DateTime, DaySelection>?> showCalendarDialog(BuildContext context) {
           final firstDay = DateTime(month.year, month.month, 1);
           final daysInMonth = DateTime(month.year, month.month + 1, 0).day;
           final offset = firstDay.weekday % 7;
-
+          bool isGenerating = false;
           return Dialog(
             insetPadding: isSmall ? EdgeInsets.zero : const EdgeInsets.all(24),
             child: SizedBox(
               width: isSmall ? double.infinity : 460,
-              height: isSmall ? size.height : size.height * 0.7,
+              height: isSmall ? size.height : size.height * 0.75,
               child: Column(
                 children: [
-                  // 🔹 Header
+                  /// HEADER
                   Row(
                     children: [
                       IconButton(
                         icon: const Icon(Icons.chevron_left),
-                        onPressed: () => setState(() =>
-                            month = DateTime(month.year, month.month - 1)),
+                        onPressed: () => setState(
+                          () => month = DateTime(month.year, month.month - 1),
+                        ),
                       ),
                       Expanded(
                         child: Center(
@@ -64,13 +77,14 @@ Future<Map<DateTime, DaySelection>?> showCalendarDialog(BuildContext context) {
                       ),
                       IconButton(
                         icon: const Icon(Icons.chevron_right),
-                        onPressed: () => setState(() =>
-                            month = DateTime(month.year, month.month + 1)),
+                        onPressed: () => setState(
+                          () => month = DateTime(month.year, month.month + 1),
+                        ),
                       ),
                     ],
                   ),
 
-                  // 🔹 Weekdays
+                  /// WEEKDAYS
                   const Row(
                     children: [
                       _W('Sun'),
@@ -85,7 +99,7 @@ Future<Map<DateTime, DaySelection>?> showCalendarDialog(BuildContext context) {
 
                   const SizedBox(height: 4),
 
-                  // 🔹 Calendar
+                  /// CALENDAR
                   Expanded(
                     child: GridView.builder(
                       padding: const EdgeInsets.all(4),
@@ -102,48 +116,77 @@ Future<Map<DateTime, DaySelection>?> showCalendarDialog(BuildContext context) {
 
                         final day = i - offset + 1;
                         final date = DateTime(month.year, month.month, day);
+
+                        final now = DateTime.now();
+                        final startOfWeek =
+                            DateTime(now.year, now.month, now.day)
+                                .subtract(Duration(days: now.weekday - 1));
+
+                        final isPastWeek = date.isBefore(startOfWeek);
+
+                        /// admins can bypass lock
+                        final isLocked = !isAdmin && isPastWeek;
+
+                        final today = DateTime.now();
+                        final isToday = date.year == today.year &&
+                            date.month == today.month &&
+                            date.day == today.day;
+
                         selections.putIfAbsent(date, () => DaySelection());
                         final d = selections[date]!;
 
                         return Container(
                           decoration: BoxDecoration(
+                            color: isPastWeek
+                                ? Colors.grey.shade600
+                                : isToday
+                                    ? Colors.amber.shade100
+                                    : Colors.blue.shade50,
                             border: Border.all(color: Colors.black12),
+                            borderRadius: BorderRadius.circular(6),
                           ),
                           child: Column(
                             children: [
-                              Text('$day',
-                                  style: const TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold)),
+                              Text(
+                                '$day',
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Checkbox(
                                     value: d.a,
-                                    onChanged: (v) =>
-                                        setState(() => d.a = v ?? false),
+                                    activeColor: Colors.green,
+                                    onChanged: isLocked
+                                        ? null
+                                        : (v) =>
+                                            setState(() => d.a = v ?? false),
                                     visualDensity: const VisualDensity(
                                         horizontal: -4, vertical: -4),
                                   ),
                                   Checkbox(
                                     value: d.b,
-                                    onChanged: (v) =>
-                                        setState(() => d.b = v ?? false),
+                                    activeColor: Colors.green,
+                                    onChanged: isLocked
+                                        ? null
+                                        : (v) =>
+                                            setState(() => d.b = v ?? false),
                                     visualDensity: const VisualDensity(
                                         horizontal: -4, vertical: -4),
                                   ),
                                 ],
                               ),
-                              Row(
+                              const Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Text('am'),
-                                  SizedBox(
-                                    width: 5,
-                                  ),
-                                  Text('pm')
+                                  SizedBox(width: 5),
+                                  Text('pm'),
                                 ],
-                              )
+                              ),
                             ],
                           ),
                         );
@@ -151,27 +194,259 @@ Future<Map<DateTime, DaySelection>?> showCalendarDialog(BuildContext context) {
                     ),
                   ),
 
-                  // 🔹 Actions
-                  Padding(
-                    padding: const EdgeInsets.all(8),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: OutlinedButton(
-                            onPressed: () => Navigator.pop(context),
-                            child: const Text('Cancel'),
+                  /// 🔹 DROPDOWN + GENERATE
+                  if (isAdmin)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 6),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: DropdownButtonFormField<String>(
+                              value: selectedEmp,
+                              hint: const Text("Select Employee"),
+                              items: mapEmpId.entries
+                                  .map(
+                                    (e) => DropdownMenuItem(
+                                      value: e.key,
+                                      child: Text(e.value),
+                                    ),
+                                  )
+                                  .toList(),
+                              onChanged: (v) async {
+                                setState(() {
+                                  selectedEmp = v;
+                                });
+
+                                if (v == null) return;
+
+                                final empName = mapEmpId[v]!;
+                                final db = DatabaseCoverage();
+
+                                final records = await db.getAll(empName);
+
+                                setState(() {
+                                  selections.clear();
+
+                                  for (final r in records) {
+                                    final dateStr = r.coverageDate.toString();
+
+                                    final date = DateTime(
+                                      int.parse(dateStr.substring(0, 4)),
+                                      int.parse(dateStr.substring(4, 6)),
+                                      int.parse(dateStr.substring(6, 8)),
+                                    );
+
+                                    bool am = false;
+                                    bool pm = false;
+
+                                    switch (r.absent) {
+                                      case 0:
+                                        am = true;
+                                        pm = true;
+                                        break;
+                                      case 1:
+                                        pm = true;
+                                        break;
+                                      case 2:
+                                        am = true;
+                                        break;
+                                      case 3:
+                                        am = false;
+                                        pm = false;
+                                        break;
+                                    }
+
+                                    selections[date] =
+                                        DaySelection(a: am, b: pm);
+                                  }
+                                });
+                              },
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: ElevatedButton(
-                            onPressed: () => Navigator.pop(context, selections),
-                            child: const Text('Save'),
-                          ),
-                        ),
-                      ],
+                          const SizedBox(width: 10),
+                          ElevatedButton(
+                            onPressed: isGenerating
+                                ? null
+                                : () async {
+                                    if (selectedEmp == null) return;
+
+                                    setState(() {
+                                      isGenerating = true;
+                                    });
+
+                                    final rate =
+                                        mapEmpIdRates[selectedEmp] ?? 0;
+                                    final empName = mapEmpId[selectedEmp]!;
+
+                                    final db = DatabaseCoverage();
+                                    final firestore =
+                                        FirebaseFirestore.instance;
+
+                                    /// Load existing records
+                                    final existing = await db.getAll(empName);
+
+                                    final Map<int, int> firestoreMap = {
+                                      for (var r in existing)
+                                        r.coverageDate: r.absent
+                                    };
+
+                                    final batch = firestore.batch();
+
+                                    List<CoverageRecordModel> changedDays = [];
+
+                                    for (final entry in selections.entries) {
+                                      final date = entry.key;
+                                      final sel = entry.value;
+
+                                      int absent = 0;
+
+                                      if (sel.a && sel.b) {
+                                        absent = 0;
+                                      } else if (!sel.a && sel.b) {
+                                        absent = 1;
+                                      } else if (sel.a && !sel.b) {
+                                        absent = 2;
+                                      } else {
+                                        absent = 3;
+                                      }
+
+                                      final coverageDate = int.parse(
+                                          DateFormat('yyyyMMdd').format(date));
+
+                                      final oldAbsent =
+                                          firestoreMap[coverageDate];
+
+                                      /// skip if nothing changed
+                                      if (oldAbsent == absent) continue;
+
+                                      int earned = 0;
+
+                                      /// normal earnings
+                                      if (absent == 0) {
+                                        earned = rate;
+                                      } else if (absent == 1 || absent == 2) {
+                                        earned = rate ~/ 2;
+                                      }
+
+                                      /// REVERSAL LOGIC
+                                      if (oldAbsent != null &&
+                                          absent == 3 &&
+                                          oldAbsent != 3) {
+                                        int oldEarned = 0;
+
+                                        if (oldAbsent == 0) {
+                                          oldEarned = rate;
+                                        } else if (oldAbsent == 1 ||
+                                            oldAbsent == 2) {
+                                          oldEarned = rate ~/ 2;
+                                        }
+
+                                        earned = -oldEarned;
+                                      }
+
+                                      final record = CoverageRecordModel(
+                                        docId: '',
+                                        coverageDate: coverageDate,
+                                        amountEarned: earned,
+                                        absent: absent,
+                                        empId: empName,
+                                        remarks: '',
+                                      );
+
+                                      changedDays.add(record);
+
+                                      final docRef = firestore
+                                          .collection('coverage_records')
+                                          .doc(empName)
+                                          .collection('dates')
+                                          .doc(coverageDate.toString());
+
+                                      batch.set(docRef, record.toMap());
+                                    }
+
+                                    /// No changes
+                                    if (changedDays.isEmpty) {
+                                      setState(() {
+                                        isGenerating = false;
+                                      });
+
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        const SnackBar(
+                                          content: Text("No changes detected"),
+                                        ),
+                                      );
+
+                                      return;
+                                    }
+
+                                    /// Commit batch
+                                    await batch.commit();
+
+                                    /// Log transactions
+                                    for (final r in changedDays) {
+                                      if (r.amountEarned != 0) {
+                                        SuppliesHistRepository.instance
+                                            .setItemName(getItemNameOnly(
+                                                menuOthCashInOutFunds,
+                                                menuOthSalaryPayment!));
+
+                                        SuppliesHistRepository.instance
+                                            .setItemId(menuOthCashInOutFunds);
+                                        SuppliesHistRepository.instance
+                                            .setItemUniqueId(
+                                                menuOthSalaryPayment!);
+                                        SuppliesHistRepository.instance
+                                            .setRemarks("Auto generated");
+
+                                        SuppliesHistRepository.instance
+                                            .setCurrentCounter(r.amountEarned);
+
+                                        SuppliesHistRepository.instance
+                                            .setCustomerName(r.empId);
+
+                                        SuppliesHistRepository.instance
+                                            .setEmpId(empNameToId[r.empId]!);
+
+                                        await setSuppliesRepository(context);
+                                      }
+                                    }
+
+                                    setState(() {
+                                      isGenerating = false;
+                                    });
+
+                                    final formattedDays = changedDays
+                                        .map((r) => DateFormat('MMM dd').format(
+                                              DateTime.parse(
+                                                  r.coverageDate.toString()),
+                                            ))
+                                        .join(", ");
+
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          "Updated ${changedDays.length} day(s): $formattedDays",
+                                        ),
+                                        duration: const Duration(seconds: 3),
+                                      ),
+                                    );
+                                  },
+                            child: isGenerating
+                                ? const SizedBox(
+                                    height: 18,
+                                    width: 18,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : const Text("Generate"),
+                          )
+                        ],
+                      ),
                     ),
-                  ),
                 ],
               ),
             ),

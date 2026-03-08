@@ -417,6 +417,14 @@ const Map<String, String> mapEmpId = {
   '1616#': 'DonF',
 };
 
+const Map<String, int> mapEmpIdRates = {
+  '#1515': 400,
+  '#1212': 450,
+  '#1919': 500,
+  '#2020': 400,
+  '#3131': 400,
+};
+
 final Map<String, String> empNameToId = {
   for (var e in mapEmpId.entries) e.value: e.key
 };
