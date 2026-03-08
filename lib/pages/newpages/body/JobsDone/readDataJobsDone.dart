@@ -2,11 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:laundry_firebase/models/newmodels/jobmodel.dart';
 import 'package:laundry_firebase/pages/newpages/body/JobsDone/showDeliverOrCustomerPickup.dart';
 import 'package:laundry_firebase/pages/newpages/body/JobsDone/showReceipt.dart';
-import 'package:laundry_firebase/pages/newpages/body/JobsOnQueue/showJobOnQueueEdit.dart';
-import 'package:laundry_firebase/pages/newpages/header/Admin/showUpdateDatesEachJobs.dart';
-import 'package:laundry_firebase/pages/newpages/header/Admin/submigration/showAdminJob.dart';
+import 'package:laundry_firebase/pages/newpages/header/Admin/subAdmin/showAdminJob.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/autocompletecustomer.dart';
-import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedConstantsFinal.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedVisibility.dart';
 import 'package:laundry_firebase/services/newservices/database_jobs.dart';
 import 'package:laundry_firebase/variables/newvariables/jobmodel_repository.dart';
@@ -24,6 +21,88 @@ Widget readDataJobsDone(Function setState) {
         ..clear()
         ..addAll(originalJobsCompleted);
     });
+  }
+
+  Future<void> sortByCalendar(BuildContext context) async {
+    DateTime now = DateTime.now();
+    DateTime? selected;
+
+    void sortJobsByDay(DateTime selectedDay) {
+      setState(() {
+        sortedJobsDone
+          ..clear()
+          ..addAll(
+            originalJobsDone.where((job) {
+              final d = job.dateD.toDate();
+
+              return d.year == selectedDay.year &&
+                  d.month == selectedDay.month &&
+                  d.day == selectedDay.day;
+            }),
+          );
+
+        sortedJobsCompleted
+          ..clear()
+          ..addAll(
+            originalJobsCompleted.where((job) {
+              final d = job.dateD.toDate();
+
+              return d.year == selectedDay.year &&
+                  d.month == selectedDay.month &&
+                  d.day == selectedDay.day;
+            }),
+          );
+      });
+    }
+
+    selected = await showModalBottomSheet<DateTime>(
+      context: context,
+      builder: (context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.today),
+                title: const Text("Today"),
+                onTap: () => Navigator.pop(
+                    context, DateTime(now.year, now.month, now.day)),
+              ),
+              ListTile(
+                leading: const Icon(Icons.history),
+                title: const Text("Yesterday"),
+                onTap: () => Navigator.pop(
+                  context,
+                  DateTime(now.year, now.month, now.day - 1),
+                ),
+              ),
+              ListTile(
+                leading: const Icon(Icons.calendar_month),
+                title: const Text("Pick Date"),
+                onTap: () async {
+                  Navigator.pop(context);
+
+                  DateTime? picked = await showDatePicker(
+                    context: context,
+                    initialDate: now,
+                    firstDate: DateTime(2020),
+                    lastDate: DateTime(2100),
+                  );
+
+                  if (picked != null) {
+                    sortJobsByDay(picked);
+                  }
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+
+    if (selected != null) {
+      sortJobsByDay(selected);
+    }
   }
 
   Future<void> sortClothesStillInHere(BuildContext context) async {
@@ -163,216 +242,39 @@ Widget readDataJobsDone(Function setState) {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  SizedBox(
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color.fromARGB(255, 22, 198, 84),
-                        padding: EdgeInsets.zero, // important for Stack layout
-                      ),
-                      onPressed: () async {
-                        sortOriginal(context);
-                      },
-                      child: Stack(
-                        clipBehavior: Clip.none,
-                        alignment: Alignment.center,
-                        children: [
-                          // Main Icon (emoji)
-                          const Text(
-                            '📶',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 22,
-                            ),
-                          ),
-
-                          // Floating small text badge
-                          Positioned(
-                            top: -4,
-                            right: -5,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 5,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.red,
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Text(
-                                '$intJobsDoneDefault',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 9,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                  IconBadgeButton(
+                    icon: '📶',
+                    tooltip: "All Done clothes",
+                    badgeCount: intJobsDoneDefault,
+                    onPressed: () => sortOriginal(context),
                   ),
-                  SizedBox(
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color.fromARGB(255, 22, 198, 84),
-                        padding: EdgeInsets.zero, // important for Stack layout
-                      ),
-                      onPressed: () async {
-                        sortClothesStillInHere(context);
-                      },
-                      child: Stack(
-                        clipBehavior: Clip.none,
-                        alignment: Alignment.center,
-                        children: [
-                          // Main Icon (emoji)
-                          const Text(
-                            '👕',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 22,
-                            ),
-                          ),
-
-                          // Floating small text badge
-                          Positioned(
-                            top: -4,
-                            right: -5,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 5,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.red,
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Text(
-                                '$intJobsDoneClothesHere',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 9,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                  IconBadgeButton(
+                    icon: '👕',
+                    tooltip: "Clothes still here",
+                    badgeCount: intJobsDoneClothesHere,
+                    onPressed: () => sortClothesStillInHere(context),
                   ),
-                  SizedBox(
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color.fromARGB(255, 22, 198, 84),
-                        padding: EdgeInsets.zero, // important for Stack layout
-                      ),
-                      onPressed: () async {
-                        sortNoticeGCash(context);
-                      },
-                      child: Stack(
-                        clipBehavior: Clip.none,
-                        alignment: Alignment.center,
-                        children: [
-                          // Main Icon (emoji)
-                          const Text(
-                            '💳',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 22,
-                            ),
-                          ),
-
-                          // Floating small text badge
-                          Positioned(
-                            top: -4,
-                            right: -5,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 5,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.red,
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Text(
-                                '$intJobsDoneClothesGoneGCash',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 9,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                  IconBadgeButton(
+                    icon: '💳',
+                    tooltip: "Delivered Pending GCash",
+                    badgeCount: intJobsDoneClothesGoneGCash,
+                    onPressed: () => sortNoticeGCash(context),
                   ),
-                  SizedBox(
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color.fromARGB(255, 22, 198, 84),
-                        padding: EdgeInsets.zero, // important for Stack layout
-                      ),
-                      onPressed: () async {
-                        sortNoticeCash(context);
-                      },
-                      child: Stack(
-                        clipBehavior: Clip.none,
-                        alignment: Alignment.center,
-                        children: [
-                          // Main Icon (emoji)
-                          const Text(
-                            '⚠️',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 22,
-                            ),
-                          ),
-
-                          // Floating small text badge
-                          Positioned(
-                            top: -4,
-                            right: -5,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 5,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.red,
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Text(
-                                '$intJobsDoneClothesGoneCash',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 9,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                  IconBadgeButton(
+                    icon: '⚠️',
+                    tooltip: "Clothes gone Unpaid",
+                    badgeCount: intJobsDoneClothesGoneCash,
+                    onPressed: () => sortNoticeCash(context),
                   ),
-                  SizedBox(
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color.fromARGB(255, 22, 198, 84),
-                      ),
-                      onPressed: () async {
-                        // await cycleSort(context);
-                        await showSearchDialog(context);
-                      },
-                      child: Text(
-                        '🔍',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ),
+                  IconBadgeButton(
+                    icon: '🗓️',
+                    tooltip: "Done Clothes Today",
+                    onPressed: () => sortByCalendar(context),
+                  ),
+                  IconBadgeButton(
+                    icon: '🔍',
+                    tooltip: "Find customer",
+                    onPressed: () => showSearchDialog(context),
                   ),
                 ],
               ),
@@ -505,4 +407,71 @@ Widget readDataJobsDone(Function setState) {
       );
     },
   );
+}
+
+class IconBadgeButton extends StatelessWidget {
+  final String icon;
+  final String tooltip;
+  final int? badgeCount;
+  final VoidCallback onPressed;
+
+  const IconBadgeButton({
+    super.key,
+    required this.icon,
+    required this.tooltip,
+    required this.onPressed,
+    this.badgeCount,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: tooltip,
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color.fromARGB(255, 22, 198, 84),
+          padding: EdgeInsets.zero,
+          minimumSize: const Size(40, 40),
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        ),
+        onPressed: onPressed,
+        child: Stack(
+          clipBehavior: Clip.none,
+          alignment: Alignment.center,
+          children: [
+            Text(
+              icon,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 22,
+              ),
+            ),
+            if (badgeCount != null && badgeCount! > 0)
+              Positioned(
+                top: -4,
+                right: -5,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 5,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.red,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    '$badgeCount',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 9,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
 }

@@ -16,9 +16,9 @@ import 'package:laundry_firebase/pages/newpages/body/JobsOnQueue/readDataJobsOnQ
 import 'package:laundry_firebase/pages/newpages/body/JobsDone/readDataJobsDone.dart';
 import 'package:laundry_firebase/pages/newpages/body/Supplies/readSuppliesCurrent.dart';
 import 'package:laundry_firebase/pages/newpages/body/Supplies/readSuppliesHist.dart';
-import 'package:laundry_firebase/pages/newpages/header/Admin/submigration/runMigration.dart';
-import 'package:laundry_firebase/pages/newpages/header/Admin/submigration/showAdminDateDPage.dart';
-import 'package:laundry_firebase/pages/newpages/header/Admin/submigration/showBatchPromo.dart';
+import 'package:laundry_firebase/pages/newpages/header/Admin/subAdmin/runMigration.dart';
+import 'package:laundry_firebase/pages/newpages/header/Admin/subAdmin/showAdminDateDPage.dart';
+import 'package:laundry_firebase/pages/newpages/header/Admin/subAdmin/showBatchPromo.dart';
 import 'package:laundry_firebase/pages/newpages/header/Admin/showAdminMainPage.dart';
 import 'package:laundry_firebase/pages/newpages/header/Employee/showSalaryMaintenance.dart';
 import 'package:laundry_firebase/pages/newpages/header/Funds/showCalendarDialog.dart';
@@ -149,54 +149,54 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
             );
           },
           menuChildren: [
-            MenuItemButton(
-              style: MenuItemButton.styleFrom(
-                backgroundColor: const Color(0xFF673AB7), // Deep Purple
-                foregroundColor: Colors.white,
-              ),
-              onPressed: () async {
-                if (isProcessing) return;
+            // MenuItemButton(
+            //   style: MenuItemButton.styleFrom(
+            //     backgroundColor: const Color(0xFF673AB7), // Deep Purple
+            //     foregroundColor: Colors.white,
+            //   ),
+            //   onPressed: () async {
+            //     if (isProcessing) return;
 
-                final bool? confirm = await showDialog<bool>(
-                  context: context,
-                  builder: (context) {
-                    return AlertDialog(
-                      title: const Text("Confirm Action"),
-                      content: const Text(
-                        "Move ALL Done jobs to Completed?\n\nThis action cannot be undone.",
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(context, false),
-                          child: const Text("No"),
-                        ),
-                        ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF673AB7),
-                            foregroundColor: Colors.white,
-                          ),
-                          onPressed: () => Navigator.pop(context, true),
-                          child: const Text("Yes"),
-                        ),
-                      ],
-                    );
-                  },
-                );
+            //     final bool? confirm = await showDialog<bool>(
+            //       context: context,
+            //       builder: (context) {
+            //         return AlertDialog(
+            //           title: const Text("Confirm Action"),
+            //           content: const Text(
+            //             "Move ALL Done jobs to Completed?\n\nThis action cannot be undone.",
+            //           ),
+            //           actions: [
+            //             TextButton(
+            //               onPressed: () => Navigator.pop(context, false),
+            //               child: const Text("No"),
+            //             ),
+            //             ElevatedButton(
+            //               style: ElevatedButton.styleFrom(
+            //                 backgroundColor: const Color(0xFF673AB7),
+            //                 foregroundColor: Colors.white,
+            //               ),
+            //               onPressed: () => Navigator.pop(context, true),
+            //               child: const Text("Yes"),
+            //             ),
+            //           ],
+            //         );
+            //       },
+            //     );
 
-                if (confirm != true) return;
+            //     if (confirm != true) return;
 
-                setState(() => isProcessing = true);
+            //     setState(() => isProcessing = true);
 
-                try {
-                  await moveAllDoneToCompleted();
-                } finally {
-                  if (mounted) {
-                    setState(() => isProcessing = false);
-                  }
-                }
-              },
-              child: const Text("🧺 Done → Completed"),
-            ),
+            //     try {
+            //       await moveAllDoneToCompleted();
+            //     } finally {
+            //       if (mounted) {
+            //         setState(() => isProcessing = false);
+            //       }
+            //     }
+            //   },
+            //   child: const Text("🧺 Done → Completed"),
+            // ),
             MenuItemButton(
               style: MenuItemButton.styleFrom(
                 backgroundColor: Colors.blueGrey.shade600,
@@ -254,7 +254,7 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                   ),
                 );
               },
-              child: const Text("Tool"),
+              child: const Text("Tools"),
             ),
             // if (isAdmin)
             //   MenuItemButton(

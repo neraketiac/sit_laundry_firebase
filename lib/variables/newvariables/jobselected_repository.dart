@@ -85,6 +85,7 @@ class JobselectedRepository {
   bool _selectedForDisposal = false;
   //       disposed: false)
   bool _selectedDisposed = false;
+  bool _selectedIsPromoCounter = false;
 
   //*************************************************************************** */
   //usable but not directly connected to repo, use only for input or computation
@@ -144,6 +145,7 @@ class JobselectedRepository {
   double get selectedAllStatus => _selectedAllStatus;
   bool get selectedForDisposal => _selectedForDisposal;
   bool get selectedDisposed => _selectedDisposed;
+  bool get selectedIsPromoCounter => _selectedIsPromoCounter;
   TextEditingController get selectedCustomerNameVar => _selectedCustomerNameVar;
   TextEditingController get repoVarCashAmountVar => _repoVarCashAmountVar;
   TextEditingController get repoVarGCashAmountVar => _repoVarGCashAmountVar;
@@ -194,6 +196,7 @@ class JobselectedRepository {
   set selectedAllStatus(double v) => _selectedAllStatus = v;
   set selectedForDisposal(bool v) => _selectedForDisposal = v;
   set selectedDisposed(bool v) => _selectedDisposed = v;
+  set selectedIsPromoCounter(bool v) => _selectedIsPromoCounter = v;
   set selectedCustomerNameVar(TextEditingController v) =>
       _selectedCustomerNameVar = v;
   set repoVarCashAmountVar(TextEditingController v) =>
@@ -248,6 +251,7 @@ class JobselectedRepository {
     selectedAllStatus = 0;
     selectedForDisposal = false;
     selectedDisposed = false;
+    selectedIsPromoCounter = false;
     repoVarCashAmountVar.text = '';
     repoVarGCashAmountVar.text = '';
     repoVarSelectedIntRiderPickup = intForSorting;

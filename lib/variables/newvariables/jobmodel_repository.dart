@@ -160,6 +160,7 @@ class JobModelRepository {
   bool get forDisposal => jobModel.forDisposal;
   bool get disposed => jobModel.disposed;
   bool get isSyncToDB2 => jobModel.isSyncToDB2;
+  bool get isPromoCounter => jobModel.isPromoCounter;
 
   /////////////////////////////////////////////////////////////
   //                          SETTER                         //
@@ -226,6 +227,7 @@ class JobModelRepository {
   set forDisposal(bool value) => jobModel.forDisposal = value;
   set disposed(bool value) => jobModel.disposed = value;
   set isSyncToDB2(bool value) => jobModel.isSyncToDB2 = value;
+  set isPromoCounter(bool value) => jobModel.isPromoCounter = value;
 
   /////////////////////////////////////////////////////////////
   //                          ITEMS                          //
@@ -384,7 +386,10 @@ class JobModelRepository {
   bool get selectedDisposed => jobselectedRepository.selectedDisposed;
   set selectedDisposed(bool value) =>
       jobselectedRepository.selectedDisposed = value;
-
+  bool get selectedIsPromoCounter =>
+      jobselectedRepository.selectedIsPromoCounter;
+  set selectedIsPromoCounter(bool value) =>
+      jobselectedRepository.selectedIsPromoCounter = value;
 // ================= REPO VAR =================
 
   TextEditingController get selectedCustomerNameVar =>
@@ -567,6 +572,7 @@ class JobModelRepository {
     /// 🔴 Disposal
     selectedForDisposal = jobRepo.forDisposal;
     selectedDisposed = jobRepo.disposed;
+    selectedIsPromoCounter = jobRepo.isPromoCounter;
   }
 
   void syncRepoToSelectedMin(JobModelRepository jobRepo) {
@@ -807,6 +813,7 @@ class JobModelRepository {
     /// 🔴 Disposal
     jobRepo.forDisposal = selectedForDisposal;
     jobRepo.disposed = selectedDisposed;
+    jobRepo.isPromoCounter = selectedIsPromoCounter;
   }
 
   void syncSelectedToRepoMin(JobModelRepository jobRepo) {

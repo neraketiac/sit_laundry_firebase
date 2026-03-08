@@ -128,14 +128,16 @@ Future<void> showBatchTwoWeeksChecking(BuildContext context) async {
         final Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
 
         final bool unpaid = data['P00_Unpaid'] ?? false;
-        final Timestamp? ts = data['A05_DateD'] as Timestamp?;
-        //print(ts?.toDate());
+        final Timestamp? tsDateD = data['A05_DateD'] as Timestamp?;
+        final Timestamp? tsPaidD = data['A03_PaidD'] as Timestamp?;
 
-        if (ts == null) continue;
+        if (tsDateD == null) continue;
+        if (tsPaidD == null) continue;
 
-        final DateTime jobDate = ts.toDate();
+        final DateTime jobDateD = tsDateD.toDate();
+        final DateTime jobPaidD = tsPaidD.toDate();
 
-        final gap = previousDate.difference(jobDate);
+        final gap = previousDate.difference(jobDateD);
 
         /// within 2 weeks
         //print('gap=${gap.inDays}');
@@ -147,7 +149,16 @@ Future<void> showBatchTwoWeeksChecking(BuildContext context) async {
           }
           //only change previousDate if paid if not, dont change previous date
           if (!unpaid && data['Q06_PromoCounter'] > 0) {
-            previousDate = jobDate;
+            previousDate = jobDateD;
+
+            //if paid date is delayed, compare
+            //job 5 paid date vs job 4 date done.
+            //if on time, compare
+            //job 5 date date vs job 4 date done.
+            //do this only in real data
+            if (jobPaidD.isAfter(jobDateD)) {
+              previousDate = jobPaidD;
+            }
           }
 
           continue;

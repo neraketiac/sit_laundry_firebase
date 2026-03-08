@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:laundry_firebase/pages/newpages/header/Admin/submigration/runMigration.dart';
-import 'package:laundry_firebase/pages/newpages/header/Admin/submigration/showAdminDateDPage.dart';
-import 'package:laundry_firebase/pages/newpages/header/Admin/submigration/showBatchPromo.dart';
-import 'package:laundry_firebase/pages/newpages/header/Admin/submigration/showDeleteSecondary.dart';
+import 'package:laundry_firebase/pages/newpages/header/Admin/subAdmin/runMigration.dart';
+import 'package:laundry_firebase/pages/newpages/header/Admin/subAdmin/showAdminDateDPage.dart';
+import 'package:laundry_firebase/pages/newpages/header/Admin/subAdmin/showBatchPromo.dart';
+import 'package:laundry_firebase/pages/newpages/header/Admin/subAdmin/showDeleteSecondary.dart';
+import 'package:laundry_firebase/pages/newpages/header/Admin/subAdmin/showFixPaymentDate.dart';
+import 'package:laundry_firebase/pages/newpages/header/Admin/subAdmin/showMoveDoneToCompleted.dart';
 import 'package:laundry_firebase/variables/newvariables/variables.dart';
 
 class ShowAdminMainPage extends StatefulWidget {
@@ -57,7 +59,7 @@ class _ShowAdminMainPageState extends State<ShowAdminMainPage> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Edit Counter')),
+      appBar: AppBar(title: const Text('Tools')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -73,6 +75,11 @@ class _ShowAdminMainPageState extends State<ShowAdminMainPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Text(
+                      "The number below will be the next number for Jobs-OnGoing."),
+                  const SizedBox(
+                    height: 10,
+                  ),
                   TextField(
                     controller: controller,
                     keyboardType: TextInputType.number,
@@ -100,6 +107,20 @@ class _ShowAdminMainPageState extends State<ShowAdminMainPage> {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const BatchPromo(),
+              ),
+
+            const SizedBox(
+              height: 30,
+            ),
+
+            if (isAdmin)
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const ShowMoveDoneToCompleted(),
               ),
 
             const SizedBox(height: 30),
@@ -139,6 +160,18 @@ class _ShowAdminMainPageState extends State<ShowAdminMainPage> {
               ),
 
             const SizedBox(height: 40),
+
+            // if (isAdmin)
+            //   Container(
+            //     padding: const EdgeInsets.all(16),
+            //     decoration: BoxDecoration(
+            //       color: Colors.grey.shade300,
+            //       borderRadius: BorderRadius.circular(8),
+            //     ),
+            //     child: const FixUnpaidJobsWidget(),
+            //   ),
+
+            // const SizedBox(height: 40),
           ],
         ),
       ),
