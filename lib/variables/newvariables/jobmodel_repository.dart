@@ -913,10 +913,6 @@ class JobModelRepository {
     /// 🟠 Workflow Step
     jobRepo.processStep = selectedProcessStep;
 
-    if (!useAdminTimestampDateD) {
-      adminTimestampDateD = Timestamp.now();
-    }
-
     //ALLSTATUS = 1
     /// 🟣 Dates
     /// no one calls min of this method in done and completed
@@ -926,11 +922,11 @@ class JobModelRepository {
               (jobRepo.selectedPaidGCash && jobRepo.selectedPaidGCashVerified));
 
       if (jobRepo.selectedIsCustomerPickedUp) {
-        jobRepo.customerPickupDate = adminTimestampDateD;
+        jobRepo.customerPickupDate = Timestamp.now();
       }
 
       if (jobRepo.selectedIsDeliveredToCustomer) {
-        jobRepo.riderDeliveryDate = adminTimestampDateD;
+        jobRepo.riderDeliveryDate = Timestamp.now();
       }
 
       if (jobRepo.selectedIsCustomerPickedUp ||
