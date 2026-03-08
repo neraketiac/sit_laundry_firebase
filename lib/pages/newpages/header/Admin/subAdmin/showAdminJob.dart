@@ -450,6 +450,20 @@ class _AdminJobRepoViewerState extends State<AdminJobRepoViewer> {
         //   },
         //   child: const Text("Sync Repo → Selected"),
         // ),
+
+        TextButton(
+          onPressed: () {
+            setState(() {
+              syncRepoToSelectedALL(jobRepo);
+            });
+
+            Navigator.pop(context); // close popup
+          },
+          child: const Text(
+            'Cancel',
+            style: TextStyle(color: Colors.black),
+          ),
+        ),
         boxButtonElevated(
             context: context,
             label: 'Save',

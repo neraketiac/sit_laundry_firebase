@@ -460,8 +460,8 @@ Future<Map<DateTime, DaySelection>?> showCalendarDialog(BuildContext context) {
                                         SuppliesHistRepository.instance
                                             .setItemUniqueId(
                                                 menuOthSalaryPayment!);
-                                        SuppliesHistRepository.instance
-                                            .setRemarks("Auto generated");
+                                        SuppliesHistRepository.instance.setRemarks(
+                                            "Auto generated ${r.coverageDate} ${r.amountEarned < 0 ? ' reverted' : ''}");
 
                                         SuppliesHistRepository.instance
                                             .setCurrentCounter(r.amountEarned);
@@ -511,6 +511,21 @@ Future<Map<DateTime, DaySelection>?> showCalendarDialog(BuildContext context) {
                         ],
                       ),
                     ),
+
+                  /// ACTIONS
+                  Padding(
+                    padding: const EdgeInsets.all(8),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text('Cancel'),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),

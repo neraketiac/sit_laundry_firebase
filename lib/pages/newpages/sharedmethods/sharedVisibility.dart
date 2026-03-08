@@ -2364,22 +2364,23 @@ InkWell visIconArea(BuildContext context, JobModelRepository jobRepo,
           width: 38,
           height: 38,
           child: CircularProgressIndicator(
-            value: jobRepo.allStatus,
-            strokeWidth: 6,
-            // backgroundColor: backGroundStatusColor(job),
-            // color: Colors.transparent,
-          ),
+              value: jobRepo.allStatus,
+              strokeWidth: 6,
+              color: (jobRepo.riderPickup ? Colors.green : Colors.deepPurple)
+              // backgroundColor: backGroundStatusColor(job),
+              // color: Colors.transparent,
+              ),
         ),
         AnimatedRotation(
           turns: 0.05,
           duration: const Duration(seconds: 2),
           curve: Curves.linear,
           child: Text(
-            jobRepo.selectedProcessStep.isNotEmpty
+            jobRepo.processStep.isNotEmpty
                 ? '#${jobRepo.jobId}'
-                : jobRepo.repoVarSelectedIntRiderPickup == intForSorting
+                : jobRepo.forSorting
                     ? '🔃'
-                    : jobRepo.repoVarSelectedIntRiderPickup == intRiderPickup
+                    : jobRepo.riderPickup
                         ? '🚲'
                         : '',
             style: const TextStyle(

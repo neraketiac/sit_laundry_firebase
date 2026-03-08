@@ -372,17 +372,17 @@ String textPricingSetupRemarksUnpaidRemakrs(JobModel jM) {
   if (jM.unpaid) {
     if (jM.paidCash && jM.paidGCash) {
       if (jM.paidGCashverified) {
-        unpaidDetails = 'paid Cash+GCash not enough';
+        unpaidDetails = 'Cash+GCash not enough';
       } else {
-        unpaidDetails = 'paid Cash+GCash not verified';
+        unpaidDetails = 'Cash+GCash not verified';
       }
     } else if (jM.paidCash) {
-      unpaidDetails = 'paid Cash not enough';
+      unpaidDetails = 'Cash not enough';
     } else if (jM.paidGCash) {
       if (jM.paidGCashverified) {
-        unpaidDetails = 'paid GCash not enough';
+        unpaidDetails = 'GCash not enough';
       } else {
-        unpaidDetails = 'paid GCash not verified';
+        unpaidDetails = 'GCash pending';
       }
     }
   }
