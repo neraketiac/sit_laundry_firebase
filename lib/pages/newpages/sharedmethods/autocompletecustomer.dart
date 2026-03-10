@@ -1,6 +1,8 @@
 import 'dart:ui';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:laundry_firebase/models/oldmodels/customermodel.dart';
+import 'package:laundry_firebase/models/newmodels/customermodel.dart';
+import 'package:laundry_firebase/models/newmodels/loyaltymodel.dart';
 import 'package:laundry_firebase/variables/newvariables/customer_repository.dart';
 import 'package:laundry_firebase/variables/newvariables/jobmodel_repository.dart';
 import 'package:laundry_firebase/variables/newvariables/supplies_hist_repository.dart';
@@ -239,6 +241,7 @@ class _AutoCompleteCustomerState extends State<AutoCompleteCustomer> {
         'selected.name=${selected.name} selected.customerId=${selected.customerId}');
     widget.jobRepo.selectedCustomerNameVar.text = selected.name;
     widget.jobRepo.selectedCustomerId = selected.customerId;
+    widget.jobRepo.address = selected.address;
 
     bCustomerName = true;
   }

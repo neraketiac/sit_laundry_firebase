@@ -61,6 +61,7 @@ class JobModel {
   /// 🟡 Customer
   int customerId;
   String customerName;
+  String address; // NEW FIELD
   bool forSorting;
   bool riderPickup;
   bool isCustomerPickedUp;
@@ -137,6 +138,7 @@ class JobModel {
     required this.currentEmpId,
     required this.customerId,
     required this.customerName,
+    required this.address,
     required this.forSorting,
     required this.riderPickup,
     required this.isCustomerPickedUp,
@@ -189,6 +191,7 @@ class JobModel {
       currentEmpId: '',
       customerId: 0,
       customerName: '',
+      address: '',
       forSorting: false,
       riderPickup: false,
       isCustomerPickedUp: false,
@@ -242,6 +245,7 @@ class JobModel {
     String? currentEmpId,
     int? customerId,
     String? customerName,
+    String? address,
     bool? forSorting,
     bool? riderPickup,
     bool? isCustomerPickedUp,
@@ -292,6 +296,7 @@ class JobModel {
       currentEmpId: currentEmpId ?? this.currentEmpId,
       customerId: customerId ?? this.customerId,
       customerName: customerName ?? this.customerName,
+      address: address ?? this.address,
       forSorting: forSorting ?? this.forSorting,
       riderPickup: riderPickup ?? this.riderPickup,
       isCustomerPickedUp: isCustomerPickedUp ?? this.isCustomerPickedUp,
@@ -339,6 +344,7 @@ class JobModel {
         currentEmpId: json['A12_CurrentEmpId'],
         customerId: json['C00_CustomerId'],
         customerName: json['C01_CustomerName'],
+        address: json['C02_Address'] ?? '',
         forSorting: json['Q00_ForSorting'],
         riderPickup: json['Q01_RiderPickup'],
         isCustomerPickedUp: json['Q01_IsCustomerPickedUp'],
@@ -393,6 +399,7 @@ class JobModel {
         'A12_CurrentEmpId': currentEmpId,
         'C00_CustomerId': customerId,
         'C01_CustomerName': customerName,
+        'C02_Address': address,
         'Q00_ForSorting': forSorting,
         'Q01_RiderPickup': riderPickup,
         'Q01_IsCustomerPickedUp': isCustomerPickedUp,

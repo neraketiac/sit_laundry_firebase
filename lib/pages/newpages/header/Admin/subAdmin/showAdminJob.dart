@@ -32,6 +32,7 @@ class _AdminJobRepoViewerState extends State<AdminJobRepoViewer> {
   void initState() {
     super.initState();
     jobRepo = widget.jobRepo;
+    jobRepo.syncRepoToSelectedAll(jobRepo);
   }
 
   String formatValue(dynamic v) {
@@ -130,92 +131,105 @@ class _AdminJobRepoViewerState extends State<AdminJobRepoViewer> {
                         });
                       },
                     )
-                  : TextFormField(
-                      textAlign: TextAlign.center,
-                      initialValue: formatValue(selected),
-                      onChanged: (v) {
-                        setState(() {
-                          switch (label) {
-                            case "jobId":
-                              jobRepo.selectedJobId = int.tryParse(v) ?? 0;
-                              break;
+                  : selected is TextEditingController
+                      ? TextFormField(
+                          controller: selected,
+                          textAlign: TextAlign.center,
+                          onChanged: (v) {
+                            setState(() {
+                              switch (label) {
+                                case "paidCashAmount":
+                                  jobRepo.selectedPaidCashAmount =
+                                      int.tryParse(v) ?? 0;
+                                  break;
 
-                            case "customerId":
-                              jobRepo.selectedCustomerId = int.tryParse(v) ?? 0;
-                              break;
+                                case "paidGCashAmount":
+                                  jobRepo.selectedPaidGCashAmount =
+                                      int.tryParse(v) ?? 0;
+                                  break;
 
-                            case "customerName":
-                              jobRepo.selectedCustomerNameVar.text = v;
-                              break;
+                                case "remarks":
+                                  jobRepo.selectedRemarksVar.text = v;
+                                  break;
+                              }
+                            });
+                          },
+                        )
+                      : TextFormField(
+                          textAlign: TextAlign.center,
+                          initialValue: (formatValue(selected)),
+                          onChanged: (v) {
+                            setState(() {
+                              switch (label) {
+                                case "jobId":
+                                  jobRepo.selectedJobId = int.tryParse(v) ?? 0;
+                                  break;
 
-                            case "perKilo":
-                              jobRepo.selectedPerKilo = v == "true";
-                              break;
+                                case "customerId":
+                                  jobRepo.selectedCustomerId =
+                                      int.tryParse(v) ?? 0;
+                                  break;
 
-                            case "perLoad":
-                              jobRepo.selectedPerLoad = v == "true";
-                              break;
+                                case "customerName":
+                                  jobRepo.selectedCustomerNameVar.text = v;
+                                  break;
 
-                            case "finalKilo":
-                              jobRepo.selectedFinalKilo =
-                                  double.tryParse(v) ?? 0;
-                              break;
+                                case "perKilo":
+                                  jobRepo.selectedPerKilo = v == "true";
+                                  break;
 
-                            case "finalLoad":
-                              jobRepo.selectedFinalLoad = int.tryParse(v) ?? 0;
-                              break;
+                                case "perLoad":
+                                  jobRepo.selectedPerLoad = v == "true";
+                                  break;
 
-                            case "finalPrice":
-                              jobRepo.selectedFinalPrice = int.tryParse(v) ?? 0;
-                              break;
+                                case "finalKilo":
+                                  jobRepo.selectedFinalKilo =
+                                      double.tryParse(v) ?? 0;
+                                  break;
 
-                            case "promoCounter":
-                              jobRepo.selectedPromoCounter =
-                                  int.tryParse(v) ?? 0;
-                              break;
+                                case "finalLoad":
+                                  jobRepo.selectedFinalLoad =
+                                      int.tryParse(v) ?? 0;
+                                  break;
 
-                            case "basket":
-                              jobRepo.selectedBasket = int.tryParse(v) ?? 0;
-                              break;
+                                case "finalPrice":
+                                  jobRepo.selectedFinalPrice =
+                                      int.tryParse(v) ?? 0;
+                                  break;
 
-                            case "ebag":
-                              jobRepo.selectedEbag = int.tryParse(v) ?? 0;
-                              break;
+                                case "promoCounter":
+                                  jobRepo.selectedPromoCounter =
+                                      int.tryParse(v) ?? 0;
+                                  break;
 
-                            case "sako":
-                              jobRepo.selectedSako = int.tryParse(v) ?? 0;
-                              break;
+                                case "basket":
+                                  jobRepo.selectedBasket = int.tryParse(v) ?? 0;
+                                  break;
 
-                            case "paidCashAmount":
-                              jobRepo.selectedPaidCashAmount =
-                                  int.tryParse(v) ?? 0;
-                              break;
+                                case "ebag":
+                                  jobRepo.selectedEbag = int.tryParse(v) ?? 0;
+                                  break;
 
-                            case "paidGCashAmount":
-                              jobRepo.selectedPaidGCashAmount =
-                                  int.tryParse(v) ?? 0;
-                              break;
+                                case "sako":
+                                  jobRepo.selectedSako = int.tryParse(v) ?? 0;
+                                  break;
 
-                            case "paymentReceivedBy":
-                              jobRepo.selectedPaymentReceivedBy = v;
-                              break;
+                                case "paymentReceivedBy":
+                                  jobRepo.selectedPaymentReceivedBy = v;
+                                  break;
 
-                            case "remarks":
-                              jobRepo.selectedRemarksVar.text = v;
-                              break;
+                                case "processStep":
+                                  jobRepo.selectedProcessStep = v;
+                                  break;
 
-                            case "processStep":
-                              jobRepo.selectedProcessStep = v;
-                              break;
-
-                            case "allStatus":
-                              jobRepo.selectedAllStatus =
-                                  double.tryParse(v) ?? 0;
-                              break;
-                          }
-                        });
-                      },
-                    ),
+                                case "allStatus":
+                                  jobRepo.selectedAllStatus =
+                                      double.tryParse(v) ?? 0;
+                                  break;
+                              }
+                            });
+                          },
+                        ),
             ),
           ],
         ),
@@ -401,16 +415,16 @@ class _AdminJobRepoViewerState extends State<AdminJobRepoViewer> {
                       jobRepo.paidGCashVerified,
                       jobRepo.selectedPaidGCashVerified),
                   rowRepoSelected("paidCashAmount", jobRepo.paidCashAmount,
-                      jobRepo.selectedPaidCashAmount),
+                      jobRepo.repoVarCashAmountVar),
                   rowRepoSelected("paidGCashAmount", jobRepo.paidGCashAmount,
-                      jobRepo.selectedPaidGCashAmount),
+                      jobRepo.repoVarGCashAmountVar),
                   rowRepoSelected(
                       "paymentReceivedBy",
                       jobRepo.paymentReceivedBy,
                       jobRepo.selectedPaymentReceivedBy),
                   section("Remarks"),
-                  rowRepoSelected("remarks", jobRepo.remarks,
-                      jobRepo.selectedRemarksVar.text),
+                  rowRepoSelected(
+                      "remarks", jobRepo.remarks, jobRepo.selectedRemarksVar),
                   section("Items"),
                   rowRepoOnly("items length", jobRepo.items.length),
                   rowSelectedOnly(

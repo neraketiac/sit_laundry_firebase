@@ -149,54 +149,55 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
             );
           },
           menuChildren: [
-            // MenuItemButton(
-            //   style: MenuItemButton.styleFrom(
-            //     backgroundColor: const Color(0xFF673AB7), // Deep Purple
-            //     foregroundColor: Colors.white,
-            //   ),
-            //   onPressed: () async {
-            //     if (isProcessing) return;
+            if (isAdmin)
+              MenuItemButton(
+                style: MenuItemButton.styleFrom(
+                  backgroundColor: const Color(0xFF673AB7), // Deep Purple
+                  foregroundColor: Colors.white,
+                ),
+                onPressed: () async {
+                  if (isProcessing) return;
 
-            //     final bool? confirm = await showDialog<bool>(
-            //       context: context,
-            //       builder: (context) {
-            //         return AlertDialog(
-            //           title: const Text("Confirm Action"),
-            //           content: const Text(
-            //             "Move ALL Done jobs to Completed?\n\nThis action cannot be undone.",
-            //           ),
-            //           actions: [
-            //             TextButton(
-            //               onPressed: () => Navigator.pop(context, false),
-            //               child: const Text("No"),
-            //             ),
-            //             ElevatedButton(
-            //               style: ElevatedButton.styleFrom(
-            //                 backgroundColor: const Color(0xFF673AB7),
-            //                 foregroundColor: Colors.white,
-            //               ),
-            //               onPressed: () => Navigator.pop(context, true),
-            //               child: const Text("Yes"),
-            //             ),
-            //           ],
-            //         );
-            //       },
-            //     );
+                  final bool? confirm = await showDialog<bool>(
+                    context: context,
+                    builder: (context) {
+                      return AlertDialog(
+                        title: const Text("Confirm Action"),
+                        content: const Text(
+                          "Move ALL Done jobs to Completed?\n\nThis action cannot be undone.",
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context, false),
+                            child: const Text("No"),
+                          ),
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF673AB7),
+                              foregroundColor: Colors.white,
+                            ),
+                            onPressed: () => Navigator.pop(context, true),
+                            child: const Text("Yes"),
+                          ),
+                        ],
+                      );
+                    },
+                  );
 
-            //     if (confirm != true) return;
+                  if (confirm != true) return;
 
-            //     setState(() => isProcessing = true);
+                  setState(() => isProcessing = true);
 
-            //     try {
-            //       await moveAllDoneToCompleted();
-            //     } finally {
-            //       if (mounted) {
-            //         setState(() => isProcessing = false);
-            //       }
-            //     }
-            //   },
-            //   child: const Text("🧺 Done → Completed"),
-            // ),
+                  try {
+                    await moveAllDoneToCompleted();
+                  } finally {
+                    if (mounted) {
+                      setState(() => isProcessing = false);
+                    }
+                  }
+                },
+                child: const Text("🧺 Done → Completed"),
+              ),
             MenuItemButton(
               style: MenuItemButton.styleFrom(
                 backgroundColor: Colors.blueGrey.shade600,

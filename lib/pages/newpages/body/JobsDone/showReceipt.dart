@@ -101,6 +101,9 @@ void showReceipt(BuildContext context, JobModelRepository jobRepo) {
                 /// CUSTOMER
                 receiptRow("Customer", jobRepo.customerName),
 
+                /// CUSTOMER Address
+                receiptRow("Address", jobRepo.address),
+
                 /// ID
                 receiptRow("Customer ID", jobRepo.customerId.toString()),
 

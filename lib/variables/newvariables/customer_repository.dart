@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:laundry_firebase/models/oldmodels/customermodel.dart';
+import 'package:laundry_firebase/models/newmodels/customermodel.dart';
 
 class CustomerRepository {
   CustomerRepository._();

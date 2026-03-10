@@ -4,8 +4,8 @@ import 'package:laundry_firebase/pages/newpages/header/Admin/subAdmin/runMigrati
 import 'package:laundry_firebase/pages/newpages/header/Admin/subAdmin/showAdminDateDPage.dart';
 import 'package:laundry_firebase/pages/newpages/header/Admin/subAdmin/showBatchPromo.dart';
 import 'package:laundry_firebase/pages/newpages/header/Admin/subAdmin/showDeleteSecondary.dart';
-import 'package:laundry_firebase/pages/newpages/header/Admin/subAdmin/showFixPaymentDate.dart';
 import 'package:laundry_firebase/pages/newpages/header/Admin/subAdmin/showMoveDoneToCompleted.dart';
+import 'package:laundry_firebase/pages/newpages/header/Admin/subAdmin/showUpdateAddressJobs.dart';
 import 'package:laundry_firebase/variables/newvariables/variables.dart';
 
 class ShowAdminMainPage extends StatefulWidget {
@@ -113,17 +113,17 @@ class _ShowAdminMainPageState extends State<ShowAdminMainPage> {
               height: 30,
             ),
 
-            if (isAdmin)
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const ShowMoveDoneToCompleted(),
-              ),
+            // if (isAdmin)
+            //   Container(
+            //     padding: const EdgeInsets.all(16),
+            //     decoration: BoxDecoration(
+            //       color: Colors.grey.shade300,
+            //       borderRadius: BorderRadius.circular(8),
+            //     ),
+            //     child: const ShowMoveDoneToCompleted(),
+            //   ),
 
-            const SizedBox(height: 30),
+            // const SizedBox(height: 30),
 
             if (isAdmin)
               Container(
@@ -136,6 +136,18 @@ class _ShowAdminMainPageState extends State<ShowAdminMainPage> {
               ),
 
             const SizedBox(height: 40),
+
+            // if (isAdmin)
+            //   Container(
+            //     padding: const EdgeInsets.all(16),
+            //     decoration: BoxDecoration(
+            //       color: Colors.grey.shade300,
+            //       borderRadius: BorderRadius.circular(8),
+            //     ),
+            //     child: const ShowUpdateAddressJobs(),
+            //   ),
+
+            // const SizedBox(height: 40),
 
             if (isAdmin)
               Container(

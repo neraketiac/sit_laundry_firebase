@@ -4,7 +4,7 @@ import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:laundry_firebase/models/newmodels/otheritemmodel.dart';
-import 'package:laundry_firebase/models/oldmodels/customermodel.dart';
+import 'package:laundry_firebase/models/newmodels/customermodel.dart';
 import 'package:laundry_firebase/models/newmodels/jobmodel.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedConstantsFinal.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedmethodsdatabase.dart';
@@ -397,7 +397,7 @@ String textPricingSetupRemarksUnpaidRemakrs(JobModel jM) {
 
 String displayCustomerName(String? name) {
   if (name == null || name.isEmpty) return '';
-  return name.length > 7 ? name.substring(0, 7) : name;
+  return name.length > 12 ? name.substring(0, 12) : name;
 }
 
 IconData statusIcon(JobModel jM) {
