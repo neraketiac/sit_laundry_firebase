@@ -826,3 +826,13 @@ Future<void> runSortCompleted(BuildContext context, Function setState) async {
       ..addAll(originalJobsCompleted);
   });
 }
+
+void addOtherItem(JobModelRepository jobRepo, OtherItemModel item) {
+  jobRepo.selectedItems.add(item);
+  jobRepo.repoVarTotalPriceOthers += item.itemPrice;
+}
+
+void removeOtherItem(JobModelRepository jobRepo, OtherItemModel item) {
+  jobRepo.selectedItems.remove(item);
+  jobRepo.repoVarTotalPriceOthers -= item.itemPrice;
+}

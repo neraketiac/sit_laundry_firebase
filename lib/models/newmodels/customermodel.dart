@@ -4,7 +4,7 @@ class CustomerModel {
   final String address;
   final String contact;
   final String remarks;
-  final int loyaltyCount;
+  int loyaltyCount;
 
   CustomerModel({
     required this.customerId,

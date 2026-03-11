@@ -107,12 +107,20 @@ void showOnGoingStatus(BuildContext context, JobModelRepository jobRepo) {
                         );
 
                         if (confirm == true) {
+                          jobRepo.syncSelectedToRepoAll(jobRepo);
                           await moveOngoingToDone(
-                              jobRepo.docId,
-                              (jobRepo.repoVarSelectedIntRiderPickup ==
-                                      intForSorting
-                                  ? false
-                                  : true));
+                            jobRepo.docId,
+                            (jobRepo.repoVarSelectedIntRiderPickup ==
+                                    intForSorting
+                                ? false
+                                : true),
+                            jobRepo.customerId,
+                            //later when isPromoCounter is fix
+                            // (jobRepo.isPromoCounter
+                            //     ? jobRepo.promoCounter
+                            //     : 0)
+                            jobRepo.promoCounter,
+                          );
 
                           Navigator.pop(context, false);
                         }

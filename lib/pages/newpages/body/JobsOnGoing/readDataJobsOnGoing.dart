@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:laundry_firebase/models/newmodels/jobmodel.dart';
 import 'package:laundry_firebase/pages/newpages/body/JobsOnGoing/showOnGoingStatus.dart';
 import 'package:laundry_firebase/pages/newpages/body/JobsOnQueue/showJobOnQueueEdit.dart';
+import 'package:laundry_firebase/pages/newpages/header/Admin/subAdmin/showAdminJob.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedVisibility.dart';
 import 'package:laundry_firebase/services/newservices/database_jobs.dart';
 import 'package:laundry_firebase/variables/newvariables/jobmodel_repository.dart';
+import 'package:laundry_firebase/variables/newvariables/variables.dart';
 
 enum ReorderAction {
   swap,
@@ -730,6 +732,15 @@ Widget readDataJobsOnGoing() {
                               ? SystemMouseCursors.basic
                               : SystemMouseCursors.grab,
                           child: InkWell(
+                            onDoubleTap: () {
+                              if (isAdmin) {
+                                showDialog(
+                                  context: context,
+                                  builder: (_) =>
+                                      AdminJobRepoViewer(jobRepo: jobRepo),
+                                );
+                              }
+                            },
                             onTap: () {
                               setState(() {
                                 selectedIndex = index;

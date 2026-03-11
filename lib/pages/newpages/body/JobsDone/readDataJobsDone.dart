@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:laundry_firebase/models/newmodels/jobmodel.dart';
 import 'package:laundry_firebase/pages/newpages/body/JobsDone/showDeliverOrCustomerPickup.dart';
 import 'package:laundry_firebase/pages/newpages/body/JobsDone/showReceipt.dart';
@@ -140,14 +141,23 @@ Widget readDataJobsDone(Function setState) {
       builder: (context) {
         return AlertDialog(
           title: const Text("Find by Customer ID"),
-          content: AutoCompleteCustomer(jobRepo: jobRepox),
+          content: AutoCompleteCustomer(
+            jobRepo: jobRepox,
+            dialogSetState: setState,
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
               child: const Text("No"),
             ),
             ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
+                int totalUnpaid = 0;
+                int totalCashAmount = 0;
+                int totalGCashAmount = 0;
+                final moneyFormatter = NumberFormat("#,##0.00");
+
+                /// apply filter
                 setState(() {
                   sortedJobsDone
                     ..clear()
@@ -156,7 +166,17 @@ Widget readDataJobsDone(Function setState) {
                         (job) => job.customerId == jobRepox.selectedCustomerId,
                       ),
                     );
-                  //for jobs completed
+
+                  totalUnpaid = sortedJobsDone.fold(
+                      0, (sum, job) => sum + job.finalPrice);
+
+                  totalCashAmount = sortedJobsDone.fold(
+                      0, (sum, job) => sum + job.paidCashAmount);
+
+                  totalGCashAmount = sortedJobsDone
+                      .where((job) => job.paidGCashverified == true)
+                      .fold(0, (sum, job) => sum + job.paidGCashAmount);
+
                   sortedJobsCompleted
                     ..clear()
                     ..addAll(
@@ -166,7 +186,25 @@ Widget readDataJobsDone(Function setState) {
                     );
                 });
 
+                /// close first dialog
                 Navigator.pop(context);
+
+                /// show selected customer message
+                await showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text("Customer Balance"),
+                    content: Text(
+                      "Total unpaid: ₱${moneyFormatter.format(totalUnpaid - (totalCashAmount + totalGCashAmount))}",
+                    ),
+                    actions: [
+                      ElevatedButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text("OK"),
+                      ),
+                    ],
+                  ),
+                );
               },
               child: const Text("Yes"),
             ),

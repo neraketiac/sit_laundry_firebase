@@ -3,12 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedMethods.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedmethodsdatabase.dart';
+import 'package:laundry_firebase/services/newservices/database_loyalty.dart';
 import 'package:laundry_firebase/variables/newvariables/jobmodel_repository.dart';
 import 'package:laundry_firebase/variables/newvariables/variables.dart';
 
 class AdminJobRepoViewer extends StatefulWidget {
   final JobModelRepository jobRepo;
-
   const AdminJobRepoViewer({
     super.key,
     required this.jobRepo,
@@ -450,48 +450,84 @@ class _AdminJobRepoViewerState extends State<AdminJobRepoViewer> {
         ),
       ),
       actions: [
-        // TextButton(
-        //   onPressed: () {
-        //     jobRepo.syncSelectedToRepoAll(jobRepo);
-        //     setState(() {});
-        //   },
-        //   child: const Text("Sync Selected → Repo"),
-        // ),
-        // TextButton(
-        //   onPressed: () {
-        //     jobRepo.syncRepoToSelectedAll(jobRepo);
-        //     setState(() {});
-        //   },
-        //   child: const Text("Sync Repo → Selected"),
-        // ),
-
         TextButton(
           onPressed: () {
             setState(() {
               syncRepoToSelectedALL(jobRepo);
             });
-
-            Navigator.pop(context); // close popup
+            Navigator.pop(context);
           },
           child: const Text(
             'Cancel',
             style: TextStyle(color: Colors.black),
           ),
         ),
-        boxButtonElevated(
-            context: context,
-            label: 'Save',
+        //only jobs on queue can be deleted
+        if (jobRepo.processStep == '')
+          TextButton(
             onPressed: () async {
-              if (jobRepo.selectedCustomerId == 0) {
+              final confirm = await showDialog<bool>(
+                context: context,
+                builder: (context) {
+                  return AlertDialog(
+                    title: const Text("Delete Job"),
+                    content: Text(
+                        "Are you sure you want to delete this job? This cannot be undone."),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, false),
+                        child: const Text("Cancel"),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, true),
+                        child: const Text(
+                          "Delete",
+                          style: TextStyle(color: Colors.red),
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              );
+
+              if (confirm == true) {
+                await FirebaseFirestore.instance
+                    .collection('Jobs_queue') // change if needed
+                    .doc(jobRepo.docId)
+                    .delete();
+
+                DatabaseLoyalty loyalty = DatabaseLoyalty();
+                loyalty.addCountByCardNumber(jobRepo.customerId, 10);
+
+                Navigator.pop(context); // close AdminJobRepoViewer
+
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Please select customer name.')),
+                  SnackBar(
+                      content: Text(
+                          "Job deleted successfully ${jobRepo.customerName}")),
                 );
-                return false;
-              } else {
-                await saveButtonSetRepository();
-                return true;
               }
-            }),
+            },
+            child: const Text(
+              'Delete',
+              style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+            ),
+          ),
+        boxButtonElevated(
+          context: context,
+          label: 'Save',
+          onPressed: () async {
+            if (jobRepo.selectedCustomerId == 0) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Please select customer name.')),
+              );
+              return false;
+            } else {
+              await saveButtonSetRepository();
+              return true;
+            }
+          },
+        ),
       ],
     );
   }

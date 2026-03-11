@@ -101,7 +101,10 @@ void showFundsInFundsOut(BuildContext context) {
                 children: [],
               ),
             ),
-            AutoCompleteCustomer(jobRepo: jobRepo),
+            AutoCompleteCustomer(
+              jobRepo: jobRepo,
+              dialogSetState: setState,
+            ),
             SizedBox(
               height: 5,
             ),

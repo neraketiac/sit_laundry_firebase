@@ -5,7 +5,10 @@ class LoyaltyModel {
   final String contact;
   final String address;
   final String remarks;
-  final int count;
+  final int count; //every jobs_done, add that promoCounter here.
+  //if count >= 10, the free button will appear ( -155 free )
+  //if (-155 free was used), after jobs_done, it will deduct count = count - 10
+  //then repeat the process again how to add count = count + promoCounter(jobs_done)
   final int cardNumber;
   final Timestamp logDate;
 

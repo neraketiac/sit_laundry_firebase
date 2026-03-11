@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:laundry_firebase/models/newmodels/loyaltymodel.dart';
+import 'package:laundry_firebase/variables/newvariables/variables.dart';
 
 const String LOYALTY_REF = "loyalty";
 const Color _gcButtons = Color.fromRGBO(134, 218, 252, 0.733);
@@ -50,5 +51,32 @@ class DatabaseLoyalty {
 
   void updateCustomer(String customerId, LoyaltyModel loyaltyModel) {
     _customerRef.doc(customerId).update(loyaltyModel.toJson());
+  }
+
+  /// Add count
+  Future<void> addCountByCardNumber(int cardNumber, int i) async {
+    try {
+      final snapshot = await _customerRef
+          .where('cardNumber', isEqualTo: cardNumber)
+          .limit(1)
+          .get();
+
+      if (snapshot.docs.isEmpty) {
+        print("Customer not found for cardNumber: $cardNumber");
+        return;
+      }
+
+      final docId = snapshot.docs.first.id;
+
+      await _customerRef.doc(docId).update({
+        'Count': FieldValue.increment(i),
+      });
+
+      autocompleteSelected.loyaltyCount += i;
+
+      print("Count updated +$i for cardNumber: $cardNumber");
+    } catch (e) {
+      print("Failed to update count: $e");
+    }
   }
 }

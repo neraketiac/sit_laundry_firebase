@@ -16,9 +16,6 @@ import 'package:laundry_firebase/pages/newpages/body/JobsOnQueue/readDataJobsOnQ
 import 'package:laundry_firebase/pages/newpages/body/JobsDone/readDataJobsDone.dart';
 import 'package:laundry_firebase/pages/newpages/body/Supplies/readSuppliesCurrent.dart';
 import 'package:laundry_firebase/pages/newpages/body/Supplies/readSuppliesHist.dart';
-import 'package:laundry_firebase/pages/newpages/header/Admin/subAdmin/runMigration.dart';
-import 'package:laundry_firebase/pages/newpages/header/Admin/subAdmin/showAdminDateDPage.dart';
-import 'package:laundry_firebase/pages/newpages/header/Admin/subAdmin/showBatchPromo.dart';
 import 'package:laundry_firebase/pages/newpages/header/Admin/showAdminMainPage.dart';
 import 'package:laundry_firebase/pages/newpages/header/Employee/showSalaryMaintenance.dart';
 import 'package:laundry_firebase/pages/newpages/header/Funds/showCalendarDialog.dart';

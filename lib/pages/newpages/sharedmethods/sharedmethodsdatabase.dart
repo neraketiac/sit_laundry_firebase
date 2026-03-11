@@ -11,6 +11,7 @@ import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedMethods.dart
 import 'package:laundry_firebase/services/newservices/database_employee_current.dart';
 import 'package:laundry_firebase/services/newservices/database_gcash.dart';
 import 'package:laundry_firebase/services/newservices/database_jobs.dart';
+import 'package:laundry_firebase/services/newservices/database_loyalty.dart';
 import 'package:laundry_firebase/services/newservices/database_supplies_current.dart';
 import 'package:laundry_firebase/variables/newvariables/jobmodel_repository.dart';
 import 'package:laundry_firebase/variables/newvariables/variables.dart';
@@ -120,6 +121,8 @@ Future<void> callDatabaseJobsQueueAdd(
 
   if (await databaseJobsQueue.add(jobRepo.jobModel)) {
     successInsertFB = true;
+    DatabaseLoyalty loyalty = DatabaseLoyalty();
+    loyalty.addCountByCardNumber(jobRepo.customerId, -10);
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Insert on Queue done.')),
     );
@@ -279,6 +282,61 @@ Future<void> notifyAllUsers({
 }
 
 Future<void> callDatabaseUpdateJob(BuildContext context, JobModel jM) async {
+  if (jM.processStep == 'completed') {
+    DatabaseJobsCompleted dbJ = DatabaseJobsCompleted();
+
+    if (await dbJ.update(jM)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Update on job completed.')),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error update Jobs Done.')),
+      );
+    }
+  } else if (jM.processStep == 'done') {
+    DatabaseJobsDone dbJ = DatabaseJobsDone();
+
+    if (await dbJ.update(jM)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Update on job done.')),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error update Jobs Done.')),
+      );
+    }
+  } else if (jM.processStep == 'waiting' ||
+      jM.processStep == 'washing' ||
+      jM.processStep == 'drying' ||
+      jM.processStep == 'folding') {
+    DatabaseJobsOngoing dbJ = DatabaseJobsOngoing();
+
+    if (await dbJ.update(jM)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Update on-going done.')),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error update Jobs On-Going.')),
+      );
+    }
+  } else {
+    DatabaseJobsQueue dbJ = DatabaseJobsQueue();
+
+    if (await dbJ.update(jM)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Update on Queue done.')),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error update Jobs On Queue.')),
+      );
+    }
+  }
+}
+
+Future<void> callDeleteJobAdminOnly(BuildContext context, JobModel jM) async {
   if (jM.processStep == 'completed') {
     DatabaseJobsCompleted dbJ = DatabaseJobsCompleted();
 

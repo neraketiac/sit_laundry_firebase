@@ -73,56 +73,72 @@ Widget visCustomerName(
           ),
           child: AutoCompleteCustomer(
             jobRepo: jobRepo,
+            dialogSetState: setState,
           ),
         ),
 
         const SizedBox(height: 2),
 
         /// 🔹 Gradient "New Account" Button
-        Align(
-          alignment: Alignment.centerRight,
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(18),
-              gradient: const LinearGradient(
-                colors: [
-                  Colors.blueAccent,
-                  Colors.purpleAccent,
-                ],
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.purple.withOpacity(0.4),
-                  blurRadius: 15,
-                  offset: const Offset(0, 6),
-                ),
-              ],
+        Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            Text(
+              '${autocompleteSelected.loyaltyCount}/10 ',
+              style: TextStyle(color: Colors.white),
             ),
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.transparent,
-                shadowColor: Colors.transparent,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 22,
-                  vertical: 2,
-                ),
-                shape: RoundedRectangleBorder(
+            if (autocompleteSelected.loyaltyCount >= 10)
+              Icon(
+                Icons.star,
+                size: 40,
+                color: Colors.amberAccent,
+              ),
+            Align(
+              alignment: Alignment.centerRight,
+              child: Container(
+                decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(18),
+                  gradient: const LinearGradient(
+                    colors: [
+                      Colors.blueAccent,
+                      Colors.purpleAccent,
+                    ],
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.purple.withOpacity(0.4),
+                      blurRadius: 15,
+                      offset: const Offset(0, 6),
+                    ),
+                  ],
                 ),
-              ),
-              onPressed: () {
-                Navigator.pop(context);
-                allCardsVar(context);
-              },
-              child: const Text(
-                "New Account",
-                style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.transparent,
+                    shadowColor: Colors.transparent,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 22,
+                      vertical: 2,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(18),
+                    ),
+                  ),
+                  onPressed: () {
+                    Navigator.pop(context);
+                    allCardsVar(context);
+                  },
+                  child: const Text(
+                    "New Account",
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
                 ),
               ),
             ),
-          ),
+          ],
         ),
       ],
     ),
@@ -440,6 +456,7 @@ Widget visSelectPackage(
                         setState(() {
                           jobRepo.selectedItems.clear();
                           jobRepo.repoVarTotalPriceOthers = 0;
+                          usePromoFree = false;
                         });
                       }
 
@@ -884,16 +901,6 @@ Widget visAmountOthersOnly(
   Function setState,
   JobModelRepository jobRepo,
 ) {
-  void addOtherItem(OtherItemModel item) {
-    jobRepo.selectedItems.add(item);
-    jobRepo.repoVarTotalPriceOthers += item.itemPrice;
-  }
-
-  void removeOtherItem(OtherItemModel item) {
-    jobRepo.selectedItems.remove(item);
-    jobRepo.repoVarTotalPriceOthers -= item.itemPrice;
-  }
-
   String getShortcutLabel(int value) {
     switch (value) {
       case menuOth155:
@@ -1004,13 +1011,13 @@ Widget visAmountOthersOnly(
                 onTap: () {
                   setState(() {
                     if (shortcut == menuOth155) {
-                      addOtherItem(reg155ItemModel);
+                      addOtherItem(jobRepo, reg155ItemModel);
                     } else if (shortcut == menuOth125) {
-                      addOtherItem(reg125ItemModel);
+                      addOtherItem(jobRepo, reg125ItemModel);
                     } else if (shortcut == menuOthXD) {
-                      addOtherItem(xDItemModel);
+                      addOtherItem(jobRepo, xDItemModel);
                     } else if (shortcut == menuFabWKLDValAny8ml) {
-                      addOtherItem(addFabAnyItemModel);
+                      addOtherItem(jobRepo, addFabAnyItemModel);
                     }
                   });
                 },
@@ -1129,7 +1136,7 @@ Widget visAmountOthersOnly(
                     ? null
                     : () {
                         setState(() {
-                          addOtherItem(jobRepo.repoVarSelectedItem!);
+                          addOtherItem(jobRepo, jobRepo.repoVarSelectedItem!);
                         });
                       },
                 child: Container(
@@ -1171,7 +1178,7 @@ Widget visAmountOthersOnly(
                     GestureDetector(
                       onTap: () {
                         setState(() {
-                          removeOtherItem(e);
+                          removeOtherItem(jobRepo, e);
                         });
                       },
                       child: const Icon(
@@ -2521,51 +2528,65 @@ InkWell visPaidUnpaidArea(
   // unpaid = cash + gcash + not verified
 
   return InkWell(
-    borderRadius: BorderRadius.circular(14),
-    onTap: () {
-      if (alterPaidUnpaid) showPaidUnpaid(context, jobRepo);
-    },
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.end,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        /// 💰 AMOUNT
-        Text(
-          "₱ ${jobRepo.selectedFinalPrice}",
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w800,
-            color: statusColor,
-          ),
-        ),
-
-        const SizedBox(height: 2),
-
-        /// 🔹 STATUS BADGE
-        Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 8,
-            vertical: 3,
-          ),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(10),
-            color: isPaid
-                ? Colors.greenAccent.withOpacity(0.15)
-                : Colors.redAccent.withOpacity(0.15),
-          ),
-          child: Text(
-            statusText,
-            style: TextStyle(
-              fontSize: 9,
-              fontWeight: FontWeight.w600,
-              color: statusColor,
+      borderRadius: BorderRadius.circular(14),
+      onTap: () {
+        if (alterPaidUnpaid) showPaidUnpaid(context, jobRepo);
+      },
+      child: Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            SizedBox(
+              width: 100, // fixed width keeps star position stable
+              child: Stack(
+                clipBehavior: Clip.none,
+                alignment: Alignment.centerRight,
+                children: [
+                  if (jobRepo.thisJobHasPromo)
+                    Positioned(
+                      left: 60,
+                      top: -16,
+                      child: Icon(
+                        Icons.star,
+                        size: 50,
+                        color: Colors.amber.withOpacity(0.5),
+                      ),
+                    ),
+                  Text(
+                    "₱ ${jobRepo.selectedFinalPrice}",
+                    textAlign: TextAlign.right,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w800,
+                      color: statusColor,
+                    ),
+                  ),
+                ],
+              ),
             ),
-            textAlign: TextAlign.right,
-          ),
-        ),
-      ],
-    ),
-  );
+            const SizedBox(height: 2),
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 8,
+                vertical: 3,
+              ),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+                color: isPaid
+                    ? Colors.greenAccent.withOpacity(0.15)
+                    : Colors.redAccent.withOpacity(0.15),
+              ),
+              child: Text(
+                statusText,
+                style: TextStyle(
+                  fontSize: 9,
+                  fontWeight: FontWeight.w600,
+                  color: statusColor,
+                ),
+                textAlign: TextAlign.right,
+              ),
+            ),
+          ]));
 }
 
 //***************************************************************** */

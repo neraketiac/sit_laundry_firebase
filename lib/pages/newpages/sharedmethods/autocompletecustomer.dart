@@ -1,18 +1,20 @@
 import 'dart:ui';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:laundry_firebase/models/newmodels/customermodel.dart';
-import 'package:laundry_firebase/models/newmodels/loyaltymodel.dart';
+import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedMethods.dart';
 import 'package:laundry_firebase/variables/newvariables/customer_repository.dart';
 import 'package:laundry_firebase/variables/newvariables/jobmodel_repository.dart';
 import 'package:laundry_firebase/variables/newvariables/supplies_hist_repository.dart';
 import 'package:laundry_firebase/variables/newvariables/variables.dart';
+import 'package:laundry_firebase/variables/newvariables/variables_oth.dart';
 
 class AutoCompleteCustomer extends StatefulWidget {
   final JobModelRepository jobRepo;
+  final Function dialogSetState;
 
   const AutoCompleteCustomer({
     required this.jobRepo,
+    required this.dialogSetState,
     super.key,
   });
 
@@ -41,6 +43,17 @@ class _AutoCompleteCustomerState extends State<AutoCompleteCustomer> {
         _currentQuery = value.text;
 
         if (value.text.trim().isEmpty) {
+          widget.dialogSetState(() {
+            usePromoFree = false;
+            autocompleteSelected = CustomerModel(
+                customerId: 0,
+                name: '',
+                address: '',
+                contact: '',
+                remarks: '',
+                loyaltyCount: 0);
+          });
+
           return const Iterable<CustomerModel>.empty();
         }
 
@@ -234,7 +247,9 @@ class _AutoCompleteCustomerState extends State<AutoCompleteCustomer> {
   // ================= SELECTION =================
 
   void _onCustomerSelected(CustomerModel selected) {
-    autocompleteSelected = selected;
+    widget.dialogSetState(() {
+      autocompleteSelected = selected;
+    });
 
     SuppliesHistRepository.instance.setCustomerName(selected.name);
     debugPrint(
@@ -242,6 +257,10 @@ class _AutoCompleteCustomerState extends State<AutoCompleteCustomer> {
     widget.jobRepo.selectedCustomerNameVar.text = selected.name;
     widget.jobRepo.selectedCustomerId = selected.customerId;
     widget.jobRepo.address = selected.address;
+    //always remove promo when new name only in showJobOnQueue
+    if (widget.jobRepo.processStep == '') {
+      removeOtherItem(widget.jobRepo, promoFree);
+    }
 
     bCustomerName = true;
   }

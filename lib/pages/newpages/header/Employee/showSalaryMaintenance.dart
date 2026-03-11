@@ -128,6 +128,7 @@ void showSalaryMaintenance(BuildContext context) {
 
             AutoCompleteCustomer(
               jobRepo: jobRepo,
+              dialogSetState: setState,
             ),
           ],
         ),

@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:laundry_firebase/models/newmodels/jobmodel.dart';
-import 'package:laundry_firebase/models/newmodels/loyaltymodel.dart';
 import 'package:laundry_firebase/models/newmodels/otheritemmodel.dart';
 import 'package:laundry_firebase/pages/newpages/sharedmethods/sharedMethods.dart';
 import 'package:laundry_firebase/variables/newvariables/jobselected_repository.dart';
@@ -40,7 +39,7 @@ class JobModelRepository {
       isCustomerPickedUp: false,
       isDeliveredToCustomer: false,
       perKilo: false,
-      perLoad: false,
+      perLoad: true,
       finalKilo: 0,
       finalLoad: 0,
       finalPrice: 0,
@@ -468,6 +467,10 @@ class JobModelRepository {
   set selectedOthersShortCut(int value) =>
       jobselectedRepository.selectedOthersShortCut = value;
 
+  bool get thisJobHasPromo => jobselectedRepository.thisJobHasPromo;
+  set thisJobHasPromo(bool value) =>
+      jobselectedRepository.thisJobHasPromo = value;
+
   /////////////////////////////////////////////////////////////
   //                    GETTER SETTER                         //
   //                          LOYALTY                         //
@@ -582,6 +585,11 @@ class JobModelRepository {
     selectedForDisposal = jobRepo.forDisposal;
     selectedDisposed = jobRepo.disposed;
     selectedIsPromoCounter = jobRepo.isPromoCounter;
+
+    thisJobHasPromo = false;
+    if (jobRepo.items.any((e) => e.itemUniqueId == promoFree.itemUniqueId)) {
+      thisJobHasPromo = true;
+    }
   }
 
   void syncRepoToSelectedMin(JobModelRepository jobRepo) {
@@ -736,7 +744,9 @@ class JobModelRepository {
     if (selectedPackage == intRegularPackage) {
       if (selectedPerKilo) {
         jobRepo.finalLoad = computeLoadForKg(selectedFinalKilo);
+        debugPrint('jobRepo.promoCounter=${jobRepo.promoCounter}');
         jobRepo.promoCounter = computePromoCounter;
+        debugPrint('after jobRepo.promoCounter=${jobRepo.promoCounter}');
         jobRepo.pricingSetup = showHowMany155or125Set(
             computeTotalPrice(selectedFinalKilo, jobRepo), false, jobRepo);
       } else {

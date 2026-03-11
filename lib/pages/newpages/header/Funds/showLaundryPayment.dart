@@ -167,7 +167,10 @@ void showLaundryPayment(BuildContext context, JobModelRepository jobRepo) {
             //     border: OutlineInputBorder(),
             //   ),
             // ),
-            AutoCompleteCustomer(jobRepo: jobRepo),
+            AutoCompleteCustomer(
+              jobRepo: jobRepo,
+              dialogSetState: setState,
+            ),
             SizedBox(
               height: 5,
             ),

@@ -13,18 +13,14 @@ import 'package:laundry_firebase/models/oldmodels/jobsonqueuemodel.dart';
 import 'package:laundry_firebase/models/newmodels/otheritemmodel.dart';
 import 'package:laundry_firebase/models/newmodels/suppliesmodelhist.dart';
 import 'package:laundry_firebase/pages/loyalty_admin.dart';
-import 'package:laundry_firebase/pages/oldpages/queue.dart';
-import 'package:laundry_firebase/services/oldservices/database_jobsonqueue.dart';
 import 'package:laundry_firebase/services/oldservices/database_other_items.dart';
-import 'package:laundry_firebase/variables/oldvariables/vairables_jobsonqueue.dart';
 import 'package:laundry_firebase/variables/newvariables/variables_ble.dart';
 import 'package:laundry_firebase/variables/newvariables/variables_det.dart';
 import 'package:laundry_firebase/variables/newvariables/variables_fab.dart';
-import 'package:laundry_firebase/variables/oldvariables/variables_jobsdone.dart';
-import 'package:laundry_firebase/variables/oldvariables/variables_jobsongoing.dart';
 import 'package:laundry_firebase/variables/newvariables/variables_oth.dart';
 import 'package:laundry_firebase/variables/newvariables/variables_supplies.dart';
 
+bool usePromoFree = false;
 bool isProcessing = false;
 bool bFirebaseInitialized = false;
 const String storageKey = 'customer_code';
@@ -1151,23 +1147,6 @@ void updateSelectedVar(OtherItemModel selectedItemModel) {
   }
 }
 
-Widget cancelButtonReloginVar(BuildContext context, JobsOnQueueModel jOQM) {
-  return MaterialButton(
-      onPressed: () {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Records not save')),
-        );
-        //pop box
-        Navigator.pop(context);
-        Navigator.pop(context);
-
-        Navigator.of(context).push(
-            MaterialPageRoute(builder: (context) => MyQueue(empIdGlobal)));
-      },
-      color: cButtons,
-      child: const Text("Cancel"));
-}
-
 Widget cancelButtonNoChangeVar(
   BuildContext context,
   Function setState,
@@ -1476,10 +1455,7 @@ Widget readAddedDataVar(List<OtherItemModel> listAddedOthers) {
 }
 
 //insert new Queue
-void insertDataJobsOnQueueVar(JobsOnQueueModel jOQM) {
-  DatabaseJobsOnQueue databaseJobsOnQueue = DatabaseJobsOnQueue();
-  databaseJobsOnQueue.addJobsOnQueue(jOQM, listAddOnItemsGlobal);
-}
+void insertDataJobsOnQueueVar(JobsOnQueueModel jOQM) {}
 
 //displays in Popup
 Container conEnterCustomer(BuildContext context, Function setState) {
@@ -3073,119 +3049,6 @@ String displayDateVar(String s) {
 //   }
 // }
 
-//Display
-Container conDisplayVar(
-  BuildContext context,
-  bool showUpArrow,
-  JobsOnQueueModel jOQM,
-  //[int buffExtraDryPrice = 0, int buffJobsId = 0]
-) {
-  return Container(
-    height: 80,
-    color: getCOlorStatusVar(jOQM),
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Expanded(
-          child: Column(
-            mainAxisSize: MainAxisSize.max,
-            children: [
-              Text(
-                "${customerName(jOQM.customerId.toString())} (${jOQM.finalLoad == 0 ? jOQM.initialLoad : jOQM.finalLoad}) ${jOQM.basket == 0 ? "" : "${jOQM.basket}BK"} ${jOQM.bag == 0 ? "" : "${jOQM.bag}BG"}",
-                style: const TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.bold,
-                ),
-                textAlign: TextAlign.end,
-              ),
-              Text(
-                "${jOQM.finalKilo == 0 ? jOQM.initialKilo : jOQM.finalKilo} kg ${jOQM.mix ? "" : "DM"} ${jOQM.fold ? "" : "NF"}",
-                style: const TextStyle(fontSize: 9),
-              ),
-              Text(
-                "${jOQM.unpaid ? "Unpaid" : jOQM.paidcash ? "Paid Cash" : jOQM.paidgcash ? "Paid GCash" : "Unknown"} : Php ${jOQM.initialPrice + jOQM.initialOthersPrice}.00",
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.bold,
-                  backgroundColor: (jOQM.unpaid
-                      ? Colors.red[300]
-                      : (jOQM.paidgcash
-                          ? (jOQM.paidgcashverified
-                              ? Colors.transparent
-                              : Colors.red[100])
-                          : Colors.transparent)),
-                ),
-              ),
-              Text(
-                (jOQM.waiting
-                    ? "Waiting"
-                    : (jOQM.washing
-                        ? "Washing"
-                        : (jOQM.drying
-                            ? "Drying"
-                            : (jOQM.folding
-                                ? "Folding"
-                                : (jOQM.forSorting
-                                    ? "For Sorting"
-                                    : (jOQM.waitCustomerPickup
-                                        ? "Wait Customer"
-                                        : (jOQM.waitRiderDelivery
-                                            ? "Deliver to Customer"
-                                            : (jOQM.nasaCustomerNa
-                                                ? "Nasa Customer Na"
-                                                : "N/A")))))))),
-                style: const TextStyle(fontSize: 9),
-              ),
-              Text(
-                //displayDateVar(convertTimeStampVar(jOQM.needOn)),
-                "Need On: ${isItToday(jOQM.needOn) ? "Today" : (isItTomorrow(jOQM.needOn) ? "Tomorrow" : (displayDateVar(convertTimeStampVar(jOQM.needOn))))}",
-                style: const TextStyle(
-                  fontSize: 10,
-                ),
-                textAlign: TextAlign.right,
-              ),
-            ],
-          ),
-        ),
-        Column(
-          children: [
-            InkWell(
-              onDoubleTap: () {
-                if (jOQM.waiting) {
-                  alterNumberMobileVar(context, jOQM);
-                }
-              },
-              child: Text(
-                //(buffJobsId == 0 ? "" : "#$buffJobsId"),
-                (jOQM.jobsId == 99 ? "" : "#${jOQM.jobsId}"),
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                ),
-                textAlign: TextAlign.left,
-              ),
-            ),
-            Visibility(
-              visible: showUpArrow,
-              child: IconButton(
-                onPressed: () {
-                  //moveUpVar(jOQM.jobsId);
-                  showMessageOptionChangeJobId(
-                      context,
-                      "Move/Swap Up Job#",
-                      "Move up #${jOQM.jobsId} (${customerName(jOQM.customerId.toString())}) to #${(jOQM.jobsId == 1 ? 25 : jOQM.jobsId - 1)}?",
-                      jOQM);
-                },
-                icon: const Icon(Icons.arrow_upward),
-                color: Colors.blueAccent,
-              ),
-            ),
-          ],
-        ),
-      ],
-    ),
-  );
-}
-
 void showMessage(BuildContext context, String title, String message) {
   showDialog(
     context: context,
@@ -3292,15 +3155,9 @@ Widget deleteButtonAddOnVar(
       jOQMNoChange.initialOthersPrice = 0;
 
       ///need to update the fb to requery the data, not the same with global variables
-      if (colRef == "JobsOnQueue") {
-        updateJOQMVar(jOQM.docId, jOQMNoChange, lOIM);
-      }
-      if (colRef == "JobsOnGoing") {
-        updateJOGMVar(jOQM.docId, jOQMNoChange, lOIM);
-      }
-      if (colRef == "JobsDone") {
-        updateJDMVar(jOQM.docId, jOQMNoChange, lOIM);
-      }
+      if (colRef == "JobsOnQueue") {}
+      if (colRef == "JobsOnGoing") {}
+      if (colRef == "JobsDone") {}
 
       jOQMNoChange.others = false;
 

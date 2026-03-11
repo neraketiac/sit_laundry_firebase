@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:laundry_firebase/models/newmodels/jobmodel.dart';
+import 'package:laundry_firebase/services/newservices/database_loyalty.dart';
 import 'package:laundry_firebase/variables/newvariables/variables.dart';
 
 /// 🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦
@@ -356,7 +357,8 @@ Future<void> moveQueueToOngoing(String docId) async {
 }
 
 /// ▶ Ongoing → Done
-Future<void> moveOngoingToDone(String docId, bool forDelivery) async {
+Future<void> moveOngoingToDone(
+    String docId, bool forDelivery, int customerId, int promoCounter) async {
   final firestore = FirebaseFirestore.instance;
 
   await firestore.runTransaction((tx) async {
@@ -389,6 +391,10 @@ Future<void> moveOngoingToDone(String docId, bool forDelivery) async {
     }
 
     tx.delete(ongoingRef);
+
+    DatabaseLoyalty loyalty = DatabaseLoyalty();
+
+    loyalty.addCountByCardNumber(customerId, promoCounter);
   });
 }
 

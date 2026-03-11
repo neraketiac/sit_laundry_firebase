@@ -111,6 +111,7 @@ class JobselectedRepository {
   int _repoVarAddExtraSpinCount = 0; //only use for shortcuts
   int _maxPartial = 0; //use for maximum kill allowed for partial 190, 260
   int _selectedOthersShortCut = menuOth155; //use for selected add shortcuts
+  bool _thisJobHasPromo = false;
 
   //================= GETTERS =================
 
@@ -161,6 +162,7 @@ class JobselectedRepository {
   int get repoVarAddExtraSpinCount => _repoVarAddExtraSpinCount;
   int get maxPartial => _maxPartial;
   int get selectedOthersShortCut => _selectedOthersShortCut;
+  bool get thisJobHasPromo => _thisJobHasPromo;
 
   //================= SETTERS =================
 
@@ -217,6 +219,7 @@ class JobselectedRepository {
   set repoVarAddExtraSpinCount(int v) => _repoVarAddExtraSpinCount = v;
   set maxPartial(int v) => _maxPartial = v;
   set selectedOthersShortCut(int v) => _selectedOthersShortCut = v;
+  set thisJobHasPromo(bool v) => _thisJobHasPromo = v;
 
   void reset() {
     selectedJobId = 0;
@@ -264,5 +267,8 @@ class JobselectedRepository {
     repoVarAddExtraDryCount = 0;
     repoVarAddExtraWashCount = 0;
     repoVarAddExtraSpinCount = 0;
+    maxPartial = 0;
+    selectedOthersShortCut = 0;
+    thisJobHasPromo = false;
   }
 }
