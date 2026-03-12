@@ -278,6 +278,19 @@ class DatabaseJobsCompleted {
             });
     return bSuccess;
   }
+
+  Future<QuerySnapshot> fetchCompletedJobs({
+    DocumentSnapshot? lastDoc,
+    int limit = 5,
+  }) async {
+    Query query = _ref.orderBy("A05_DateD", descending: true).limit(limit);
+
+    if (lastDoc != null) {
+      query = query.startAfterDocument(lastDoc);
+    }
+
+    return await query.get();
+  }
 }
 
 /// 🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥

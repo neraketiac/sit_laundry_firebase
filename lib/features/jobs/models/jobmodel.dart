@@ -390,6 +390,14 @@ class JobModel {
         isPromoCounter: json['Z01_IsPromoCounter'] ?? true,
       );
 
+  factory JobModel.fromFirestore(
+    Map<String, dynamic> json,
+    String docId,
+  ) {
+    final model = JobModel.fromJson(json);
+    return model.copyWith(docId: docId);
+  }
+
   /// 🟧 TO FIRESTORE
   Map<String, dynamic> toJson() => {
         'A00_DocId': docId,

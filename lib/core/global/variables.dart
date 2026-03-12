@@ -18,6 +18,11 @@ import 'package:laundry_firebase/core/global/variables_fab.dart';
 import 'package:laundry_firebase/core/global/variables_oth.dart';
 import 'package:laundry_firebase/core/global/variables_supplies.dart';
 
+DocumentSnapshot? lastCompletedDoc;
+bool loadingCompleted = false;
+bool hasMoreCompleted = true;
+ScrollController completedScrollController = ScrollController();
+
 bool usePromoFree = false;
 bool isProcessing = false;
 bool bFirebaseInitialized = false;

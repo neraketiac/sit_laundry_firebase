@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'package:laundry_firebase/features/jobs/models/jobmodel.dart';
 import 'package:laundry_firebase/features/pages/body/JobsDone/showDeliverOrCustomerPickup.dart';
 import 'package:laundry_firebase/features/pages/body/JobsDone/showReceipt.dart';
@@ -7,167 +9,194 @@ import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/showAdminJ
 import 'package:laundry_firebase/core/services/database_jobs.dart';
 import 'package:laundry_firebase/features/jobs/repository/jobmodel_repository.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
+
 import 'package:laundry_firebase/shared/widgets/jobdisplay/visIconArea.dart';
 import 'package:laundry_firebase/shared/widgets/jobdisplay/visNameArea.dart';
 import 'package:laundry_firebase/shared/widgets/jobdisplay/visPaidUnpaidArea.dart';
 
-Widget readDataJobsCompleted(
-  VoidCallback dialogSetState,
-) {
-  DatabaseJobsCompleted databaseJobsCompleted = DatabaseJobsCompleted();
+/// STATE
+List<JobModel> sortedJobsCompleted = [];
+DocumentSnapshot? lastCompletedDoc;
 
-  return StreamBuilder<List<JobModel>>(
-    stream: databaseJobsCompleted.streamAll(),
-    builder: (context, snapshot) {
-      if (snapshot.hasError) {
-        return const Center(child: Text('Error loading jobs'));
-      }
+bool loadingCompleted = false;
+bool hasMoreCompleted = true;
 
-      if (!snapshot.hasData) {
-        return const Center(child: CircularProgressIndicator());
-      }
+final DatabaseJobsCompleted databaseJobsCompleted = DatabaseJobsCompleted();
 
-      /// 🔥 Sync Firestore → original + sorted
-      if (originalJobsCompleted.length != snapshot.data!.length) {
-        originalJobsCompleted
-          ..clear()
-          ..addAll(snapshot.data!);
+/// LOAD PAGE
+Future<void> loadMoreCompletedJobs(VoidCallback refresh) async {
+  if (loadingCompleted || !hasMoreCompleted) return;
 
-        sortedJobsCompleted
-          ..clear()
-          ..addAll(originalJobsCompleted);
-      }
-      // sortJobs(sortedJobsCompleted);
+  loadingCompleted = true;
 
-      return Column(
+  final snapshot = await databaseJobsCompleted.fetchCompletedJobs(
+    lastDoc: lastCompletedDoc,
+  );
+
+  if (snapshot.docs.isEmpty) {
+    hasMoreCompleted = false;
+  } else {
+    final jobs = snapshot.docs.map((doc) {
+      return JobModel.fromFirestore(
+        doc.data() as Map<String, dynamic>,
+        doc.id,
+      );
+    }).toList();
+
+    sortedJobsCompleted.addAll(jobs);
+    lastCompletedDoc = snapshot.docs.last;
+  }
+
+  loadingCompleted = false;
+
+  /// 🔥 rebuild UI
+  refresh();
+}
+
+Widget readDataJobsCompleted(VoidCallback dialogSetState) {
+  /// load first page
+  if (sortedJobsCompleted.isEmpty && !loadingCompleted) {
+    loadMoreCompletedJobs(dialogSetState);
+  }
+
+  if (sortedJobsCompleted.isEmpty) {
+    return const Center(child: CircularProgressIndicator());
+  }
+
+  return Column(
+    children: [
+      const Row(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [Text("🏁💯 COMPLETED")],
-          ),
-          ReorderableListView(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            buildDefaultDragHandles: false,
-            proxyDecorator: (child, index, animation) {
-              return Material(
-                elevation: 10,
-                borderRadius: BorderRadius.circular(18),
-                child: child,
-              );
-            },
-            onReorder: (oldIndex, newIndex) {
-              dialogSetState();
-            },
-            children: List.generate(sortedJobsCompleted.length, (index) {
-              final job = sortedJobsCompleted[index];
-              JobModelRepository jobRepo = JobModelRepository();
-              jobRepo.setJobModel(job);
-              jobRepo.syncRepoToSelectedAll(jobRepo);
+          Text("🏁💯 COMPLETED"),
+        ],
+      ),
+      SizedBox(
+        height: 600,
+        child: ReorderableListView.builder(
+          physics: const AlwaysScrollableScrollPhysics(),
+          buildDefaultDragHandles: false,
+          itemCount: sortedJobsCompleted.length,
+          proxyDecorator: (child, index, animation) {
+            return Material(
+              elevation: 10,
+              borderRadius: BorderRadius.circular(18),
+              child: child,
+            );
+          },
+          onReorder: (oldIndex, newIndex) {
+            dialogSetState();
+          },
+          itemBuilder: (context, index) {
+            /// pagination trigger
+            if (index == sortedJobsCompleted.length - 1) {
+              loadMoreCompletedJobs(dialogSetState);
+            }
 
-              final isSelected = selectedIndexCompleted == index;
+            final job = sortedJobsCompleted[index];
 
-              return ReorderableDelayedDragStartListener(
-                key: ValueKey(job.docId),
-                index: index,
-                child: MouseRegion(
-                  cursor: SystemMouseCursors.click,
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(18),
-                    onDoubleTap: () {
-                      if (isAdmin) {
-                        showDialog(
-                          context: context,
-                          builder: (_) => AdminJobRepoViewer(jobRepo: jobRepo),
-                        );
-                      }
-                    },
-                    onTap: () {
-                      selectedIndexCompleted = index;
-                      dialogSetState();
-                      showReceipt(context, jobRepo);
-                      // showUpdateDates(context, jobRepo);
-                    },
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 250),
+            final jobRepo = JobModelRepository()..setJobModel(job);
 
-                      /// 🔹 KEEP SIZE SAME
-                      margin: const EdgeInsets.symmetric(vertical: 1),
-                      padding: const EdgeInsets.all(4),
+            jobRepo.syncRepoToSelectedAll(jobRepo);
 
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(18),
+            final isSelected = selectedIndexCompleted == index;
 
-                        /// 🎨 Softer gradient instead of flat purple
-                        gradient: LinearGradient(
-                          colors: isSelected
-                              ? [
-                                  Colors.deepPurple.shade200,
-                                  Colors.deepPurple.shade100,
-                                ]
-                              : [
-                                  Colors.deepPurple.shade50,
-                                  Colors.deepPurple.shade50,
-                                ],
-                        ),
-
-                        boxShadow: [
-                          if (isSelected)
-                            BoxShadow(
-                              color: Colors.deepPurple.withOpacity(0.4),
-                              blurRadius: 14,
-                              offset: const Offset(0, 6),
-                            ),
-                        ],
-
-                        border: Border.all(
-                          color: isSelected
-                              ? Colors.deepPurple
-                              : Colors.deepPurple.withOpacity(0.1),
-                          width: isSelected ? 1.5 : 1,
-                        ),
+            return ReorderableDelayedDragStartListener(
+              key: ValueKey(job.docId),
+              index: index,
+              child: MouseRegion(
+                cursor: SystemMouseCursors.click,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(18),
+                  onDoubleTap: () {
+                    if (isAdmin) {
+                      showDialog(
+                        context: context,
+                        builder: (_) => AdminJobRepoViewer(jobRepo: jobRepo),
+                      );
+                    }
+                  },
+                  onTap: () {
+                    selectedIndexCompleted = index;
+                    dialogSetState();
+                    showReceipt(context, jobRepo);
+                  },
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 250),
+                    margin: const EdgeInsets.symmetric(vertical: 1),
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(18),
+                      gradient: LinearGradient(
+                        colors: isSelected
+                            ? [
+                                Colors.deepPurple.shade200,
+                                Colors.deepPurple.shade100,
+                              ]
+                            : [
+                                Colors.deepPurple.shade50,
+                                Colors.deepPurple.shade50,
+                              ],
                       ),
-
-                      child: Row(
-                        children: [
-                          const SizedBox(width: 10),
-
-                          /// ICON
-                          visIconArea(
-                            context,
-                            jobRepo,
-                            job,
-                            isSelected,
-                            false,
-                            () async {
-                              if (isAdmin) {
-                                showDeliverOrCustomerPickup(context, jobRepo);
-                              }
-                            },
+                      boxShadow: [
+                        if (isSelected)
+                          BoxShadow(
+                            color: Colors.deepPurple.withOpacity(0.4),
+                            blurRadius: 14,
+                            offset: const Offset(0, 6),
                           ),
-
-                          const SizedBox(width: 7),
-
-                          /// NAME
-                          visNameArea(jobRepo.getJobsModel()!, isSelected),
-
-                          /// PRICE
-                          visPaidUnpaidArea(
-                              context, jobRepo, isSelected, false),
-
-                          const SizedBox(width: 20),
-                        ],
+                      ],
+                      border: Border.all(
+                        color: isSelected
+                            ? Colors.deepPurple
+                            : Colors.deepPurple.withOpacity(0.1),
+                        width: isSelected ? 1.5 : 1,
                       ),
+                    ),
+                    child: Row(
+                      children: [
+                        const SizedBox(width: 10),
+                        visIconArea(
+                          context,
+                          jobRepo,
+                          job,
+                          isSelected,
+                          false,
+                          () async {
+                            if (isAdmin) {
+                              showDeliverOrCustomerPickup(
+                                context,
+                                jobRepo,
+                              );
+                            }
+                          },
+                        ),
+                        const SizedBox(width: 7),
+                        visNameArea(
+                          jobRepo.getJobsModel()!,
+                          isSelected,
+                        ),
+                        visPaidUnpaidArea(
+                          context,
+                          jobRepo,
+                          isSelected,
+                          false,
+                        ),
+                        const SizedBox(width: 20),
+                      ],
                     ),
                   ),
                 ),
-              );
-            }),
-          ),
-        ],
-      );
-      //   },
-      // );
-    },
+              ),
+            );
+          },
+        ),
+      ),
+      if (loadingCompleted)
+        const Padding(
+          padding: EdgeInsets.all(10),
+          child: CircularProgressIndicator(),
+        ),
+    ],
   );
 }
