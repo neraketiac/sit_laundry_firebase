@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:laundry_firebase/features/jobs/models/jobmodel.dart';
 import 'package:laundry_firebase/core/services/database_loyalty.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
@@ -281,9 +282,17 @@ class DatabaseJobsCompleted {
 
   Future<QuerySnapshot> fetchCompletedJobs({
     DocumentSnapshot? lastDoc,
-    int limit = 5,
+    int limit = 20,
+    int? customerId,
   }) async {
-    Query query = _ref.orderBy("A05_DateD", descending: true).limit(limit);
+    Query query = _ref;
+
+    /// apply search filter
+    if (customerId != 0) {
+      query = query.where('C00_CustomerId', isEqualTo: customerId);
+    }
+
+    query = query.orderBy("A05_DateD", descending: true).limit(limit);
 
     if (lastDoc != null) {
       query = query.startAfterDocument(lastDoc);

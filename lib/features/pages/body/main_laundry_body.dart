@@ -411,7 +411,8 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                   animatedPanel(
                     visible: empSetup.showLaundry,
                     width: 320,
-                    child: readDataJobsCompleted(() => setState(() {})),
+                    child:
+                        readDataJobsCompleted(context, () => setState(() {})),
                     color: LaundryColors.completed,
                   ),
                   animatedPanel(

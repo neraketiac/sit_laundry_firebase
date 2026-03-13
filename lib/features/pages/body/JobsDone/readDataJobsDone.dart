@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:laundry_firebase/features/jobs/models/jobmodel.dart';
+import 'package:laundry_firebase/features/pages/body/JobsCompleted/readDataJobsCompleted.dart';
 import 'package:laundry_firebase/features/pages/body/JobsDone/showDeliverOrCustomerPickup.dart';
 import 'package:laundry_firebase/features/pages/body/JobsDone/showReceipt.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/showAdminJob.dart';
@@ -8,7 +9,8 @@ import 'package:laundry_firebase/shared/widgets/jobdisplay/autocompletecustomer.
 
 import 'package:laundry_firebase/core/services/database_jobs.dart';
 import 'package:laundry_firebase/features/jobs/repository/jobmodel_repository.dart';
-import 'package:laundry_firebase/core/global/variables.dart';
+import 'package:laundry_firebase/core/global/variables.dart'
+    hide sortedJobsCompleted;
 import 'package:laundry_firebase/shared/widgets/jobdisplay/visIconArea.dart';
 import 'package:laundry_firebase/shared/widgets/jobdisplay/visNameArea.dart';
 import 'package:laundry_firebase/shared/widgets/jobdisplay/visPaidUnpaidArea.dart';
@@ -20,9 +22,9 @@ Widget readDataJobsDone(VoidCallback dialogSetState) {
     sortedJobsDone
       ..clear()
       ..addAll(originalJobsDone);
-    sortedJobsCompleted
-      ..clear()
-      ..addAll(originalJobsCompleted);
+    // sortedJobsCompleted
+    //   ..clear()
+    //   ..addAll(originalJobsCompleted);
 
     dialogSetState();
   }
@@ -44,17 +46,17 @@ Widget readDataJobsDone(VoidCallback dialogSetState) {
           }),
         );
 
-      sortedJobsCompleted
-        ..clear()
-        ..addAll(
-          originalJobsCompleted.where((job) {
-            final d = job.dateD.toDate();
+      // sortedJobsCompleted
+      //   ..clear()
+      //   ..addAll(
+      //     originalJobsCompleted.where((job) {
+      //       final d = job.dateD.toDate();
 
-            return d.year == selectedDay.year &&
-                d.month == selectedDay.month &&
-                d.day == selectedDay.day;
-          }),
-        );
+      //       return d.year == selectedDay.year &&
+      //           d.month == selectedDay.month &&
+      //           d.day == selectedDay.day;
+      //     }),
+      //   );
 
       dialogSetState();
     }
@@ -180,13 +182,20 @@ Widget readDataJobsDone(VoidCallback dialogSetState) {
                     .where((job) => job.paidGCashverified == true)
                     .fold(0, (sum, job) => sum + job.paidGCashAmount);
 
-                sortedJobsCompleted
-                  ..clear()
-                  ..addAll(
-                    originalJobsCompleted.where(
-                      (job) => job.customerId == jobRepox.selectedCustomerId,
-                    ),
-                  );
+                // sortedJobsCompleted
+                //   ..clear()
+                //   ..addAll(
+                //     originalJobsCompleted.where(
+                //       (job) => job.customerId == jobRepox.selectedCustomerId,
+                //     ),
+                //   );
+
+                selectedCustomerIdCompleted = jobRepox.selectedCustomerId;
+
+                sortedJobsCompleted.clear();
+                lastCompletedDoc = null;
+                hasMoreCompleted = true;
+
                 dialogSetState();
 
                 /// close first dialog

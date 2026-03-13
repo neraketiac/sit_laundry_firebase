@@ -21,6 +21,8 @@ DocumentSnapshot? lastCompletedDoc;
 bool loadingCompleted = false;
 bool hasMoreCompleted = true;
 
+int? selectedCustomerIdCompleted;
+
 final DatabaseJobsCompleted databaseJobsCompleted = DatabaseJobsCompleted();
 
 /// LOAD PAGE
@@ -29,8 +31,13 @@ Future<void> loadMoreCompletedJobs(VoidCallback refresh) async {
 
   loadingCompleted = true;
 
+  // final snapshot = await databaseJobsCompleted.fetchCompletedJobs(
+  //   lastDoc: lastCompletedDoc,
+  // );
+
   final snapshot = await databaseJobsCompleted.fetchCompletedJobs(
     lastDoc: lastCompletedDoc,
+    customerId: selectedCustomerIdCompleted,
   );
 
   if (snapshot.docs.isEmpty) {
@@ -53,7 +60,8 @@ Future<void> loadMoreCompletedJobs(VoidCallback refresh) async {
   refresh();
 }
 
-Widget readDataJobsCompleted(VoidCallback dialogSetState) {
+Widget readDataJobsCompleted(
+    BuildContext context, VoidCallback dialogSetState) {
   /// load first page
   if (sortedJobsCompleted.isEmpty && !loadingCompleted) {
     loadMoreCompletedJobs(dialogSetState);
@@ -72,7 +80,7 @@ Widget readDataJobsCompleted(VoidCallback dialogSetState) {
         ],
       ),
       SizedBox(
-        height: 600,
+        height: MediaQuery.of(context).size.height * 0.8,
         child: ReorderableListView.builder(
           physics: const AlwaysScrollableScrollPhysics(),
           buildDefaultDragHandles: false,
