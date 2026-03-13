@@ -26,6 +26,12 @@ Widget readDataJobsDone(VoidCallback dialogSetState) {
     //   ..clear()
     //   ..addAll(originalJobsCompleted);
 
+    selectedCustomerIdCompleted = 0;
+
+    sortedJobsCompleted.clear();
+    lastCompletedDoc = null;
+    hasMoreCompleted = true;
+
     dialogSetState();
   }
 
