@@ -15,6 +15,8 @@ Widget visAmountOthersOnly(
   VoidCallback dialogSetState,
   JobModelRepository jobRepo,
 ) {
+  debugPrint('1 repoVarTotalPriceOthers=${jobRepo.repoVarTotalPriceOthers}');
+
   String getShortcutLabel(int value) {
     switch (value) {
       case menuOth155:

@@ -453,7 +453,7 @@ class _AdminJobRepoViewerState extends State<AdminJobRepoViewer> {
         TextButton(
           onPressed: () {
             setState(() {
-              syncRepoToSelectedALL(jobRepo);
+              jobRepo.syncRepoToSelectedAll(jobRepo);
             });
             Navigator.pop(context);
           },

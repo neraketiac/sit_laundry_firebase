@@ -263,7 +263,7 @@ class _AutoCompleteCustomerState extends State<AutoCompleteCustomer> {
     widget.jobRepo.address = selected.address;
 
     if (widget.jobRepo.processStep == '') {
-      removeOtherItem(widget.jobRepo, promoFree);
+      widget.jobRepo.items.remove(promoFree);
     }
 
     bCustomerName = true;

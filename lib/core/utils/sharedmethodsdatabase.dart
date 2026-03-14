@@ -121,7 +121,7 @@ Future<void> callDatabaseJobsQueueAdd(
   if (await databaseJobsQueue.add(jobRepo.jobModel)) {
     successInsertFB = true;
     DatabaseLoyalty loyalty = DatabaseLoyalty();
-    loyalty.addCountByCardNumber(jobRepo.customerId, -10);
+    await loyalty.addCountByCardNumber(jobRepo.customerId, -10);
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Insert on Queue done.')),
     );
@@ -221,7 +221,7 @@ Future<void> registerWebToken(String empId) async {
 
     cachedToken = token;
 
-    print("FCM TOKEN: $token");
+    //print("FCM TOKEN: $token");
 
     saveTokenToFirestore(empId, token);
   } catch (e) {

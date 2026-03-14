@@ -227,8 +227,8 @@ class JobselectedRepository {
     selectedCustomerNameVar.text = '';
     selectedIsCustomerPickedUp = false;
     selectedIsDeliveredToCustomer = false;
-    selectedPerKilo = true;
-    selectedPerLoad = false;
+    selectedPerKilo = false;
+    selectedPerLoad = true;
     selectedFinalKilo = 8;
     selectedFinalLoad = 1;
     selectedFinalPrice = 0;

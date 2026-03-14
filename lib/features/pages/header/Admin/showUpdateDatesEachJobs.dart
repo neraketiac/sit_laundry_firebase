@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:laundry_firebase/core/utils/sharedMethods.dart';
-import 'package:laundry_firebase/shared/widgets/jobdisplay/Visibility%20visPaidUnPaid.dart';
+import 'package:laundry_firebase/shared/widgets/jobdisplay/visPaidUnPaid.dart';
 import 'package:laundry_firebase/shared/widgets/jobdisplay/conRemarks.dart';
 import 'package:laundry_firebase/core/utils/sharedmethodsdatabase.dart';
 import 'package:laundry_firebase/features/jobs/repository/jobmodel_repository.dart';
@@ -38,7 +38,7 @@ void showUpdateDatesEachJobs(BuildContext context, JobModelRepository jobRepo) {
     //await setRepositoryLaundryPayment(context, 'Show Jobs OnQueue');
   }
 
-  syncRepoToSelectedALL(jobRepo);
+  jobRepo.syncRepoToSelectedAll(jobRepo);
   showDialog(
     context: context,
     builder: (BuildContext context) {
@@ -112,7 +112,7 @@ void showUpdateDatesEachJobs(BuildContext context, JobModelRepository jobRepo) {
             TextButton(
               onPressed: () {
                 setState(() {
-                  syncRepoToSelectedALL(jobRepo);
+                  jobRepo.syncRepoToSelectedAll(jobRepo);
                 });
 
                 Navigator.pop(context); // close popup

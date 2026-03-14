@@ -86,7 +86,7 @@ Widget visSelectPackage(
                         jobRepo.repoVarTotalPriceOthers = 0;
                         usePromoFree = false;
 
-                        dialogSetState();
+                        //dialogSetState();
                       }
 
                       jobRepo.selectedPackage = value;

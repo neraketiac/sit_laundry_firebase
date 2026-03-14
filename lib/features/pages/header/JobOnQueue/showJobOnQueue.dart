@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:laundry_firebase/core/constants/sharedConstantsFinal.dart';
 import 'package:laundry_firebase/core/utils/sharedMethods.dart';
-import 'package:laundry_firebase/shared/widgets/jobdisplay/Visibility%20visPaidUnPaid.dart';
+import 'package:laundry_firebase/shared/widgets/jobdisplay/visPaidUnPaid.dart';
 import 'package:laundry_firebase/shared/widgets/jobdisplay/conRemarks.dart';
 import 'package:laundry_firebase/core/utils/sharedmethodsdatabase.dart';
 import 'package:laundry_firebase/features/jobs/repository/jobmodel_repository.dart';
@@ -48,6 +48,7 @@ void showJobOnQueue(BuildContext context, JobModelRepository jobRepo) {
 
   //reset only when submit, so that when user opens the popup again, their previous selections are still there until they decide to save or cancel. This is more user-friendly as it prevents accidental loss of input if they open the popup multiple times.
   //resetSelected();
+
   showDialog(
     context: context,
     builder: (BuildContext context) {

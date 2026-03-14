@@ -1,10 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:laundry_firebase/core/utils/sharedMethods.dart';
 import 'package:laundry_firebase/features/jobs/repository/jobmodel_repository.dart';
 
 void showReceipt(BuildContext context, JobModelRepository jobRepo) {
-  syncRepoToSelectedALL(jobRepo);
+  jobRepo.syncRepoToSelectedAll(jobRepo);
 
   String formatDate(Timestamp ts) {
     final d = ts.toDate();

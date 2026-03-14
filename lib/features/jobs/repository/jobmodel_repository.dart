@@ -173,12 +173,6 @@ class JobModelRepository {
     jobModel = value;
   }
 
-  void setPackage(int value) {
-    regular = value == intRegularPackage;
-    sayosabon = value == intSayoSabonPackage;
-    addOn = value == intOthersPackage;
-  }
-
   set jobModelData(JobModel value) => jobModel = value;
   set docId(String value) => jobModel.docId = value;
   set jobId(int value) => jobModel.jobId = value;
@@ -534,6 +528,8 @@ class JobModelRepository {
     selectedPerLoad = jobRepo.perLoad;
     selectedFinalKilo = jobRepo.finalKilo;
     selectedFinalLoad = jobRepo.finalLoad;
+    // debugPrint(
+    //     'jobSyncRepoToSelectAll jobRepo.addOn=${jobRepo.addOn} repoVarTotalPriceOthers=$repoVarTotalPriceOthers');
     if (jobRepo.addOn) {
       repoVarTotalPriceOthers = jobRepo.finalPrice;
     } else {

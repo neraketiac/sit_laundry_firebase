@@ -473,226 +473,226 @@ void resetPaymentStatus(JobModelRepository jobRepo) {
   jobRepo.repoVarCashAmountVar.text = '';
 }
 
-//only all edit should call this
-void syncRepoToSelectedALL(JobModelRepository jobRepo) {
-  //1 admin
-  jobRepo.currentEmpId = empIdGlobal;
+// //only all edit should call this
+// void syncRepoToSelectedALL(JobModelRepository jobRepo) {
+//   //1 admin
+//   jobRepo.currentEmpId = empIdGlobal;
 
-  //2 customer
-  jobRepo.selectedCustomerNameVar.text = jobRepo.customerName;
+//   //2 customer
+//   jobRepo.selectedCustomerNameVar.text = jobRepo.customerName;
 
-  //3 queue status
-  if (jobRepo.riderPickup) {
-    jobRepo.repoVarSelectedIntRiderPickup = intRiderPickup;
-  }
-  if (jobRepo.forSorting) jobRepo.repoVarSelectedIntRiderPickup = intForSorting;
+//   //3 queue status
+//   if (jobRepo.riderPickup) {
+//     jobRepo.repoVarSelectedIntRiderPickup = intRiderPickup;
+//   }
+//   if (jobRepo.forSorting) jobRepo.repoVarSelectedIntRiderPickup = intForSorting;
 
-  //4 package status
-  if (jobRepo.regular) jobRepo.selectedPackage = intRegularPackage;
-  if (jobRepo.sayosabon) jobRepo.selectedPackage = intSayoSabonPackage;
-  if (jobRepo.addOn) {
-    jobRepo.selectedPackage = intOthersPackage;
-    jobRepo.selectedPackagePrev = intOthersPackage;
-  }
+//   //4 package status
+//   if (jobRepo.regular) jobRepo.selectedPackage = intRegularPackage;
+//   if (jobRepo.sayosabon) jobRepo.selectedPackage = intSayoSabonPackage;
+//   if (jobRepo.addOn) {
+//     jobRepo.selectedPackage = intOthersPackage;
+//     jobRepo.selectedPackagePrev = intOthersPackage;
+//   }
 
-  //5 prices
-  if (jobRepo.addOn) {
-    jobRepo.repoVarTotalPriceOthers = jobRepo.finalPrice;
-    jobRepo.repoVarTotalPriceRegSS = 0;
-  } else {
-    jobRepo.repoVarTotalPriceRegSS = jobRepo.finalPrice;
-    jobRepo.repoVarTotalPriceOthers = 0;
-  }
+//   //5 prices
+//   if (jobRepo.addOn) {
+//     jobRepo.repoVarTotalPriceOthers = jobRepo.finalPrice;
+//     jobRepo.repoVarTotalPriceRegSS = 0;
+//   } else {
+//     jobRepo.repoVarTotalPriceRegSS = jobRepo.finalPrice;
+//     jobRepo.repoVarTotalPriceOthers = 0;
+//   }
 
-  //6 payment status
-  // jobRepo.selectedPaidGCashVerified = jobRepo.paidGCashVerified;
+//   //6 payment status
+//   // jobRepo.selectedPaidGCashVerified = jobRepo.paidGCashVerified;
 
-  //6 payment status
-  jobRepo.repoVarCashAmountVar.text = jobRepo.paidCashAmount.toString();
-  jobRepo.repoVarGCashAmountVar.text = jobRepo.paidGCashAmount.toString();
+//   //6 payment status
+//   jobRepo.repoVarCashAmountVar.text = jobRepo.paidCashAmount.toString();
+//   jobRepo.repoVarGCashAmountVar.text = jobRepo.paidGCashAmount.toString();
 
-  //7 weight status
-  if (jobRepo.perKilo) jobRepo.selectedPerKilo = true;
-  if (jobRepo.perLoad) jobRepo.selectedPerKilo = false;
+//   //7 weight status
+//   if (jobRepo.perKilo) jobRepo.selectedPerKilo = true;
+//   if (jobRepo.perLoad) jobRepo.selectedPerKilo = false;
 
-  jobRepo.selectedFinalKilo = jobRepo.finalKilo;
-  jobRepo.selectedFinalLoad = jobRepo.finalLoad;
+//   jobRepo.selectedFinalKilo = jobRepo.finalKilo;
+//   jobRepo.selectedFinalLoad = jobRepo.finalLoad;
 
-  //8 list other items
-  jobRepo.selectedItems = List.from(jobRepo.items);
-  jobRepo.repoVarTotalPriceShortCutRegSS = jobRepo.items.fold(
-    0,
-    (sum, item) => sum + item.itemPrice,
-  );
+//   //8 list other items
+//   jobRepo.selectedItems = List.from(jobRepo.items);
+//   jobRepo.repoVarTotalPriceShortCutRegSS = jobRepo.items.fold(
+//     0,
+//     (sum, item) => sum + item.itemPrice,
+//   );
 
-  //10 extras
-  if (jobRepo.selectedPackage != intOthersPackage) {
-    jobRepo.repoVarAddFabCount = jobRepo.items
-        .where((e) => e.itemUniqueId == addFabAnyItemModel.itemUniqueId)
-        .length;
-    jobRepo.repoVarAddExtraDryCount = jobRepo.items
-        .where((e) => e.itemUniqueId == xDItemModel.itemUniqueId)
-        .length;
-    jobRepo.repoVarAddExtraWashCount = jobRepo.items
-        .where((e) => e.itemUniqueId == xWashItemModel.itemUniqueId)
-        .length;
-    jobRepo.repoVarAddExtraSpinCount = jobRepo.items
-        .where((e) => e.itemUniqueId == xSpinItemModel.itemUniqueId)
-        .length;
-  } else {
-    jobRepo.repoVarAddFabCount = 0;
-    jobRepo.repoVarAddExtraDryCount = 0;
-    jobRepo.repoVarAddExtraWashCount = 0;
-    jobRepo.repoVarAddExtraSpinCount = 0;
-  }
+//   //10 extras
+//   if (jobRepo.selectedPackage != intOthersPackage) {
+//     jobRepo.repoVarAddFabCount = jobRepo.items
+//         .where((e) => e.itemUniqueId == addFabAnyItemModel.itemUniqueId)
+//         .length;
+//     jobRepo.repoVarAddExtraDryCount = jobRepo.items
+//         .where((e) => e.itemUniqueId == xDItemModel.itemUniqueId)
+//         .length;
+//     jobRepo.repoVarAddExtraWashCount = jobRepo.items
+//         .where((e) => e.itemUniqueId == xWashItemModel.itemUniqueId)
+//         .length;
+//     jobRepo.repoVarAddExtraSpinCount = jobRepo.items
+//         .where((e) => e.itemUniqueId == xSpinItemModel.itemUniqueId)
+//         .length;
+//   } else {
+//     jobRepo.repoVarAddFabCount = 0;
+//     jobRepo.repoVarAddExtraDryCount = 0;
+//     jobRepo.repoVarAddExtraWashCount = 0;
+//     jobRepo.repoVarAddExtraSpinCount = 0;
+//   }
 
-  //12 Remarks
-  jobRepo.selectedRemarksVar.text = jobRepo.remarks;
-}
+//   //12 Remarks
+//   jobRepo.selectedRemarksVar.text = jobRepo.remarks;
+// }
 
-void syncRepoToSelectedSmall(JobModelRepository jobRepo) {
-  //2 customer
-  jobRepo.selectedCustomerNameVar.text = jobRepo.customerName;
+// void syncRepoToSelectedSmall(JobModelRepository jobRepo) {
+//   //2 customer
+//   jobRepo.selectedCustomerNameVar.text = jobRepo.customerName;
 
-  //3 queue status
-  if (jobRepo.riderPickup) {
-    jobRepo.repoVarSelectedIntRiderPickup = intRiderPickup;
-  }
-  if (jobRepo.forSorting) jobRepo.repoVarSelectedIntRiderPickup = intForSorting;
+//   //3 queue status
+//   if (jobRepo.riderPickup) {
+//     jobRepo.repoVarSelectedIntRiderPickup = intRiderPickup;
+//   }
+//   if (jobRepo.forSorting) jobRepo.repoVarSelectedIntRiderPickup = intForSorting;
 
-  //6 payment status
-  jobRepo.repoVarCashAmountVar.text = jobRepo.paidCashAmount.toString();
-  jobRepo.repoVarGCashAmountVar.text = jobRepo.paidGCashAmount.toString();
+//   //6 payment status
+//   jobRepo.repoVarCashAmountVar.text = jobRepo.paidCashAmount.toString();
+//   jobRepo.repoVarGCashAmountVar.text = jobRepo.paidGCashAmount.toString();
 
-  //8 list other items
-  jobRepo.selectedItems = List.from(jobRepo.items);
-  jobRepo.repoVarTotalPriceShortCutRegSS = jobRepo.items.fold(
-    0,
-    (sum, item) => sum + item.itemPrice,
-  );
+//   //8 list other items
+//   jobRepo.selectedItems = List.from(jobRepo.items);
+//   jobRepo.repoVarTotalPriceShortCutRegSS = jobRepo.items.fold(
+//     0,
+//     (sum, item) => sum + item.itemPrice,
+//   );
 
-  jobRepo.selectedRemarksVar.text = jobRepo.remarks;
-}
+//   jobRepo.selectedRemarksVar.text = jobRepo.remarks;
+// }
 
 //set selected to repository
 //only all edit should call this
-void syncSelectedToRepositoryALL(JobModelRepository jobRepo) {
-  int computePromoCounter = 0;
-  int computeLoadForKg(double kg) {
-    double remainder = kg % 8;
-    int wholeEight = kg ~/ 8;
-    int lastCounter = 0;
-    if (remainder < 1) {
-      lastCounter = 0;
-    } else {
-      lastCounter = 1;
-    }
-    if (remainder >= 3) {
-      computePromoCounter = wholeEight + 1;
-    } else {
-      computePromoCounter = wholeEight;
-    }
+// void syncSelectedToRepositoryALL(JobModelRepository jobRepo) {
+//   int computePromoCounter = 0;
+//   int computeLoadForKg(double kg) {
+//     double remainder = kg % 8;
+//     int wholeEight = kg ~/ 8;
+//     int lastCounter = 0;
+//     if (remainder < 1) {
+//       lastCounter = 0;
+//     } else {
+//       lastCounter = 1;
+//     }
+//     if (remainder >= 3) {
+//       computePromoCounter = wholeEight + 1;
+//     } else {
+//       computePromoCounter = wholeEight;
+//     }
 
-    return wholeEight + lastCounter;
-  }
+//     return wholeEight + lastCounter;
+//   }
 
-  //1 admin
-  //jobRepo.selectedCurrentEmpId = empIdGlobal;
+//   //1 admin
+//   //jobRepo.selectedCurrentEmpId = empIdGlobal;
 
-  //2 customer
-  //set by autocomplete
+//   //2 customer
+//   //set by autocomplete
 
-  //3 queue status
-  jobRepo.forSorting = intForSorting == jobRepo.repoVarSelectedIntRiderPickup;
-  //only true if still false
-  //once true, should always true
-  if ((intRiderPickup == jobRepo.repoVarSelectedIntRiderPickup)) {
-    jobRepo.riderPickup =
-        intRiderPickup == jobRepo.repoVarSelectedIntRiderPickup;
-  }
+//   //3 queue status
+//   jobRepo.forSorting = intForSorting == jobRepo.repoVarSelectedIntRiderPickup;
+//   //only true if still false
+//   //once true, should always true
+//   if ((intRiderPickup == jobRepo.repoVarSelectedIntRiderPickup)) {
+//     jobRepo.riderPickup =
+//         intRiderPickup == jobRepo.repoVarSelectedIntRiderPickup;
+//   }
 
-  //4 package status
-  jobRepo.regular = intRegularPackage == jobRepo.selectedPackage;
-  jobRepo.sayosabon = intSayoSabonPackage == jobRepo.selectedPackage;
-  jobRepo.addOn = intOthersPackage == jobRepo.selectedPackage;
+//   //4 package status
+//   jobRepo.regular = intRegularPackage == jobRepo.selectedPackage;
+//   jobRepo.sayosabon = intSayoSabonPackage == jobRepo.selectedPackage;
+//   jobRepo.addOn = intOthersPackage == jobRepo.selectedPackage;
 
-  //5 prices
-  if (jobRepo.selectedPackage == intOthersPackage) {
-    jobRepo.finalPrice = jobRepo.repoVarTotalPriceOthers;
-  } else {
-    jobRepo.finalPrice = jobRepo.repoVarTotalPriceRegSS;
-  }
+//   //5 prices
+//   if (jobRepo.selectedPackage == intOthersPackage) {
+//     jobRepo.finalPrice = jobRepo.repoVarTotalPriceOthers;
+//   } else {
+//     jobRepo.finalPrice = jobRepo.repoVarTotalPriceRegSS;
+//   }
 
-  //6 payment status
-  jobRepo.unpaid = true;
-  jobRepo.paidCashAmount = int.tryParse(jobRepo.repoVarCashAmountVar.text) ?? 0;
-  jobRepo.paidGCashAmount =
-      int.tryParse(jobRepo.repoVarGCashAmountVar.text) ?? 0;
-  //check if paidCash is enough vs bill
-  if (jobRepo.paidCash) {
-    //received by
-    jobRepo.paymentReceivedBy = empIdGlobal;
-    if (jobRepo.paidCashAmount >= jobRepo.finalPrice) {
-      //paid
-      jobRepo.unpaid = false;
-    }
-  }
+//   //6 payment status
+//   jobRepo.unpaid = true;
+//   jobRepo.paidCashAmount = int.tryParse(jobRepo.repoVarCashAmountVar.text) ?? 0;
+//   jobRepo.paidGCashAmount =
+//       int.tryParse(jobRepo.repoVarGCashAmountVar.text) ?? 0;
+//   //check if paidCash is enough vs bill
+//   if (jobRepo.paidCash) {
+//     //received by
+//     jobRepo.paymentReceivedBy = empIdGlobal;
+//     if (jobRepo.paidCashAmount >= jobRepo.finalPrice) {
+//       //paid
+//       jobRepo.unpaid = false;
+//     }
+//   }
 
-  //7 weight status
-  jobRepo.perKilo = false;
-  jobRepo.perLoad = false;
-  if (jobRepo.selectedPerKilo) {
-    jobRepo.perKilo = true;
-    jobRepo.finalKilo = jobRepo.selectedFinalKilo;
-    jobRepo.finalLoad = computeLoadForKg(jobRepo.selectedFinalKilo);
-    debugPrint('jobRepo.finalLoad=${jobRepo.finalLoad}');
-    jobRepo.promoCounter = computePromoCounter;
-    jobRepo.pricingSetup = showHowMany155or125Set(
-        computeTotalPrice(jobRepo.selectedFinalKilo, jobRepo), false, jobRepo);
-  } else {
-    jobRepo.perLoad = true;
-    jobRepo.finalLoad = jobRepo.selectedFinalLoad;
-    jobRepo.promoCounter = jobRepo.selectedFinalLoad;
-    jobRepo.pricingSetup = 'Load(s): ${jobRepo.selectedFinalLoad}';
-  }
+//   //7 weight status
+//   jobRepo.perKilo = false;
+//   jobRepo.perLoad = false;
+//   if (jobRepo.selectedPerKilo) {
+//     jobRepo.perKilo = true;
+//     jobRepo.finalKilo = jobRepo.selectedFinalKilo;
+//     jobRepo.finalLoad = computeLoadForKg(jobRepo.selectedFinalKilo);
+//     debugPrint('jobRepo.finalLoad=${jobRepo.finalLoad}');
+//     jobRepo.promoCounter = computePromoCounter;
+//     jobRepo.pricingSetup = showHowMany155or125Set(
+//         computeTotalPrice(jobRepo.selectedFinalKilo, jobRepo), false, jobRepo);
+//   } else {
+//     jobRepo.perLoad = true;
+//     jobRepo.finalLoad = jobRepo.selectedFinalLoad;
+//     jobRepo.promoCounter = jobRepo.selectedFinalLoad;
+//     jobRepo.pricingSetup = 'Load(s): ${jobRepo.selectedFinalLoad}';
+//   }
 
-  //8 list other items
-  if (jobRepo.selectedItems.isNotEmpty) {
-    jobRepo.items = List.from(jobRepo.selectedItems);
-  }
+//   //8 list other items
+//   if (jobRepo.selectedItems.isNotEmpty) {
+//     jobRepo.items = List.from(jobRepo.selectedItems);
+//   }
 
-  //12
-  jobRepo.remarks = jobRepo.selectedRemarksVar.text;
-}
+//   //12
+//   jobRepo.remarks = jobRepo.selectedRemarksVar.text;
+// }
 
-void syncSelectedToRepositorySmall(JobModelRepository jobRepo) {
-  //3 queue status
-  jobRepo.forSorting = intForSorting == jobRepo.repoVarSelectedIntRiderPickup;
-  //only true if still false
-  //once true, should always true
-  if (jobRepo.riderPickup ||
-      intRiderPickup == jobRepo.repoVarSelectedIntRiderPickup) {
-    jobRepo.riderPickup =
-        intRiderPickup == jobRepo.repoVarSelectedIntRiderPickup;
-  }
+// void syncSelectedToRepositorySmall(JobModelRepository jobRepo) {
+//   //3 queue status
+//   jobRepo.forSorting = intForSorting == jobRepo.repoVarSelectedIntRiderPickup;
+//   //only true if still false
+//   //once true, should always true
+//   if (jobRepo.riderPickup ||
+//       intRiderPickup == jobRepo.repoVarSelectedIntRiderPickup) {
+//     jobRepo.riderPickup =
+//         intRiderPickup == jobRepo.repoVarSelectedIntRiderPickup;
+//   }
 
-  //6 payment status
-  jobRepo.unpaid = true;
-  // jobRepo.paidCash;
-  // jobRepo.paidGCash;
-  jobRepo.paidCashAmount = int.tryParse(jobRepo.repoVarCashAmountVar.text) ?? 0;
-  jobRepo.paidGCashAmount =
-      int.tryParse(jobRepo.repoVarGCashAmountVar.text) ?? 0;
-  //check if paidCash is enough vs bill
-  if (jobRepo.paidCash) {
-    //received by
-    jobRepo.paymentReceivedBy = empIdGlobal;
-    if (jobRepo.paidCashAmount >= jobRepo.finalPrice) {
-      //paid
-      jobRepo.unpaid = false;
-    }
-  }
-}
+//   //6 payment status
+//   jobRepo.unpaid = true;
+//   // jobRepo.paidCash;
+//   // jobRepo.paidGCash;
+//   jobRepo.paidCashAmount = int.tryParse(jobRepo.repoVarCashAmountVar.text) ?? 0;
+//   jobRepo.paidGCashAmount =
+//       int.tryParse(jobRepo.repoVarGCashAmountVar.text) ?? 0;
+//   //check if paidCash is enough vs bill
+//   if (jobRepo.paidCash) {
+//     //received by
+//     jobRepo.paymentReceivedBy = empIdGlobal;
+//     if (jobRepo.paidCashAmount >= jobRepo.finalPrice) {
+//       //paid
+//       jobRepo.unpaid = false;
+//     }
+//   }
+// }
 
 Future<void> setSuppliesRepository(BuildContext context) async {
   void resetAfterInsert() {
@@ -821,9 +821,13 @@ Future<Uint8List> compressImage(Uint8List bytes) async {
 void addOtherItem(JobModelRepository jobRepo, OtherItemModel item) {
   jobRepo.selectedItems.add(item);
   jobRepo.repoVarTotalPriceOthers += item.itemPrice;
+  debugPrint(
+      'addOtherItem jobRepo.repoVarTotalPriceOthers=${jobRepo.repoVarTotalPriceOthers}');
 }
 
 void removeOtherItem(JobModelRepository jobRepo, OtherItemModel item) {
   jobRepo.selectedItems.remove(item);
   jobRepo.repoVarTotalPriceOthers -= item.itemPrice;
+  debugPrint(
+      'removeOtherItem jobRepo.repoVarTotalPriceOthers=${jobRepo.repoVarTotalPriceOthers}');
 }
