@@ -34,6 +34,16 @@ final addFabAnyItemModel = OtherItemModel(
   stocksAlert: 5,
   stocksType: "pcs",
 );
+final addBleItemModel = OtherItemModel(
+  docId: "",
+  itemId: menuFabWKLDValAny8ml,
+  itemUniqueId: menuFabWKLDValAny8ml,
+  itemGroup: groupFab,
+  itemName: "CS(30ml ₱5)",
+  itemPrice: 5,
+  stocksAlert: 5,
+  stocksType: "ml",
+);
 
 void addListFabItems() {
   //fab items

@@ -438,6 +438,10 @@ class JobModelRepository {
   set repoVarAddFabCount(int value) =>
       jobselectedRepository.repoVarAddFabCount = value;
 
+  int get repoVarAddBleCount => jobselectedRepository.repoVarAddBleCount;
+  set repoVarAddBleCount(int value) =>
+      jobselectedRepository.repoVarAddBleCount = value;
+
   int get repoVarAddExtraDryCount =>
       jobselectedRepository.repoVarAddExtraDryCount;
   set repoVarAddExtraDryCount(int value) =>

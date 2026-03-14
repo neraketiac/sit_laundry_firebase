@@ -106,6 +106,7 @@ class JobselectedRepository {
   //only use for when dropdown selected an item(1)
   OtherItemModel _repoVarSelectedItem = reg125ItemModel;
   int _repoVarAddFabCount = 0; //only use for shortcuts
+  int _repoVarAddBleCount = 0; //only use for shortcuts
   int _repoVarAddExtraDryCount = 0; //only use for shortcuts
   int _repoVarAddExtraWashCount = 0; //only use for shortcuts
   int _repoVarAddExtraSpinCount = 0; //only use for shortcuts
@@ -157,6 +158,7 @@ class JobselectedRepository {
   int get repoVarTotalPriceOthers => _repoVarTotalPriceOthers;
   OtherItemModel get repoVarSelectedItem => _repoVarSelectedItem;
   int get repoVarAddFabCount => _repoVarAddFabCount;
+  int get repoVarAddBleCount => _repoVarAddBleCount;
   int get repoVarAddExtraDryCount => _repoVarAddExtraDryCount;
   int get repoVarAddExtraWashCount => _repoVarAddExtraWashCount;
   int get repoVarAddExtraSpinCount => _repoVarAddExtraSpinCount;
@@ -214,6 +216,7 @@ class JobselectedRepository {
   set repoVarTotalPriceOthers(int v) => _repoVarTotalPriceOthers = v;
   set repoVarSelectedItem(OtherItemModel v) => _repoVarSelectedItem = v;
   set repoVarAddFabCount(int v) => _repoVarAddFabCount = v;
+  set repoVarAddBleCount(int v) => _repoVarAddBleCount = v;
   set repoVarAddExtraDryCount(int v) => _repoVarAddExtraDryCount = v;
   set repoVarAddExtraWashCount(int v) => _repoVarAddExtraWashCount = v;
   set repoVarAddExtraSpinCount(int v) => _repoVarAddExtraSpinCount = v;

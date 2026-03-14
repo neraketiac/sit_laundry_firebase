@@ -15,8 +15,6 @@ Widget visAmountOthersOnly(
   VoidCallback dialogSetState,
   JobModelRepository jobRepo,
 ) {
-  debugPrint('1 repoVarTotalPriceOthers=${jobRepo.repoVarTotalPriceOthers}');
-
   String getShortcutLabel(int value) {
     switch (value) {
       case menuOth155:
@@ -27,6 +25,19 @@ Widget visAmountOthersOnly(
         return "+Dry";
       case menuFabWKLDValAny8ml:
         return "+Fab";
+      default:
+        return value.toString();
+    }
+  }
+
+  String getOtherShortCutLabel(int value) {
+    switch (value) {
+      case menuOthNF155:
+        return "NF155";
+      case menuOthNF125:
+        return "NF125";
+      case menuOthWD98:
+        return "WD98";
       default:
         return value.toString();
     }
@@ -141,8 +152,41 @@ Widget visAmountOthersOnly(
             }).toList(),
           ),
 
-          const SizedBox(height: 24),
+          const SizedBox(height: 14),
 
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: listOthersShort2DropDownShortCuts.map((shortcut) {
+              return glassShortcutButton(
+                label: getOtherShortCutLabel(shortcut),
+                onTap: () {
+                  if (shortcut == menuOthNF155) {
+                    addOtherItem(jobRepo, nf155ItemModel);
+                  } else if (shortcut == menuOthNF125) {
+                    addOtherItem(jobRepo, nf125ItemModel);
+                  } else if (shortcut == menuOthWD98) {
+                    addOtherItem(jobRepo, washDryOnlytemModel);
+                  } else if (shortcut == menuOthFree) {
+                    addOtherItem(jobRepo, promoFree);
+                  }
+                  dialogSetState();
+                },
+              );
+            }).toList(),
+          ),
+          if (autocompleteSelected.loyaltyCount >= 10)
+            const SizedBox(height: 14),
+          if (autocompleteSelected.loyaltyCount >= 10)
+            glassShortcutButton(
+                label: "Free",
+                onTap: () {
+                  addOtherItem(jobRepo, reg155ItemModel);
+                  addOtherItem(jobRepo, promoFree);
+
+                  dialogSetState();
+                }),
+
+          const SizedBox(height: 14),
           // ================= ALL ITEMS CATEGORY =================
 
           Column(

@@ -44,6 +44,11 @@ final List<int> listOthersDropDownShortCuts = [
   menuOthXD,
   menuFabWKLDValAny8ml,
 ];
+final List<int> listOthersShort2DropDownShortCuts = [
+  menuOthNF155,
+  menuOthNF125,
+  menuOthWD98,
+];
 final List<int> listPackage = [
   intRegularPackage,
   intSayoSabonPackage,

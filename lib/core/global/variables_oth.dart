@@ -27,7 +27,8 @@ const int menuOthWash = 401,
     menuOthW10t11 = 420,
     menuOthW11t12 = 421,
     menuOthXS = 422,
-    menuOthFree = 423;
+    menuOthFree = 423,
+    menuOthWD98 = 424;
 const int menuOthUniqIdCashIn = 4401,
     menuOthUniqIdCashOut = 4402,
     menuOthUniqIdFundsIn = 4403,
@@ -42,6 +43,39 @@ final reg155ItemModel = OtherItemModel(
   itemGroup: groupOth,
   itemName: "Reg155",
   itemPrice: 155,
+  stocksAlert: 5,
+  stocksType: "pcs",
+);
+
+final nf155ItemModel = OtherItemModel(
+  docId: "",
+  itemId: menuOthNF155,
+  itemUniqueId: menuOthNF155,
+  itemGroup: groupOth,
+  itemName: "NF155",
+  itemPrice: 143,
+  stocksAlert: 5,
+  stocksType: "pcs",
+);
+
+final nf125ItemModel = OtherItemModel(
+  docId: "",
+  itemId: menuOthNF125,
+  itemUniqueId: menuOthNF125,
+  itemGroup: groupOth,
+  itemName: "NF125",
+  itemPrice: 108,
+  stocksAlert: 5,
+  stocksType: "pcs",
+);
+
+final washDryOnlytemModel = OtherItemModel(
+  docId: "",
+  itemId: menuOthWD98,
+  itemUniqueId: menuOthWD98,
+  itemGroup: groupOth,
+  itemName: "WD98",
+  itemPrice: 98,
   stocksAlert: 5,
   stocksType: "pcs",
 );
@@ -183,16 +217,8 @@ void addListOthItems() {
     stocksAlert: 5,
     stocksType: "pcs",
   ));
-  listOthItems.add(OtherItemModel(
-    docId: "",
-    itemId: menuOthNF125,
-    itemUniqueId: menuOthNF125,
-    itemGroup: groupOth,
-    itemName: "NF125",
-    itemPrice: 108,
-    stocksAlert: 5,
-    stocksType: "pcs",
-  ));
+  listOthItems.add(nf125ItemModel);
+  listOthItems.add(washDryOnlytemModel);
   listOthItems.add(OtherItemModel(
     docId: "",
     itemId: menuOthNF165,
@@ -203,16 +229,7 @@ void addListOthItems() {
     stocksAlert: 5,
     stocksType: "pcs",
   ));
-  listOthItems.add(OtherItemModel(
-    docId: "",
-    itemId: menuOthNF155,
-    itemUniqueId: menuOthNF155,
-    itemGroup: groupOth,
-    itemName: "NF155",
-    itemPrice: 143,
-    stocksAlert: 5,
-    stocksType: "pcs",
-  ));
+  listOthItems.add(nf155ItemModel);
   listOthItems.add(OtherItemModel(
     docId: "",
     itemId: menuOthNF195,
@@ -253,7 +270,6 @@ void addListOthItems() {
     stocksAlert: 10,
     stocksType: "pcs",
   ));
-  listOthItems.add(promoFree);
 
   //oth names
   mapOthNames.addEntries({menuOthWash: "Wash"}.entries);

@@ -821,13 +821,9 @@ Future<Uint8List> compressImage(Uint8List bytes) async {
 void addOtherItem(JobModelRepository jobRepo, OtherItemModel item) {
   jobRepo.selectedItems.add(item);
   jobRepo.repoVarTotalPriceOthers += item.itemPrice;
-  debugPrint(
-      'addOtherItem jobRepo.repoVarTotalPriceOthers=${jobRepo.repoVarTotalPriceOthers}');
 }
 
 void removeOtherItem(JobModelRepository jobRepo, OtherItemModel item) {
   jobRepo.selectedItems.remove(item);
   jobRepo.repoVarTotalPriceOthers -= item.itemPrice;
-  debugPrint(
-      'removeOtherItem jobRepo.repoVarTotalPriceOthers=${jobRepo.repoVarTotalPriceOthers}');
 }

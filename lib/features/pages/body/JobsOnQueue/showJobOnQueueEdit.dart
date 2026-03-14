@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:laundry_firebase/core/utils/sharedmethodsdatabase.dart';
 import 'package:laundry_firebase/core/utils/sharedMethods.dart';
+import 'package:laundry_firebase/shared/widgets/jobdisplay/visAddBle.dart';
 import 'package:laundry_firebase/shared/widgets/jobdisplay/visPaidUnPaid.dart';
 import 'package:laundry_firebase/shared/widgets/jobdisplay/conRemarks.dart';
 import 'package:laundry_firebase/features/jobs/repository/jobmodel_repository.dart';
@@ -94,6 +95,7 @@ void showJobOnQueueEdit(BuildContext context, JobModelRepository jobRepo) {
                     ),
                     visAddDry(context, () => setState(() {}), jobRepo),
                     visAddFab(context, () => setState(() {}), jobRepo),
+                    visAddBle(context, () => setState(() {}), jobRepo),
                     visAddWash(context, () => setState(() {}), jobRepo),
                     visAddSpin(context, () => setState(() {}), jobRepo),
                     conRemarks(context, () => setState(() {}),
