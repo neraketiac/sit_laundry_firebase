@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/runMigration.dart';
+import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/showAddColumn.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/showAdminDateDPage.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/showBatchPromo.dart';
+import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/showDeleteColumn.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/showDeleteSecondary.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
 
@@ -178,7 +180,19 @@ class _ShowAdminMainPageState extends State<ShowAdminMainPage> {
             //       color: Colors.grey.shade300,
             //       borderRadius: BorderRadius.circular(8),
             //     ),
-            //     child: const FixUnpaidJobsWidget(),
+            //     child: const RemovePromoCounterWidget(),
+            //   ),
+
+            // const SizedBox(height: 40),
+
+            // if (isAdmin)
+            //   Container(
+            //     padding: const EdgeInsets.all(16),
+            //     decoration: BoxDecoration(
+            //       color: Colors.grey.shade300,
+            //       borderRadius: BorderRadius.circular(8),
+            //     ),
+            //     child: const AddPromoErrorCodeWidget(),
             //   ),
 
             // const SizedBox(height: 40),

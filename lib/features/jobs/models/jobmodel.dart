@@ -120,8 +120,17 @@ class JobModel {
   bool forDisposal;
   bool disposed;
   bool isSyncToDB2; //tels if sync to db2
-  bool
-      isPromoCounter; //if this is false, succeeding records will not be checked and consider false.
+  int promoErrorCode; //if this is false, succeeding records will not be checked and consider false.
+  //change this to 0 - no error, eligible, included in promo
+  //               1 - on review, within 2 weeks unpaid
+  //               2 - not eligible due to unpaid for 2 weeks
+  //               3 - not eligible due to last laundry not within 2 weeks
+  //               4 - promo ended
+  //               5 - even this is eligible, once not eligible, all previous/old eligible is considere not eligible anymore, reset.
+  //                   the first job will be 4, then even previous jobs are 0, they will be viewed as 4 in customer.
+  //                   they would still see 1, 2, 3
+  //               but i think there is no 4, since 1, 2, 3 will be used as the first violation, then its over
+  //               99 - default no status
 
   JobModel({
     required this.docId,
@@ -172,7 +181,7 @@ class JobModel {
     required this.forDisposal,
     required this.disposed,
     required this.isSyncToDB2,
-    required this.isPromoCounter,
+    required this.promoErrorCode,
   });
 
   factory JobModel.makeEmpty() {
@@ -225,7 +234,7 @@ class JobModel {
       forDisposal: false,
       disposed: false,
       isSyncToDB2: false,
-      isPromoCounter: true,
+      promoErrorCode: 99,
     );
   }
 
@@ -279,7 +288,7 @@ class JobModel {
     bool? forDisposal,
     bool? disposed,
     bool? isSyncToDB2,
-    bool? isPromoCounter,
+    int? promoErrorCode,
   }) {
     return JobModel(
       docId: docId ?? this.docId,
@@ -331,7 +340,7 @@ class JobModel {
       forDisposal: forDisposal ?? this.forDisposal,
       disposed: disposed ?? this.disposed,
       isSyncToDB2: isSyncToDB2 ?? this.isSyncToDB2,
-      isPromoCounter: isPromoCounter ?? this.isPromoCounter,
+      promoErrorCode: promoErrorCode ?? this.promoErrorCode,
     );
   }
 
@@ -387,7 +396,7 @@ class JobModel {
         forDisposal: json['R01_ForDisposal'],
         disposed: json['R02_Disposed'],
         isSyncToDB2: json['Z00_IsSyncToDB2'] ?? false,
-        isPromoCounter: json['Z01_IsPromoCounter'] ?? true,
+        promoErrorCode: json['Z01_PromoErrorCode'] ?? 0,
       );
 
   factory JobModel.fromFirestore(
@@ -448,6 +457,6 @@ class JobModel {
         'R01_ForDisposal': forDisposal,
         'R02_Disposed': disposed,
         'Z00_IsSyncToDB2': isSyncToDB2,
-        'Z01_IsPromoCounter': isPromoCounter,
+        'Z01_PromoErrorCode': promoErrorCode,
       };
 }

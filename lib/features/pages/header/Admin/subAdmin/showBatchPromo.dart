@@ -142,12 +142,12 @@ Future<void> showBatchTwoWeeksChecking(BuildContext context) async {
         /// within 2 weeks
         //print('gap=${gap.inDays}');
         if (gap.inDays <= 14) {
-          if (data['Z01_IsPromoCounter'] != true) {
-            batch.update(doc.reference, {'Z01_IsPromoCounter': true});
+          if (data['Z01_PromoErrorCode'] != 0) {
+            batch.update(doc.reference, {'Z01_PromoErrorCode': 0});
             totalUpdates++;
             batchCount++;
           }
-          //only change previousDate if paid if not, dont change previous date
+          //only change previousDate if paid, if not, dont change previous date
           if (!unpaid && data['Q06_PromoCounter'] > 0) {
             previousDate = jobDateD;
 
@@ -165,8 +165,8 @@ Future<void> showBatchTwoWeeksChecking(BuildContext context) async {
         }
 
         /// gap > 14 days → boundary
-        if (data['Z01_IsPromoCounter'] != false || unpaid) {
-          batch.update(doc.reference, {'Z01_IsPromoCounter': false});
+        if (data['Z01_PromoErrorCode'] == 0 || unpaid) {
+          batch.update(doc.reference, {'Z01_PromoErrorCode': 1});
           totalUpdates++;
           batchCount++;
         }

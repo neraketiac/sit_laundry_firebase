@@ -123,10 +123,6 @@ class _AdminJobRepoViewerState extends State<AdminJobRepoViewer> {
                             case "disposed":
                               jobRepo.selectedDisposed = v;
                               break;
-
-                            case "isPromoCounter":
-                              jobRepo.selectedIsPromoCounter = v;
-                              break;
                           }
                         });
                       },
@@ -225,6 +221,11 @@ class _AdminJobRepoViewerState extends State<AdminJobRepoViewer> {
                                 case "allStatus":
                                   jobRepo.selectedAllStatus =
                                       double.tryParse(v) ?? 0;
+                                  break;
+
+                                case "PromoErrorCode":
+                                  jobRepo.selectedPromoErrorCode =
+                                      int.tryParse(v) ?? 0;
                                   break;
                               }
                             });
@@ -440,8 +441,8 @@ class _AdminJobRepoViewerState extends State<AdminJobRepoViewer> {
                   rowRepoSelected(
                       "disposed", jobRepo.disposed, jobRepo.selectedDisposed),
                   rowRepoOnly("isSyncToDB2", jobRepo.isSyncToDB2),
-                  rowRepoSelected("isPromoCounter", jobRepo.isPromoCounter,
-                      jobRepo.selectedIsPromoCounter),
+                  rowRepoSelected("PromoErrorCode", jobRepo.promoErrorCode,
+                      jobRepo.selectedPromoErrorCode),
                   const SizedBox(height: 40),
                 ],
               ),

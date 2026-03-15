@@ -67,7 +67,7 @@ class JobModelRepository {
       forDisposal: false,
       disposed: false,
       isSyncToDB2: false,
-      isPromoCounter: true,
+      promoErrorCode: 99,
     );
 
     jobselectedRepository.reset();
@@ -162,7 +162,7 @@ class JobModelRepository {
   bool get forDisposal => jobModel.forDisposal;
   bool get disposed => jobModel.disposed;
   bool get isSyncToDB2 => jobModel.isSyncToDB2;
-  bool get isPromoCounter => jobModel.isPromoCounter;
+  int get promoErrorCode => jobModel.promoErrorCode;
 
   /////////////////////////////////////////////////////////////
   //                          SETTER                         //
@@ -224,7 +224,7 @@ class JobModelRepository {
   set forDisposal(bool value) => jobModel.forDisposal = value;
   set disposed(bool value) => jobModel.disposed = value;
   set isSyncToDB2(bool value) => jobModel.isSyncToDB2 = value;
-  set isPromoCounter(bool value) => jobModel.isPromoCounter = value;
+  set promoErrorCode(int value) => jobModel.promoErrorCode = value;
 
   /////////////////////////////////////////////////////////////
   //                          ITEMS                          //
@@ -383,10 +383,10 @@ class JobModelRepository {
   bool get selectedDisposed => jobselectedRepository.selectedDisposed;
   set selectedDisposed(bool value) =>
       jobselectedRepository.selectedDisposed = value;
-  bool get selectedIsPromoCounter =>
-      jobselectedRepository.selectedIsPromoCounter;
-  set selectedIsPromoCounter(bool value) =>
-      jobselectedRepository.selectedIsPromoCounter = value;
+  int get selectedPromoErrorCode =>
+      jobselectedRepository.selectedPromoErrorCode;
+  set selectedPromoErrorCode(int value) =>
+      jobselectedRepository.selectedPromoErrorCode = value;
 // ================= REPO VAR =================
 
   TextEditingController get selectedCustomerNameVar =>
@@ -584,7 +584,7 @@ class JobModelRepository {
     /// 🔴 Disposal
     selectedForDisposal = jobRepo.forDisposal;
     selectedDisposed = jobRepo.disposed;
-    selectedIsPromoCounter = jobRepo.isPromoCounter;
+    selectedPromoErrorCode = jobRepo.promoErrorCode;
 
     thisJobHasPromo = false;
     if (jobRepo.items.any((e) => e.itemUniqueId == promoFree.itemUniqueId)) {
@@ -835,7 +835,7 @@ class JobModelRepository {
     /// 🔴 Disposal
     jobRepo.forDisposal = selectedForDisposal;
     jobRepo.disposed = selectedDisposed;
-    jobRepo.isPromoCounter = selectedIsPromoCounter;
+    jobRepo.promoCounter = selectedPromoErrorCode;
   }
 
   void syncSelectedToRepoMin(JobModelRepository jobRepo) {
