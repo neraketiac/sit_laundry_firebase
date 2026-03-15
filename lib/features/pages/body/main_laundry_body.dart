@@ -390,17 +390,13 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                     ),
                     color: Colors.blue,
                   ),
-                  animatedPanel(
-                    visible: empSetup.showLaundry,
-                    width: 320,
-                    child: readDataJobsOnQueue(),
-                    color: LaundryColors.onQueue,
+                  readDataJobsOnQueue(
+                    empSetup.showLaundry,
+                    LaundryColors.onQueue,
                   ),
-                  animatedPanel(
-                    visible: empSetup.showLaundry,
-                    width: 320,
-                    child: readDataJobsOnGoing(),
-                    color: LaundryColors.ongoing,
+                  readDataJobsOnGoing(
+                    empSetup.showLaundry,
+                    LaundryColors.ongoing,
                   ),
                   animatedPanel(
                     visible: empSetup.showLaundry,
