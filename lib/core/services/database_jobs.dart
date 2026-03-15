@@ -288,14 +288,21 @@ class DatabaseJobsCompleted {
   }) async {
     Query query = _ref;
 
-    /// apply search filter
-    if (customerId != 0) {
+    /// customer filter
+    if (customerId != null && customerId != 0) {
       query = query.where('C00_CustomerId', isEqualTo: customerId);
     }
 
-    /// OPTION 3 - if date supplied, filter by that day only
+    /// date filter
     if (parameterDate != null) {
-      query = query.where("A05_DateD", isEqualTo: parameterDate);
+      DateTime start =
+          DateTime(parameterDate.year, parameterDate.month, parameterDate.day);
+
+      DateTime end = start.add(const Duration(days: 1));
+
+      query = query
+          .where("A05_DateD", isGreaterThanOrEqualTo: Timestamp.fromDate(start))
+          .where("A05_DateD", isLessThan: Timestamp.fromDate(end));
     }
 
     query = query.orderBy("A05_DateD", descending: true).limit(limit);

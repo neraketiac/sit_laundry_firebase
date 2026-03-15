@@ -26,6 +26,7 @@ Widget readDataJobsDone(VoidCallback dialogSetState) {
     //   ..addAll(originalJobsCompleted);
 
     selectedCustomerIdCompleted = 0;
+    selectedPickDate = null;
 
     sortedJobsCompleted.clear();
     lastCompletedDoc = null;
@@ -181,6 +182,7 @@ Widget readDataJobsDone(VoidCallback dialogSetState) {
                 //   );
 
                 selectedCustomerIdCompleted = jobRepox.selectedCustomerId;
+                selectedPickDate = null;
 
                 sortedJobsCompleted.clear();
                 lastCompletedDoc = null;

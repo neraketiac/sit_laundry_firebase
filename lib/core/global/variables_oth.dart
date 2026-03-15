@@ -270,6 +270,7 @@ void addListOthItems() {
     stocksAlert: 10,
     stocksType: "pcs",
   ));
+  if (isAdmin) listOthItems.add(promoFree);
 
   //oth names
   mapOthNames.addEntries({menuOthWash: "Wash"}.entries);
