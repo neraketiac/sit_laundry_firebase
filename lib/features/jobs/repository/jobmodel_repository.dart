@@ -756,8 +756,14 @@ class JobModelRepository {
       }
     }
     if (selectedPackage == intOthersPackage) {
-      jobRepo.promoCounter =
-          selectedItems.where((v) => v.itemId == menuOth155).length;
+      final onlyPromo =
+          (selectedItems.where((v) => v.itemId == menuOth155).length) +
+              (selectedFinalLoad =
+                  selectedItems.where((v) => v.itemId == menuOth195).length);
+
+      jobRepo.finalLoad = onlyPromo +
+          (selectedItems.where((v) => v.itemId == menuOth125).length);
+      jobRepo.promoCounter = onlyPromo;
     }
 
     //even paying is 0, promocounter still added

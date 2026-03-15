@@ -22,6 +22,7 @@ bool loadingCompleted = false;
 bool hasMoreCompleted = true;
 
 int? selectedCustomerIdCompleted;
+DateTime? selectedPickDate;
 
 final DatabaseJobsCompleted databaseJobsCompleted = DatabaseJobsCompleted();
 
@@ -38,6 +39,7 @@ Future<void> loadMoreCompletedJobs(VoidCallback refresh) async {
   final snapshot = await databaseJobsCompleted.fetchCompletedJobs(
     lastDoc: lastCompletedDoc,
     customerId: selectedCustomerIdCompleted,
+    parameterDate: selectedPickDate,
   );
 
   if (snapshot.docs.isEmpty) {

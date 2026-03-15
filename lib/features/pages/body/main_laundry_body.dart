@@ -38,7 +38,7 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
   late DatabaseEmployeeSetup databaseEmployeeSetup;
   late EmployeeSetupModel empSetup;
 
-// EMPLOYEE
+  // EMPLOYEE
   Future<void> _loadEmployeeSetup() async {
     final snapshot = await databaseEmployeeSetup.get().first;
 

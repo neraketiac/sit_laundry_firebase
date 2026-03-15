@@ -38,7 +38,7 @@ bool useAdminTimestampDateD = false;
 //sorting
 //completed
 List<JobModel> originalJobsCompleted = [];
-List<JobModel> sortedJobsCompleted = [];
+//List<JobModel> sortedJobsCompleted = [];
 int selectedIndexCompleted = intSortByDateC;
 //done
 List<JobModel> originalJobsDone = [];

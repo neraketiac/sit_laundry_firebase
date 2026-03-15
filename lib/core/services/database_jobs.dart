@@ -284,12 +284,18 @@ class DatabaseJobsCompleted {
     DocumentSnapshot? lastDoc,
     int limit = 20,
     int? customerId,
+    DateTime? parameterDate,
   }) async {
     Query query = _ref;
 
     /// apply search filter
     if (customerId != 0) {
       query = query.where('C00_CustomerId', isEqualTo: customerId);
+    }
+
+    /// OPTION 3 - if date supplied, filter by that day only
+    if (parameterDate != null) {
+      query = query.where("A05_DateD", isEqualTo: parameterDate);
     }
 
     query = query.orderBy("A05_DateD", descending: true).limit(limit);

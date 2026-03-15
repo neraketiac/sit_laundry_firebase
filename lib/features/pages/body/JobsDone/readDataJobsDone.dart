@@ -9,8 +9,7 @@ import 'package:laundry_firebase/shared/widgets/jobdisplay/autocompletecustomer.
 
 import 'package:laundry_firebase/core/services/database_jobs.dart';
 import 'package:laundry_firebase/features/jobs/repository/jobmodel_repository.dart';
-import 'package:laundry_firebase/core/global/variables.dart'
-    hide sortedJobsCompleted;
+import 'package:laundry_firebase/core/global/variables.dart';
 import 'package:laundry_firebase/shared/widgets/jobdisplay/visIconArea.dart';
 import 'package:laundry_firebase/shared/widgets/jobdisplay/visNameArea.dart';
 import 'package:laundry_firebase/shared/widgets/jobdisplay/visPaidUnpaidArea.dart';
@@ -52,17 +51,12 @@ Widget readDataJobsDone(VoidCallback dialogSetState) {
           }),
         );
 
-      // sortedJobsCompleted
-      //   ..clear()
-      //   ..addAll(
-      //     originalJobsCompleted.where((job) {
-      //       final d = job.dateD.toDate();
+      selectedCustomerIdCompleted = 0;
+      selectedPickDate = selectedDay;
 
-      //       return d.year == selectedDay.year &&
-      //           d.month == selectedDay.month &&
-      //           d.day == selectedDay.day;
-      //     }),
-      //   );
+      sortedJobsCompleted.clear();
+      lastCompletedDoc = null;
+      hasMoreCompleted = true;
 
       dialogSetState();
     }
@@ -178,16 +172,6 @@ Widget readDataJobsDone(VoidCallback dialogSetState) {
                     ),
                   );
 
-                totalUnpaid =
-                    sortedJobsDone.fold(0, (sum, job) => sum + job.finalPrice);
-
-                totalCashAmount = sortedJobsDone.fold(
-                    0, (sum, job) => sum + job.paidCashAmount);
-
-                totalGCashAmount = sortedJobsDone
-                    .where((job) => job.paidGCashverified == true)
-                    .fold(0, (sum, job) => sum + job.paidGCashAmount);
-
                 // sortedJobsCompleted
                 //   ..clear()
                 //   ..addAll(
@@ -208,21 +192,33 @@ Widget readDataJobsDone(VoidCallback dialogSetState) {
                 Navigator.pop(context);
 
                 /// show selected customer message
-                await showDialog(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    title: const Text("Customer Balance"),
-                    content: Text(
-                      "Total unpaid: ₱${moneyFormatter.format(totalUnpaid - (totalCashAmount + totalGCashAmount))}",
-                    ),
-                    actions: [
-                      ElevatedButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: const Text("OK"),
+                if (sortedJobsDone.length > 1) {
+                  totalUnpaid = sortedJobsDone.fold(
+                      0, (sum, job) => sum + job.finalPrice);
+
+                  totalCashAmount = sortedJobsDone.fold(
+                      0, (sum, job) => sum + job.paidCashAmount);
+
+                  totalGCashAmount = sortedJobsDone
+                      .where((job) => job.paidGCashverified == true)
+                      .fold(0, (sum, job) => sum + job.paidGCashAmount);
+
+                  await showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: const Text("Customer Balance"),
+                      content: Text(
+                        "Total unpaid: ₱${moneyFormatter.format(totalUnpaid - (totalCashAmount + totalGCashAmount))}",
                       ),
-                    ],
-                  ),
-                );
+                      actions: [
+                        ElevatedButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text("OK"),
+                        ),
+                      ],
+                    ),
+                  );
+                }
               },
               child: const Text("Yes"),
             ),
