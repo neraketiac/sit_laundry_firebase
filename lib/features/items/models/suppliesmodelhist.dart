@@ -45,7 +45,7 @@ class SuppliesModelHist {
           remarks: json['Remarks']! as String,
         );
 
-  SuppliesModelHist coyWith({
+  SuppliesModelHist copyWith({
     String? docId,
     int? countId,
     int? itemId,

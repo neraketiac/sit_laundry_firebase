@@ -4,6 +4,7 @@ import 'package:laundry_firebase/core/utils/LaundryColors.dart';
 import 'package:laundry_firebase/features/employees/models/employeesetupmodel.dart';
 import 'package:laundry_firebase/features/pages/body/GCash/readDataGCashDone.dart';
 import 'package:laundry_firebase/features/pages/body/GCash/readDataGCashPending.dart';
+import 'package:laundry_firebase/features/pages/body/Items/readItemsHist.dart';
 import 'package:laundry_firebase/features/pages/body/Loyalty/enterloyaltycode.dart';
 import 'package:laundry_firebase/features/pages/body/Employee/readDataEmployeeCurr.dart';
 import 'package:laundry_firebase/features/pages/body/Employee/readDataEmployeeHist.dart';
@@ -418,8 +419,13 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                       color: cFundsInFundsOut),
                   animatedPanel(
                       visible: empSetup.showFunds,
-                      width: 600,
+                      width: 550,
                       child: readDataSuppliesHistory(),
+                      color: cFundsInFundsOut),
+                  animatedPanel(
+                      visible: empSetup.showFunds,
+                      width: 400,
+                      child: readDataItemsHistory(),
                       color: cFundsInFundsOut),
                   animatedPanel(
                       visible: empSetup.showEmployee,

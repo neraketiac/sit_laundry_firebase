@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:laundry_firebase/core/global/variables_all_codes.dart';
 import 'package:laundry_firebase/features/payments/models/gcashmodel.dart';
 import 'package:laundry_firebase/features/jobs/models/jobmodel.dart';
 import 'package:laundry_firebase/features/customers/models/customermodel.dart';
@@ -145,32 +146,9 @@ const String groupDet = "Det",
 int autoNumber = 0;
 //queuestats
 Map<int, String> mapQueueStat = {};
-const int intForSorting = 501,
-    intRiderPickup = 502,
-    intRegularPackage = 503,
-    intSayoSabonPackage = 504,
-    intOthersPackage = 505,
-    intWaitingStat = 601,
-    intWashingStat = 602,
-    intDryingStat = 603,
-    intFoldingStat = 604,
-    intWaitCustomerPickup = 701,
-    intWaitRiderDelivery = 702,
-    intNasaCustomerNa = 703;
-
-const int processWaiting = 650,
-    processWashing = 651,
-    processDrying = 652,
-    processFolding = 653,
-    processDone = 654;
 
 //paymentStats
 //Map<int, String> mapPaymentStat = {};
-const int unpaid = 801,
-    paidCash = 802,
-    paidGCash = 803,
-    partialPaidCash = 804,
-    partialPaidGCash = 805;
 
 // class OthItems {
 //   int menuDVal;
@@ -981,60 +959,64 @@ void resetSHGlobalVar() {
   bGcashFee = false;
   remarksSuppliesVar.text = "";
   suppliesModelHistGlobal = SuppliesModelHist(
-      docId: "",
-      countId: 0,
-      itemId: selectedSupVar.itemId,
-      itemUniqueId: selectedSupVar.itemUniqueId,
-      itemName: selectedSupVar.itemName,
-      currentCounter: 0,
-      currentStocks: 0,
-      logDate: Timestamp.now(),
-      empId: empIdGlobal,
-      customerId: 1,
-      customerName: '',
-      remarks: "");
+    docId: "",
+    countId: 0,
+    itemId: selectedSupVar.itemId,
+    itemUniqueId: selectedSupVar.itemUniqueId,
+    itemName: selectedSupVar.itemName,
+    currentCounter: 0,
+    currentStocks: 0,
+    logDate: Timestamp.now(),
+    empId: empIdGlobal,
+    customerId: 1,
+    customerName: '',
+    remarks: "",
+  );
 
   sMHGLaundryPayment = SuppliesModelHist(
-      docId: "",
-      countId: 0,
-      itemId: menuOthCashInOutFunds,
-      itemUniqueId: menuOthLaundryPayment,
-      itemName: 'Laundry Payment',
-      currentCounter: 0,
-      currentStocks: 0,
-      logDate: Timestamp.now(),
-      empId: empIdGlobal,
-      customerId: 1,
-      customerName: '',
-      remarks: "");
+    docId: "",
+    countId: 0,
+    itemId: menuOthCashInOutFunds,
+    itemUniqueId: menuOthLaundryPayment,
+    itemName: 'Laundry Payment',
+    currentCounter: 0,
+    currentStocks: 0,
+    logDate: Timestamp.now(),
+    empId: empIdGlobal,
+    customerId: 1,
+    customerName: '',
+    remarks: "",
+  );
 
   sMHGLaundryPaymentDonP = SuppliesModelHist(
-      docId: "",
-      countId: 0,
-      itemId: menuOthLPDonP,
-      itemUniqueId: menuOthLPDonPCash,
-      itemName: 'Laundry Payment DonP Cash',
-      currentCounter: 0,
-      currentStocks: 0,
-      logDate: Timestamp.now(),
-      empId: empIdGlobal,
-      customerId: 1,
-      customerName: '',
-      remarks: "");
+    docId: "",
+    countId: 0,
+    itemId: menuOthLPDonP,
+    itemUniqueId: menuOthLPDonPCash,
+    itemName: 'Laundry Payment DonP Cash',
+    currentCounter: 0,
+    currentStocks: 0,
+    logDate: Timestamp.now(),
+    empId: empIdGlobal,
+    customerId: 1,
+    customerName: '',
+    remarks: "",
+  );
 
   sMHGLaundryPaymentGCash = SuppliesModelHist(
-      docId: "",
-      countId: 0,
-      itemId: menuOthLaundryPaymentGCash,
-      itemUniqueId: menuOthLaundryPaymentGCash,
-      itemName: 'Laundry Payment GCash',
-      currentCounter: 0,
-      currentStocks: 0,
-      logDate: Timestamp.now(),
-      empId: empIdGlobal,
-      customerId: 1,
-      customerName: '',
-      remarks: "");
+    docId: "",
+    countId: 0,
+    itemId: menuOthLaundryPaymentGCash,
+    itemUniqueId: menuOthLaundryPaymentGCash,
+    itemName: 'Laundry Payment GCash',
+    currentCounter: 0,
+    currentStocks: 0,
+    logDate: Timestamp.now(),
+    empId: empIdGlobal,
+    customerId: 1,
+    customerName: '',
+    remarks: "",
+  );
 }
 
 void updateSelectedVar(OtherItemModel selectedItemModel) {
@@ -1078,120 +1060,6 @@ Widget closeButton2popVar(BuildContext context) {
       },
       color: cButtons,
       child: const Text("Close"));
-}
-
-Widget createNewSuppVar(BuildContext context, SuppliesModelHist sMH) {
-  return MaterialButton(
-    onPressed: () async {
-      //bInsertDataSuppliesHist = false;
-      //if (!bAutoLaundry) {
-      sMH.customerId = autocompleteSelected.customerId;
-      sMH.remarks = remarksSuppliesVar.text;
-      //}
-
-      if (sMH.customerId == 1 || !bCustomerName) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Select Customer Name')),
-        );
-      } else if ((ifMenuUniqueIsCashIn(sMH) ||
-              ifMenuUniqueIsFundsIn(sMH) ||
-              ifMenuUniqueIsLaundryPayment(sMH)
-          //ifMenuUniqueIsLPaymentGCash(sMH) ||
-          //ifMenuUniqueIsLPDonPCash(sMH)
-          ) &&
-          sMH.currentCounter <= 0) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text(
-                  'Cash In/Funds In/Laundry Payment should be positive number.')),
-        );
-      } else if ((ifMenuUniqueIsCashOut(sMH) ||
-              ifMenuUniqueIsFundsOut(sMH) ||
-              ifMenuUniqueIsExpense(sMH)) &&
-          sMH.currentCounter >= 0) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text('Cash Out/Funds Out should be negative number.')),
-        );
-      } else {
-        if (await insertDataSuppliesHistVar(sMH)) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Success')),
-          );
-          //bInsertDataSuppliesHist = true;
-          print("Sucess");
-          Navigator.pop(context);
-          Navigator.pop(context);
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Cannot Save')),
-          );
-          print("Failed");
-        }
-      }
-
-      //pop box
-    },
-    color: cButtons,
-    child: const Text("Save"),
-  );
-}
-
-Widget readAddedDataVar(List<OtherItemModel> listAddedOthers) {
-  bool zebra = false;
-  //read
-
-  List<TableRow> rowDatas = [];
-
-  if (listAddedOthers.isNotEmpty) {
-    const rowData =
-        TableRow(decoration: BoxDecoration(color: Colors.blueGrey), children: [
-      Text(
-        "Group ",
-        style: TextStyle(fontSize: 10),
-      ),
-      Text(
-        "Product ",
-        style: TextStyle(fontSize: 10),
-      ),
-      Text(
-        "Price",
-        style: TextStyle(fontSize: 10),
-      ),
-    ]);
-    rowDatas.add(rowData);
-  }
-
-  for (var listAddedOther in listAddedOthers) {
-    if (zebra) {
-      zebra = false;
-    } else {
-      zebra = true;
-    }
-    final rowData = TableRow(
-        decoration: BoxDecoration(color: zebra ? Colors.grey : Colors.white),
-        children: [
-          Text(
-            listAddedOther.itemGroup,
-            style: TextStyle(fontSize: 10),
-          ),
-          Text(
-            listAddedOther.itemName,
-            style: TextStyle(fontSize: 10),
-          ),
-          Text(
-            "${listAddedOther.itemPrice}.00",
-            style: TextStyle(fontSize: 10),
-            textAlign: TextAlign.end,
-          ),
-        ]);
-    rowDatas.add(rowData);
-  }
-
-  return Table(
-    defaultColumnWidth: IntrinsicColumnWidth(),
-    children: rowDatas,
-  );
 }
 
 bool displayInList(int itemUniqueId) {

@@ -26,18 +26,19 @@ class SuppliesHistRepository {
   void clear() {
     // suppliesModelHist = null;
     suppliesModelHist = SuppliesModelHist(
-        docId: "",
-        countId: 0,
-        itemId: 123,
-        itemUniqueId: 123,
-        itemName: "123",
-        currentCounter: 0,
-        currentStocks: 0,
-        logDate: Timestamp.now(),
-        empId: empIdGlobal,
-        customerId: 1,
-        customerName: "",
-        remarks: "");
+      docId: "",
+      countId: 0,
+      itemId: 123,
+      itemUniqueId: 123,
+      itemName: "123",
+      currentCounter: 0,
+      currentStocks: 0,
+      logDate: Timestamp.now(),
+      empId: empIdGlobal,
+      customerId: 1,
+      customerName: "",
+      remarks: "",
+    );
   }
 
   void setItemId(int value) {

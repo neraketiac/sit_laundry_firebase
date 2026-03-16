@@ -1,6 +1,7 @@
 //########################### Supplies Current ###############################
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:laundry_firebase/core/global/variables_all_codes.dart';
 import 'package:laundry_firebase/features/items/models/suppliesmodelhist.dart';
 import 'package:laundry_firebase/core/services/database_supplies_current.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
@@ -60,7 +61,10 @@ Widget readDataSuppliesCurrent() {
                       ),
                     ),
                     Text(
-                      "₱ ${value.format(sMH.currentStocks)}  ",
+                      getItemNameStocksType(sMH.itemId, sMH.itemUniqueId) ==
+                              'php'
+                          ? "₱ ${value.format(sMH.currentStocks)}"
+                          : value.format(sMH.currentStocks),
                       style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.bold,

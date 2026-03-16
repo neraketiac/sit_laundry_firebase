@@ -1,3 +1,4 @@
+import 'package:laundry_firebase/core/global/variables_all_codes.dart';
 import 'package:laundry_firebase/features/items/models/otheritemmodel.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
 
@@ -6,16 +7,28 @@ List<OtherItemModel> listDetItems = [];
 //det
 Map<int, String> mapDetNames = {};
 Map<int, int> mapDetPrice = {};
-const int menuDetBreezeDVal = 103,
-    menuDetArielDVal = 101,
-    menuDetTideDVal = 104,
-    menuDetWingsBlueDVal = 105,
-    menuDetWingsRedDVal = 107,
-    menuDetWKL = 106,
-    menuDetSurfDVal = 102,
-    menuDetKlinDVal = 108,
-    menuDetWKL15 = 109,
-    menuDetAriel3P = 110;
+
+final detWKL15 = OtherItemModel(
+  docId: "",
+  itemId: menuDetWKL,
+  itemUniqueId: menuDetWKL15,
+  itemGroup: groupDet,
+  itemName: "WKL15",
+  itemPrice: 15,
+  stocksAlert: 5,
+  stocksType: "btl",
+);
+
+final detAriel15 = OtherItemModel(
+  docId: "",
+  itemId: menuDetArielDVal,
+  itemUniqueId: menuDetArielDVal,
+  itemGroup: groupDet,
+  itemName: "Ariel",
+  itemPrice: 15,
+  stocksAlert: 5,
+  stocksType: "pcs",
+);
 
 void addListDetItems() {
   //detItems
@@ -28,16 +41,7 @@ void addListDetItems() {
       itemPrice: 15,
       stocksAlert: 5,
       stocksType: "pcs"));
-  listDetItems.add(OtherItemModel(
-    docId: "",
-    itemId: menuDetArielDVal,
-    itemUniqueId: menuDetArielDVal,
-    itemGroup: groupDet,
-    itemName: "Ariel",
-    itemPrice: 15,
-    stocksAlert: 5,
-    stocksType: "pcs",
-  ));
+  listDetItems.add(detAriel15);
   listDetItems.add(OtherItemModel(
     docId: "",
     itemId: menuDetTideDVal,
@@ -78,16 +82,7 @@ void addListDetItems() {
     stocksAlert: 5,
     stocksType: "btl",
   ));
-  listDetItems.add(OtherItemModel(
-    docId: "",
-    itemId: menuDetWKL,
-    itemUniqueId: menuDetWKL15,
-    itemGroup: groupDet,
-    itemName: "WKL15",
-    itemPrice: 15,
-    stocksAlert: 5,
-    stocksType: "btl",
-  ));
+  listDetItems.add(detWKL15);
   listDetItems.add(OtherItemModel(
     docId: "",
     itemId: menuDetWKL,

@@ -1,38 +1,15 @@
 //Display
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:laundry_firebase/core/global/variables_all_codes.dart';
 import 'package:laundry_firebase/features/employees/models/employeemodel.dart';
 import 'package:laundry_firebase/features/items/models/otheritemmodel.dart';
 import 'package:laundry_firebase/features/items/models/suppliesmodelhist.dart';
-import 'package:laundry_firebase/core/services/database_supplies_current.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
-import 'package:laundry_firebase/core/global/variables_det.dart';
 import 'package:laundry_firebase/core/global/variables_fab.dart';
 import 'package:laundry_firebase/core/global/variables_oth.dart';
 
 List<OtherItemModel> listSuppItems = [];
 List<OtherItemModel> listSuppItemsAll = [];
-const int menuOthCashInOutFunds = 422,
-    menuOthPlasticSmall = 423,
-    menuOthPlasticMedium = 424,
-    menuOthPlasticLarge = 425,
-    menuOthPlasticXLarge = 426,
-    menuOthLPG11Kilos = 427,
-    menuOthLPG50Kilos = 428,
-    menuOthUniqIdFundsEOD = 429,
-    menuOthUniqIdFee = 430,
-    menuOthUniqIdLoad = 431,
-    menuOthExpense = 432,
-    //specialaccess
-    menuOth977GCash = 10001,
-    menuOth977GCashIn = 10002,
-    menuOth977GCashOut = 10003,
-    menuOth152GCash = 10011,
-    menuOth152GCashIn = 10012,
-    menuOth152GCashOut = 10013,
-    menuOthLPDonP = 10014,
-    menuOthLPDonPCash = 10015,
-    menuOthLaundryPaymentGCash = 10016;
 
 //Supplies Colors
 final Color cStocks = Color.fromRGBO(255, 251, 43, 0.452);
@@ -575,52 +552,6 @@ Container conDisplaySuppliesHistoryVar(
       ],
     ),
   );
-}
-
-//insert new Supplies
-Future<bool> insertDataSuppliesHistVar(SuppliesModelHist sMH) async {
-  // DatabaseSuppliesHist databaseSuppliesHist = DatabaseSuppliesHist();
-  DatabaseSuppliesCurrent databaseSuppliesCurrent = DatabaseSuppliesCurrent();
-
-  sMH.logDate = Timestamp.now();
-  //one record only, just show remarks the details
-  if (ifMenuUniqueIsCashIn(sMH)) {
-    var iFee = getFee(sMH.currentCounter);
-    if (bNagbigayFee) {
-      sMH.remarks =
-          "${sMH.remarks} CI=${sMH.currentCounter} Fee=$iFee"; // 210, CI=200 Fee=10
-      //sMH.currentCounter = sMH.currentCounter + iFee;
-    } else {
-      sMH.remarks =
-          "${sMH.remarks} CI=${sMH.currentCounter - iFee} Fee=$iFee"; // 200, CI=190 Fee=10
-    }
-  } else if (ifMenuUniqueIsCashOut(sMH)) {
-    // negative currentCounter
-    var iFee = getFee(sMH.currentCounter);
-    //sMH.currentCounter = sMH.currentCounter + iFee;
-    sMH.remarks =
-        "${sMH.remarks} CO=${sMH.currentCounter} Fee=$iFee"; //-200, CO=-190 Fee=10
-  }
-
-  return await databaseSuppliesCurrent.addSuppliesCurr(sMH);
-  //double entry start
-  /*
-  if (sMH.itemUniqueId == menuOthUniqIdCashIn) {
-    var iFee = getFee(sMH.currentCounter);
-    if (bNagbigayFee) {
-      await databaseSuppliesCurrent.addSuppliesCurr(sMH);
-    } else {
-      sMH.currentCounter = sMH.currentCounter - iFee;
-      await databaseSuppliesCurrent.addSuppliesCurr(sMH);
-    }
-    sMH.currentCounter = iFee;
-    sMH.itemUniqueId = menuOthUniqIdFee;
-    return await databaseSuppliesCurrent.addSuppliesCurr(sMH);
-  } else {
-    return await databaseSuppliesCurrent.addSuppliesCurr(sMH);
-  }
-  */
-  //double entry end
 }
 
 int getFee(int price) {

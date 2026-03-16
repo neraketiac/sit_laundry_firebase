@@ -1,3 +1,4 @@
+import 'package:laundry_firebase/core/global/variables_all_codes.dart';
 import 'package:laundry_firebase/features/items/models/otheritemmodel.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
 
@@ -5,7 +6,17 @@ List<OtherItemModel> listBleItems = [];
 
 //bleach
 Map<int, String> mapBleNames = {};
-const int menuBleOriginalDVal = 302, menuBleColorSafeDVal = 301;
+
+final addBleItemModel = OtherItemModel(
+  docId: "",
+  itemId: menuBleColorSafeDVal,
+  itemUniqueId: menuBleColorSafeDVal,
+  itemGroup: groupFab,
+  itemName: "CS(30ml ₱5)",
+  itemPrice: 5,
+  stocksAlert: 5,
+  stocksType: "ml",
+);
 
 void addListBleItems() {
   //bel items

@@ -6,7 +6,7 @@ class OtherItemModel {
   final String itemName;
   final int itemPrice;
   final int stocksAlert;
-  final String stocksType; //pcs, pack, bottle
+  final String stocksType; //pcs, pack, bottle, peso
 
   OtherItemModel({
     required this.docId,

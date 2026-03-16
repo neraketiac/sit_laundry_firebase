@@ -1,6 +1,7 @@
 //floating button new record  ###########################################################
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:laundry_firebase/core/global/variables_all_codes.dart';
 import 'package:laundry_firebase/core/utils/sharedMethods.dart';
 import 'package:laundry_firebase/shared/widgets/jobdisplay/conRemarks.dart';
 import 'package:laundry_firebase/shared/widgets/jobdisplay/customerAmount.dart';

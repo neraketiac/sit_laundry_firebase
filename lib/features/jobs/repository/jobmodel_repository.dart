@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:laundry_firebase/core/global/variables_all_codes.dart';
 import 'package:laundry_firebase/features/jobs/models/jobmodel.dart';
 import 'package:laundry_firebase/features/items/models/otheritemmodel.dart';
 import 'package:laundry_firebase/core/utils/sharedMethods.dart';
@@ -468,6 +469,11 @@ class JobModelRepository {
   bool get thisJobHasPromo => jobselectedRepository.thisJobHasPromo;
   set thisJobHasPromo(bool value) =>
       jobselectedRepository.thisJobHasPromo = value;
+
+  Map<int, TextEditingController> get itemQtyControllers =>
+      jobselectedRepository.itemQtyControllers;
+  set itemQtyControllers(Map<int, TextEditingController> value) =>
+      jobselectedRepository.itemQtyControllers = value;
 
   /////////////////////////////////////////////////////////////
   //                    GETTER SETTER                         //

@@ -2,12 +2,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:laundry_firebase/core/services/database_items_history.dart';
 import 'package:laundry_firebase/features/items/models/suppliesmodelhist.dart';
-import 'package:laundry_firebase/core/services/database_funds_history.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
 import 'package:laundry_firebase/core/global/variables_supplies.dart';
 
-Widget readDataSuppliesHistory() {
+Widget readDataItemsHistory() {
   bool bHeader = true;
   Container conDisplaySuppliesHist(
     BuildContext context,
@@ -43,7 +43,9 @@ Widget readDataSuppliesHistory() {
 
             // Amount
             Text(
-              "₱${value.format(sMH.currentCounter)}",
+              (getItemNameStocksType(sMH.itemId, sMH.itemUniqueId) == 'php'
+                  ? "₱${value.format(sMH.currentCounter)}"
+                  : "${value.format(sMH.currentCounter)} ${getItemNameStocksType(sMH.itemId, sMH.itemUniqueId)}"),
               style: TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.w600,
@@ -78,7 +80,9 @@ Widget readDataSuppliesHistory() {
 
             // Stocks
             Text(
-              "pCF ₱${value.format(sMH.currentStocks)}",
+              (getItemNameStocksType(sMH.itemId, sMH.itemUniqueId) == 'php'
+                  ? "pCF ₱${value.format(sMH.currentStocks)}"
+                  : "pCF ${value.format(sMH.currentStocks)} ${getItemNameStocksType(sMH.itemId, sMH.itemUniqueId)}"),
               style: TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.w600,
@@ -164,10 +168,10 @@ Widget readDataSuppliesHistory() {
     return (ifMenuUniqueIsEOD(sMH) ? fundCheckContainer() : regularContainer());
   }
 
-  DatabaseFundsHist dbFundsHist = DatabaseFundsHist();
+  DatabaseItemsHist dbItemsHist = DatabaseItemsHist();
   //read
   return StreamBuilder<QuerySnapshot>(
-    stream: dbFundsHist.getSuppliesHistory(false),
+    stream: dbItemsHist.getItemsHistory(false),
     builder: (context, snapshot) {
       List listSMH = snapshot.data?.docs ?? [];
       bHeader = true;
@@ -180,7 +184,7 @@ Widget readDataSuppliesHistory() {
               children: [
                 // AutoCompleteCustomer(),
                 const Text(
-                  "Funds History",
+                  "Items History",
                   style: TextStyle(fontSize: 10),
                 ),
               ]);

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:laundry_firebase/core/constants/sharedConstantsFinal.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
+import 'package:laundry_firebase/core/global/variables_all_codes.dart';
 import 'package:laundry_firebase/core/global/variables_ble.dart';
 import 'package:laundry_firebase/core/global/variables_det.dart';
 import 'package:laundry_firebase/core/global/variables_fab.dart';

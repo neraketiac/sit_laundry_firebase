@@ -34,15 +34,16 @@ final addFabAnyItemModel = OtherItemModel(
   stocksAlert: 5,
   stocksType: "pcs",
 );
-final addBleItemModel = OtherItemModel(
+
+final addFabDowny36mlModel = OtherItemModel(
   docId: "",
-  itemId: menuFabWKLDValAny8ml,
-  itemUniqueId: menuFabWKLDValAny8ml,
+  itemId: menuFabDowny36mlDVal,
+  itemUniqueId: menuFabDowny36mlDVal,
   itemGroup: groupFab,
-  itemName: "CS(30ml ₱5)",
-  itemPrice: 5,
+  itemName: "Downy 36ml",
+  itemPrice: 10,
   stocksAlert: 5,
-  stocksType: "ml",
+  stocksType: "pcs",
 );
 
 void addListFabItems() {
@@ -78,16 +79,7 @@ void addListFabItems() {
     stocksAlert: 5,
     stocksType: "pcs",
   ));
-  listFabItems.add(OtherItemModel(
-    docId: "",
-    itemId: menuFabDowny36mlDVal,
-    itemUniqueId: menuFabDowny36mlDVal,
-    itemGroup: groupFab,
-    itemName: "Downy 36",
-    itemPrice: 10,
-    stocksAlert: 5,
-    stocksType: "pcs",
-  ));
+  listFabItems.add(addFabDowny36mlModel);
   listFabItems.add(OtherItemModel(
     docId: "",
     itemId: menuFabSurfTripidDVal,

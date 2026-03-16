@@ -1,8 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:laundry_firebase/core/global/variables_all_codes.dart';
+import 'package:laundry_firebase/core/services/database_items_history.dart';
 import 'package:laundry_firebase/features/items/models/suppliesmodelhist.dart';
-import 'package:laundry_firebase/core/services/database_supplies_history.dart';
+import 'package:laundry_firebase/core/services/database_funds_history.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
-import 'package:laundry_firebase/core/global/variables_oth.dart';
 import 'package:laundry_firebase/core/global/variables_supplies.dart';
 
 const String SUPPLIES_CURR_REF = "SuppliesCurr";
@@ -70,19 +71,9 @@ class DatabaseSuppliesCurrent {
     // //for EOD
     sMH.empId = empIdGlobal;
 
-    // if (sMH.itemUniqueId == menuOthUniqIdFundsEOD) {
-    //   if (sMH.currentCounter < sMH.currentStocks) {
-    //     sMH.currentCounter = sMH.currentCounter - sMH.currentStocks;
-    //   } else if (sMH.currentCounter > sMH.currentStocks) {
-    //     sMH.currentCounter = sMH.currentStocks - sMH.currentCounter;
-    //   } else {
-    //     sMH.currentCounter = 0;
-    //   }
-    // }
-
     //save hist first to display the current stocks before adding the currentcounter
-    DatabaseSuppliesHist databaseSuppliesHist = DatabaseSuppliesHist();
-    await databaseSuppliesHist.addSuppliesHist(sMH);
+    DatabaseFundsHist dbFundsHist = DatabaseFundsHist();
+    await dbFundsHist.addSuppliesHist(sMH);
 
     //to be used in Supplies Current
     sMH.currentStocks = sMH.currentStocks + sMH.currentCounter;
@@ -94,7 +85,6 @@ class DatabaseSuppliesCurrent {
     if (sMH.docId.isNotEmpty) {
       print("Is not empty");
       await updateDocId(sMH);
-      // await databaseSuppliesHist.addSuppliesHist(sMH);
       bSuccess = true;
     } else {
       print("Is empty");
@@ -105,10 +95,7 @@ class DatabaseSuppliesCurrent {
                 print("docID${value.id}"),
                 updateDocId(sMH),
                 print("Supplies Current Save done...."),
-                // databaseSuppliesHist.addSuppliesHist(sMH),
                 bSuccess = true,
-
-                ///insert977GCash(sMH),
               })
           .catchError((error) => {
                 print("Failed : $error ${sMH.itemId}"),
@@ -116,59 +103,45 @@ class DatabaseSuppliesCurrent {
               });
     }
 
-    //insert977GCash(sMH);
-
     return bSuccess;
   }
 
-  Future<void> insert977GCash(SuppliesModelHist sMH) async {
-    if (sMH.itemUniqueId == menuOthUniqIdCashIn) {
-      bool bSuccess = false;
-      SuppliesModelHist sMH977Gcash = SuppliesModelHist(
-          docId: "",
-          countId: 0,
-          itemId: menuOth977GCash,
-          itemUniqueId: menuOth977GCashOut,
-          itemName: '977 GCash Out',
-          currentCounter: -1 *
-              (sMH.currentCounter), //cash in to customer, cash out to sender
-          currentStocks: 0,
-          logDate: Timestamp.now(),
-          empId: empIdGlobal,
-          customerId: 0,
-          customerName: '',
-          remarks: "auto insert");
+  Future<bool> addItemsCurr(SuppliesModelHist sMH) async {
+    sMH = await computeCurrentStocks(sMH);
 
-      sMH977Gcash = await computeCurrentStocks(sMH977Gcash);
+    //save hist first to display the current stocks before adding the currentcounter
+    DatabaseItemsHist dbFundsHist = DatabaseItemsHist();
+    await dbFundsHist.addItemsHist(sMH);
 
-      sMH977Gcash.currentStocks =
-          sMH977Gcash.currentStocks + sMH977Gcash.currentCounter;
+    //to be used in Supplies Current
+    sMH.currentStocks = sMH.currentStocks + sMH.currentCounter;
+    alwaysTheLatestFunds = sMH.currentStocks;
 
-      if (sMH977Gcash.docId.isNotEmpty) {
-        print("Is not empty");
-        await updateDocId(sMH977Gcash);
-        // await databaseSuppliesHist.addSuppliesHist(sMH);
-        bSuccess = true;
-      } else {
-        print("Is empty");
-        await _suppliesCurrRef
-            .add(sMH977Gcash)
-            .then((value) => {
-                  sMH977Gcash.docId = value.id,
-                  print("docID${value.id}"),
-                  updateDocId(sMH977Gcash),
-                  print("Supplies 977 Save done."),
+    bool bSuccess = false;
+    print("Doc id before=${sMH.docId}");
 
-                  // databaseSuppliesHist.addSuppliesHist(sMH),
-                  bSuccess = true,
-                })
-            .catchError((error) => {
-                  print("Failed : $error ${sMH977Gcash.itemId}"),
-                  bSuccess = false,
-                });
-      }
+    if (sMH.docId.isNotEmpty) {
+      print("Is not empty");
+      await updateDocId(sMH);
+      bSuccess = true;
+    } else {
+      print("Is empty");
+      await _suppliesCurrRef
+          .add(sMH)
+          .then((value) => {
+                sMH.docId = value.id,
+                print("docID${value.id}"),
+                updateDocId(sMH),
+                print("Supplies Current Save done...."),
+                bSuccess = true,
+              })
+          .catchError((error) => {
+                print("Failed : $error ${sMH.itemId}"),
+                bSuccess = false,
+              });
     }
-    //return bSuccess;
+
+    return bSuccess;
   }
 
   Future<void> updateDocId(SuppliesModelHist sMH) async {

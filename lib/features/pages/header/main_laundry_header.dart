@@ -4,6 +4,7 @@ import 'package:laundry_firebase/features/pages/body/main_laundry_body.dart';
 import 'package:laundry_firebase/features/pages/header/GCash/showGCashOnly.dart';
 import 'package:laundry_firebase/features/pages/header/GCash/showGCashPending.dart';
 import 'package:laundry_firebase/features/pages/header/Funds/showLaundryPayment.dart';
+import 'package:laundry_firebase/features/pages/header/Items/showItemsInOut.dart';
 import 'package:laundry_firebase/features/pages/header/JobOnQueue/showJobOnQueue.dart';
 import 'package:laundry_firebase/features/jobs/repository/jobmodel_repository.dart';
 import 'package:laundry_firebase/features/items/repository/supplies_hist_repository.dart';
@@ -99,6 +100,16 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader>
         child: Stack(
           clipBehavior: Clip.none,
           children: [
+            /// Items
+            _fab(
+              hero: 'Supplies',
+              icon: Icons.inventory,
+              bottom: base,
+              left: _isOpen ? base + step * 3 : base,
+              onTap: () => showItemsInOut(context),
+              backgroundColor: cAdmin,
+            ),
+
             /// GCash Funds
             _fab(
               hero: 'Gcash Funds',

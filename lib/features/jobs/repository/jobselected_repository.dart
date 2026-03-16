@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:laundry_firebase/core/global/variables_all_codes.dart';
 import 'package:laundry_firebase/features/items/models/otheritemmodel.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
 import 'package:laundry_firebase/core/global/variables_oth.dart';
@@ -113,6 +114,7 @@ class JobselectedRepository {
   int _maxPartial = 0; //use for maximum kill allowed for partial 190, 260
   int _selectedOthersShortCut = menuOth155; //use for selected add shortcuts
   bool _thisJobHasPromo = false;
+  Map<int, TextEditingController> _itemQtyControllers = {};
 
   //================= GETTERS =================
 
@@ -165,6 +167,7 @@ class JobselectedRepository {
   int get maxPartial => _maxPartial;
   int get selectedOthersShortCut => _selectedOthersShortCut;
   bool get thisJobHasPromo => _thisJobHasPromo;
+  Map<int, TextEditingController> get itemQtyControllers => _itemQtyControllers;
 
   //================= SETTERS =================
 
@@ -223,6 +226,9 @@ class JobselectedRepository {
   set maxPartial(int v) => _maxPartial = v;
   set selectedOthersShortCut(int v) => _selectedOthersShortCut = v;
   set thisJobHasPromo(bool v) => _thisJobHasPromo = v;
+  set itemQtyControllers(Map<int, TextEditingController> value) {
+    _itemQtyControllers = value;
+  }
 
   void reset() {
     selectedJobId = 0;
@@ -273,5 +279,6 @@ class JobselectedRepository {
     maxPartial = 0;
     selectedOthersShortCut = 0;
     thisJobHasPromo = false;
+    itemQtyControllers.clear();
   }
 }

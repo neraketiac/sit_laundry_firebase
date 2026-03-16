@@ -1,40 +1,12 @@
+import 'package:laundry_firebase/core/global/variables_all_codes.dart';
 import 'package:laundry_firebase/features/items/models/otheritemmodel.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
 
 List<OtherItemModel> listOthItems = [];
+List<OtherItemModel> listOthOnlyItems = [];
 
 //others
 Map<int, String> mapOthNames = {};
-const int menuOthWash = 401,
-    menuOth2W1DR = 402,
-    menuOth2W1DSS = 403,
-    menuOthDry = 404,
-    menuOth195 = 405,
-    menuOth165 = 406,
-    menuOthXD = 407,
-    menuOthXW = 408,
-    menuOthXR = 409,
-    menuOth155 = 410,
-    menuOth125 = 411,
-    menuOthDO = 412,
-    menuOthDOF = 413,
-    menuOthNF155 = 414,
-    menuOthNF195 = 415,
-    menuOthNF125 = 416,
-    menuOthNF165 = 417,
-    menuOthW8t9 = 418,
-    menuOthW9t10 = 419,
-    menuOthW10t11 = 420,
-    menuOthW11t12 = 421,
-    menuOthXS = 422,
-    menuOthFree = 423,
-    menuOthWD98 = 424;
-const int menuOthUniqIdCashIn = 4401,
-    menuOthUniqIdCashOut = 4402,
-    menuOthUniqIdFundsIn = 4403,
-    menuOthUniqIdFundsOut = 4404,
-    menuOthLaundryPayment = 4405,
-    menuOthSalaryPayment = 4406;
 
 final reg155ItemModel = OtherItemModel(
   docId: "",
@@ -271,6 +243,118 @@ void addListOthItems() {
     stocksType: "pcs",
   ));
   if (isAdmin) listOthItems.add(promoFree);
+
+// ITEMS ONLY
+  listOthOnlyItems.add(OtherItemModel(
+    docId: "",
+    itemId: menuOthLPG50Kilos,
+    itemUniqueId: menuOthLPG50Kilos,
+    itemGroup: groupOth,
+    itemName: "LPG(50)",
+    itemPrice: 0,
+    stocksAlert: 0,
+    stocksType: "tank",
+  ));
+  listOthOnlyItems.add(OtherItemModel(
+    docId: "",
+    itemId: menuOthLPG11Kilos,
+    itemUniqueId: menuOthLPG11Kilos,
+    itemGroup: groupOth,
+    itemName: "LPG(11)",
+    itemPrice: 0,
+    stocksAlert: 1,
+    stocksType: "tank",
+  ));
+  listOthOnlyItems.add(OtherItemModel(
+    docId: "",
+    itemId: menuOthAnyItem01,
+    itemUniqueId: menuOthAnyItem01,
+    itemGroup: groupOth,
+    itemName: "Plastic",
+    itemPrice: 2,
+    stocksAlert: 20,
+    stocksType: "pcs",
+  ));
+  listOthOnlyItems.add(OtherItemModel(
+    docId: "",
+    itemId: menuOthAnyItem02,
+    itemUniqueId: menuOthAnyItem02,
+    itemGroup: groupOth,
+    itemName: "Laundry Bag",
+    itemPrice: 15,
+    stocksAlert: 20,
+    stocksType: "pcs",
+  ));
+  listOthOnlyItems.add(OtherItemModel(
+    docId: "",
+    itemId: menuOthAnyItem03,
+    itemUniqueId: menuOthAnyItem03,
+    itemGroup: groupOth,
+    itemName: "Yakult",
+    itemPrice: 15,
+    stocksAlert: 5,
+    stocksType: "pcs",
+  ));
+  listOthOnlyItems.add(OtherItemModel(
+    docId: "",
+    itemId: menuOthAnyItem04,
+    itemUniqueId: menuOthAnyItem04,
+    itemGroup: groupOth,
+    itemName: "Sumo",
+    itemPrice: 8,
+    stocksAlert: 20,
+    stocksType: "pcs",
+  ));
+  listOthOnlyItems.add(OtherItemModel(
+    docId: "",
+    itemId: menuOthAnyItem05,
+    itemUniqueId: menuOthAnyItem05,
+    itemGroup: groupOth,
+    itemName: "Bigas",
+    itemPrice: 1500,
+    stocksAlert: 1,
+    stocksType: "sako",
+  ));
+  listOthOnlyItems.add(OtherItemModel(
+    docId: "",
+    itemId: menuOthAnyItem06,
+    itemUniqueId: menuOthAnyItem06,
+    itemGroup: groupOth,
+    itemName: "Mineral Water",
+    itemPrice: 25,
+    stocksAlert: 5,
+    stocksType: "pcs",
+  ));
+  listOthOnlyItems.add(OtherItemModel(
+    docId: "",
+    itemId: menuOthAnyItem07,
+    itemUniqueId: menuOthAnyItem07,
+    itemGroup: groupOth,
+    itemName: "Sibuyas",
+    itemPrice: 200,
+    stocksAlert: 5,
+    stocksType: "1kilo=10counts",
+  ));
+  listOthOnlyItems.add(OtherItemModel(
+    docId: "",
+    itemId: menuOthAnyItem08,
+    itemUniqueId: menuOthAnyItem08,
+    itemGroup: groupOth,
+    itemName: "Kamatis",
+    itemPrice: 200,
+    stocksAlert: 5,
+    stocksType: "1kilo=10counts",
+  ));
+  listOthOnlyItems.add(OtherItemModel(
+    docId: "",
+    itemId: menuOthAnyItem09,
+    itemUniqueId: menuOthAnyItem09,
+    itemGroup: groupOth,
+    itemName: "Bawang",
+    itemPrice: 200,
+    stocksAlert: 5,
+    stocksType: "1kilo=10counts",
+  ));
 
   //oth names
   mapOthNames.addEntries({menuOthWash: "Wash"}.entries);

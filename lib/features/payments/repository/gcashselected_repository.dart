@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:laundry_firebase/core/global/variables_oth.dart';
+import 'package:laundry_firebase/core/global/variables_all_codes.dart';
 
 class GCashSelectedRepository {
   TextEditingController customerNameVar = TextEditingController();

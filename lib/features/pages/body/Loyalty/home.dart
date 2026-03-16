@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:laundry_firebase/core/global/variables_all_codes.dart';
 import 'package:laundry_firebase/features/pages/body/Loyalty/responsive_layout.dart';
 import 'package:laundry_firebase/features/pages/body/Loyalty/supplies_desktop.dart';
 import 'package:laundry_firebase/features/pages/body/Loyalty/supplies_mobile.dart';

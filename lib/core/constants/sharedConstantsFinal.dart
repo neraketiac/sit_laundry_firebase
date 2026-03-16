@@ -2,6 +2,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
+import 'package:laundry_firebase/core/global/variables_all_codes.dart';
+import 'package:laundry_firebase/core/global/variables_det.dart';
 import 'package:laundry_firebase/core/global/variables_fab.dart';
 import 'package:laundry_firebase/core/global/variables_oth.dart';
 
@@ -43,6 +45,12 @@ final List<int> listOthersDropDownShortCuts = [
   menuOth125,
   menuOthXD,
   menuFabWKLDValAny8ml,
+];
+final List<int> listOthersItems = [
+  menuFabWKLDValAny8ml,
+  menuDetWKL15,
+  menuDetArielDVal,
+  menuFabDowny36mlDVal,
 ];
 final List<int> listOthersShort2DropDownShortCuts = [
   menuOthNF155,
