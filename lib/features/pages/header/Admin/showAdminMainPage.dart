@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/runMigration.dart';
-import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/showAddColumn.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/showAdminDateDPage.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/showBatchPromo.dart';
-import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/showDeleteColumn.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/showDeleteSecondary.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
+import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/showOtherItemsMaintenance.dart';
 
 class ShowAdminMainPage extends StatefulWidget {
   const ShowAdminMainPage({super.key});
@@ -137,16 +136,6 @@ class _ShowAdminMainPageState extends State<ShowAdminMainPage> {
 
             const SizedBox(height: 40),
 
-            // if (isAdmin)
-            //   Container(
-            //     padding: const EdgeInsets.all(16),
-            //     decoration: BoxDecoration(
-            //       color: Colors.grey.shade300,
-            //       borderRadius: BorderRadius.circular(8),
-            //     ),
-            //     child: const ShowUpdateAddressJobs(),
-            //   ),
-
             // const SizedBox(height: 40),
 
             if (isAdmin)
@@ -173,29 +162,29 @@ class _ShowAdminMainPageState extends State<ShowAdminMainPage> {
 
             const SizedBox(height: 40),
 
-            // if (isAdmin)
-            //   Container(
-            //     padding: const EdgeInsets.all(16),
-            //     decoration: BoxDecoration(
-            //       color: Colors.grey.shade300,
-            //       borderRadius: BorderRadius.circular(8),
-            //     ),
-            //     child: const RemovePromoCounterWidget(),
-            //   ),
+            if (isAdmin)
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: ListTile(
+                  leading: const Icon(Icons.inventory),
+                  title: const Text("Other Items Maintenance"),
+                  trailing: const Icon(Icons.arrow_forward_ios),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const OtherItemsPage(),
+                      ),
+                    );
+                  },
+                ),
+              ),
 
-            // const SizedBox(height: 40),
-
-            // if (isAdmin)
-            //   Container(
-            //     padding: const EdgeInsets.all(16),
-            //     decoration: BoxDecoration(
-            //       color: Colors.grey.shade300,
-            //       borderRadius: BorderRadius.circular(8),
-            //     ),
-            //     child: const AddPromoErrorCodeWidget(),
-            //   ),
-
-            // const SizedBox(height: 40),
+            const SizedBox(height: 40),
           ],
         ),
       ),

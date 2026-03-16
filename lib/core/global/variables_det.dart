@@ -17,6 +17,7 @@ final detWKL15 = OtherItemModel(
   itemPrice: 15,
   stocksAlert: 5,
   stocksType: "btl",
+  logDate: timestamp1900,
 );
 
 final detAriel15 = OtherItemModel(
@@ -28,19 +29,22 @@ final detAriel15 = OtherItemModel(
   itemPrice: 15,
   stocksAlert: 5,
   stocksType: "pcs",
+  logDate: timestamp1900,
 );
 
 void addListDetItems() {
   //detItems
   listDetItems.add(OtherItemModel(
-      docId: "",
-      itemId: menuDetBreezeDVal,
-      itemUniqueId: menuDetBreezeDVal,
-      itemGroup: groupDet,
-      itemName: "Breeze",
-      itemPrice: 15,
-      stocksAlert: 5,
-      stocksType: "pcs"));
+    docId: "",
+    itemId: menuDetBreezeDVal,
+    itemUniqueId: menuDetBreezeDVal,
+    itemGroup: groupDet,
+    itemName: "Breeze",
+    itemPrice: 15,
+    stocksAlert: 5,
+    stocksType: "pcs",
+    logDate: timestamp1900,
+  ));
   listDetItems.add(detAriel15);
   listDetItems.add(OtherItemModel(
     docId: "",
@@ -51,6 +55,7 @@ void addListDetItems() {
     itemPrice: 15,
     stocksAlert: 5,
     stocksType: "pcs",
+    logDate: timestamp1900,
   ));
   listDetItems.add(OtherItemModel(
     docId: "",
@@ -61,6 +66,7 @@ void addListDetItems() {
     itemPrice: 15,
     stocksAlert: 5,
     stocksType: "pcs",
+    logDate: timestamp1900,
   ));
   listDetItems.add(OtherItemModel(
     docId: "",
@@ -71,6 +77,7 @@ void addListDetItems() {
     itemPrice: 8,
     stocksAlert: 5,
     stocksType: "pcs",
+    logDate: timestamp1900,
   ));
   listDetItems.add(OtherItemModel(
     docId: "",
@@ -81,6 +88,7 @@ void addListDetItems() {
     itemPrice: 8,
     stocksAlert: 5,
     stocksType: "btl",
+    logDate: timestamp1900,
   ));
   listDetItems.add(detWKL15);
   listDetItems.add(OtherItemModel(
@@ -92,6 +100,7 @@ void addListDetItems() {
     itemPrice: 18,
     stocksAlert: 5,
     stocksType: "pcs",
+    logDate: timestamp1900,
   ));
   listDetItems.add(OtherItemModel(
     docId: "",
@@ -102,6 +111,7 @@ void addListDetItems() {
     itemPrice: 10,
     stocksAlert: 5,
     stocksType: "pcs",
+    logDate: timestamp1900,
   ));
   listDetItems.add(OtherItemModel(
     docId: "",
@@ -112,6 +122,7 @@ void addListDetItems() {
     itemPrice: 15,
     stocksAlert: 5,
     stocksType: "pcs",
+    logDate: timestamp1900,
   ));
 
   //det names

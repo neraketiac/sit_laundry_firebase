@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:laundry_firebase/features/items/repository/other_item_repository.dart';
 import 'package:laundry_firebase/features/pages/body/Loyalty/home.dart';
 import 'package:laundry_firebase/features/pages/body/Loyalty/loyalty_admin.dart';
 import 'package:laundry_firebase/features/pages/body/Loyalty/loyalty_single.dart';
@@ -30,6 +31,7 @@ class _EnterLoyaltyCodeState extends State<EnterLoyaltyCode> {
   void initState() {
     super.initState();
     CustomerRepository.instance.loadOnce();
+    OtherItemsRepository.instance.loadOnce;
 
     _checkSavedCode();
   }

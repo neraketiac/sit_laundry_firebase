@@ -1,7 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:laundry_firebase/features/customers/models/customermodel.dart';
-import 'package:laundry_firebase/core/utils/sharedMethods.dart';
 import 'package:laundry_firebase/features/customers/repository/customer_repository.dart';
 import 'package:laundry_firebase/features/jobs/repository/jobmodel_repository.dart';
 import 'package:laundry_firebase/features/items/repository/supplies_hist_repository.dart';

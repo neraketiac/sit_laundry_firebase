@@ -16,6 +16,7 @@ final addBleItemModel = OtherItemModel(
   itemPrice: 5,
   stocksAlert: 5,
   stocksType: "ml",
+  logDate: timestamp1900,
 );
 
 void addListBleItems() {
@@ -29,6 +30,7 @@ void addListBleItems() {
     itemPrice: 5,
     stocksAlert: 2,
     stocksType: "btl",
+    logDate: timestamp1900,
   ));
 
   //ble names

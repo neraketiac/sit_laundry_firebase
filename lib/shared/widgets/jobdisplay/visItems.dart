@@ -34,7 +34,7 @@ Widget visItemsOnly(
 
   List<OtherItemModel> getCurrentDropdownItems() {
     if (jobRepo.selectedOthers == menuOthDVal) {
-      return listOthOnlyItems;
+      return listOtherItemsFB;
     } else if (jobRepo.selectedOthers == menuDetDVal) {
       return listDetItems;
     } else if (jobRepo.selectedOthers == menuFabDVal) {

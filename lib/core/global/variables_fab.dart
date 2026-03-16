@@ -33,6 +33,7 @@ final addFabAnyItemModel = OtherItemModel(
   itemPrice: 8,
   stocksAlert: 5,
   stocksType: "pcs",
+  logDate: timestamp1900,
 );
 
 final addFabDowny36mlModel = OtherItemModel(
@@ -44,6 +45,7 @@ final addFabDowny36mlModel = OtherItemModel(
   itemPrice: 10,
   stocksAlert: 5,
   stocksType: "pcs",
+  logDate: timestamp1900,
 );
 
 void addListFabItems() {
@@ -58,6 +60,7 @@ void addListFabItems() {
     itemPrice: 8,
     stocksAlert: 5,
     stocksType: "pcs",
+    logDate: timestamp1900,
   ));
   listFabItems.add(OtherItemModel(
     docId: "",
@@ -68,6 +71,7 @@ void addListFabItems() {
     itemPrice: 8,
     stocksAlert: 5,
     stocksType: "pcs",
+    logDate: timestamp1900,
   ));
   listFabItems.add(OtherItemModel(
     docId: "",
@@ -78,6 +82,7 @@ void addListFabItems() {
     itemPrice: 17,
     stocksAlert: 5,
     stocksType: "pcs",
+    logDate: timestamp1900,
   ));
   listFabItems.add(addFabDowny36mlModel);
   listFabItems.add(OtherItemModel(
@@ -89,6 +94,7 @@ void addListFabItems() {
     itemPrice: 17,
     stocksAlert: 5,
     stocksType: "pcs",
+    logDate: timestamp1900,
   ));
 
   //fab purple
@@ -101,6 +107,7 @@ void addListFabItems() {
     itemPrice: 8,
     stocksAlert: 5,
     stocksType: "btl",
+    logDate: timestamp1900,
   ));
   listFabItems.add(OtherItemModel(
     docId: "",
@@ -111,6 +118,7 @@ void addListFabItems() {
     itemPrice: 15,
     stocksAlert: 5,
     stocksType: "btl",
+    logDate: timestamp1900,
   ));
 
   //fab green
@@ -123,6 +131,7 @@ void addListFabItems() {
     itemPrice: 8,
     stocksAlert: 5,
     stocksType: "btl",
+    logDate: timestamp1900,
   ));
   listFabItems.add(OtherItemModel(
     docId: "",
@@ -133,6 +142,7 @@ void addListFabItems() {
     itemPrice: 15,
     stocksAlert: 5,
     stocksType: "btl",
+    logDate: timestamp1900,
   ));
 
   //pink
@@ -145,6 +155,7 @@ void addListFabItems() {
     itemPrice: 8,
     stocksAlert: 5,
     stocksType: "btl",
+    logDate: timestamp1900,
   ));
   listFabItems.add(OtherItemModel(
     docId: "",
@@ -155,6 +166,7 @@ void addListFabItems() {
     itemPrice: 15,
     stocksAlert: 5,
     stocksType: "btl",
+    logDate: timestamp1900,
   ));
 
   //fab names

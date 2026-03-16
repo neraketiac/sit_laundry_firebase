@@ -1,5 +1,8 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:laundry_firebase/core/global/variables_oth.dart';
+import 'package:laundry_firebase/features/items/models/otheritemmodel.dart';
+import 'package:laundry_firebase/features/items/repository/other_item_repository.dart';
 import 'package:laundry_firebase/features/pages/body/main_laundry_body.dart';
 import 'package:laundry_firebase/features/pages/header/GCash/showGCashOnly.dart';
 import 'package:laundry_firebase/features/pages/header/GCash/showGCashPending.dart';
@@ -27,6 +30,33 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader>
   late String _sEmpId;
   bool _isOpen = false;
 
+  Future<void> _loadOtherItems() async {
+    await OtherItemsRepository.instance.loadOnce();
+
+    //************* */
+    //**  OTH ITEMS */
+    //************* */
+    listOtherItemsFB = OtherItemsRepository.instance.items;
+    for (var item in listOtherItemsFB) {
+      stocksTypeLookup[(item.itemId, item.itemUniqueId)] = item.stocksType;
+    }
+    //************* */
+    //**  DET ITEMS */
+    //************* */
+
+    //************* */
+    //**  FAB ITEMS */
+    //************* */
+
+    //************* */
+    //**  BLE ITEMS */
+    //************* */
+
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -40,6 +70,8 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader>
 
     jobRepoOnQueue = JobModelRepository()..reset();
     jobRepoNonJob = JobModelRepository();
+
+    _loadOtherItems();
   }
 
   Widget _fab({

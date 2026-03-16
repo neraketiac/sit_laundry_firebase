@@ -6,7 +6,6 @@ import 'package:laundry_firebase/features/items/models/otheritemmodel.dart';
 import 'package:laundry_firebase/features/items/models/suppliesmodelhist.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
 import 'package:laundry_firebase/core/global/variables_fab.dart';
-import 'package:laundry_firebase/core/global/variables_oth.dart';
 
 List<OtherItemModel> listSuppItems = [];
 List<OtherItemModel> listSuppItemsAll = [];
@@ -37,6 +36,7 @@ void addListSuppItems() {
     itemPrice: 0,
     stocksAlert: 0,
     stocksType: "php",
+    logDate: timestamp1900,
   ));
   //cash out/cash in
   listSuppItems.add(OtherItemModel(
@@ -48,6 +48,7 @@ void addListSuppItems() {
     itemPrice: 0,
     stocksAlert: 1000,
     stocksType: "php",
+    logDate: timestamp1900,
   ));
   listSuppItems.add(OtherItemModel(
     docId: "",
@@ -58,6 +59,7 @@ void addListSuppItems() {
     itemPrice: 0,
     stocksAlert: 1000,
     stocksType: "php",
+    logDate: timestamp1900,
   ));
   listSuppItems.add(OtherItemModel(
     docId: "",
@@ -68,6 +70,7 @@ void addListSuppItems() {
     itemPrice: 0,
     stocksAlert: 1000,
     stocksType: "php",
+    logDate: timestamp1900,
   ));
   listSuppItems.add(OtherItemModel(
     docId: "",
@@ -78,6 +81,7 @@ void addListSuppItems() {
     itemPrice: 0,
     stocksAlert: 1000,
     stocksType: "php",
+    logDate: timestamp1900,
   ));
   listSuppItems.add(OtherItemModel(
     docId: "",
@@ -88,6 +92,7 @@ void addListSuppItems() {
     itemPrice: 0,
     stocksAlert: 1000,
     stocksType: "php",
+    logDate: timestamp1900,
   ));
   listSuppItems.add(OtherItemModel(
     docId: "",
@@ -98,6 +103,7 @@ void addListSuppItems() {
     itemPrice: 0,
     stocksAlert: 1000,
     stocksType: "php",
+    logDate: timestamp1900,
   ));
 
   listSuppItems.add(OtherItemModel(
@@ -109,6 +115,7 @@ void addListSuppItems() {
     itemPrice: 0,
     stocksAlert: 1000,
     stocksType: "php",
+    logDate: timestamp1900,
   ));
   listSuppItems.add(OtherItemModel(
     docId: "",
@@ -119,6 +126,7 @@ void addListSuppItems() {
     itemPrice: 0,
     stocksAlert: 1000,
     stocksType: "php",
+    logDate: timestamp1900,
   ));
 
   listSuppItems.add(OtherItemModel(
@@ -130,6 +138,7 @@ void addListSuppItems() {
     itemPrice: 0,
     stocksAlert: -5000,
     stocksType: "php",
+    logDate: timestamp1900,
   ));
   //plastic
   listSuppItems.add(OtherItemModel(
@@ -141,6 +150,7 @@ void addListSuppItems() {
     itemPrice: 0,
     stocksAlert: 3,
     stocksType: "roll",
+    logDate: timestamp1900,
   ));
   listSuppItems.add(OtherItemModel(
     docId: "",
@@ -151,6 +161,7 @@ void addListSuppItems() {
     itemPrice: 0,
     stocksAlert: 3,
     stocksType: "roll",
+    logDate: timestamp1900,
   ));
   listSuppItems.add(OtherItemModel(
     docId: "",
@@ -161,6 +172,7 @@ void addListSuppItems() {
     itemPrice: 0,
     stocksAlert: 3,
     stocksType: "roll",
+    logDate: timestamp1900,
   ));
   listSuppItems.add(OtherItemModel(
     docId: "",
@@ -171,6 +183,7 @@ void addListSuppItems() {
     itemPrice: 0,
     stocksAlert: 3,
     stocksType: "roll",
+    logDate: timestamp1900,
   ));
   //gas
   listSuppItems.add(OtherItemModel(
@@ -182,6 +195,7 @@ void addListSuppItems() {
     itemPrice: 0,
     stocksAlert: 0,
     stocksType: "tank",
+    logDate: timestamp1900,
   ));
   listSuppItems.add(OtherItemModel(
     docId: "",
@@ -192,6 +206,7 @@ void addListSuppItems() {
     itemPrice: 0,
     stocksAlert: 1,
     stocksType: "tank",
+    logDate: timestamp1900,
   ));
 
   listSuppItemsAll.addAll(listSuppItems);
@@ -209,6 +224,7 @@ void addListSuppItemsAll() {
     itemPrice: 0,
     stocksAlert: 1000,
     stocksType: "php",
+    logDate: timestamp1900,
   ));
 
   listSuppItemsAll.add(OtherItemModel(
@@ -220,6 +236,7 @@ void addListSuppItemsAll() {
     itemPrice: 0,
     stocksAlert: 1000,
     stocksType: "php",
+    logDate: timestamp1900,
   ));
   listSuppItemsAll.add(OtherItemModel(
     docId: "",
@@ -230,6 +247,7 @@ void addListSuppItemsAll() {
     itemPrice: 0,
     stocksAlert: 1000,
     stocksType: "php",
+    logDate: timestamp1900,
   ));
   listSuppItemsAll.add(OtherItemModel(
     docId: "",
@@ -240,6 +258,7 @@ void addListSuppItemsAll() {
     itemPrice: 0,
     stocksAlert: 1000,
     stocksType: "php",
+    logDate: timestamp1900,
   ));
   listSuppItemsAll.add(OtherItemModel(
     docId: "",
@@ -250,6 +269,7 @@ void addListSuppItemsAll() {
     itemPrice: 0,
     stocksAlert: 1000,
     stocksType: "php",
+    logDate: timestamp1900,
   ));
   listSuppItemsAll.add(OtherItemModel(
     docId: "",
@@ -260,6 +280,7 @@ void addListSuppItemsAll() {
     itemPrice: 0,
     stocksAlert: 1000,
     stocksType: "php",
+    logDate: timestamp1900,
   ));
 }
 
@@ -274,6 +295,7 @@ void addListSuppItemsAccesOnly() {
       itemPrice: 0,
       stocksAlert: 1000,
       stocksType: "php",
+      logDate: timestamp1900,
     ));
   }
   if (displayInList(menuOth977GCashIn)) {
@@ -286,6 +308,7 @@ void addListSuppItemsAccesOnly() {
       itemPrice: 0,
       stocksAlert: 1000,
       stocksType: "php",
+      logDate: timestamp1900,
     ));
   }
   if (displayInList(menuOth977GCashOut)) {
@@ -298,6 +321,7 @@ void addListSuppItemsAccesOnly() {
       itemPrice: 0,
       stocksAlert: 1000,
       stocksType: "php",
+      logDate: timestamp1900,
     ));
   }
   if (displayInList(menuOth152GCashOut)) {
@@ -310,6 +334,7 @@ void addListSuppItemsAccesOnly() {
       itemPrice: 0,
       stocksAlert: 1000,
       stocksType: "php",
+      logDate: timestamp1900,
     ));
   }
   if (displayInList(menuOth152GCashOut)) {
@@ -322,6 +347,7 @@ void addListSuppItemsAccesOnly() {
       itemPrice: 0,
       stocksAlert: 1000,
       stocksType: "php",
+      logDate: timestamp1900,
     ));
   }
   if (displayInList(menuOthLPDonPCash)) {
@@ -334,6 +360,7 @@ void addListSuppItemsAccesOnly() {
       itemPrice: 0,
       stocksAlert: 1000,
       stocksType: "php",
+      logDate: timestamp1900,
     ));
   }
 }

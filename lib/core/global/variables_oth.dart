@@ -2,6 +2,7 @@ import 'package:laundry_firebase/core/global/variables_all_codes.dart';
 import 'package:laundry_firebase/features/items/models/otheritemmodel.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
 
+List<OtherItemModel> listOtherItemsFB = [];
 List<OtherItemModel> listOthItems = [];
 List<OtherItemModel> listOthOnlyItems = [];
 
@@ -17,6 +18,7 @@ final reg155ItemModel = OtherItemModel(
   itemPrice: 155,
   stocksAlert: 5,
   stocksType: "pcs",
+  logDate: timestamp1900,
 );
 
 final nf155ItemModel = OtherItemModel(
@@ -28,6 +30,7 @@ final nf155ItemModel = OtherItemModel(
   itemPrice: 143,
   stocksAlert: 5,
   stocksType: "pcs",
+  logDate: timestamp1900,
 );
 
 final nf125ItemModel = OtherItemModel(
@@ -39,6 +42,7 @@ final nf125ItemModel = OtherItemModel(
   itemPrice: 108,
   stocksAlert: 5,
   stocksType: "pcs",
+  logDate: timestamp1900,
 );
 
 final washDryOnlytemModel = OtherItemModel(
@@ -50,6 +54,7 @@ final washDryOnlytemModel = OtherItemModel(
   itemPrice: 98,
   stocksAlert: 5,
   stocksType: "pcs",
+  logDate: timestamp1900,
 );
 
 final promoFree = OtherItemModel(
@@ -61,6 +66,7 @@ final promoFree = OtherItemModel(
   itemPrice: -155,
   stocksAlert: 5,
   stocksType: "pcs",
+  logDate: timestamp1900,
 );
 
 final reg125ItemModel = OtherItemModel(
@@ -72,6 +78,7 @@ final reg125ItemModel = OtherItemModel(
   itemPrice: 125,
   stocksAlert: 5,
   stocksType: "pcs",
+  logDate: timestamp1900,
 );
 
 final xDItemModel = OtherItemModel(
@@ -83,6 +90,7 @@ final xDItemModel = OtherItemModel(
   itemPrice: 15,
   stocksAlert: 5,
   stocksType: "pcs",
+  logDate: timestamp1900,
 );
 
 final xWashItemModel = OtherItemModel(
@@ -94,6 +102,7 @@ final xWashItemModel = OtherItemModel(
   itemPrice: 20,
   stocksAlert: 5,
   stocksType: "pcs",
+  logDate: timestamp1900,
 );
 
 final xSpinItemModel = OtherItemModel(
@@ -105,6 +114,7 @@ final xSpinItemModel = OtherItemModel(
   itemPrice: 20,
   stocksAlert: 5,
   stocksType: "pcs",
+  logDate: timestamp1900,
 );
 
 void addListOthItems() {
@@ -124,6 +134,7 @@ void addListOthItems() {
     itemPrice: 49,
     stocksAlert: 5,
     stocksType: "pcs",
+    logDate: timestamp1900,
   ));
   listOthItems.add(OtherItemModel(
     docId: "",
@@ -134,6 +145,7 @@ void addListOthItems() {
     itemPrice: 49,
     stocksAlert: 5,
     stocksType: "pcs",
+    logDate: timestamp1900,
   ));
 
   listOthItems.add(OtherItemModel(
@@ -145,6 +157,7 @@ void addListOthItems() {
     itemPrice: 10,
     stocksAlert: 1,
     stocksType: "pcs",
+    logDate: timestamp1900,
   ));
 
   listOthItems.add(OtherItemModel(
@@ -156,6 +169,7 @@ void addListOthItems() {
     itemPrice: 30,
     stocksAlert: 1,
     stocksType: "pcs",
+    logDate: timestamp1900,
   ));
 
   listOthItems.add(OtherItemModel(
@@ -167,6 +181,7 @@ void addListOthItems() {
     itemPrice: 195,
     stocksAlert: 5,
     stocksType: "pcs",
+    logDate: timestamp1900,
   ));
   listOthItems.add(OtherItemModel(
     docId: "",
@@ -177,6 +192,7 @@ void addListOthItems() {
     itemPrice: 165,
     stocksAlert: 5,
     stocksType: "pcs",
+    logDate: timestamp1900,
   ));
 
   listOthItems.add(OtherItemModel(
@@ -188,6 +204,7 @@ void addListOthItems() {
     itemPrice: 20,
     stocksAlert: 5,
     stocksType: "pcs",
+    logDate: timestamp1900,
   ));
   listOthItems.add(nf125ItemModel);
   listOthItems.add(washDryOnlytemModel);
@@ -200,6 +217,7 @@ void addListOthItems() {
     itemPrice: 157,
     stocksAlert: 5,
     stocksType: "pcs",
+    logDate: timestamp1900,
   ));
   listOthItems.add(nf155ItemModel);
   listOthItems.add(OtherItemModel(
@@ -211,6 +229,7 @@ void addListOthItems() {
     itemPrice: 192,
     stocksAlert: 5,
     stocksType: "pcs",
+    logDate: timestamp1900,
   ));
   listOthItems.add(OtherItemModel(
     docId: "",
@@ -221,6 +240,7 @@ void addListOthItems() {
     itemPrice: 35,
     stocksAlert: 5,
     stocksType: "pcs",
+    logDate: timestamp1900,
   ));
   listOthItems.add(OtherItemModel(
     docId: "",
@@ -231,6 +251,7 @@ void addListOthItems() {
     itemPrice: 105,
     stocksAlert: 5,
     stocksType: "pcs",
+    logDate: timestamp1900,
   ));
   listOthItems.add(OtherItemModel(
     docId: "",
@@ -241,121 +262,9 @@ void addListOthItems() {
     itemPrice: 2,
     stocksAlert: 10,
     stocksType: "pcs",
+    logDate: timestamp1900,
   ));
   if (isAdmin) listOthItems.add(promoFree);
-
-// ITEMS ONLY
-  listOthOnlyItems.add(OtherItemModel(
-    docId: "",
-    itemId: menuOthLPG50Kilos,
-    itemUniqueId: menuOthLPG50Kilos,
-    itemGroup: groupOth,
-    itemName: "LPG(50)",
-    itemPrice: 0,
-    stocksAlert: 0,
-    stocksType: "tank",
-  ));
-  listOthOnlyItems.add(OtherItemModel(
-    docId: "",
-    itemId: menuOthLPG11Kilos,
-    itemUniqueId: menuOthLPG11Kilos,
-    itemGroup: groupOth,
-    itemName: "LPG(11)",
-    itemPrice: 0,
-    stocksAlert: 1,
-    stocksType: "tank",
-  ));
-  listOthOnlyItems.add(OtherItemModel(
-    docId: "",
-    itemId: menuOthAnyItem01,
-    itemUniqueId: menuOthAnyItem01,
-    itemGroup: groupOth,
-    itemName: "Plastic",
-    itemPrice: 2,
-    stocksAlert: 20,
-    stocksType: "pcs",
-  ));
-  listOthOnlyItems.add(OtherItemModel(
-    docId: "",
-    itemId: menuOthAnyItem02,
-    itemUniqueId: menuOthAnyItem02,
-    itemGroup: groupOth,
-    itemName: "Laundry Bag",
-    itemPrice: 15,
-    stocksAlert: 20,
-    stocksType: "pcs",
-  ));
-  listOthOnlyItems.add(OtherItemModel(
-    docId: "",
-    itemId: menuOthAnyItem03,
-    itemUniqueId: menuOthAnyItem03,
-    itemGroup: groupOth,
-    itemName: "Yakult",
-    itemPrice: 15,
-    stocksAlert: 5,
-    stocksType: "pcs",
-  ));
-  listOthOnlyItems.add(OtherItemModel(
-    docId: "",
-    itemId: menuOthAnyItem04,
-    itemUniqueId: menuOthAnyItem04,
-    itemGroup: groupOth,
-    itemName: "Sumo",
-    itemPrice: 8,
-    stocksAlert: 20,
-    stocksType: "pcs",
-  ));
-  listOthOnlyItems.add(OtherItemModel(
-    docId: "",
-    itemId: menuOthAnyItem05,
-    itemUniqueId: menuOthAnyItem05,
-    itemGroup: groupOth,
-    itemName: "Bigas",
-    itemPrice: 1500,
-    stocksAlert: 1,
-    stocksType: "sako",
-  ));
-  listOthOnlyItems.add(OtherItemModel(
-    docId: "",
-    itemId: menuOthAnyItem06,
-    itemUniqueId: menuOthAnyItem06,
-    itemGroup: groupOth,
-    itemName: "Mineral Water",
-    itemPrice: 25,
-    stocksAlert: 5,
-    stocksType: "pcs",
-  ));
-  listOthOnlyItems.add(OtherItemModel(
-    docId: "",
-    itemId: menuOthAnyItem07,
-    itemUniqueId: menuOthAnyItem07,
-    itemGroup: groupOth,
-    itemName: "Sibuyas",
-    itemPrice: 200,
-    stocksAlert: 5,
-    stocksType: "1kilo=10counts",
-  ));
-  listOthOnlyItems.add(OtherItemModel(
-    docId: "",
-    itemId: menuOthAnyItem08,
-    itemUniqueId: menuOthAnyItem08,
-    itemGroup: groupOth,
-    itemName: "Kamatis",
-    itemPrice: 200,
-    stocksAlert: 5,
-    stocksType: "1kilo=10counts",
-  ));
-  listOthOnlyItems.add(OtherItemModel(
-    docId: "",
-    itemId: menuOthAnyItem09,
-    itemUniqueId: menuOthAnyItem09,
-    itemGroup: groupOth,
-    itemName: "Bawang",
-    itemPrice: 200,
-    stocksAlert: 5,
-    stocksType: "1kilo=10counts",
-  ));
-
   //oth names
   mapOthNames.addEntries({menuOthWash: "Wash"}.entries);
   mapOthNames.addEntries({menuOthDry: "Dry"}.entries);
