@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:laundry_firebase/core/global/variables_ble.dart';
+import 'package:laundry_firebase/core/global/variables_det.dart';
+import 'package:laundry_firebase/core/global/variables_fab.dart';
+import 'package:laundry_firebase/core/global/variables_oth.dart';
+import 'package:laundry_firebase/core/global/variables_supplies.dart';
 import 'package:laundry_firebase/core/utils/LaundryColors.dart';
 import 'package:laundry_firebase/features/employees/models/employeesetupmodel.dart';
+import 'package:laundry_firebase/features/items/repository/other_item_repository.dart';
 import 'package:laundry_firebase/features/pages/body/GCash/readDataGCashDone.dart';
 import 'package:laundry_firebase/features/pages/body/GCash/readDataGCashPending.dart';
 import 'package:laundry_firebase/features/pages/body/Items/readItemsHist.dart';
@@ -39,31 +45,19 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
   late DatabaseEmployeeSetup databaseEmployeeSetup;
   late EmployeeSetupModel empSetup;
 
-  // EMPLOYEE
+  bool isLoading = true;
+
+  //================ EMPLOYEE =================
   Future<void> _loadEmployeeSetup() async {
     final snapshot = await databaseEmployeeSetup.get().first;
 
     if (snapshot.docs.isNotEmpty) {
       final doc = snapshot.docs.first;
-
-      setState(() {
-        empSetup = doc.data().copyWith(docId: doc.id);
-        isLoading = false;
-      });
+      empSetup = doc.data().copyWith(docId: doc.id);
     } else {
-      // Create default employee setup
-
-      //final docRef = databaseEmployeeSetup.docId();
       final newSetup = finalEmpSetup;
-
-      // Save to Firestore
       await databaseEmployeeSetup.add(newSetup);
       empSetup = newSetup;
-
-      // Update UI
-      setState(() {
-        isLoading = false;
-      });
     }
   }
 
@@ -74,33 +68,88 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
     databaseEmployeeSetup.update(updated);
   }
 
+  //================ ITEMS =================
+  Future<void> _loadItemsFB() async {
+    await OtherItemsRepository.instance.loadOnce(collectionName: 'other_items');
+    listOthItemsFB = List.from(OtherItemsRepository.instance.items);
+
+    await OtherItemsRepository.instance.loadOnce(collectionName: 'det_items');
+    listDetItemsFB = List.from(OtherItemsRepository.instance.items);
+    addlistDetItemsFB();
+
+    await OtherItemsRepository.instance.loadOnce(collectionName: 'fab_items');
+    listFabItemsFB = List.from(OtherItemsRepository.instance.items);
+    addlistFabItemsFB();
+
+    await OtherItemsRepository.instance.loadOnce(collectionName: 'ble_items');
+    listBleItemsFB = List.from(OtherItemsRepository.instance.items);
+
+    listAllItemsFB.clear();
+    listAllItemsFB.addAll(listOthItemsFB);
+    listAllItemsFB.addAll(listDetItemsFB);
+    listAllItemsFB.addAll(listFabItemsFB);
+    listAllItemsFB.addAll(listBleItemsFB);
+
+    for (var item in listAllItemsFB) {
+      stocksTypeLookup[(item.itemId, item.itemUniqueId)] = item.stocksType;
+    }
+  }
+
+  //================ MAIN LOADER =================
+  Future<void> _mainLoad() async {
+    setState(() => isLoading = true);
+
+    await Future.wait([
+      _loadItemsFB(),
+      _loadEmployeeSetup(),
+    ]);
+
+    putEntries();
+
+    // Add local items to stocksTypeLookup
+    for (var item in listSuppItemsAll) {
+      stocksTypeLookup[(item.itemId, item.itemUniqueId)] = item.stocksType;
+      // if (item.itemId == 422 || item.itemUniqueId == 429) {
+      //   debugPrint(
+      //       'Local: id=${item.itemId}, uniqueId=${item.itemUniqueId}, name=${item.itemName}, stocksType=${item.stocksType}');
+      // }
+    }
+
+    // debugPrint('stocksTypeLookup size: ${stocksTypeLookup.length}');
+    // debugPrint('listAllItemsFB size: ${listAllItemsFB.length}');
+    // debugPrint('Lookup key (422, 429): ${stocksTypeLookup[(422, 429)]}');
+    // debugPrint('422 429=${getItemNameStocksType(422, 429)}');
+
+    if (mounted) {
+      setState(() => isLoading = false);
+    }
+  }
+
+  //================ INIT =================
   @override
   void initState() {
     super.initState();
-    putEntries();
 
     empIdGlobal = widget.empidClass;
 
-    // Register token once after widget is mounted
+    databaseEmployeeSetup = DatabaseEmployeeSetup();
+    empSetup = finalEmpSetup;
+
+    _mainLoad();
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       registerWebToken(empIdGlobal);
     });
 
-    // Listen for token refresh (important for web)
     messaging.onTokenRefresh.listen((newToken) async {
-      // print("Token refreshed: $newToken");
       await saveTokenToFirestore(empIdGlobal, newToken);
     });
-
-    databaseEmployeeSetup = DatabaseEmployeeSetup();
-    empSetup = finalEmpSetup;
-    _loadEmployeeSetup();
   }
 
   //########################### MAIN ###############################
   @override
   Widget build(BuildContext context) {
-    if (isLoading || empSetup == null) {
+    if (isLoading) {
       return Scaffold(
         backgroundColor: Colors.deepPurple[100],
         appBar: AppBar(
@@ -122,7 +171,7 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
         automaticallyImplyLeading: false,
         toolbarHeight: 48,
 
-        /// 🔹 LEFT SIDE (Menu for Logout)
+        /// LEFT MENU
         leading: MenuAnchor(
           builder: (context, controller, child) {
             return IconButton(
@@ -136,37 +185,27 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
           menuChildren: [
             if (isAdmin)
               MenuItemButton(
-                style: MenuItemButton.styleFrom(
-                  backgroundColor: const Color(0xFF673AB7), // Deep Purple
-                  foregroundColor: Colors.white,
-                ),
                 onPressed: () async {
                   if (isProcessing) return;
 
                   final bool? confirm = await showDialog<bool>(
                     context: context,
-                    builder: (context) {
-                      return AlertDialog(
-                        title: const Text("Confirm Action"),
-                        content: const Text(
-                          "Move ALL Done jobs to Completed?\n\nThis action cannot be undone.",
+                    builder: (context) => AlertDialog(
+                      title: const Text("Confirm Action"),
+                      content: const Text(
+                        "Move ALL Done jobs to Completed?\n\nThis action cannot be undone.",
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context, false),
+                          child: const Text("No"),
                         ),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(context, false),
-                            child: const Text("No"),
-                          ),
-                          ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF673AB7),
-                              foregroundColor: Colors.white,
-                            ),
-                            onPressed: () => Navigator.pop(context, true),
-                            child: const Text("Yes"),
-                          ),
-                        ],
-                      );
-                    },
+                        ElevatedButton(
+                          onPressed: () => Navigator.pop(context, true),
+                          child: const Text("Yes"),
+                        ),
+                      ],
+                    ),
                   );
 
                   if (confirm != true) return;
@@ -184,54 +223,22 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                 child: const Text("🧺 Done → Completed"),
               ),
             MenuItemButton(
-              style: MenuItemButton.styleFrom(
-                backgroundColor: Colors.blueGrey.shade600,
-                foregroundColor: Colors.white,
-              ),
-              onPressed: () {
-                showFundsInFundsOut(context);
-              },
+              onPressed: () => showFundsInFundsOut(context),
               child: const Text("💰 Funds In/Out"),
             ),
             MenuItemButton(
-              style: MenuItemButton.styleFrom(
-                backgroundColor: Colors.green.shade600,
-                foregroundColor: Colors.white,
-              ),
-              leadingIcon: const Icon(Icons.price_check_outlined, size: 18),
-              onPressed: () {
-                showFundCheck(context);
-              },
+              onPressed: () => showFundCheck(context),
               child: const Text("Funds Check"),
             ),
             MenuItemButton(
-              style: MenuItemButton.styleFrom(
-                backgroundColor: cEmployeeMaintenance,
-                foregroundColor: Colors.white,
-              ),
-              leadingIcon: const Icon(Icons.savings, size: 18),
-              onPressed: () {
-                showSalaryMaintenance(context);
-              },
+              onPressed: () => showSalaryMaintenance(context),
               child: const Text("Salary"),
             ),
             MenuItemButton(
-              style: MenuItemButton.styleFrom(
-                backgroundColor: Colors.white70,
-                foregroundColor: Colors.black,
-              ),
-              leadingIcon: const Icon(Icons.calendar_month, size: 18),
-              onPressed: () {
-                showCalendarDialog(context);
-              },
+              onPressed: () => showCalendarDialog(context),
               child: const Text("Calendar"),
             ),
             MenuItemButton(
-              style: MenuItemButton.styleFrom(
-                backgroundColor: Colors.white70,
-                foregroundColor: Colors.black,
-              ),
-              leadingIcon: const Icon(Icons.edit, size: 18),
               onPressed: () {
                 Navigator.push(
                   context,
@@ -265,14 +272,14 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
           ],
         ),
 
-        /// 🔹 TITLE (Greeting)
+        /// TITLE
         title: Text(
           "$dateText. Hello ${empSetup.empName}",
           style: const TextStyle(fontSize: 14),
           overflow: TextOverflow.ellipsis,
         ),
 
-        /// 🔹 RIGHT SIDE (3-Dot Menu)
+        /// RIGHT MENU (3 DOTS)
         actions: [
           MenuAnchor(
             builder: (context, controller, child) {
@@ -286,16 +293,6 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
             },
             menuChildren: [
               MenuItemButton(
-                style: ButtonStyle(
-                  backgroundColor: WidgetStateProperty.resolveWith<Color?>(
-                    (states) {
-                      if (empSetup.showFundsHistory) {
-                        return Colors.green.shade200; // your active color
-                      }
-                      return null; // default color
-                    },
-                  ),
-                ),
                 child: const Text('💳 GCash'),
                 onPressed: () {
                   updateEmployeeSetup(
@@ -306,16 +303,6 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                 },
               ),
               MenuItemButton(
-                style: ButtonStyle(
-                  backgroundColor: WidgetStateProperty.resolveWith<Color?>(
-                    (states) {
-                      if (empSetup.showLaundry) {
-                        return Colors.green.shade200; // your active color
-                      }
-                      return null; // default color
-                    },
-                  ),
-                ),
                 child: const Text('🧺 Laundry'),
                 onPressed: () {
                   updateEmployeeSetup(
@@ -326,16 +313,6 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                 },
               ),
               MenuItemButton(
-                style: ButtonStyle(
-                  backgroundColor: WidgetStateProperty.resolveWith<Color?>(
-                    (states) {
-                      if (empSetup.showFunds) {
-                        return Colors.green.shade200; // your active color
-                      }
-                      return null; // default color
-                    },
-                  ),
-                ),
                 child: const Text('💰 Funds'),
                 onPressed: () {
                   updateEmployeeSetup(
@@ -346,16 +323,6 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                 },
               ),
               MenuItemButton(
-                style: ButtonStyle(
-                  backgroundColor: WidgetStateProperty.resolveWith<Color?>(
-                    (states) {
-                      if (empSetup.showEmployee) {
-                        return Colors.green.shade200; // your active color
-                      }
-                      return null; // default color
-                    },
-                  ),
-                ),
                 child: const Text("🪪 Id"),
                 onPressed: () {
                   updateEmployeeSetup(
@@ -369,6 +336,8 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
           ),
         ],
       ),
+
+      /// BODY
       body: Stack(
         children: [
           AbsorbPointer(
@@ -408,8 +377,10 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                   animatedPanel(
                     visible: empSetup.showLaundry,
                     width: 320,
-                    child:
-                        readDataJobsCompleted(context, () => setState(() {})),
+                    child: readDataJobsCompleted(
+                      context,
+                      () => setState(() {}),
+                    ),
                     color: LaundryColors.completed,
                   ),
                   animatedPanel(

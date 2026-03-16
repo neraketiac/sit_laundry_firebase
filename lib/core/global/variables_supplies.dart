@@ -1,11 +1,8 @@
 //Display
 import 'package:flutter/material.dart';
 import 'package:laundry_firebase/core/global/variables_all_codes.dart';
-import 'package:laundry_firebase/features/employees/models/employeemodel.dart';
 import 'package:laundry_firebase/features/items/models/otheritemmodel.dart';
-import 'package:laundry_firebase/features/items/models/suppliesmodelhist.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
-import 'package:laundry_firebase/core/global/variables_fab.dart';
 
 List<OtherItemModel> listSuppItems = [];
 List<OtherItemModel> listSuppItemsAll = [];
@@ -186,28 +183,28 @@ void addListSuppItems() {
     logDate: timestamp1900,
   ));
   //gas
-  listSuppItems.add(OtherItemModel(
-    docId: "",
-    itemId: menuOthLPG50Kilos,
-    itemUniqueId: menuOthLPG50Kilos,
-    itemGroup: groupOth,
-    itemName: "LPG(50)",
-    itemPrice: 0,
-    stocksAlert: 0,
-    stocksType: "tank",
-    logDate: timestamp1900,
-  ));
-  listSuppItems.add(OtherItemModel(
-    docId: "",
-    itemId: menuOthLPG11Kilos,
-    itemUniqueId: menuOthLPG11Kilos,
-    itemGroup: groupOth,
-    itemName: "LPG(11)",
-    itemPrice: 0,
-    stocksAlert: 1,
-    stocksType: "tank",
-    logDate: timestamp1900,
-  ));
+  // listSuppItems.add(OtherItemModel(
+  //   docId: "",
+  //   itemId: menuOthLPG50Kilos,
+  //   itemUniqueId: menuOthLPG50Kilos,
+  //   itemGroup: groupOth,
+  //   itemName: "LPG(50)",
+  //   itemPrice: 0,
+  //   stocksAlert: 0,
+  //   stocksType: "tank",
+  //   logDate: timestamp1900,
+  // ));
+  // listSuppItems.add(OtherItemModel(
+  //   docId: "",
+  //   itemId: menuOthLPG11Kilos,
+  //   itemUniqueId: menuOthLPG11Kilos,
+  //   itemGroup: groupOth,
+  //   itemName: "LPG(11)",
+  //   itemPrice: 0,
+  //   stocksAlert: 1,
+  //   stocksType: "tank",
+  //   logDate: timestamp1900,
+  // ));
 
   listSuppItemsAll.addAll(listSuppItems);
   //addListSuppItemsAccesOnly();
@@ -282,326 +279,6 @@ void addListSuppItemsAll() {
     stocksType: "php",
     logDate: timestamp1900,
   ));
-}
-
-void addListSuppItemsAccesOnly() {
-  if (displayInList(menuOth977GCashIn)) {
-    listSuppItems.add(OtherItemModel(
-      docId: "",
-      itemId: menuOthLaundryPaymentGCash,
-      itemUniqueId: menuOthLaundryPaymentGCash,
-      itemGroup: groupOth,
-      itemName: "Laundry Payment(G)",
-      itemPrice: 0,
-      stocksAlert: 1000,
-      stocksType: "php",
-      logDate: timestamp1900,
-    ));
-  }
-  if (displayInList(menuOth977GCashIn)) {
-    listSuppItems.add(OtherItemModel(
-      docId: "",
-      itemId: menuOth977GCash,
-      itemUniqueId: menuOth977GCashIn,
-      itemGroup: groupOth,
-      itemName: "977CashIn",
-      itemPrice: 0,
-      stocksAlert: 1000,
-      stocksType: "php",
-      logDate: timestamp1900,
-    ));
-  }
-  if (displayInList(menuOth977GCashOut)) {
-    listSuppItems.add(OtherItemModel(
-      docId: "",
-      itemId: menuOth977GCash,
-      itemUniqueId: menuOth977GCashOut,
-      itemGroup: groupOth,
-      itemName: "977CashOut",
-      itemPrice: 0,
-      stocksAlert: 1000,
-      stocksType: "php",
-      logDate: timestamp1900,
-    ));
-  }
-  if (displayInList(menuOth152GCashOut)) {
-    listSuppItems.add(OtherItemModel(
-      docId: "",
-      itemId: menuOth152GCash,
-      itemUniqueId: menuOth152GCashOut,
-      itemGroup: groupOth,
-      itemName: "152CashIn",
-      itemPrice: 0,
-      stocksAlert: 1000,
-      stocksType: "php",
-      logDate: timestamp1900,
-    ));
-  }
-  if (displayInList(menuOth152GCashOut)) {
-    listSuppItems.add(OtherItemModel(
-      docId: "",
-      itemId: menuOth152GCash,
-      itemUniqueId: menuOth152GCashOut,
-      itemGroup: groupOth,
-      itemName: "152CashOut",
-      itemPrice: 0,
-      stocksAlert: 1000,
-      stocksType: "php",
-      logDate: timestamp1900,
-    ));
-  }
-  if (displayInList(menuOthLPDonPCash)) {
-    listSuppItems.add(OtherItemModel(
-      docId: "",
-      itemId: menuOthLPDonP,
-      itemUniqueId: menuOthLPDonPCash,
-      itemGroup: groupOth,
-      itemName: "DonP Cash",
-      itemPrice: 0,
-      stocksAlert: 1000,
-      stocksType: "php",
-      logDate: timestamp1900,
-    ));
-  }
-}
-
-Color getCOlorSuppliesHistoryVar(SuppliesModelHist sMH) {
-  if (sMH.itemId == menuOthCashInOutFunds) {
-    if (ifMenuUniqueIsCashIn(sMH)) {
-      return cCashIn;
-    } else if (ifMenuUniqueIsCashOut(sMH)) {
-      return cCashOut;
-    } else if (ifMenuUniqueIsLaundryPayment(sMH)) {
-      return cRiderPickup;
-    } else if (ifMenuUniqueIsLPaymentGCash(sMH)) {
-      return cRiderPickup;
-    } else if (sMH.itemUniqueId == menuOthUniqIdFundsEOD) {
-      return cFundsEOD;
-    } else if (ifMenuUniqueIsFundsIn(sMH)) {
-      return cCashIn;
-    } else if (ifMenuUniqueIsFundsOut(sMH)) {
-      return cCashOut;
-    } else if (ifMenuUniqueIsFee(sMH)) {
-      return cCashFee;
-    }
-  }
-
-  return cStocks;
-}
-
-Color getCOlorSuppliesHistoryPosNeg(SuppliesModelHist sMH) {
-  if (sMH.itemId == menuOthCashInOutFunds) {
-    if (ifMenuUniqueIsCashIn(sMH)) {
-      return cMoneyIn;
-    } else if (ifMenuUniqueIsCashOut(sMH)) {
-      return cMoneyOut;
-    } else if (ifMenuUniqueIsLaundryPayment(sMH)) {
-      return cMoneyIn;
-    } else if (ifMenuUniqueIsLPaymentGCash(sMH)) {
-      return cMoneyIn;
-    } else if (sMH.itemUniqueId == menuOthUniqIdFundsEOD) {
-      return cFundsEOD;
-    } else if (ifMenuUniqueIsFundsIn(sMH)) {
-      return cMoneyIn;
-    } else if (ifMenuUniqueIsFundsOut(sMH)) {
-      return cMoneyOut;
-    } else if (ifMenuUniqueIsFee(sMH)) {
-      return cMoneyIn;
-    } else if (ifMenuUniqueIsLoad(sMH)) {
-      return cMoneyIn;
-    }
-  }
-
-  return cStocks;
-}
-
-Color getCOlorEmployeeHistoryPosNeg(EmployeeModel eM) {
-  if (eM.itemId == menuOthCashInOutFunds) {
-    if (ifMenuUniqueIsCashInEmp(eM)) {
-      return cSalaryOut;
-    } else if (ifMenuUniqueIsCashOutEmp(eM)) {
-      return cSalaryOut;
-    } else if (ifMenuUniqueIsLaundryPaymentEmp(eM)) {
-      return cSalaryIn;
-    } else if (ifMenuUniqueIsLPaymentGCashEmp(eM)) {
-      return cSalaryIn;
-    } else if (eM.itemUniqueId == menuOthUniqIdFundsEOD) {
-      return cFundsEOD;
-    } else if (ifMenuUniqueIsFundsInEmp(eM)) {
-      return cSalaryIn;
-    } else if (ifMenuUniqueIsFundsOutEmp(eM)) {
-      return cSalaryOut;
-    } else if (ifMenuUniqueIsFeeEmp(eM)) {
-      return cSalaryIn;
-    } else if (ifMenuUniqueIsLoadEmp(eM)) {
-      return cSalaryIn;
-    } else if (ifMenuUniqueIsSalaryPayEmp(eM)) {
-      return cSalaryIn;
-    }
-  }
-
-  return cStocks;
-}
-
-Container conDisplaySuppliesCurrentVar(
-  BuildContext context,
-  SuppliesModelHist sMH,
-) {
-  return Container(
-    height: 22,
-    color: (sMH.currentStocks <=
-            getItemNameStocksAlert(sMH.itemId, sMH.itemUniqueId)
-        ? cRiderPickup
-        : cWaiting),
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Expanded(
-          child: Column(
-            //mainAxisSize: MainAxisSize.max,
-            //mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            //crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(
-                height: 2,
-              ),
-              // Text(
-              //   "  ${(sMH.itemId == menuOthCashInOutFunds ? "Funds" : getItemNameOnly(sMH.itemId, sMH.itemUniqueId))} - (${sMH.currentStocks} ${getItemNameStocksType(sMH.itemId, sMH.itemUniqueId)}) (${sMH.empId})",
-              //   style: const TextStyle(
-              //     fontSize: 10,
-              //     fontWeight: FontWeight.bold,
-              //   ),
-              //   textAlign: TextAlign.end,
-              // ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    (sMH.itemId == menuOth977GCash
-                        ? " 997Gcash "
-                        : (sMH.itemId == menuFabWKLDValPinkDVal
-                            ? "  Fab WKL(Pnk)"
-                            : (sMH.itemId == menuFabWKLDValGreenDVal
-                                ? "  Fab WKL(Grn)"
-                                : (sMH.itemId == menuDetWKL
-                                    ? "  Det WKL"
-                                    : (sMH.itemId == menuFabWKLDValPurpleDVal
-                                        ? "  Fab WKL(Ppl)"
-                                        : (sMH.itemId == menuOthCashInOutFunds
-                                            ? "  Funds"
-                                            : "  ${getItemNameOnly(sMH.itemId, sMH.itemUniqueId)}")))))),
-                    style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  Text(
-                    "(${getItemNameStocksType(sMH.itemId, sMH.itemUniqueId)})",
-                    style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  Text(
-                    "${value.format(sMH.currentStocks)}  ",
-                    style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ],
-    ),
-  );
-}
-
-Container conDisplaySuppliesHistoryVar(
-  BuildContext context,
-  SuppliesModelHist sMH,
-) {
-  return Container(
-    height: 20,
-    color: getCOlorSuppliesHistoryVar(
-        sMH), //(sMH.itemId == menuOthCashInOutFunds ? cWaiting : cNasaCustomerNa),
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Expanded(
-          child: Column(
-            mainAxisSize: MainAxisSize.max,
-            // mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(
-                height: 2,
-              ),
-              Row(
-                children: [
-                  Text(" ${convertTimeStampVar(sMH.logDate)} ",
-                      style: const TextStyle(
-                        fontSize: 10,
-                      )),
-                  Text(getItemNameOnlyTest(sMH.itemId, sMH.itemUniqueId),
-                      style: const TextStyle(
-                          fontSize: 10, fontWeight: FontWeight.bold)),
-                  Text(
-                      " (${value.format(sMH.currentCounter)}/${value.format(sMH.currentStocks)}) ",
-                      style: const TextStyle(fontSize: 11)),
-                  Text("by:{${customerName(sMH.customerId.toString())}} ",
-                      style: const TextStyle(
-                        fontSize: 10,
-                      )),
-                  Text("log:{${sMH.empId}}",
-                      style: const TextStyle(
-                        fontSize: 10,
-                      )),
-                  Text(":${sMH.remarks}",
-                      style: const TextStyle(
-                        fontSize: 10,
-                      )),
-                ],
-              ),
-              // Text(
-              //   "  ${convertTimeStampVar(sMH.logDate)} ${getItemNameOnly(sMH.itemId, sMH.itemUniqueId)} (${sMH.currentCounter}/${sMH.currentStocks}) by:{${customerName(sMH.customerId.toString())}} log:{${sMH.empId}}",
-              //   style: const TextStyle(
-              //     fontSize: 10,
-              //     fontWeight: FontWeight.bold,
-              //   ),
-              //   textAlign: TextAlign.end,
-              // ),
-            ],
-          ),
-        ),
-      ],
-    ),
-  );
-}
-
-int getFee(int price) {
-  var iPrice = (price < 0 ? (price * -1) : price);
-
-  if (iPrice <= 1000) {
-    if (iPrice <= 750) {
-      if (iPrice <= 500) {
-        if (iPrice <= 100) {
-          return 5;
-        }
-        return 10;
-      }
-      return 15;
-    }
-    return 20;
-  } else {
-    if (iPrice % 500 == 0) {
-      return ((iPrice ~/ 500) * 10);
-    } else {
-      return (((iPrice ~/ 500) + 1) * 10);
-    }
-  }
 }
 
 Container conRemarksSuppliesVar() {

@@ -2,8 +2,6 @@ import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:laundry_firebase/features/items/repository/other_item_repository.dart';
-import 'package:laundry_firebase/features/pages/body/Loyalty/home.dart';
 import 'package:laundry_firebase/features/pages/body/Loyalty/loyalty_admin.dart';
 import 'package:laundry_firebase/features/pages/body/Loyalty/loyalty_single.dart';
 import 'package:laundry_firebase/features/menus/menu_constants.dart';
@@ -31,7 +29,7 @@ class _EnterLoyaltyCodeState extends State<EnterLoyaltyCode> {
   void initState() {
     super.initState();
     CustomerRepository.instance.loadOnce();
-    OtherItemsRepository.instance.loadOnce;
+    //OtherItemsRepository.instance.loadOnce(collectionName: 'other_items');
 
     _checkSavedCode();
   }
@@ -290,11 +288,6 @@ class _EnterLoyaltyCodeState extends State<EnterLoyaltyCode> {
     log(s);
   }
 
-  void _suppliesPage(BuildContext context) {
-    Navigator.of(context)
-        .push(MaterialPageRoute(builder: (context) => const MyHome()));
-  }
-
   void _queuePage(BuildContext context, String empid) {
     Navigator.of(context)
         // .push(MaterialPageRoute(builder: (context) => MyQueue(empid)));
@@ -345,8 +338,6 @@ class _EnterLoyaltyCodeState extends State<EnterLoyaltyCode> {
     // //to comment putEntries end;
     if (s == "16") {
       _allCards(context);
-    } else if (s == "456") {
-      _suppliesPage(context);
     } else if (s == "369") {
       _saveText(context);
     } else if (s == "678") {

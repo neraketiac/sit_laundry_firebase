@@ -2,12 +2,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:laundry_firebase/core/global/variables_all_codes.dart';
+import 'package:laundry_firebase/core/utils/sharedMethods.dart';
 import 'package:laundry_firebase/features/items/models/suppliesmodelhist.dart';
 import 'package:laundry_firebase/core/services/database_supplies_current.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
-import 'package:laundry_firebase/core/global/variables_det.dart';
-import 'package:laundry_firebase/core/global/variables_fab.dart';
-import 'package:laundry_firebase/core/global/variables_supplies.dart';
 
 Widget readDataSuppliesCurrent() {
   bool bHeader = true;
@@ -35,19 +33,7 @@ Widget readDataSuppliesCurrent() {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      (sMH.itemId == menuOth977GCash
-                          ? " 997Gcash "
-                          : (sMH.itemId == menuFabWKLDValPinkDVal
-                              ? "  Fab WKL(Pnk)"
-                              : (sMH.itemId == menuFabWKLDValGreenDVal
-                                  ? "  Fab WKL(Grn)"
-                                  : (sMH.itemId == menuDetWKL
-                                      ? "  Det WKL"
-                                      : (sMH.itemId == menuFabWKLDValPurpleDVal
-                                          ? "  Fab WKL(Ppl)"
-                                          : (sMH.itemId == menuOthCashInOutFunds
-                                              ? "  Funds"
-                                              : "  ${getItemNameOnly(sMH.itemId, sMH.itemUniqueId)}")))))),
+                      nameForSuppliesCurrent(sMH.itemId, sMH.itemUniqueId),
                       style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
@@ -62,7 +48,7 @@ Widget readDataSuppliesCurrent() {
                     ),
                     Text(
                       getItemNameStocksType(sMH.itemId, sMH.itemUniqueId) ==
-                              'php'
+                              "php"
                           ? "₱ ${value.format(sMH.currentStocks)}"
                           : value.format(sMH.currentStocks),
                       style: const TextStyle(

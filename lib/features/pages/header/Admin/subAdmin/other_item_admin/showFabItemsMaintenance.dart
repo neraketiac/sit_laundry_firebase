@@ -1,19 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:laundry_firebase/core/services/database_other_items.dart';
-import 'package:laundry_firebase/core/services/database_other_items_hist.dart';
+import 'package:laundry_firebase/core/global/variables.dart';
+import 'package:laundry_firebase/core/services/database_item_models/database_fab_items.dart';
+import 'package:laundry_firebase/core/services/database_item_models/database_fab_items_hist.dart';
 import 'package:laundry_firebase/features/items/models/otheritemmodel.dart';
 
-class OtherItemsPage extends StatefulWidget {
-  const OtherItemsPage({super.key});
+class FabItemsPage extends StatefulWidget {
+  const FabItemsPage({super.key});
 
   @override
-  State<OtherItemsPage> createState() => _OtherItemsPageState();
+  State<FabItemsPage> createState() => _FabItemsPageState();
 }
 
-class _OtherItemsPageState extends State<OtherItemsPage> {
-  final service = OtherItemsService();
-  final histService = OtherItemsServiceHist();
+class _FabItemsPageState extends State<FabItemsPage> {
+  final service = FabItemsService();
+  final histService = FabItemsServiceHist();
 
   List<OtherItemModel> items = [];
   List<OtherItemModel> deletedItems = [];
@@ -86,7 +87,7 @@ class _OtherItemsPageState extends State<OtherItemsPage> {
     }
 
     final newItem = OtherItemModel.makeEmpty().coyWith(
-      itemGroup: "Oth",
+      itemGroup: groupFab,
       itemId: nextItemId,
       itemUniqueId: nextUniqueId,
     );
@@ -217,7 +218,7 @@ class _OtherItemsPageState extends State<OtherItemsPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Other Items Maintenance"),
+        title: const Text("Fabricon Items Maintenance"),
       ),
       body: Column(
         children: [
@@ -243,6 +244,29 @@ class _OtherItemsPageState extends State<OtherItemsPage> {
                         ],
                       ),
                     ),
+
+                    /// IF NO RECORDS → show only ADD button
+                    if (items.isEmpty)
+                      Row(
+                        children: [
+                          SizedBox(
+                            width: 50,
+                            child: IconButton(
+                              icon: const Icon(Icons.add),
+                              onPressed: addRow,
+                            ),
+                          ),
+                          const SizedBox(width: 90),
+                          const SizedBox(width: 120),
+                          const SizedBox(width: 220),
+                          const SizedBox(width: 100),
+                          const SizedBox(width: 120),
+                          const SizedBox(width: 120),
+                          const SizedBox(width: 80),
+                        ],
+                      ),
+
+                    /// NORMAL LIST
                     ...List.generate(items.length, (index) {
                       return Row(
                         children: [

@@ -264,7 +264,5 @@ class _AutoCompleteCustomerState extends State<AutoCompleteCustomer> {
     if (widget.jobRepo.processStep == '') {
       widget.jobRepo.items.remove(promoFree);
     }
-
-    bCustomerName = true;
   }
 }

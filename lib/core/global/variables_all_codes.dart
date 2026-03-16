@@ -1,14 +1,15 @@
 const int menuBleOriginalDVal = 302, menuBleColorSafeDVal = 301;
-const int menuDetBreezeDVal = 103,
-    menuDetArielDVal = 101,
-    menuDetTideDVal = 104,
-    menuDetWingsBlueDVal = 105,
-    menuDetWingsRedDVal = 107,
-    menuDetWKL = 106,
-    menuDetSurfDVal = 102,
-    menuDetKlinDVal = 108,
-    menuDetWKL15 = 109,
-    menuDetAriel3P = 110;
+const int menuDetWKL15 = 109;
+const int menuDetArielDVal = 101;
+const int menuDetWKL = 106;
+// const int menuDetBreezeDVal = 103,
+//     menuDetTideDVal = 104,
+//     menuDetWingsBlueDVal = 105,
+//     menuDetWingsRedDVal = 107,
+
+//     menuDetSurfDVal = 102,
+//     menuDetKlinDVal = 108,
+//     menuDetAriel3P = 110;
 
 const int menuOthCashInOutFunds = 422,
     menuOthPlasticSmall = 423,
@@ -80,16 +81,7 @@ const int menuOthWash = 401,
     menuOthW11t12 = 421,
     menuOthXS = 50422,
     menuOthFree = 50423,
-    menuOthWD98 = 50424,
-    menuOthAnyItem01 = 50425,
-    menuOthAnyItem02 = 50426,
-    menuOthAnyItem03 = 50427,
-    menuOthAnyItem04 = 50428,
-    menuOthAnyItem05 = 50429,
-    menuOthAnyItem06 = 50430,
-    menuOthAnyItem07 = 50431,
-    menuOthAnyItem08 = 50432,
-    menuOthAnyItem09 = 50433;
+    menuOthWD98 = 50424;
 const int menuOthUniqIdCashIn = 4401,
     menuOthUniqIdCashOut = 4402,
     menuOthUniqIdFundsIn = 4403,

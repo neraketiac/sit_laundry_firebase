@@ -2,13 +2,12 @@ import 'package:laundry_firebase/core/global/variables_all_codes.dart';
 import 'package:laundry_firebase/features/items/models/otheritemmodel.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
 
-List<OtherItemModel> listOtherItemsFB = [];
+List<OtherItemModel> listOthItemsFB = [];
+
 List<OtherItemModel> listOthItems = [];
 List<OtherItemModel> listOthOnlyItems = [];
 
 //others
-Map<int, String> mapOthNames = {};
-
 final reg155ItemModel = OtherItemModel(
   docId: "",
   itemId: menuOth155,
@@ -265,10 +264,4 @@ void addListOthItems() {
     logDate: timestamp1900,
   ));
   if (isAdmin) listOthItems.add(promoFree);
-  //oth names
-  mapOthNames.addEntries({menuOthWash: "Wash"}.entries);
-  mapOthNames.addEntries({menuOthDry: "Dry"}.entries);
-  mapOthNames.addEntries({menuOthXD: "Extra Dry"}.entries);
-  mapOthNames.addEntries({menuOthXW: "Extra Wash"}.entries);
-  mapOthNames.addEntries({menuOthXR: "Extra Rinse"}.entries);
 }

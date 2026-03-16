@@ -8,8 +8,6 @@ import 'package:laundry_firebase/shared/widgets/jobdisplay/customerAmount.dart';
 import 'package:laundry_firebase/features/jobs/repository/jobmodel_repository.dart';
 import 'package:laundry_firebase/features/items/repository/supplies_hist_repository.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
-import 'package:laundry_firebase/core/global/variables_oth.dart';
-import 'package:laundry_firebase/core/global/variables_supplies.dart';
 
 void showGCashOnly(BuildContext context, JobModelRepository jobRepo) {
   final List<int> fundTypeCodes1stLayer = [

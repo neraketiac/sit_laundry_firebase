@@ -2,10 +2,8 @@ import 'package:laundry_firebase/core/global/variables_all_codes.dart';
 import 'package:laundry_firebase/features/items/models/otheritemmodel.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
 
+List<OtherItemModel> listBleItemsFB = [];
 List<OtherItemModel> listBleItems = [];
-
-//bleach
-Map<int, String> mapBleNames = {};
 
 final addBleItemModel = OtherItemModel(
   docId: "",
@@ -32,8 +30,4 @@ void addListBleItems() {
     stocksType: "btl",
     logDate: timestamp1900,
   ));
-
-  //ble names
-  mapBleNames.addEntries({menuBleOriginalDVal: "Bleach OR(P5)"}.entries);
-  mapBleNames.addEntries({menuBleColorSafeDVal: "Color S(P5)"}.entries);
 }

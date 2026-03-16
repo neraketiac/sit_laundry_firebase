@@ -34,11 +34,11 @@ Widget visItemsOnly(
 
   List<OtherItemModel> getCurrentDropdownItems() {
     if (jobRepo.selectedOthers == menuOthDVal) {
-      return listOtherItemsFB;
+      return listOthItemsFB;
     } else if (jobRepo.selectedOthers == menuDetDVal) {
-      return listDetItems;
+      return listDetItemsFB;
     } else if (jobRepo.selectedOthers == menuFabDVal) {
-      return listFabItems;
+      return listFabItemsFB;
     } else {
       return listBleItems;
     }
@@ -46,7 +46,8 @@ Widget visItemsOnly(
 
   final currentItems = getCurrentDropdownItems();
 
-  if (!currentItems.contains(jobRepo.repoVarSelectedItem)) {
+  if (currentItems.isNotEmpty &&
+      !currentItems.contains(jobRepo.repoVarSelectedItem)) {
     jobRepo.repoVarSelectedItem = currentItems.first;
   }
 
@@ -108,7 +109,9 @@ Widget visItemsOnly(
               jobRepo.selectedOthers = listOthersDropDown[index];
 
               final newItems = getCurrentDropdownItems();
-              jobRepo.repoVarSelectedItem = newItems.first;
+              if (newItems.isNotEmpty) {
+                jobRepo.repoVarSelectedItem = newItems.first;
+              }
 
               dialogSetState();
             },

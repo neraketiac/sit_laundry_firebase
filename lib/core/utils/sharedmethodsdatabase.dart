@@ -53,7 +53,7 @@ Future<bool> callDatabaseSuppliesCurrentAdd(SuppliesModelHist sMH) async {
                 (isGcashCredit &&
                     sMH.itemUniqueId == menuOthUniqIdCashIn) //gcash credit
                 ||
-                ((isAdmin || allowPayment) &&
+                ((isAdmin) &&
                     sMH.itemUniqueId ==
                         menuOthSalaryPayment) //salary payment access by admin only, or allowPayment
                 ||
@@ -88,8 +88,7 @@ Future<bool> callDatabaseSuppliesCurrentAdd(SuppliesModelHist sMH) async {
         debugPrint("Employee Current updated...");
         //prevent generating another record in Supplies Current
         if (isGcashCredit ||
-            ((isAdmin || allowPayment) &&
-                sMH.itemUniqueId == menuOthSalaryPayment)) {
+            ((isAdmin) && sMH.itemUniqueId == menuOthSalaryPayment)) {
           isGcashCredit = false;
           return true;
         }
@@ -97,8 +96,7 @@ Future<bool> callDatabaseSuppliesCurrentAdd(SuppliesModelHist sMH) async {
         debugPrint("Employee Current failed to update...");
         //prevent generating another record in Supplies Current
         if (isGcashCredit ||
-            ((isAdmin || allowPayment) &&
-                sMH.itemUniqueId == menuOthSalaryPayment)) {
+            ((isAdmin) && sMH.itemUniqueId == menuOthSalaryPayment)) {
           isGcashCredit = false;
           return false;
         }

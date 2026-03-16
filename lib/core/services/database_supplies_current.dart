@@ -4,7 +4,6 @@ import 'package:laundry_firebase/core/services/database_items_history.dart';
 import 'package:laundry_firebase/features/items/models/suppliesmodelhist.dart';
 import 'package:laundry_firebase/core/services/database_funds_history.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
-import 'package:laundry_firebase/core/global/variables_supplies.dart';
 
 const String SUPPLIES_CURR_REF = "SuppliesCurr";
 
@@ -25,12 +24,6 @@ class DatabaseSuppliesCurrent {
 
   Stream<QuerySnapshot> getSuppliesCurrent() {
     return _suppliesCurrRef.orderBy('LogDate', descending: true).snapshots();
-  }
-
-  Stream<QuerySnapshot> getFundsCurrentOnly() {
-    return _suppliesCurrRef
-        .where('ItemId', isEqualTo: menuOthCashInOutFunds)
-        .snapshots();
   }
 
   Future<SuppliesModelHist> computeCurrentStocks(SuppliesModelHist sMH) async {

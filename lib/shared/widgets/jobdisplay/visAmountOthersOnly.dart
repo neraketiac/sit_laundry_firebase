@@ -48,9 +48,9 @@ Widget visAmountOthersOnly(
     if (jobRepo.selectedOthers == menuOthDVal) {
       return listOthItems;
     } else if (jobRepo.selectedOthers == menuDetDVal) {
-      return listDetItems;
+      return listDetItemsFB;
     } else if (jobRepo.selectedOthers == menuFabDVal) {
-      return listFabItems;
+      return listFabItemsFB;
     } else {
       return listBleItems;
     }
