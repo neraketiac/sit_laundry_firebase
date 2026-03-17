@@ -1,22 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:laundry_firebase/features/jobs/repository/jobmodel_repository.dart';
-import 'package:laundry_firebase/shared/widgets/jobdisplay/glassCounterCard.dart';
+import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_display_job/glassCounterCard.dart';
 
-Widget visBasket(
+Widget visEcoBag(
   BuildContext context,
   VoidCallback dialogSetState,
   JobModelRepository jobRepo,
 ) {
   return glassCounterCard(
-    label: "Basket",
-    count: jobRepo.selectedBasket,
-    highlight: jobRepo.selectedBasket > 0,
+    label: "EcoBag",
+    count: jobRepo.selectedEbag,
+    highlight: jobRepo.selectedEbag > 0,
     onIncrement: () {
-      jobRepo.selectedBasket++;
+      jobRepo.selectedEbag++;
       dialogSetState();
     },
     onDecrement: () {
-      if (jobRepo.selectedBasket > 0) jobRepo.selectedBasket--;
+      if (jobRepo.selectedEbag > 0) jobRepo.selectedEbag--;
       dialogSetState();
     },
   );

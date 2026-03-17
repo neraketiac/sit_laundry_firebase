@@ -45,8 +45,9 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader>
   Widget _fab({
     required String hero,
     required IconData icon,
+    String? label,
     required double bottom,
-    required double left,
+    required double right,
     required VoidCallback onTap,
     required Color backgroundColor,
   }) {
@@ -54,7 +55,7 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader>
       duration: const Duration(milliseconds: 280),
       curve: Curves.easeOutCubic,
       bottom: bottom,
-      left: left,
+      right: right,
       child: AnimatedScale(
         scale: _isOpen ? 1 : 0,
         duration: const Duration(milliseconds: 250),
@@ -62,24 +63,55 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader>
         child: AnimatedOpacity(
           opacity: _isOpen ? 1 : 0,
           duration: const Duration(milliseconds: 200),
-          child: Container(
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: backgroundColor.withOpacity(0.5),
-                  blurRadius: 12,
-                  offset: const Offset(0, 6),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Label (only show if label is provided)
+              if (_isOpen && label != null)
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Text(
+                    label,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
                 ),
-              ],
-            ),
-            child: FloatingActionButton(
-              heroTag: hero,
-              mini: true,
-              backgroundColor: backgroundColor,
-              onPressed: onTap,
-              child: Icon(icon),
-            ),
+              if (label != null) const SizedBox(width: 12),
+              // Button
+              Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: backgroundColor.withOpacity(0.4),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: FloatingActionButton(
+                  heroTag: hero,
+                  mini: true,
+                  backgroundColor: backgroundColor,
+                  onPressed: onTap,
+                  child: Icon(icon, size: 20),
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -89,87 +121,119 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader>
   @override
   Widget build(BuildContext context) {
     const double base = 16;
-    const double step = 60;
+    const double step = 70;
+    const double horizontalStep = 70; // Horizontal spacing between buttons
 
     return Scaffold(
       body: MyMainLaundryBody(_sEmpId),
-      floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       floatingActionButton: SizedBox(
-        width: 300,
-        height: 300,
+        width: 400,
+        height: 450,
         child: Stack(
           clipBehavior: Clip.none,
           children: [
-            /// Items
-            _fab(
-              hero: 'Supplies',
-              icon: Icons.inventory,
-              bottom: base,
-              left: _isOpen ? base + step * 3 : base,
-              onTap: () => showItemsInOut(context),
-              backgroundColor: cAdmin,
-            ),
+            /// Laundry Payment (Top Right)
+            if (_isOpen)
+              _fab(
+                hero: 'Laundry Payment',
+                icon: Icons.payments_outlined,
+                label: 'Laundry Payment',
+                bottom: base + step * 3,
+                right: base,
+                onTap: () {
+                  setState(() => _isOpen = false);
+                  showLaundryPayment(context, jobRepoNonJob);
+                },
+                backgroundColor: Colors.teal,
+              ),
 
-            /// GCash Funds
-            _fab(
-              hero: 'Gcash Funds',
-              icon: Icons.attach_money_sharp,
-              bottom: base,
-              left: _isOpen ? base + step * 2 : base,
-              onTap: () => showGCashOnly(context, jobRepoNonJob),
-              backgroundColor: cAdmin,
-            ),
+            /// Cash In/Out (Middle Right)
+            if (_isOpen)
+              _fab(
+                hero: 'Gcash Funds',
+                icon: Icons.attach_money_sharp,
+                label: 'Cash In/Out',
+                bottom: base + step * 2,
+                right: base,
+                onTap: () {
+                  setState(() => _isOpen = false);
+                  showGCashOnly(context, jobRepoNonJob);
+                },
+                backgroundColor: Colors.green,
+              ),
 
-            /// Laundry Payment
-            _fab(
-              hero: 'Laundry Payment',
-              icon: Icons.payments_outlined,
-              bottom: base,
-              left: _isOpen ? base + step : base,
-              onTap: () => showLaundryPayment(context, jobRepoNonJob),
-              backgroundColor: cAdmin,
-            ),
+            /// Inventory (Bottom Right)
+            if (_isOpen)
+              _fab(
+                hero: 'Supplies',
+                icon: Icons.inventory,
+                label: 'Inventory',
+                bottom: base + step,
+                right: base,
+                onTap: () {
+                  setState(() => _isOpen = false);
+                  showItemsInOut(context);
+                },
+                backgroundColor: Colors.orange,
+              ),
 
-            /// GCash Pending
-            _fab(
-              hero: 'GCash Pending',
-              icon: Icons.g_mobiledata,
-              bottom: _isOpen ? base + step : base,
-              left: _isOpen ? base + step : base,
-              onTap: () => showGCashPending(context),
-              backgroundColor: cShowGCash,
-            ),
+            /// Enter GCash (Bottom Middle - No Label)
+            if (_isOpen)
+              _fab(
+                hero: 'GCash Pending',
+                icon: Icons.g_mobiledata,
+                label: null,
+                bottom: base,
+                right: base + horizontalStep,
+                onTap: () {
+                  setState(() => _isOpen = false);
+                  showGCashPending(context);
+                },
+                backgroundColor: cShowGCash,
+              ),
 
-            /// Jobs On Queue
-            _fab(
-              hero: 'JobsOnQueue',
-              icon: Icons.local_laundry_service,
-              bottom: _isOpen ? base + step : base,
-              left: base,
-              onTap: () => showJobOnQueue(context, jobRepoOnQueue),
-              backgroundColor: cJobsOnQueue,
-            ),
+            /// Enter Laundry (Bottom Left)
+            if (_isOpen)
+              _fab(
+                hero: 'Jobs On Queue',
+                icon: Icons.local_laundry_service,
+                label: 'Enter Laundry/GCash',
+                bottom: base,
+                right: base + horizontalStep * 2,
+                onTap: () {
+                  setState(() => _isOpen = false);
+                  showJobOnQueue(context, jobRepoOnQueue);
+                },
+                backgroundColor: Colors.blueAccent,
+              ),
 
-            /// MAIN FAB (Glass Style)
+            /// MAIN FAB (Always visible)
             Positioned(
               bottom: base,
-              left: base,
+              right: base,
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(30),
                 child: BackdropFilter(
                   filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
                   child: FloatingActionButton(
                     heroTag: 'main',
-                    backgroundColor: Colors.deepPurple,
+                    mini: true,
+                    backgroundColor: _isOpen ? Colors.red : Colors.deepPurple,
                     elevation: 12,
                     onPressed: () {
-                      setState(() => _isOpen = !_isOpen);
+                      if (_isOpen) {
+                        setState(() => _isOpen = false);
+                      } else {
+                        setState(() => _isOpen = true);
+                      }
                     },
                     child: AnimatedRotation(
                       duration: const Duration(milliseconds: 250),
                       turns: _isOpen ? 0.125 : 0,
                       child: Icon(
-                        _isOpen ? Icons.close : Icons.menu,
+                        _isOpen ? Icons.close : Icons.add,
+                        size: 20,
                       ),
                     ),
                   ),

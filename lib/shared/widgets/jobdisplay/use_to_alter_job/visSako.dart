@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:laundry_firebase/features/jobs/repository/jobmodel_repository.dart';
-import 'package:laundry_firebase/shared/widgets/jobdisplay/glassCounterCard.dart';
+import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_display_job/glassCounterCard.dart';
 
 Widget visSako(
   BuildContext context,

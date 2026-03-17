@@ -33,6 +33,24 @@ class DatabaseEmployeeHist {
     }
   }
 
+  Future<QuerySnapshot> getEmployeeHistoryPaginated({DocumentSnapshot? lastDoc}) async {
+    Query query;
+    if (empIdGlobal == 'Ket' || empIdGlobal == 'DonF') {
+      query = _employeeHistRef.orderBy('LogDate', descending: true).limit(50);
+    } else {
+      query = _employeeHistRef
+          .where('EmpId', isEqualTo: empNameToId[empIdGlobal])
+          .orderBy('LogDate', descending: true)
+          .limit(50);
+    }
+    
+    if (lastDoc != null) {
+      query = query.startAfterDocument(lastDoc);
+    }
+    
+    return await query.get();
+  }
+
   Future<bool> addEmployeeHist(EmployeeModel eM) async {
     bool bSuccess = false;
     await _employeeHistRef

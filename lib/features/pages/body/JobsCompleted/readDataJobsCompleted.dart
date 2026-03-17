@@ -10,9 +10,9 @@ import 'package:laundry_firebase/core/services/database_jobs.dart';
 import 'package:laundry_firebase/features/jobs/repository/jobmodel_repository.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
 
-import 'package:laundry_firebase/shared/widgets/jobdisplay/visIconArea.dart';
-import 'package:laundry_firebase/shared/widgets/jobdisplay/visNameArea.dart';
-import 'package:laundry_firebase/shared/widgets/jobdisplay/visPaidUnpaidArea.dart';
+import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_display_job/visIconArea.dart';
+import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_display_job/visNameArea.dart';
+import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_alter_job/visPaidUnpaidArea.dart';
 
 /// STATE
 List<JobModel> sortedJobsCompleted = [];

@@ -8,7 +8,6 @@ import 'package:laundry_firebase/core/utils/sharedMethods.dart';
 import 'package:laundry_firebase/core/services/database_gcash.dart';
 import 'package:laundry_firebase/features/payments/repository/gcash_repository.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
-import 'package:laundry_firebase/core/global/variables_oth.dart';
 import 'package:laundry_firebase/shared/widgets/actions/showUploadedImage.dart';
 
 Widget readDataGCashPending() {
@@ -49,246 +48,260 @@ Widget readDataGCashPending() {
                 child: InkWell(
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 250),
-                    margin: const EdgeInsets.symmetric(vertical: 10),
-                    padding: const EdgeInsets.all(14),
+                    margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
                     decoration: BoxDecoration(
                       color: isSelected
                           ? Colors.deepPurple.shade100
-                          : Colors.deepPurple.shade50,
-                      borderRadius: BorderRadius.circular(18),
+                          : Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: isSelected
+                            ? Colors.deepPurple
+                            : Colors.grey.shade300,
+                        width: isSelected ? 2 : 1,
+                      ),
                       boxShadow: [
-                        if (isSelected)
-                          BoxShadow(
-                            color: Colors.deepPurple,
-                            blurRadius: 12,
-                            offset: const Offset(0, 6),
-                          ),
+                        BoxShadow(
+                          color: isSelected
+                              ? Colors.deepPurple.withOpacity(0.3)
+                              : Colors.black.withOpacity(0.05),
+                          blurRadius: isSelected ? 12 : 4,
+                          offset: Offset(0, isSelected ? 4 : 2),
+                        ),
                       ],
                     ),
-                    child: Row(
-                      children: [
-                        const SizedBox(width: 10),
-                        InkWell(
-                          onTap: () async {
-                            final result = await showDialog<bool>(
-                              context: context,
-                              builder: (context) {
-                                return AlertDialog(
-                                  title: const Text(
-                                    'Comfirmation',
-                                    style: TextStyle(fontSize: 14),
-                                  ),
-                                  content: Text(
-                                    'Select available options.\nTap outside to cancel.',
-                                    style: TextStyle(fontSize: 12),
-                                  ),
-                                  actions: [
-                                    if (gRepo.gCashStatus <= 0.5)
-                                      boxButtonElevated(
-                                        context: context,
-                                        label: 'Delete',
-                                        onPressed: () async {
-                                          await dbGCashPending
-                                              .deleteVoid(gRepo.getModel()!);
-                                          return true;
-                                        },
-                                      ),
-                                    if (isAdmin &&
-                                        gRepo.itemUniqueId ==
-                                            menuOthUniqIdCashOut &&
-                                        gRepo.gCashStatus <= 0.5)
-                                      boxButtonElevated(
-                                        context: context,
-                                        label: 'BigayCashOut',
-                                        onPressed: () async {
-                                          gRepo.remarks = (gRepo.remarks == ''
-                                              ? 'Bigay CashOut'
-                                              : '${gRepo.remarks}-BigayCashOut');
-                                          gRepo.gCashStatus = 0.75;
-                                          await dbGCashPending
-                                              .updateVoid(gRepo.getModel()!);
-                                          return true;
-                                        },
-                                      ),
-                                    if (gRepo.gCashStatus > 0.5)
-                                      boxButtonElevated(
-                                        context: context,
-                                        label: 'Complete',
-                                        onPressed: () async {
-                                          gRepo.gCashStatus = 1.0;
-                                          await moveToNext(gRepo.docId);
-                                          return true;
-                                        },
-                                      ),
-                                  ],
-                                );
-                              },
-                            );
-
-                            if (result == true) {
-                              // USER PRESSED YES
-                              print('User selected YES');
-                            } else {
-                              // USER PRESSED NO or dismissed
-                              print('User selected NO');
-                            }
-                          },
-                          child: Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              SizedBox(
-                                width: 38,
-                                height: 38,
-                                child: CircularProgressIndicator(
-                                  value: gRepo
-                                      .gCashStatus, // added imageUrl check for progress value
-                                  // removed Tween animation value
-                                  strokeWidth: 6,
-                                  // backgroundColor:
-                                  //     backGroundStatusColor(job),
-                                  color: isSelected
-                                      ? Colors.deepPurple
-                                      : Colors.deepPurple.shade300,
-                                ),
-                              ),
-                              AnimatedRotation(
-                                turns: isRunning ? 1 : 0,
-                                duration: const Duration(seconds: 2),
-                                curve: Curves.linear,
-                                child: Icon(
-                                  // statusIcon(job),
-                                  Icons.hourglass_bottom_outlined,
-                                  color: Colors.deepPurple,
-                                  size: 20,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 7),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: Text(
-                                      gRepo.customerNumber,
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.w600,
-                                        color: isSelected
-                                            ? Colors.deepPurple
-                                            : Colors.black,
-                                      ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Status Circle
+                          InkWell(
+                            onTap: () async {
+                              final result = await showDialog<bool>(
+                                context: context,
+                                builder: (context) {
+                                  return AlertDialog(
+                                    title: const Text(
+                                      'Comfirmation',
+                                      style: TextStyle(fontSize: 14),
                                     ),
-                                  ),
-                                  IconButton(
-                                    icon: const Icon(Icons.copy, size: 16),
-                                    padding: EdgeInsets.zero,
-                                    constraints: const BoxConstraints(),
+                                    content: Text(
+                                      'Select available options.\nTap outside to cancel.',
+                                      style: TextStyle(fontSize: 12),
+                                    ),
+                                    actions: [
+                                      if (gRepo.gCashStatus <= 0.5)
+                                        boxButtonElevated(
+                                          context: context,
+                                          label: 'Delete',
+                                          onPressed: () async {
+                                            await dbGCashPending
+                                                .deleteVoid(gRepo.getModel()!);
+                                            return true;
+                                          },
+                                        ),
+                                      if (isAdmin &&
+                                          gRepo.itemUniqueId ==
+                                              menuOthUniqIdCashOut &&
+                                          gRepo.gCashStatus <= 0.5)
+                                        boxButtonElevated(
+                                          context: context,
+                                          label: 'BigayCashOut',
+                                          onPressed: () async {
+                                            gRepo.remarks = (gRepo.remarks == ''
+                                                ? 'Bigay CashOut'
+                                                : '${gRepo.remarks}-BigayCashOut');
+                                            gRepo.gCashStatus = 0.75;
+                                            await dbGCashPending
+                                                .updateVoid(gRepo.getModel()!);
+                                            return true;
+                                          },
+                                        ),
+                                      if (gRepo.gCashStatus > 0.5)
+                                        boxButtonElevated(
+                                          context: context,
+                                          label: 'Complete',
+                                          onPressed: () async {
+                                            gRepo.gCashStatus = 1.0;
+                                            await moveToNext(gRepo.docId);
+                                            return true;
+                                          },
+                                        ),
+                                    ],
+                                  );
+                                },
+                              );
+
+                              if (result == true) {
+                                print('User selected YES');
+                              } else {
+                                print('User selected NO');
+                              }
+                            },
+                            child: Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                SizedBox(
+                                  width: 44,
+                                  height: 44,
+                                  child: CircularProgressIndicator(
+                                    value: gRepo.gCashStatus,
+                                    strokeWidth: 4,
                                     color: isSelected
                                         ? Colors.deepPurple
-                                        : Colors.grey,
-                                    onPressed: () async {
-                                      await Clipboard.setData(
-                                        ClipboardData(
-                                            text: gRepo.customerNumber
-                                                    .replaceAll(
-                                                        RegExp(r'[^0-9]'),
-                                                        '') ??
-                                                ''),
-                                      );
-
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                        const SnackBar(
-                                          content:
-                                              Text('Customer number copied'),
-                                          duration: Duration(milliseconds: 800),
-                                        ),
-                                      );
-                                    },
+                                        : Colors.deepPurple.shade300,
+                                    backgroundColor: Colors.grey.shade200,
                                   ),
-                                ],
-                              ),
-                              const SizedBox(width: 3),
-                              //Item Name
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: Text(
-                                      (gRepo.itemName),
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.w600,
-                                        color: isSelected
-                                            ? Colors.deepPurple
-                                            : Colors.black,
-                                        fontSize: 12,
+                                ),
+                                AnimatedRotation(
+                                  turns: isRunning ? 1 : 0,
+                                  duration: const Duration(seconds: 2),
+                                  curve: Curves.linear,
+                                  child: Icon(
+                                    Icons.hourglass_bottom_outlined,
+                                    color: Colors.deepPurple,
+                                    size: 22,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          // Content
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Phone Number with Copy Button
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        gRepo.customerNumber,
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16,
+                                          color: isSelected
+                                              ? Colors.deepPurple
+                                              : Colors.black87,
+                                        ),
                                       ),
-                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    Material(
+                                      color: Colors.transparent,
+                                      child: InkWell(
+                                        borderRadius: BorderRadius.circular(20),
+                                        onTap: () async {
+                                          await Clipboard.setData(
+                                            ClipboardData(
+                                                text: gRepo.customerNumber
+                                                        .replaceAll(
+                                                            RegExp(r'[^0-9]'),
+                                                            '') ??
+                                                    ''),
+                                          );
+
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            const SnackBar(
+                                              content:
+                                                  Text('Customer number copied'),
+                                              duration: Duration(milliseconds: 800),
+                                            ),
+                                          );
+                                        },
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(4),
+                                          child: Icon(
+                                            Icons.copy,
+                                            size: 18,
+                                            color: isSelected
+                                                ? Colors.deepPurple
+                                                : Colors.grey.shade600,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                                // Item Name Badge
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: Colors.deepPurple.shade50,
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Text(
+                                    gRepo.itemName,
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.deepPurple,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ),
+                                // Customer Name & Remarks
+                                if (gRepo.customerName.isNotEmpty ||
+                                    gRepo.remarks.isNotEmpty) ...[
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    '${gRepo.customerName}${gRepo.customerName.isNotEmpty && gRepo.remarks.isNotEmpty ? ": " : ""}${gRepo.remarks}',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                      color: Colors.grey.shade700,
+                                      fontSize: 12,
                                     ),
                                   ),
                                 ],
-                              ),
-                              if (gRepo.customerName.isNotEmpty ||
-                                  gRepo.remarks.isNotEmpty)
-                                const SizedBox(width: 3),
-                              //Remarks
-                              if (gRepo.customerName.isNotEmpty ||
-                                  gRepo.remarks.isNotEmpty)
-                                Text(
-                                  '${gRepo.customerName}: ${gRepo.remarks}',
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                      color: isSelected
-                                          ? Colors.deepPurple
-                                          : Colors.black,
-                                      fontSize: 10),
-                                ),
-                              const SizedBox(width: 3),
-                              //Date and Time
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: Text(
+                                const SizedBox(height: 8),
+                                // Date and Time
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.access_time,
+                                      size: 14,
+                                      color: Colors.grey.shade600,
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
                                       DateFormat('MM/dd hh:mm a')
                                           .format(gRepo.logDate.toDate()),
                                       style: TextStyle(
-                                        fontWeight: FontWeight.w600,
-                                        color: isSelected
-                                            ? Colors.deepPurple
-                                            : Colors.black,
-                                        fontSize: 10,
+                                        fontWeight: FontWeight.w500,
+                                        color: Colors.grey.shade600,
+                                        fontSize: 11,
                                       ),
-                                      overflow: TextOverflow.ellipsis,
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          // Amount and Image
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Text(
+                                '₱${NumberFormat('#,##0').format(gRepo.customerAmount)}',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 18,
+                                  color: Colors.green.shade700,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              showUploadedImage(
+                                context,
+                                gRepo,
                               ),
                             ],
                           ),
-                        ),
-                        SizedBox(
-                          width: 5,
-                        ),
-                        Column(
-                          children: [
-                            Text(
-                              '₱ ${gRepo.customerAmount}',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.deepPurple,
-                              ),
-                            ),
-                            showUploadedImage(
-                              context,
-                              gRepo,
-                            ),
-                          ],
-                        ),
-                        const SizedBox(width: 20),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),

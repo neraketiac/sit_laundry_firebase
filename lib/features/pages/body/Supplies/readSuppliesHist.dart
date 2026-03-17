@@ -7,210 +7,219 @@ import 'package:laundry_firebase/core/services/database_funds_history.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
 import 'package:laundry_firebase/core/global/variables_supplies.dart';
 
-Widget readDataSuppliesHistory() {
-  bool bHeader = true;
-  Container conDisplaySuppliesHist(
-    BuildContext context,
-    SuppliesModelHist sMH,
-  ) {
-    bool bNegative = (sMH.currentCounter < 0 ? true : false);
-    bool bNegativePCF = (sMH.currentStocks < 0 ? true : false);
+/// STATE
+List<SuppliesModelHist> sortedSuppliesHistory = [];
+DocumentSnapshot? lastSuppliesHistoryDoc;
+bool loadingSuppliesHistory = false;
+bool hasMoreSuppliesHistory = true;
 
-    Container regularContainer() {
-      return Container(
-        height: 22,
-        padding: const EdgeInsets.symmetric(horizontal: 4),
-        decoration: BoxDecoration(
-          color: Colors.grey[400],
-          border: Border(
-            bottom: BorderSide(
-              color: const Color.fromARGB(255, 89, 89, 89),
-              width: 0.6,
-            ),
-          ),
-        ),
-        child: Row(
-          children: [
-            // Time
-            Text(
-              DateFormat('MM/dd hh:mm a').format(sMH.logDate.toDate()),
-              style: TextStyle(
-                fontSize: 9,
-                color: const Color.fromARGB(255, 68, 68, 68),
-              ),
-            ),
-            const SizedBox(width: 4),
+final DatabaseFundsHist dbFundsHist = DatabaseFundsHist();
 
-            // Amount
-            Text(
-              "₱${value.format(sMH.currentCounter)}",
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.w600,
-                color: (bNegative
-                    ? Color.fromARGB(255, 185, 57, 48)
-                    : Color(0xFF0D47A1)),
-              ),
-            ),
-            const SizedBox(width: 4),
+/// LOAD PAGE
+Future<void> loadMoreSuppliesHistory(VoidCallback refresh) async {
+  if (loadingSuppliesHistory || !hasMoreSuppliesHistory) return;
 
-            // Main log text
-            Expanded(
-              child: Text(
-                "${sMH.itemName} ${ifMenuUniqueIsCashIn(sMH) ? 'to' : 'by'} ${sMH.customerName} : ${sMH.remarks}",
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF263238),
-                ),
-              ),
-            ),
+  loadingSuppliesHistory = true;
 
-            //log by
-            Text(
-              sMH.empId,
-              style: TextStyle(
-                  fontSize: 8,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.grey[800]),
-            ),
+  final snapshot = await dbFundsHist.getSuppliesHistoryPaginated(false, lastDoc: lastSuppliesHistoryDoc);
 
-            // Stocks
-            Text(
-              "pCF ₱${value.format(sMH.currentStocks)}",
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.w600,
-                color: (bNegativePCF
-                    ? Color.fromARGB(255, 185, 57, 48)
-                    : Color(0xFF0D47A1)),
-              ),
-            ),
-          ],
-        ),
-      );
-    }
+  if (snapshot.docs.isEmpty) {
+    hasMoreSuppliesHistory = false;
+  } else {
+    final supplies = snapshot.docs.map((doc) {
+      return doc.data() as SuppliesModelHist;
+    }).toList();
 
-    Container fundCheckContainer() {
-      bool bNegative = (sMH.currentCounter < 0 ? true : false);
-      bool bNegativePCF = (sMH.currentStocks < 0 ? true : false);
-      return Container(
-        height: 22,
-        padding: const EdgeInsets.symmetric(horizontal: 4),
-        decoration: BoxDecoration(
-          color: cFundsEOD,
-          border: Border(
-            bottom: BorderSide(
-              color: const Color.fromARGB(255, 89, 89, 89),
-              width: 0.6,
-            ),
-          ),
-        ),
-        child: Row(
-          children: [
-            // Time
-            Text(
-              DateFormat('MM/dd hh:mm a').format(sMH.logDate.toDate()),
-              style: TextStyle(
-                fontSize: 9,
-                color: const Color.fromARGB(255, 68, 68, 68),
-              ),
-            ),
-            const SizedBox(width: 4),
-
-            // Amount
-            Text(
-              "₱${value.format(sMH.currentCounter)}",
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.w600,
-                color: (bNegative
-                    ? Color.fromARGB(255, 185, 57, 48)
-                    : Color(0xFF0D47A1)),
-              ),
-            ),
-            const SizedBox(width: 4),
-
-            // Main log text
-            Expanded(
-              child: Text(
-                "${sMH.itemName} by ${sMH.empId} : ${sMH.remarks}",
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF263238),
-                ),
-              ),
-            ),
-
-            // Stocks
-            Text(
-              " pCF ₱${value.format(sMH.currentStocks)}",
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.w600,
-                color: (bNegativePCF
-                    ? Color.fromARGB(255, 185, 57, 48)
-                    : Color(0xFF0D47A1)),
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    return (ifMenuUniqueIsEOD(sMH) ? fundCheckContainer() : regularContainer());
+    sortedSuppliesHistory.addAll(supplies);
+    lastSuppliesHistoryDoc = snapshot.docs.last;
   }
 
-  DatabaseFundsHist dbFundsHist = DatabaseFundsHist();
-  //read
-  return StreamBuilder<QuerySnapshot>(
-    stream: dbFundsHist.getSuppliesHistory(false),
-    builder: (context, snapshot) {
-      List listSMH = snapshot.data?.docs ?? [];
-      bHeader = true;
-      List<TableRow> rowDatas = [];
-      if (listSMH.isNotEmpty) {
-        //header
-        if (bHeader) {
-          var rowData = TableRow(
-              decoration: const BoxDecoration(color: Colors.grey),
-              children: [
-                // AutoCompleteCustomer(),
-                const Text(
-                  "Funds History",
-                  style: TextStyle(fontSize: 10),
-                ),
-              ]);
-          rowDatas.add(rowData);
+  loadingSuppliesHistory = false;
+  refresh();
+}
 
-          bHeader = false;
-        }
+Widget _buildSupplyRow(SuppliesModelHist sMH) {
+  bool bNegative = (sMH.currentCounter < 0 ? true : false);
+  bool bNegativePCF = (sMH.currentStocks < 0 ? true : false);
 
-        for (var sMHData in listSMH) {
-          SuppliesModelHist sMH = sMHData.data();
-          final rowData = TableRow(
-              decoration: BoxDecoration(color: Colors.black),
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(2.0),
-                  child: Center(
-                    child: GestureDetector(
-                      onTap: () {},
-                      child: conDisplaySuppliesHist(context, sMH),
-                    ),
-                  ),
-                )
-              ]);
+  if (ifMenuUniqueIsEOD(sMH)) {
+    return Container(
+      height: 22,
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      decoration: BoxDecoration(
+        color: cFundsEOD,
+        border: Border(
+          bottom: BorderSide(
+            color: const Color.fromARGB(255, 89, 89, 89),
+            width: 0.6,
+          ),
+        ),
+      ),
+      child: Row(
+        children: [
+          Text(
+            DateFormat('MM/dd hh:mm a').format(sMH.logDate.toDate()),
+            style: TextStyle(
+              fontSize: 9,
+              color: const Color.fromARGB(255, 68, 68, 68),
+            ),
+          ),
+          const SizedBox(width: 4),
+          Text(
+            "₱${value.format(sMH.currentCounter)}",
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+              color: (bNegative
+                  ? Color.fromARGB(255, 185, 57, 48)
+                  : Color(0xFF0D47A1)),
+            ),
+          ),
+          const SizedBox(width: 4),
+          Expanded(
+            child: Text(
+              "${sMH.itemName} by ${sMH.empId} : ${sMH.remarks}",
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF263238),
+              ),
+            ),
+          ),
+          Text(
+            " pCF ₱${value.format(sMH.currentStocks)}",
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+              color: (bNegativePCF
+                  ? Color.fromARGB(255, 185, 57, 48)
+                  : Color(0xFF0D47A1)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
-          rowDatas.add(rowData);
-        }
+  return Container(
+    height: 22,
+    padding: const EdgeInsets.symmetric(horizontal: 4),
+    decoration: BoxDecoration(
+      color: Colors.grey[400],
+      border: Border(
+        bottom: BorderSide(
+          color: const Color.fromARGB(255, 89, 89, 89),
+          width: 0.6,
+        ),
+      ),
+    ),
+    child: Row(
+      children: [
+        Text(
+          DateFormat('MM/dd hh:mm a').format(sMH.logDate.toDate()),
+          style: TextStyle(
+            fontSize: 9,
+            color: const Color.fromARGB(255, 68, 68, 68),
+          ),
+        ),
+        const SizedBox(width: 4),
+        Text(
+          "₱${value.format(sMH.currentCounter)}",
+          style: TextStyle(
+            fontSize: 10,
+            fontWeight: FontWeight.w600,
+            color: (bNegative
+                ? Color.fromARGB(255, 185, 57, 48)
+                : Color(0xFF0D47A1)),
+          ),
+        ),
+        const SizedBox(width: 4),
+        Expanded(
+          child: Text(
+            "${sMH.itemName} ${ifMenuUniqueIsCashIn(sMH) ? 'to' : 'by'} ${sMH.customerName} : ${sMH.remarks}",
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF263238),
+            ),
+          ),
+        ),
+        Text(
+          sMH.empId,
+          style: TextStyle(
+              fontSize: 8,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey[800]),
+        ),
+        Text(
+          "pCF ₱${value.format(sMH.currentStocks)}",
+          style: TextStyle(
+            fontSize: 10,
+            fontWeight: FontWeight.w600,
+            color: (bNegativePCF
+                ? Color.fromARGB(255, 185, 57, 48)
+                : Color(0xFF0D47A1)),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+Widget readDataSuppliesHistory() {
+  return StatefulBuilder(
+    builder: (context, setState) {
+      /// load first page
+      if (sortedSuppliesHistory.isEmpty && !loadingSuppliesHistory) {
+        loadMoreSuppliesHistory(() => setState(() {}));
       }
 
-      return Table(
-        children: rowDatas,
+      if (sortedSuppliesHistory.isEmpty) {
+        return const Center(child: CircularProgressIndicator());
+      }
+
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text("📊💰 FUNDS HISTORY", style: TextStyle(color: Colors.white)),
+            ],
+          ),
+          Flexible(
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: sortedSuppliesHistory.length + (hasMoreSuppliesHistory ? 1 : 0),
+              itemBuilder: (context, index) {
+                /// pagination trigger
+                if (index == sortedSuppliesHistory.length - 1) {
+                  loadMoreSuppliesHistory(() => setState(() {}));
+                }
+
+                if (index == sortedSuppliesHistory.length) {
+                  return const Padding(
+                    padding: EdgeInsets.all(8.0),
+                    child: CircularProgressIndicator(),
+                  );
+                }
+
+                final sMH = sortedSuppliesHistory[index];
+                return SizedBox(
+                  height: 24,
+                  child: _buildSupplyRow(sMH),
+                );
+              },
+            ),
+          ),
+          if (loadingSuppliesHistory)
+            const Padding(
+              padding: EdgeInsets.all(10),
+              child: CircularProgressIndicator(),
+            ),
+        ],
       );
     },
   );

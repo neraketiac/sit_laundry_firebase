@@ -290,7 +290,6 @@ class _EnterLoyaltyCodeState extends State<EnterLoyaltyCode> {
 
   void _queuePage(BuildContext context, String empid) {
     Navigator.of(context)
-        // .push(MaterialPageRoute(builder: (context) => MyQueue(empid)));
         .push(MaterialPageRoute(
             builder: (context) => MyMainLaundryHeader(empid)));
   }

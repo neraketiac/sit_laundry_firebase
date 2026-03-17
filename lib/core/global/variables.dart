@@ -118,9 +118,9 @@ void putEntries() {
 
   listSuppItems.clear();
   listSuppItemsAll.clear();
-  
+
   addListSuppItems();
-  
+
   listSuppItems.addAll(listDetItemsFB);
   listSuppItemsAll.addAll(listDetItemsFB);
   listSuppItems.addAll(listFabItemsFB);
@@ -178,7 +178,7 @@ final Color cWashing =
 
 final Color cAdmin = Colors.blueGrey;
 final Color cShowGCash = Colors.lightBlueAccent;
-final Color cFundsInFundsOut = Colors.amberAccent;
+final Color cFundsInFundsOut = const Color.fromARGB(255, 133, 107, 14);
 final Color cJobsOnQueue = Colors.blue;
 final Color cEmployeeMaintenance = Colors.deepOrangeAccent;
 

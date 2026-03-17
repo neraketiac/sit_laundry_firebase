@@ -1,27 +1,27 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:laundry_firebase/core/utils/sharedMethods.dart';
-import 'package:laundry_firebase/shared/widgets/jobdisplay/visAddBle.dart';
-import 'package:laundry_firebase/shared/widgets/jobdisplay/visPaidUnPaid.dart';
-import 'package:laundry_firebase/shared/widgets/jobdisplay/conRemarks.dart';
+import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_alter_job/visAddBle.dart';
+import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_alter_job/visPaidUnPaid.dart';
+import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_alter_job/conRemarks.dart';
 import 'package:laundry_firebase/core/utils/sharedmethodsdatabase.dart';
 import 'package:laundry_firebase/features/jobs/repository/jobmodel_repository.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
-import 'package:laundry_firebase/shared/widgets/jobdisplay/visAddDry.dart';
-import 'package:laundry_firebase/shared/widgets/jobdisplay/visAddFab.dart';
-import 'package:laundry_firebase/shared/widgets/jobdisplay/visAddSpin.dart';
-import 'package:laundry_firebase/shared/widgets/jobdisplay/visAddWash.dart';
-import 'package:laundry_firebase/shared/widgets/jobdisplay/visAmountOthersOnly.dart';
-import 'package:laundry_firebase/shared/widgets/jobdisplay/visAmountRegSSPerKg.dart';
-import 'package:laundry_firebase/shared/widgets/jobdisplay/visAmountRegSSPerLoad.dart';
-import 'package:laundry_firebase/shared/widgets/jobdisplay/visBasket.dart';
-import 'package:laundry_firebase/shared/widgets/jobdisplay/visCustomerNameNoAutoComplete.dart';
-import 'package:laundry_firebase/shared/widgets/jobdisplay/visEcoBag.dart';
-import 'package:laundry_firebase/shared/widgets/jobdisplay/visFold.dart';
-import 'package:laundry_firebase/shared/widgets/jobdisplay/visMix.dart';
-import 'package:laundry_firebase/shared/widgets/jobdisplay/visRiderPickup.dart';
-import 'package:laundry_firebase/shared/widgets/jobdisplay/visSako.dart';
-import 'package:laundry_firebase/shared/widgets/jobdisplay/visSelectPackage.dart';
+import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_alter_job/visAddDry.dart';
+import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_alter_job/visAddFab.dart';
+import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_alter_job/visAddSpin.dart';
+import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_alter_job/visAddWash.dart';
+import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_display_job/visAmountOthersOnly.dart';
+import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_display_job/visAmountRegSSPerKg.dart';
+import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_display_job/visAmountRegSSPerLoad.dart';
+import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_alter_job/visBasket.dart';
+import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_display_job/visCustomerNameNoAutoComplete.dart';
+import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_alter_job/visEcoBag.dart';
+import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_alter_job/visFold.dart';
+import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_alter_job/visMix.dart';
+import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_alter_job/visRiderPickup.dart';
+import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_alter_job/visSako.dart';
+import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_alter_job/visSelectPackage.dart';
 
 void showUpdateDatesEachJobs(BuildContext context, JobModelRepository jobRepo) {
   Future<void> saveButtonSetRepository() async {

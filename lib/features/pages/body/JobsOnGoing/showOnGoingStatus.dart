@@ -7,8 +7,8 @@ import 'package:laundry_firebase/core/utils/sharedmethodsdatabase.dart';
 import 'package:laundry_firebase/core/services/database_jobs.dart';
 import 'package:laundry_firebase/features/jobs/repository/jobmodel_repository.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
-import 'package:laundry_firebase/shared/widgets/jobdisplay/visCustomerNameNoAutoComplete.dart';
-import 'package:laundry_firebase/shared/widgets/jobdisplay/visOnGoingStatus.dart';
+import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_display_job/visCustomerNameNoAutoComplete.dart';
+import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_alter_job/visOnGoingStatus.dart';
 
 void showOnGoingStatus(BuildContext context, JobModelRepository jobRepo) {
   Future<void> saveButtonSetRepository() async {

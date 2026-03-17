@@ -7,7 +7,7 @@ import 'package:laundry_firebase/core/utils/sharedMethods.dart';
 import 'package:laundry_firebase/features/items/models/suppliesmodelhist.dart';
 import 'package:laundry_firebase/features/jobs/repository/jobmodel_repository.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
-import 'package:laundry_firebase/shared/widgets/jobdisplay/visItems.dart';
+import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_alter_job/visItems.dart';
 
 void showItemsInOut(BuildContext context) {
   JobModelRepository jobRepo = JobModelRepository();

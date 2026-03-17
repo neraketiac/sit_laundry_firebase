@@ -60,8 +60,8 @@ Widget showUploadedImage(
               child: imageUrl.isNotEmpty
                   ? Image.network(
                       imageUrl,
-                      width: 120,
-                      height: 120,
+                      width: 40,
+                      height: 40,
                       fit: BoxFit.cover,
                       errorBuilder: (_, __, ___) =>
                           uploadPlaceholder(fallbackIcon),
@@ -72,8 +72,8 @@ Widget showUploadedImage(
             /// 📷 Overlay when image exists
             if (imageUrl.isNotEmpty)
               Positioned(
-                bottom: 6,
-                right: 6,
+                bottom: 2,
+                right: 2,
                 child: Container(
                   padding: const EdgeInsets.all(1),
                   decoration: BoxDecoration(
@@ -82,7 +82,7 @@ Widget showUploadedImage(
                   ),
                   child: const Icon(
                     Icons.visibility,
-                    size: 14,
+                    size: 10,
                     color: Colors.white,
                   ),
                 ),

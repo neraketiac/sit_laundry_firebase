@@ -64,7 +64,7 @@ Widget customerNumber(
                 const Padding(
                   padding: EdgeInsets.only(right: 8),
                   child: Text(
-                    "+63",
+                    "",
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,

@@ -40,6 +40,16 @@ class DatabaseFundsHist {
     //return _fundsRef.snapshots();
   }
 
+  Future<QuerySnapshot> getSuppliesHistoryPaginated(bool bSel, {DocumentSnapshot? lastDoc}) async {
+    Query query = _fundsRef.orderBy('LogDate', descending: true);
+    
+    if (lastDoc != null) {
+      query = query.startAfterDocument(lastDoc);
+    }
+    
+    return query.limit(50).get();
+  }
+
   Future<bool> addSuppliesHist(SuppliesModelHist sMH) async {
     bool bSuccess = false;
     await _fundsRef

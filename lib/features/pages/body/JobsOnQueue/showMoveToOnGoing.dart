@@ -6,7 +6,7 @@ import 'package:laundry_firebase/features/jobs/repository/jobmodel_repository.da
 
 import 'dart:ui';
 
-import 'package:laundry_firebase/shared/widgets/jobdisplay/visCustomerNameNoAutoComplete.dart';
+import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_display_job/visCustomerNameNoAutoComplete.dart';
 
 void showMoveToOnGoing(BuildContext context, JobModelRepository jobRepo) {
   //syncRepoToSelectedSmall(jobRepo);
