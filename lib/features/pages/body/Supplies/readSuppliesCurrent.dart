@@ -1,11 +1,11 @@
 //########################### Supplies Current ###############################
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:laundry_firebase/core/global/variables_all_codes.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
 import 'package:laundry_firebase/core/utils/sharedMethods.dart';
 import 'package:laundry_firebase/features/items/models/suppliesmodelhist.dart';
 import 'package:laundry_firebase/core/services/database_supplies_current.dart';
-
 
 class ReadDataSuppliesCurrent extends StatefulWidget {
   const ReadDataSuppliesCurrent({super.key});
@@ -51,18 +51,19 @@ class _ReadDataSuppliesCurrentState extends State<ReadDataSuppliesCurrent> {
               if (snapshot.hasError) {
                 return Center(child: Text('Error: ${snapshot.error}'));
               }
-              
+
               if (!snapshot.hasData) {
                 return const Center(child: CircularProgressIndicator());
               }
-              
+
               final docs = snapshot.data!.docs;
-              final supplies = docs.map((doc) => doc.data() as SuppliesModelHist).toList();
-              
+              final supplies =
+                  docs.map((doc) => doc.data() as SuppliesModelHist).toList();
+
               if (supplies.isEmpty) {
                 return const Center(child: Text('No supplies data'));
               }
-              
+
               return ListView.builder(
                 controller: _scrollController,
                 physics: const AlwaysScrollableScrollPhysics(),
@@ -80,15 +81,17 @@ class _ReadDataSuppliesCurrentState extends State<ReadDataSuppliesCurrent> {
                     height: 24,
                     child: Container(
                       color: isAlert ? cRiderPickup : cWaiting,
-                      margin: const EdgeInsets.symmetric(vertical: 1, horizontal: 2),
+                      margin: const EdgeInsets.symmetric(
+                          vertical: 1, horizontal: 2),
                       child: Padding(
                         padding: const EdgeInsets.all(2.0),
                         child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Expanded(
+                              flex: 4,
                               child: Text(
-                                nameForSuppliesCurrent(sMH.itemId, sMH.itemUniqueId),
+                                nameForSuppliesCurrent(
+                                    sMH.itemId, sMH.itemUniqueId),
                                 style: const TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.bold,
@@ -96,22 +99,62 @@ class _ReadDataSuppliesCurrentState extends State<ReadDataSuppliesCurrent> {
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
-                            Text(
-                              "(${getItemNameStocksType(sMH.itemId, sMH.itemUniqueId)})",
-                              style: const TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
+                            if (getItemNameStocksType(
+                                    sMH.itemId, sMH.itemUniqueId) !=
+                                "php")
+                              Expanded(
+                                flex: 1,
+                                child: Text(
+                                  "₱${getItemPrice(sMH.itemId, sMH.itemUniqueId)}",
+                                  style: const TextStyle(
+                                    fontSize: 10,
+                                    color: Color(0xFF0D47A1),
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            Expanded(
+                              flex: 1,
+                              child: Text(
+                                DateFormat('M/dd').format(sMH.logDate.toDate()),
+                                style: const TextStyle(
+                                  fontSize: 10,
+                                  color: Color(0xFF0D47A1),
+                                  fontWeight: FontWeight.w600,
+                                ),
+                                textAlign: TextAlign.center,
                               ),
                             ),
-                            const SizedBox(width: 8),
-                            Text(
-                              getItemNameStocksType(sMH.itemId, sMH.itemUniqueId) ==
-                                      "php"
-                                  ? "₱ ${value.format(sMH.currentStocks)}"
-                                  : value.format(sMH.currentStocks),
-                              style: const TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
+                            if (getItemNameStocksType(
+                                    sMH.itemId, sMH.itemUniqueId) !=
+                                "php")
+                              Expanded(
+                                flex: 1,
+                                child: Text(
+                                  getItemNameStocksType(
+                                      sMH.itemId, sMH.itemUniqueId),
+                                  style: const TextStyle(
+                                    fontSize: 10,
+                                    color: Color(0xFF0D47A1),
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            Expanded(
+                              flex: 2,
+                              child: Text(
+                                getItemNameStocksType(
+                                            sMH.itemId, sMH.itemUniqueId) ==
+                                        "php"
+                                    ? "₱${value.format(sMH.currentStocks)}"
+                                    : value.format(sMH.currentStocks),
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                textAlign: TextAlign.right,
                               ),
                             ),
                           ],

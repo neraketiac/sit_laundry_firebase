@@ -409,7 +409,7 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                   ),
                   animatedPanel(
                       visible: empSetup.showFunds,
-                      width: 250,
+                      width: 400,
                       child: readDataSuppliesCurrent(),
                       color: cFundsInFundsOut),
                   animatedPanel(

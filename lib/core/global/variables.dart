@@ -231,6 +231,17 @@ int getItemNameStocksAlert(int itemId, int itemUniqueId) {
   return thisReturn;
 }
 
+int getItemPrice(int itemId, int itemUniqueId) {
+  int thisReturn = 0;
+  for (var thisData in listSuppItemsAll) {
+    if (thisData.itemId == itemId && thisData.itemUniqueId == itemUniqueId) {
+      thisReturn = thisData.itemPrice;
+    }
+  }
+
+  return thisReturn;
+}
+
 void allCardsVar(BuildContext context) {
   Navigator.pop(context);
   Navigator.of(context)

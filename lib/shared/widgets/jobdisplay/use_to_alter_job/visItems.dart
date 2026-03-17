@@ -216,7 +216,7 @@ Widget visItemsOnly(
                         keyboardType: TextInputType.number,
                         textAlign: TextAlign.center,
                         inputFormatters: [
-                          FilteringTextInputFormatter.digitsOnly
+                          FilteringTextInputFormatter.allow(RegExp(r'^-?\d*'))
                         ],
                         style: const TextStyle(color: Colors.white),
                         decoration: InputDecoration(
