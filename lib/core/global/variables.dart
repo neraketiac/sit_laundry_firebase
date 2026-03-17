@@ -63,7 +63,7 @@ bool rememberMe = true;
 TextEditingController memberController = TextEditingController();
 final value = NumberFormat("##,##0", "en_US");
 bool isAdmin = false;
-late int alwaysTheLatestFunds;
+int alwaysTheLatestFunds = 0;
 
 final GCashModel finalGCashModel = GCashModel(
     docId: "",

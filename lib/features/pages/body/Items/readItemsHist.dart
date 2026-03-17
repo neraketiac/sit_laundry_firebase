@@ -1,10 +1,11 @@
 //########################### Supplies History ###############################
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:laundry_firebase/core/global/variables_supplies.dart';
 import 'package:laundry_firebase/core/services/database_items_history.dart';
 import 'package:laundry_firebase/features/items/models/suppliesmodelhist.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
-import 'package:laundry_firebase/core/global/variables_supplies.dart';
+
 
 class ReadDataItemsHistoryWidget extends StatefulWidget {
   const ReadDataItemsHistoryWidget({super.key});
@@ -213,10 +214,11 @@ class _ReadDataItemsHistoryWidgetState
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Row(
+        Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text("📑✨ ITEMS HISTORY", style: TextStyle(color: Colors.white)),
+            Text("📑✨ ITEMS HISTORY",
+                style: TextStyle(color: Colors.white)),
           ],
         ),
         Flexible(
@@ -227,6 +229,10 @@ class _ReadDataItemsHistoryWidgetState
                   shrinkWrap: true,
                   itemCount: displayedItems.length + (hasMore ? 1 : 0),
                   itemBuilder: (context, index) {
+                    if (index == displayedItems.length - 1) {
+                      _loadMore();
+                    }
+
                     if (index == displayedItems.length) {
                       return const Padding(
                         padding: EdgeInsets.all(8.0),

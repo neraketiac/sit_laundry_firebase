@@ -1,10 +1,11 @@
 //########################### Supplies Current ###############################
 import 'package:flutter/material.dart';
 import 'package:laundry_firebase/core/global/variables_all_codes.dart';
+import 'package:laundry_firebase/core/global/variables.dart';
 import 'package:laundry_firebase/core/utils/sharedMethods.dart';
 import 'package:laundry_firebase/features/items/models/suppliesmodelhist.dart';
 import 'package:laundry_firebase/core/services/database_supplies_current.dart';
-import 'package:laundry_firebase/core/global/variables.dart';
+
 
 class ReadDataSuppliesCurrent extends StatefulWidget {
   const ReadDataSuppliesCurrent({super.key});
@@ -79,7 +80,7 @@ class _ReadDataSuppliesCurrentState extends State<ReadDataSuppliesCurrent> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Row(
+        Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text("📦✨ SUPPLIES CURRENT", style: TextStyle(color: Colors.white)),
@@ -93,6 +94,10 @@ class _ReadDataSuppliesCurrentState extends State<ReadDataSuppliesCurrent> {
                   shrinkWrap: true,
                   itemCount: displayedSupplies.length + (hasMore ? 1 : 0),
                   itemBuilder: (context, index) {
+                    if (index == displayedSupplies.length - 1) {
+                      _loadMore();
+                    }
+
                     if (index == displayedSupplies.length) {
                       return const Padding(
                         padding: EdgeInsets.all(8.0),

@@ -1,6 +1,7 @@
 //########################### Supplies History ###############################
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+
 import 'package:intl/intl.dart';
 import 'package:laundry_firebase/features/items/models/suppliesmodelhist.dart';
 import 'package:laundry_firebase/core/services/database_funds_history.dart';
@@ -183,7 +184,7 @@ Widget readDataSuppliesHistory() {
       return Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Row(
+          Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text("📊💰 FUNDS HISTORY", style: TextStyle(color: Colors.white)),

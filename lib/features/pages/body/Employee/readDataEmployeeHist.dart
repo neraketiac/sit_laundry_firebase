@@ -2,9 +2,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:laundry_firebase/core/global/variables.dart';
 import 'package:laundry_firebase/features/employees/models/employeemodel.dart';
 import 'package:laundry_firebase/core/services/database_employee_hist.dart';
-import 'package:laundry_firebase/core/global/variables.dart';
+
 
 /// STATE
 List<EmployeeModel> sortedEmployeeHistory = [];
@@ -20,7 +21,8 @@ Future<void> loadMoreEmployeeHistory(VoidCallback refresh) async {
 
   loadingEmployeeHistory = true;
 
-  final snapshot = await dbEmployeeHist.getEmployeeHistoryPaginated(lastDoc: lastEmployeeHistoryDoc);
+  final snapshot = await dbEmployeeHist.getEmployeeHistoryPaginated(
+      lastDoc: lastEmployeeHistoryDoc);
 
   if (snapshot.docs.isEmpty) {
     hasMoreEmployeeHistory = false;
@@ -121,16 +123,18 @@ Widget readDataEmployeeHist() {
       return Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Row(
+          Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text("👤📊 EMPLOYEE HISTORY", style: TextStyle(color: Colors.white)),
+              Text("👤📊 EMPLOYEE HISTORY",
+                  style: TextStyle(color: Colors.white)),
             ],
           ),
           Flexible(
             child: ListView.builder(
               shrinkWrap: true,
-              itemCount: sortedEmployeeHistory.length + (hasMoreEmployeeHistory ? 1 : 0),
+              itemCount: sortedEmployeeHistory.length +
+                  (hasMoreEmployeeHistory ? 1 : 0),
               itemBuilder: (context, index) {
                 /// pagination trigger
                 if (index == sortedEmployeeHistory.length - 1) {
