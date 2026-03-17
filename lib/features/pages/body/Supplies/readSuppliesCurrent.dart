@@ -18,61 +18,18 @@ class ReadDataSuppliesCurrent extends StatefulWidget {
 class _ReadDataSuppliesCurrentState extends State<ReadDataSuppliesCurrent> {
   late ScrollController _scrollController;
   late DatabaseSuppliesCurrent databaseSuppliesCurrent;
-  List<SuppliesModelHist> allSupplies = [];
-  List<SuppliesModelHist> displayedSupplies = [];
-  int itemsPerPage = 50;
-  bool isLoading = false;
-  bool hasMore = true;
 
   @override
   void initState() {
     super.initState();
     _scrollController = ScrollController();
-    _scrollController.addListener(_onScroll);
     databaseSuppliesCurrent = DatabaseSuppliesCurrent();
-    _loadInitialData();
   }
 
   @override
   void dispose() {
     _scrollController.dispose();
     super.dispose();
-  }
-
-  Future<void> _loadInitialData() async {
-    final snapshot = await databaseSuppliesCurrent.getSuppliesCurrent().first;
-    final docs = snapshot.docs;
-
-    setState(() {
-      allSupplies = docs.map((doc) => doc.data() as SuppliesModelHist).toList();
-      displayedSupplies = allSupplies.take(itemsPerPage).toList();
-      hasMore = allSupplies.length > itemsPerPage;
-    });
-  }
-
-  void _onScroll() {
-    if (_scrollController.position.pixels ==
-        _scrollController.position.maxScrollExtent) {
-      _loadMore();
-    }
-  }
-
-  void _loadMore() {
-    if (isLoading || !hasMore) return;
-
-    setState(() {
-      isLoading = true;
-    });
-
-    final currentLength = displayedSupplies.length;
-    final nextBatch =
-        allSupplies.skip(currentLength).take(itemsPerPage).toList();
-
-    setState(() {
-      displayedSupplies.addAll(nextBatch);
-      hasMore = displayedSupplies.length < allSupplies.length;
-      isLoading = false;
-    });
   }
 
   @override
@@ -86,78 +43,86 @@ class _ReadDataSuppliesCurrentState extends State<ReadDataSuppliesCurrent> {
             Text("📦✨ SUPPLIES CURRENT", style: TextStyle(color: Colors.white)),
           ],
         ),
-        Flexible(
-          child: displayedSupplies.isEmpty
-              ? const Center(child: CircularProgressIndicator())
-              : ListView.builder(
-                  controller: _scrollController,
-                  shrinkWrap: true,
-                  itemCount: displayedSupplies.length + (hasMore ? 1 : 0),
-                  itemBuilder: (context, index) {
-                    if (index == displayedSupplies.length - 1) {
-                      _loadMore();
-                    }
+        SizedBox(
+          height: MediaQuery.of(context).size.height * 0.9,
+          child: StreamBuilder(
+            stream: databaseSuppliesCurrent.getSuppliesCurrent(),
+            builder: (context, snapshot) {
+              if (snapshot.hasError) {
+                return Center(child: Text('Error: ${snapshot.error}'));
+              }
+              
+              if (!snapshot.hasData) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              
+              final docs = snapshot.data!.docs;
+              final supplies = docs.map((doc) => doc.data() as SuppliesModelHist).toList();
+              
+              if (supplies.isEmpty) {
+                return const Center(child: Text('No supplies data'));
+              }
+              
+              return ListView.builder(
+                controller: _scrollController,
+                physics: const AlwaysScrollableScrollPhysics(),
+                itemCount: supplies.length,
+                itemBuilder: (context, index) {
+                  final sMH = supplies[index];
+                  if (sMH.itemId == menuOthCashInOutFunds) {
+                    alwaysTheLatestFunds = sMH.currentStocks;
+                  }
 
-                    if (index == displayedSupplies.length) {
-                      return const Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: CircularProgressIndicator(),
-                      );
-                    }
+                  final isAlert = sMH.currentStocks <=
+                      getItemNameStocksAlert(sMH.itemId, sMH.itemUniqueId);
 
-                    final sMH = displayedSupplies[index];
-                    if (sMH.itemId == menuOthCashInOutFunds) {
-                      alwaysTheLatestFunds = sMH.currentStocks;
-                    }
-
-                    final isAlert = sMH.currentStocks <=
-                        getItemNameStocksAlert(sMH.itemId, sMH.itemUniqueId);
-
-                    return SizedBox(
-                      height: 24,
-                      child: Container(
-                        color: isAlert ? cRiderPickup : cWaiting,
-                        margin: const EdgeInsets.symmetric(vertical: 1, horizontal: 2),
-                        child: Padding(
-                          padding: const EdgeInsets.all(2.0),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  nameForSuppliesCurrent(sMH.itemId, sMH.itemUniqueId),
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                              Text(
-                                "(${getItemNameStocksType(sMH.itemId, sMH.itemUniqueId)})",
+                  return SizedBox(
+                    height: 24,
+                    child: Container(
+                      color: isAlert ? cRiderPickup : cWaiting,
+                      margin: const EdgeInsets.symmetric(vertical: 1, horizontal: 2),
+                      child: Padding(
+                        padding: const EdgeInsets.all(2.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                nameForSuppliesCurrent(sMH.itemId, sMH.itemUniqueId),
                                 style: const TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.bold,
                                 ),
+                                overflow: TextOverflow.ellipsis,
                               ),
-                              const SizedBox(width: 8),
-                              Text(
-                                getItemNameStocksType(sMH.itemId, sMH.itemUniqueId) ==
-                                        "php"
-                                    ? "₱ ${value.format(sMH.currentStocks)}"
-                                    : value.format(sMH.currentStocks),
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                            ),
+                            Text(
+                              "(${getItemNameStocksType(sMH.itemId, sMH.itemUniqueId)})",
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
                               ),
-                            ],
-                          ),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              getItemNameStocksType(sMH.itemId, sMH.itemUniqueId) ==
+                                      "php"
+                                  ? "₱ ${value.format(sMH.currentStocks)}"
+                                  : value.format(sMH.currentStocks),
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                    );
-                  },
-                ),
+                    ),
+                  );
+                },
+              );
+            },
+          ),
         ),
       ],
     );

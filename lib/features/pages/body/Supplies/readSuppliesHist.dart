@@ -1,5 +1,4 @@
 //########################### Supplies History ###############################
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 import 'package:intl/intl.dart';
@@ -8,36 +7,7 @@ import 'package:laundry_firebase/core/services/database_funds_history.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
 import 'package:laundry_firebase/core/global/variables_supplies.dart';
 
-/// STATE
-List<SuppliesModelHist> sortedSuppliesHistory = [];
-DocumentSnapshot? lastSuppliesHistoryDoc;
-bool loadingSuppliesHistory = false;
-bool hasMoreSuppliesHistory = true;
-
 final DatabaseFundsHist dbFundsHist = DatabaseFundsHist();
-
-/// LOAD PAGE
-Future<void> loadMoreSuppliesHistory(VoidCallback refresh) async {
-  if (loadingSuppliesHistory || !hasMoreSuppliesHistory) return;
-
-  loadingSuppliesHistory = true;
-
-  final snapshot = await dbFundsHist.getSuppliesHistoryPaginated(false, lastDoc: lastSuppliesHistoryDoc);
-
-  if (snapshot.docs.isEmpty) {
-    hasMoreSuppliesHistory = false;
-  } else {
-    final supplies = snapshot.docs.map((doc) {
-      return doc.data() as SuppliesModelHist;
-    }).toList();
-
-    sortedSuppliesHistory.addAll(supplies);
-    lastSuppliesHistoryDoc = snapshot.docs.last;
-  }
-
-  loadingSuppliesHistory = false;
-  refresh();
-}
 
 Widget _buildSupplyRow(SuppliesModelHist sMH) {
   bool bNegative = (sMH.currentCounter < 0 ? true : false);
@@ -170,17 +140,8 @@ Widget _buildSupplyRow(SuppliesModelHist sMH) {
 }
 
 Widget readDataSuppliesHistory() {
-  return StatefulBuilder(
-    builder: (context, setState) {
-      /// load first page
-      if (sortedSuppliesHistory.isEmpty && !loadingSuppliesHistory) {
-        loadMoreSuppliesHistory(() => setState(() {}));
-      }
-
-      if (sortedSuppliesHistory.isEmpty) {
-        return const Center(child: CircularProgressIndicator());
-      }
-
+  return Builder(
+    builder: (context) {
       return Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -190,36 +151,41 @@ Widget readDataSuppliesHistory() {
               Text("📊💰 FUNDS HISTORY", style: TextStyle(color: Colors.white)),
             ],
           ),
-          Flexible(
-            child: ListView.builder(
-              shrinkWrap: true,
-              itemCount: sortedSuppliesHistory.length + (hasMoreSuppliesHistory ? 1 : 0),
-              itemBuilder: (context, index) {
-                /// pagination trigger
-                if (index == sortedSuppliesHistory.length - 1) {
-                  loadMoreSuppliesHistory(() => setState(() {}));
+          SizedBox(
+            height: MediaQuery.of(context).size.height * 0.9,
+            child: StreamBuilder(
+              stream: dbFundsHist.getSuppliesHistory(false),
+              builder: (context, snapshot) {
+                if (snapshot.hasError) {
+                  return Center(child: Text('Error: ${snapshot.error}'));
                 }
 
-                if (index == sortedSuppliesHistory.length) {
-                  return const Padding(
-                    padding: EdgeInsets.all(8.0),
-                    child: CircularProgressIndicator(),
-                  );
+                if (!snapshot.hasData) {
+                  return const Center(child: CircularProgressIndicator());
                 }
 
-                final sMH = sortedSuppliesHistory[index];
-                return SizedBox(
-                  height: 24,
-                  child: _buildSupplyRow(sMH),
+                final docs = snapshot.data!.docs;
+                final supplies =
+                    docs.map((doc) => doc.data() as SuppliesModelHist).toList();
+
+                if (supplies.isEmpty) {
+                  return const Center(child: Text('No supplies history'));
+                }
+
+                return ListView.builder(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  itemCount: supplies.length,
+                  itemBuilder: (context, index) {
+                    final sMH = supplies[index];
+                    return SizedBox(
+                      height: 24,
+                      child: _buildSupplyRow(sMH),
+                    );
+                  },
                 );
               },
             ),
           ),
-          if (loadingSuppliesHistory)
-            const Padding(
-              padding: EdgeInsets.all(10),
-              child: CircularProgressIndicator(),
-            ),
         ],
       );
     },

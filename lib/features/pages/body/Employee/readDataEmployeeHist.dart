@@ -6,38 +6,7 @@ import 'package:laundry_firebase/core/global/variables.dart';
 import 'package:laundry_firebase/features/employees/models/employeemodel.dart';
 import 'package:laundry_firebase/core/services/database_employee_hist.dart';
 
-
-/// STATE
-List<EmployeeModel> sortedEmployeeHistory = [];
-DocumentSnapshot? lastEmployeeHistoryDoc;
-bool loadingEmployeeHistory = false;
-bool hasMoreEmployeeHistory = true;
-
 final DatabaseEmployeeHist dbEmployeeHist = DatabaseEmployeeHist();
-
-/// LOAD PAGE
-Future<void> loadMoreEmployeeHistory(VoidCallback refresh) async {
-  if (loadingEmployeeHistory || !hasMoreEmployeeHistory) return;
-
-  loadingEmployeeHistory = true;
-
-  final snapshot = await dbEmployeeHist.getEmployeeHistoryPaginated(
-      lastDoc: lastEmployeeHistoryDoc);
-
-  if (snapshot.docs.isEmpty) {
-    hasMoreEmployeeHistory = false;
-  } else {
-    final employees = snapshot.docs.map((doc) {
-      return doc.data() as EmployeeModel;
-    }).toList();
-
-    sortedEmployeeHistory.addAll(employees);
-    lastEmployeeHistoryDoc = snapshot.docs.last;
-  }
-
-  loadingEmployeeHistory = false;
-  refresh();
-}
 
 Widget _buildEmployeeRow(EmployeeModel eM) {
   bool bNegative = (eM.currentCounter < 0 ? true : false);
@@ -109,17 +78,8 @@ Widget _buildEmployeeRow(EmployeeModel eM) {
 }
 
 Widget readDataEmployeeHist() {
-  return StatefulBuilder(
-    builder: (context, setState) {
-      /// load first page
-      if (sortedEmployeeHistory.isEmpty && !loadingEmployeeHistory) {
-        loadMoreEmployeeHistory(() => setState(() {}));
-      }
-
-      if (sortedEmployeeHistory.isEmpty) {
-        return const Center(child: CircularProgressIndicator());
-      }
-
+  return Builder(
+    builder: (context) {
       return Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -130,37 +90,40 @@ Widget readDataEmployeeHist() {
                   style: TextStyle(color: Colors.white)),
             ],
           ),
-          Flexible(
-            child: ListView.builder(
-              shrinkWrap: true,
-              itemCount: sortedEmployeeHistory.length +
-                  (hasMoreEmployeeHistory ? 1 : 0),
-              itemBuilder: (context, index) {
-                /// pagination trigger
-                if (index == sortedEmployeeHistory.length - 1) {
-                  loadMoreEmployeeHistory(() => setState(() {}));
+          SizedBox(
+            height: MediaQuery.of(context).size.height * 0.9,
+            child: StreamBuilder(
+              stream: dbEmployeeHist.getEmployeeHistory(),
+              builder: (context, snapshot) {
+                if (snapshot.hasError) {
+                  return Center(child: Text('Error: ${snapshot.error}'));
                 }
-
-                if (index == sortedEmployeeHistory.length) {
-                  return const Padding(
-                    padding: EdgeInsets.all(8.0),
-                    child: CircularProgressIndicator(),
-                  );
+                
+                if (!snapshot.hasData) {
+                  return const Center(child: CircularProgressIndicator());
                 }
-
-                final eM = sortedEmployeeHistory[index];
-                return SizedBox(
-                  height: 24,
-                  child: _buildEmployeeRow(eM),
+                
+                final docs = snapshot.data!.docs;
+                final employees = docs.map((doc) => doc.data() as EmployeeModel).toList();
+                
+                if (employees.isEmpty) {
+                  return const Center(child: Text('No employee history'));
+                }
+                
+                return ListView.builder(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  itemCount: employees.length,
+                  itemBuilder: (context, index) {
+                    final eM = employees[index];
+                    return SizedBox(
+                      height: 24,
+                      child: _buildEmployeeRow(eM),
+                    );
+                  },
                 );
               },
             ),
           ),
-          if (loadingEmployeeHistory)
-            const Padding(
-              padding: EdgeInsets.all(10),
-              child: CircularProgressIndicator(),
-            ),
         ],
       );
     },

@@ -19,60 +19,18 @@ class _ReadDataItemsHistoryWidgetState
     extends State<ReadDataItemsHistoryWidget> {
   late ScrollController _scrollController;
   late DatabaseItemsHist dbItemsHist;
-  List<SuppliesModelHist> allItems = [];
-  List<SuppliesModelHist> displayedItems = [];
-  int itemsPerPage = 50;
-  bool isLoading = false;
-  bool hasMore = true;
 
   @override
   void initState() {
     super.initState();
     _scrollController = ScrollController();
-    _scrollController.addListener(_onScroll);
     dbItemsHist = DatabaseItemsHist();
-    _loadInitialData();
   }
 
   @override
   void dispose() {
     _scrollController.dispose();
     super.dispose();
-  }
-
-  Future<void> _loadInitialData() async {
-    final snapshot = await dbItemsHist.getItemsHistory(false).first;
-    final docs = snapshot.docs;
-
-    setState(() {
-      allItems = docs.map((doc) => doc.data() as SuppliesModelHist).toList();
-      displayedItems = allItems.take(itemsPerPage).toList();
-      hasMore = allItems.length > itemsPerPage;
-    });
-  }
-
-  void _onScroll() {
-    if (_scrollController.position.pixels ==
-        _scrollController.position.maxScrollExtent) {
-      _loadMore();
-    }
-  }
-
-  void _loadMore() {
-    if (isLoading || !hasMore) return;
-
-    setState(() {
-      isLoading = true;
-    });
-
-    final currentLength = displayedItems.length;
-    final nextBatch = allItems.skip(currentLength).take(itemsPerPage).toList();
-
-    setState(() {
-      displayedItems.addAll(nextBatch);
-      hasMore = displayedItems.length < allItems.length;
-      isLoading = false;
-    });
   }
 
   Widget _buildItemRow(SuppliesModelHist sMH) {
@@ -221,32 +179,40 @@ class _ReadDataItemsHistoryWidgetState
                 style: TextStyle(color: Colors.white)),
           ],
         ),
-        Flexible(
-          child: displayedItems.isEmpty
-              ? const Center(child: CircularProgressIndicator())
-              : ListView.builder(
-                  controller: _scrollController,
-                  shrinkWrap: true,
-                  itemCount: displayedItems.length + (hasMore ? 1 : 0),
-                  itemBuilder: (context, index) {
-                    if (index == displayedItems.length - 1) {
-                      _loadMore();
-                    }
-
-                    if (index == displayedItems.length) {
-                      return const Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: CircularProgressIndicator(),
-                      );
-                    }
-
-                    final sMH = displayedItems[index];
-                    return SizedBox(
-                      height: 24,
-                      child: _buildItemRow(sMH),
-                    );
-                  },
-                ),
+        SizedBox(
+          height: MediaQuery.of(context).size.height * 0.9,
+          child: StreamBuilder(
+            stream: dbItemsHist.getItemsHistory(false),
+            builder: (context, snapshot) {
+              if (snapshot.hasError) {
+                return Center(child: Text('Error: ${snapshot.error}'));
+              }
+              
+              if (!snapshot.hasData) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              
+              final docs = snapshot.data!.docs;
+              final items = docs.map((doc) => doc.data() as SuppliesModelHist).toList();
+              
+              if (items.isEmpty) {
+                return const Center(child: Text('No items history'));
+              }
+              
+              return ListView.builder(
+                controller: _scrollController,
+                physics: const AlwaysScrollableScrollPhysics(),
+                itemCount: items.length,
+                itemBuilder: (context, index) {
+                  final sMH = items[index];
+                  return SizedBox(
+                    height: 24,
+                    child: _buildItemRow(sMH),
+                  );
+                },
+              );
+            },
+          ),
         ),
       ],
     );

@@ -48,14 +48,8 @@ void showItemsInOut(BuildContext context) {
       BuildContext context, SuppliesModelHist sMH) async {
     DatabaseSuppliesCurrent databaseSuppliesCurrent = DatabaseSuppliesCurrent();
     if (await databaseSuppliesCurrent.addItemsCurr(sMH)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Success')),
-      );
-      print("Sucess");
+      print("Success");
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Cannot Save')),
-      );
       print("Failed");
     }
   }
@@ -105,7 +99,7 @@ void showItemsInOut(BuildContext context) {
 
   showDialog(
     context: context,
-    builder: (BuildContext context) {
+    builder: (BuildContext dialogContext) {
       return StatefulBuilder(builder: (context, setState) {
         return AlertDialog(
           backgroundColor: cFundsInFundsOut,
@@ -146,7 +140,7 @@ void showItemsInOut(BuildContext context) {
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.pop(context); // close popup
+                Navigator.pop(dialogContext); // close popup
               },
               child: const Text(
                 'Cancel',
@@ -159,6 +153,7 @@ void showItemsInOut(BuildContext context) {
                   label: 'Save',
                   onPressed: () async {
                     await saveButtonSetRepository();
+                    // Don't call Navigator.pop here - let the button handler do it
                     return true;
                   }),
           ],
