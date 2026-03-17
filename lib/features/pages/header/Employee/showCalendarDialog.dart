@@ -7,8 +7,6 @@ import 'package:laundry_firebase/core/utils/sharedMethods.dart';
 import 'package:laundry_firebase/core/services/database_coverage.dart';
 import 'package:laundry_firebase/features/items/repository/supplies_hist_repository.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
-import 'package:laundry_firebase/core/global/variables_oth.dart';
-import 'package:laundry_firebase/core/global/variables_supplies.dart';
 
 class DaySelection {
   bool a;

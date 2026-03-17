@@ -22,7 +22,7 @@ import 'package:laundry_firebase/features/pages/body/Supplies/readSuppliesCurren
 import 'package:laundry_firebase/features/pages/body/Supplies/readSuppliesHist.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/showAdminMainPage.dart';
 import 'package:laundry_firebase/features/pages/header/Employee/showSalaryMaintenance.dart';
-import 'package:laundry_firebase/features/pages/header/Funds/showCalendarDialog.dart';
+import 'package:laundry_firebase/features/pages/header/Employee/showCalendarDialog.dart';
 import 'package:laundry_firebase/features/pages/header/Funds/showFundCheck.dart';
 import 'package:laundry_firebase/features/pages/header/Funds/showFundsInFundsOut.dart';
 import 'package:laundry_firebase/core/utils/sharedMethods.dart';
@@ -62,10 +62,10 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
   }
 
   void updateEmployeeSetup(EmployeeSetupModel updated) {
+    databaseEmployeeSetup.update(updated);
     setState(() {
       empSetup = updated;
     });
-    databaseEmployeeSetup.update(updated);
   }
 
   //================ ITEMS =================
@@ -228,15 +228,15 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
             ),
             MenuItemButton(
               onPressed: () => showFundCheck(context),
-              child: const Text("Funds Check"),
+              child: const Text("💵 Funds Check"),
             ),
             MenuItemButton(
               onPressed: () => showSalaryMaintenance(context),
-              child: const Text("Salary"),
+              child: const Text("💸 Salary"),
             ),
             MenuItemButton(
               onPressed: () => showCalendarDialog(context),
-              child: const Text("Calendar"),
+              child: const Text("📅 Calendar"),
             ),
             MenuItemButton(
               onPressed: () {
@@ -247,7 +247,7 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                   ),
                 );
               },
-              child: const Text("Tools"),
+              child: const Text("🔧 Tools"),
             ),
             MenuItemButton(
               leadingIcon: const Icon(Icons.logout, size: 18),
@@ -267,7 +267,7 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                   (route) => false,
                 );
               },
-              child: const Text("Logout"),
+              child: const Text("🚪 Logout"),
             ),
           ],
         ),
@@ -287,12 +287,21 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                 tooltip: 'Show',
                 icon: const Icon(Icons.more_vert, size: 18),
                 onPressed: () {
-                  controller.isOpen ? controller.close() : controller.open();
+                  if (controller.isOpen) {
+                    controller.close();
+                  } else {
+                    controller.open();
+                  }
                 },
               );
             },
             menuChildren: [
               MenuItemButton(
+                style: ButtonStyle(
+                  backgroundColor: WidgetStateProperty.all(
+                    empSetup.showFundsHistory ? Colors.grey[300] : null,
+                  ),
+                ),
                 child: const Text('💳 GCash'),
                 onPressed: () {
                   updateEmployeeSetup(
@@ -303,6 +312,11 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                 },
               ),
               MenuItemButton(
+                style: ButtonStyle(
+                  backgroundColor: WidgetStateProperty.all(
+                    empSetup.showLaundry ? Colors.grey[300] : null,
+                  ),
+                ),
                 child: const Text('🧺 Laundry'),
                 onPressed: () {
                   updateEmployeeSetup(
@@ -313,6 +327,11 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                 },
               ),
               MenuItemButton(
+                style: ButtonStyle(
+                  backgroundColor: WidgetStateProperty.all(
+                    empSetup.showFunds ? Colors.grey[300] : null,
+                  ),
+                ),
                 child: const Text('💰 Funds'),
                 onPressed: () {
                   updateEmployeeSetup(
@@ -323,6 +342,11 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                 },
               ),
               MenuItemButton(
+                style: ButtonStyle(
+                  backgroundColor: WidgetStateProperty.all(
+                    empSetup.showEmployee ? Colors.grey[300] : null,
+                  ),
+                ),
                 child: const Text("🪪 Id"),
                 onPressed: () {
                   updateEmployeeSetup(
