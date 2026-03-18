@@ -844,7 +844,7 @@ class JobModelRepository {
     /// 🔴 Disposal
     jobRepo.forDisposal = selectedForDisposal;
     jobRepo.disposed = selectedDisposed;
-    jobRepo.promoCounter = selectedPromoErrorCode;
+    jobRepo.promoErrorCode = selectedPromoErrorCode;
   }
 
   void syncSelectedToRepoMin(JobModelRepository jobRepo) {

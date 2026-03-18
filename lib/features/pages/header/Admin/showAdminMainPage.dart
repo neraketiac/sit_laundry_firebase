@@ -7,6 +7,8 @@ import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/runMigrati
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/showAdminDateDPage.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/showBatchPromo.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/showDeleteSecondary.dart';
+import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/batch_fix_promo_counter_page.dart';
+import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/loyalty_validation_page.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/other_item_admin/showOtherItemsMaintenance.dart';
 
@@ -109,6 +111,56 @@ class _ShowAdminMainPageState extends State<ShowAdminMainPage> {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const BatchPromo(),
+              ),
+
+            const SizedBox(height: 30),
+
+            if (isAdmin)
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.orange.shade200,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: ListTile(
+                  leading: const Icon(Icons.build_circle, color: Colors.orange),
+                  title: const Text("Batch Fix PromoCounter"),
+                  subtitle: const Text("Fix incorrect promoCounter values in Jobs_done and Jobs_completed"),
+                  trailing: const Icon(Icons.arrow_forward_ios),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const BatchFixPromoCounterPage(),
+                      ),
+                    );
+                  },
+                ),
+              ),
+
+            const SizedBox(height: 30),
+
+            if (isAdmin)
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.purple.shade200,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: ListTile(
+                  leading: const Icon(Icons.analytics, color: Colors.purple),
+                  title: const Text("Loyalty Count Validation"),
+                  subtitle: const Text("Validate loyalty counts against applicable promoCounter (promoErrorCode = 0)"),
+                  trailing: const Icon(Icons.arrow_forward_ios),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const LoyaltyValidationPage(),
+                      ),
+                    );
+                  },
+                ),
               ),
 
             const SizedBox(

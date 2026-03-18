@@ -119,8 +119,11 @@ Future<void> callDatabaseJobsQueueAdd(
 
   if (await databaseJobsQueue.add(jobRepo.jobModel)) {
     successInsertFB = true;
-    DatabaseLoyalty loyalty = DatabaseLoyalty();
-    await loyalty.addCountByCardNumber(jobRepo.customerId, -10);
+    //filter only when has free
+    if (autocompleteSelected.loyaltyCount >= 0) {
+      DatabaseLoyalty loyalty = DatabaseLoyalty();
+      await loyalty.addCountByCardNumber(jobRepo.customerId, -10);
+    }
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Insert on Queue done.')),
     );

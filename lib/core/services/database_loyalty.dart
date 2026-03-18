@@ -79,4 +79,29 @@ class DatabaseLoyalty {
       print("Failed to update count: $e");
     }
   }
+
+  /// Set count to specific value
+  Future<void> setCountByCardNumber(int cardNumber, int newCount) async {
+    try {
+      final snapshot = await _customerRef
+          .where('cardNumber', isEqualTo: cardNumber)
+          .limit(1)
+          .get();
+
+      if (snapshot.docs.isEmpty) {
+        print("Customer not found for cardNumber: $cardNumber");
+        return;
+      }
+
+      final docId = snapshot.docs.first.id;
+
+      await _customerRef.doc(docId).update({
+        'Count': newCount,
+      });
+
+      print("Count set to $newCount for cardNumber: $cardNumber");
+    } catch (e) {
+      print("Failed to set count: $e");
+    }
+  }
 }
