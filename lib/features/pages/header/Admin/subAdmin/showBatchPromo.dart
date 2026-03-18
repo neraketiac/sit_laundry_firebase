@@ -119,7 +119,8 @@ Future<void> showBatchTwoWeeksChecking(BuildContext context) async {
         return bDate.compareTo(aDate); // DESCENDING
       });
 
-      DateTime? previousReferenceDate; // Latest date from previous job (dateD or paidD)
+      DateTime?
+          previousReferenceDate; // Latest date from previous job (dateD or paidD)
       int? previousPromoErrorCode;
       bool shouldBreak = false;
 
@@ -176,7 +177,8 @@ Future<void> showBatchTwoWeeksChecking(BuildContext context) async {
 
         // Update if changed
         if (data['Z01_PromoErrorCode'] != newPromoErrorCode) {
-          batch.update(doc.reference, {'Z01_PromoErrorCode': newPromoErrorCode});
+          batch
+              .update(doc.reference, {'Z01_PromoErrorCode': newPromoErrorCode});
           totalUpdates++;
           batchCount++;
         }
@@ -187,7 +189,8 @@ Future<void> showBatchTwoWeeksChecking(BuildContext context) async {
         // Set reference date for next iteration
         if (newPromoErrorCode == 0 && jobPaidD != null) {
           // Use the latest between dateD and paidD
-          previousReferenceDate = jobDateD.isAfter(jobPaidD) ? jobDateD : jobPaidD;
+          previousReferenceDate =
+              jobDateD.isAfter(jobPaidD) ? jobDateD : jobPaidD;
         } else {
           previousReferenceDate = jobDateD;
         }
