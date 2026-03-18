@@ -592,10 +592,13 @@ class JobModelRepository {
     selectedDisposed = jobRepo.disposed;
     selectedPromoErrorCode = jobRepo.promoErrorCode;
 
-    thisJobHasPromo = false;
-    if (jobRepo.items.any((e) => e.itemUniqueId == promoFree.itemUniqueId)) {
-      thisJobHasPromo = true;
-    }
+    // thisJobHasPromo = false;
+    // if (jobRepo.items.any((e) => e.itemUniqueId == promoFree.itemUniqueId)) {
+    //   thisJobHasPromo = true;
+    // }
+
+    thisJobHasPromo =
+        jobRepo.items.any((e) => e.itemUniqueId == promoFree.itemUniqueId);
   }
 
   void syncRepoToSelectedMin(JobModelRepository jobRepo) {

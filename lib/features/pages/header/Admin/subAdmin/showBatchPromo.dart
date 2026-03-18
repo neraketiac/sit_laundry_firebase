@@ -119,12 +119,12 @@ Future<void> showBatchTwoWeeksChecking(BuildContext context) async {
         return bDate.compareTo(aDate); // DESCENDING
       });
 
-      DateTime previousDate = DateTime.now(); // JobX
-      bool boundaryFound = false;
+      DateTime? previousReferenceDate; // Latest date from previous job (dateD or paidD)
+      int? previousPromoErrorCode;
+      bool shouldBreak = false;
 
-      //print("Processing order for $customerId");
-
-      for (final doc in jobs) {
+      for (int i = 0; i < jobs.length; i++) {
+        final doc = jobs[i];
         final Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
 
         final bool unpaid = data['P00_Unpaid'] ?? false;
@@ -132,56 +132,69 @@ Future<void> showBatchTwoWeeksChecking(BuildContext context) async {
         final Timestamp? tsPaidD = data['A03_PaidD'] as Timestamp?;
 
         if (tsDateD == null) continue;
-        if (tsPaidD == null) continue;
 
         final DateTime jobDateD = tsDateD.toDate();
-        final DateTime jobPaidD = tsPaidD.toDate();
+        final DateTime? jobPaidD = tsPaidD?.toDate();
 
-        final gap = previousDate.difference(jobDateD);
+        int newPromoErrorCode;
 
-        /// within 2 weeks
-        //print('gap=${gap.inDays}');
-        if (gap.inDays <= 14) {
-          if (data['Z01_PromoErrorCode'] != 0) {
-            batch.update(doc.reference, {'Z01_PromoErrorCode': 0});
-            totalUpdates++;
-            batchCount++;
+        if (i == 0) {
+          // Loop 1: Compare current date vs job1.dateD
+          final gap = DateTime.now().difference(jobDateD);
+
+          if (gap.inDays > 14) {
+            newPromoErrorCode = unpaid ? 2 : 3;
+          } else {
+            newPromoErrorCode = unpaid ? 1 : 0;
           }
-          //only change previousDate if paid, if not, dont change previous date
-          if (!unpaid && data['Q06_PromoCounter'] > 0) {
-            previousDate = jobDateD;
+        } else {
+          // Loop 2+: Compare with previous job
+          if (previousPromoErrorCode == 0) {
+            // Use latest date from previous job
+            final gap = previousReferenceDate!.difference(jobDateD);
 
-            //if paid date is delayed, compare
-            //job 5 paid date vs job 4 date done.
-            //if on time, compare
-            //job 5 date date vs job 4 date done.
-            //do this only in real data
-            if (jobPaidD.isAfter(jobDateD)) {
-              previousDate = jobPaidD;
+            if (gap.inDays > 14) {
+              newPromoErrorCode = unpaid ? 2 : 3;
+            } else {
+              newPromoErrorCode = unpaid ? 1 : 0;
             }
-          }
+          } else if (previousPromoErrorCode == 1) {
+            // Compare current date vs current job.dateD
+            final gap = DateTime.now().difference(jobDateD);
 
-          continue;
+            if (gap.inDays > 14) {
+              newPromoErrorCode = unpaid ? 2 : 3;
+            } else {
+              newPromoErrorCode = unpaid ? 1 : 0;
+            }
+          } else {
+            // Previous job has error code 2, 3, 4, or 5
+            newPromoErrorCode = 5;
+            shouldBreak = true;
+          }
         }
 
-        /// gap > 14 days → boundary
-        if (data['Z01_PromoErrorCode'] == 0 || unpaid) {
-          batch.update(doc.reference, {'Z01_PromoErrorCode': 1});
+        // Update if changed
+        if (data['Z01_PromoErrorCode'] != newPromoErrorCode) {
+          batch.update(doc.reference, {'Z01_PromoErrorCode': newPromoErrorCode});
           totalUpdates++;
           batchCount++;
         }
 
-        // /// Skip unpaid jobs
-        // if (unpaid) continue;
+        // Break loop if we hit error code 5
+        if (shouldBreak) break;
 
-        //stop checking next jobs, commented only on first run to false all non-eligible
-        boundaryFound = true;
-        break; // stop checking older jobs
+        // Set reference date for next iteration
+        if (newPromoErrorCode == 0 && jobPaidD != null) {
+          // Use the latest between dateD and paidD
+          previousReferenceDate = jobDateD.isAfter(jobPaidD) ? jobDateD : jobPaidD;
+        } else {
+          previousReferenceDate = jobDateD;
+        }
+        previousPromoErrorCode = newPromoErrorCode;
       }
 
-      if (boundaryFound || jobs.isNotEmpty) {
-        totalCustomersProcessed++;
-      }
+      totalCustomersProcessed++;
 
       /// Firestore batch limit protection
       if (batchCount >= 450) {

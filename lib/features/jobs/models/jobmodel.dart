@@ -120,16 +120,95 @@ class JobModel {
   bool forDisposal;
   bool disposed;
   bool isSyncToDB2; //tels if sync to db2
-  int promoErrorCode; //if this is false, succeeding records will not be checked and consider false.
-  //change this to 0 - no error, eligible, included in promo
-  //               1 - on review, within 2 weeks unpaid
+  int promoErrorCode;
+  //               batch promo will check the each job
+  //               if current date is < 14 days, then error code = 0
+  //               the dates to be checked are dateD and paidD
+  //               if unpaid = true, use dateD
+  //               if unpaid = false, it means paid, use paidD
+  //               but always use which is higher gap.
+  //               loop is in order by dateD starting from the latest. job1 is the latest
+  //               loop 1
+  //                        compare current date vs job1.dateD
+  //                        if gap > 14 days,
+  //                              if job1.unpaid = true
+  //                                 job1.promoErrorCode = 2
+  //                              else
+  //                                 job1.promoErrorCode = 3
+  //                        else
+  //                              if job1.unpaid=true
+  //                                 job1.promoErrorCode = 1
+  //                              else
+  //                                 job1.promoErrorCode = 0
+  //               loop 2
+  //                        compare job1 and job2
+  //                        if job1.promoErrorCode = 0
+  //                           use which is latest job1.dateD vs job1.paidD
+  //                           compare job1.<latest_date> vs job2.dateD
+  //                              if gap > 14 days
+  //                                 if job2.unpaid = true
+  //                                    job2.promoErrorCode = 2
+  //                                 else
+  //                                    job2.promoErrorCode = 3
+  //                              else
+  //                                 if job2.unpaid=true
+  //                                    job2.promoErrorCode = 1
+  //                                 else
+  //                                    job2.promoErrorCode = 0
+  //                        else if job1.promoErrorCode = 1
+  //                           compare current date vs job2.dateD
+  //                              if gap > 14 days
+  //                                 if job2.unpaid = true
+  //                                    job2.promoErrorCode = 2
+  //                                 else
+  //                                    job2.promoErrorCode = 3
+  //                              else
+  //                                 if job2.unpaid=true
+  //                                    job2.promoErrorCode = 1
+  //                                 else
+  //                                    job2.promoErrorCode = 0
+  //                         else
+  //                           job2.promoErrorCode = 5
+  //               loop 3
+  //                        compare job2 and job3
+  //                        if job2.promoErrorCode = 0
+  //                           use which is latest job2.dateD vs job2.paidD
+  //                           compare job2.<latest_date> vs job3.dateD
+  //                              if gap > 14 days
+  //                                 if job3.unpaid = true
+  //                                    job3.promoErrorCode = 2
+  //                                 else
+  //                                    job3.promoErrorCode = 3
+  //                              else
+  //                                 if job3.unpaid=true
+  //                                    job3.promoErrorCode = 1
+  //                                 else
+  //                                    job3.promoErrorCode = 0
+  //                        else if job2.promoErrorCode = 1
+  //                           compare current date vs job3.dateD
+  //                              if gap > 14 days
+  //                                 if job3.unpaid = true
+  //                                    job3.promoErrorCode = 2
+  //                                 else
+  //                                    job3.promoErrorCode = 3
+  //                              else
+  //                                 if job3.unpaid=true
+  //                                    job3.promoErrorCode = 1
+  //                                 else
+  //                                    job3.promoErrorCode = 0
+  //                         else
+  //                           job3.promoErrorCode = 5
+  //               loop repeat until end
+  //
+  //               each job will have a promo error code below
+  //               0 - no error, eligible, included in promo, paid
+  //               1 - on review, partial eligible, unpaid
   //               2 - not eligible due to unpaid for 2 weeks
   //               3 - not eligible due to last laundry not within 2 weeks
-  //               4 - promo ended
-  //               5 - even this is eligible, once not eligible, all previous/old eligible is considere not eligible anymore, reset.
+  //               4 - promo ended --manually
+  //               5 - even previous is eligible, once not eligible, all previous/old eligible is considere not eligible anymore, reset.
   //                   the first job will be 4, then even previous jobs are 0, they will be viewed as 4 in customer.
   //                   they would still see 1, 2, 3
-  //               but i think there is no 4, since 1, 2, 3 will be used as the first violation, then its over
   //               99 - default no status
 
   JobModel({

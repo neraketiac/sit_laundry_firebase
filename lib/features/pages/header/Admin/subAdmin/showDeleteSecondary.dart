@@ -3,8 +3,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:laundry_firebase/core/services/firebase_service.dart';
 
 /// Replace these if they exist elsewhere in your project
-const String JOBS_DONE_REF = "jobs_done";
-const String JOBS_COMPLETED_REF = "jobs_completed";
+const String JOBS_DONE_REF = "Jobs_done";
+const String JOBS_COMPLETED_REF = "Jobs_completed";
 
 /// Your secondary firestore instance
 
