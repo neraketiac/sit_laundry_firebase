@@ -9,6 +9,7 @@ import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/showBatchP
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/showDeleteSecondary.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/batch_fix_promo_counter_page.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/loyalty_validation_page.dart';
+import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/monthlyAnalytics.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/other_item_admin/showOtherItemsMaintenance.dart';
 
@@ -132,6 +133,31 @@ class _ShowAdminMainPageState extends State<ShowAdminMainPage> {
                       context,
                       MaterialPageRoute(
                         builder: (_) => const BatchFixPromoCounterPage(),
+                      ),
+                    );
+                  },
+                ),
+              ),
+
+            const SizedBox(height: 30),
+
+            if (isAdmin)
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.blue.shade200,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: ListTile(
+                  leading: const Icon(Icons.bar_chart, color: Colors.blue),
+                  title: const Text("Monthly Analytics"),
+                  subtitle: const Text("View weekly revenue charts and unpaid customers summary"),
+                  trailing: const Icon(Icons.arrow_forward_ios),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const MonthlyAnalyticsPage(),
                       ),
                     );
                   },
