@@ -3,9 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
 import 'package:laundry_firebase/core/global/variables_all_codes.dart';
-import 'package:laundry_firebase/core/global/variables_det.dart';
 import 'package:laundry_firebase/core/global/variables_fab.dart';
-import 'package:laundry_firebase/core/global/variables_oth.dart';
 
 const double fieldIndentWidth = 40;
 bool isGcashCredit = false;

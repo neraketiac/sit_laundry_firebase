@@ -41,13 +41,20 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyASvVM-bX6W7-r1-O_u8fbrn5CaFnxVzWQ',
-    appId: '1:248306194923:web:4484ca74bbc01546b7a1ae',
-    messagingSenderId: '248306194923',
-    projectId: 'wash-ko-lang-sit',
-    authDomain: 'wash-ko-lang-sit.firebaseapp.com',
-    storageBucket: 'wash-ko-lang-sit.firebasestorage.app',
-    measurementId: 'G-S5RTGDB4DL',
+    apiKey: "AIzaSyChXE4nw_k-s27PCTIwgM7oIwJtKjJr0ak",
+    authDomain: "wash-ko-lang-sit.firebaseapp.com",
+    projectId: "wash-ko-lang-sit",
+    storageBucket: "wash-ko-lang-sit.firebasestorage.app",
+    messagingSenderId: "248306194923",
+    appId: "1:248306194923:web:607d219c1d3536cfb7a1ae",
+    measurementId: "G-16WPWN06LM",
+    // apiKey: 'AIzaSyASvVM-bX6W7-r1-O_u8fbrn5CaFnxVzWQ',
+    // appId: '1:248306194923:web:4484ca74bbc01546b7a1ae',
+    // messagingSenderId: '248306194923',
+    // projectId: 'wash-ko-lang-sit',
+    // authDomain: 'wash-ko-lang-sit.firebaseapp.com',
+    // storageBucket: 'wash-ko-lang-sit.firebasestorage.app',
+    // measurementId: 'G-S5RTGDB4DL',
   );
 
   static const FirebaseOptions secondaryWeb = FirebaseOptions(
@@ -57,6 +64,15 @@ class DefaultFirebaseOptions {
     projectId: 'zpos-d985c',
     authDomain: 'zpos-d985c.firebaseapp.com',
     storageBucket: 'zpos-d985c.firebasestorage.app',
+  );
+
+  static const FirebaseOptions thirdWeb = FirebaseOptions(
+    apiKey: "AIzaSyDZbBFuPDmvEHEvI94_aCZA5vphxaB39Fc",
+    appId: "1:224993515336:web:b76439d1d92884b17b457d",
+    messagingSenderId: "224993515336",
+    projectId: "splannofb",
+    authDomain: "splannofb.firebaseapp.com",
+    storageBucket: "splannofb.firebasestorage.app",
   );
 
   static const FirebaseOptions android = FirebaseOptions(

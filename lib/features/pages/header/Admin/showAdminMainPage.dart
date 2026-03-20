@@ -9,7 +9,8 @@ import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/showBatchP
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/showDeleteSecondary.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/batch_fix_promo_counter_page.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/loyalty_validation_page.dart';
-import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/monthlyAnalytics.dart';
+import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/migrateToThird.dart';
+import 'package:laundry_firebase/features/pages/header/Admin/reports/monthly_analytics/monthly_analytics_page.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/other_item_admin/showOtherItemsMaintenance.dart';
 
@@ -126,7 +127,8 @@ class _ShowAdminMainPageState extends State<ShowAdminMainPage> {
                 child: ListTile(
                   leading: const Icon(Icons.build_circle, color: Colors.orange),
                   title: const Text("Batch Fix PromoCounter"),
-                  subtitle: const Text("Fix incorrect promoCounter values in Jobs_done and Jobs_completed"),
+                  subtitle: const Text(
+                      "Fix incorrect promoCounter values in Jobs_done and Jobs_completed"),
                   trailing: const Icon(Icons.arrow_forward_ios),
                   onTap: () {
                     Navigator.push(
@@ -151,7 +153,8 @@ class _ShowAdminMainPageState extends State<ShowAdminMainPage> {
                 child: ListTile(
                   leading: const Icon(Icons.bar_chart, color: Colors.blue),
                   title: const Text("Monthly Analytics"),
-                  subtitle: const Text("View weekly revenue charts and unpaid customers summary"),
+                  subtitle: const Text(
+                      "View weekly revenue charts and unpaid customers summary"),
                   trailing: const Icon(Icons.arrow_forward_ios),
                   onTap: () {
                     Navigator.push(
@@ -176,7 +179,8 @@ class _ShowAdminMainPageState extends State<ShowAdminMainPage> {
                 child: ListTile(
                   leading: const Icon(Icons.analytics, color: Colors.purple),
                   title: const Text("Loyalty Count Validation"),
-                  subtitle: const Text("Validate loyalty counts against applicable promoCounter (promoErrorCode = 0)"),
+                  subtitle: const Text(
+                      "Validate loyalty counts against applicable promoCounter (promoErrorCode = 0)"),
                   trailing: const Icon(Icons.arrow_forward_ios),
                   onTap: () {
                     Navigator.push(
@@ -227,6 +231,39 @@ class _ShowAdminMainPageState extends State<ShowAdminMainPage> {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const RunMigration(),
+              ),
+
+            const SizedBox(height: 30),
+
+            if (isAdmin)
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.teal.shade100,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: ListTile(
+                  leading: const Icon(Icons.sync_alt, color: Colors.teal),
+                  title: const Text("Migrate to ThirdWeb"),
+                  subtitle: const Text(
+                      "Select collections to migrate from main to thirdWeb"),
+                  trailing: const Icon(Icons.arrow_forward_ios),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => Scaffold(
+                          appBar:
+                              AppBar(title: const Text("Migrate to ThirdWeb")),
+                          body: const SingleChildScrollView(
+                            padding: EdgeInsets.all(16),
+                            child: MigrateToThird(),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
               ),
 
             const SizedBox(height: 30),

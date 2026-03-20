@@ -1,8 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:laundry_firebase/features/jobs/models/jobmodel.dart';
 import 'package:laundry_firebase/features/jobs/repository/jobmodel_repository.dart';
+import 'package:laundry_firebase/firebase_options.dart';
 
 class MonthlyAnalyticsPage extends StatefulWidget {
   const MonthlyAnalyticsPage({super.key});
@@ -16,7 +18,8 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
   List<JobModelRepository> completedJobs = [];
   Map<int, Map<String, dynamic>> weeklyData = {};
   Map<String, int> unpaidCustomers = {};
-  Map<String, int> suppliesData = {}; // Funds In, Funds Out, Laundry Payment, Cash In/Load, Cash Out
+  Map<String, int> suppliesData =
+      {}; // Funds In, Funds Out, Laundry Payment, Cash In/Load, Cash Out
   int totalLoads = 0;
   bool isLoading = true;
 
@@ -34,27 +37,42 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
     final endDate = DateTime(currentMonth.year, currentMonth.month + 1, 0);
 
     try {
-      print('Loading data for: ${DateFormat('MMMM yyyy').format(currentMonth)}');
+      print(
+          'Loading data for: ${DateFormat('MMMM yyyy').format(currentMonth)}');
       print('Date range: $startDate to $endDate');
-      
+
+      FirebaseApp thirdApp;
+      try {
+        thirdApp = Firebase.app('thirdWeb');
+      } catch (_) {
+        thirdApp = await Firebase.initializeApp(
+          name: 'thirdWeb',
+          options: DefaultFirebaseOptions.thirdWeb,
+        );
+      }
+      final db = FirebaseFirestore.instanceFor(app: thirdApp);
+
       // Load from Jobs_done
-      final doneSnapshot = await FirebaseFirestore.instance
+      final doneSnapshot = await db
           .collection('Jobs_done')
-          .where('A05_DateD', isGreaterThanOrEqualTo: Timestamp.fromDate(startDate))
+          .where('A05_DateD',
+              isGreaterThanOrEqualTo: Timestamp.fromDate(startDate))
           .where('A05_DateD', isLessThanOrEqualTo: Timestamp.fromDate(endDate))
           .get();
 
-      // Load from Jobs_completed  
-      final completedSnapshot = await FirebaseFirestore.instance
+      // Load from Jobs_completed
+      final completedSnapshot = await db
           .collection('Jobs_completed')
-          .where('A05_DateD', isGreaterThanOrEqualTo: Timestamp.fromDate(startDate))
+          .where('A05_DateD',
+              isGreaterThanOrEqualTo: Timestamp.fromDate(startDate))
           .where('A05_DateD', isLessThanOrEqualTo: Timestamp.fromDate(endDate))
           .get();
 
-      print('Found ${doneSnapshot.docs.length} done jobs and ${completedSnapshot.docs.length} completed jobs');
+      print(
+          'Found ${doneSnapshot.docs.length} done jobs and ${completedSnapshot.docs.length} completed jobs');
 
       completedJobs = [];
-      
+
       // Process Jobs_done
       for (var doc in doneSnapshot.docs) {
         final jobRepo = JobModelRepository();
@@ -62,7 +80,7 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
         jobRepo.setJobModel(jobModel);
         completedJobs.add(jobRepo);
       }
-      
+
       // Process Jobs_completed
       for (var doc in completedSnapshot.docs) {
         final jobRepo = JobModelRepository();
@@ -72,9 +90,10 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
       }
 
       // Load from SuppliesHist
-      final suppliesSnapshot = await FirebaseFirestore.instance
+      final suppliesSnapshot = await db
           .collection('SuppliesHist')
-          .where('LogDate', isGreaterThanOrEqualTo: Timestamp.fromDate(startDate))
+          .where('LogDate',
+              isGreaterThanOrEqualTo: Timestamp.fromDate(startDate))
           .where('LogDate', isLessThanOrEqualTo: Timestamp.fromDate(endDate))
           .get();
 
@@ -112,10 +131,11 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
           : job.dateD as DateTime;
 
       int week = _getWeekNumber(jobDate);
-      
+
       int finalPrice = job.finalPrice ?? 0;
       int paidCash = (job.paidCashAmount ?? 0);
-      int paidGCash = (job.paidGCashVerified ?? false) ? (job.paidGCashAmount ?? 0) : 0;
+      int paidGCash =
+          (job.paidGCashVerified ?? false) ? (job.paidGCashAmount ?? 0) : 0;
       int totalPaid = paidCash + paidGCash;
       int unpaidAmount = finalPrice - totalPaid;
 
@@ -125,15 +145,15 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
       if (unpaidAmount > 0) {
         weeklyData[week]!['unpaid'] += unpaidAmount;
       }
-      
+
       if (totalPaid > 0) {
         weeklyData[week]!['paid'] += totalPaid;
       }
-      
+
       if (paidCash > 0) {
         weeklyData[week]!['paidCash'] += paidCash;
       }
-      
+
       if (paidGCash > 0) {
         weeklyData[week]!['paidGCash'] += paidGCash;
       }
@@ -152,22 +172,25 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
     for (var doc in docs) {
       var data = doc.data() as Map<String, dynamic>;
       int itemUniqueId = data['ItemUniqueId'] ?? 0;
-      int currentCounter = (data['CurrentCounter'] ?? 0) is int 
-          ? data['CurrentCounter'] 
+      int currentCounter = (data['CurrentCounter'] ?? 0) is int
+          ? data['CurrentCounter']
           : (data['CurrentCounter'] as double).toInt();
 
       // Separate Funds In (positive) and Funds Out (negative)
       if (currentCounter > 0) {
         suppliesData['Funds In'] = suppliesData['Funds In']! + currentCounter;
       } else if (currentCounter < 0) {
-        suppliesData['Funds Out'] = suppliesData['Funds Out']! + currentCounter.abs();
+        suppliesData['Funds Out'] =
+            suppliesData['Funds Out']! + currentCounter.abs();
       }
 
       // Also categorize by ItemUniqueId
       if (itemUniqueId == 4405) {
-        suppliesData['Laundry Payment'] = suppliesData['Laundry Payment']! + currentCounter;
+        suppliesData['Laundry Payment'] =
+            suppliesData['Laundry Payment']! + currentCounter;
       } else if (itemUniqueId == 4401 || itemUniqueId == 431) {
-        suppliesData['Cash In/Load'] = suppliesData['Cash In/Load']! + currentCounter;
+        suppliesData['Cash In/Load'] =
+            suppliesData['Cash In/Load']! + currentCounter;
       } else if (itemUniqueId == 4402) {
         suppliesData['Cash Out'] = suppliesData['Cash Out']! + currentCounter;
       }
@@ -181,10 +204,11 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
       if (job.customerName != null) {
         int finalPrice = job.finalPrice ?? 0;
         int paidCash = (job.paidCashAmount ?? 0);
-        int paidGCash = (job.paidGCashVerified ?? false) ? (job.paidGCashAmount ?? 0) : 0;
+        int paidGCash =
+            (job.paidGCashVerified ?? false) ? (job.paidGCashAmount ?? 0) : 0;
         int totalPaid = paidCash + paidGCash;
         int unpaidAmount = finalPrice - totalPaid;
-        
+
         if (unpaidAmount > 0) {
           unpaidCustomers[job.customerName!] =
               (unpaidCustomers[job.customerName!] ?? 0) + unpaidAmount;
@@ -266,7 +290,8 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Supplies & Funds Summary', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            const Text('Supplies & Funds Summary',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             const SizedBox(height: 16),
             GridView.count(
               shrinkWrap: true,
@@ -276,11 +301,16 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
               crossAxisSpacing: 12,
               mainAxisSpacing: 12,
               children: [
-                _buildSuppliesCard('Funds In', suppliesData['Funds In'] ?? 0, Colors.teal),
-                _buildSuppliesCard('Funds Out', suppliesData['Funds Out'] ?? 0, Colors.orange),
-                _buildSuppliesCard('Laundry Payment', suppliesData['Laundry Payment'] ?? 0, Colors.blue),
-                _buildSuppliesCard('Cash In/Load', suppliesData['Cash In/Load'] ?? 0, Colors.green),
-                _buildSuppliesCard('Cash Out', suppliesData['Cash Out'] ?? 0, Colors.red),
+                _buildSuppliesCard(
+                    'Funds In', suppliesData['Funds In'] ?? 0, Colors.teal),
+                _buildSuppliesCard(
+                    'Funds Out', suppliesData['Funds Out'] ?? 0, Colors.orange),
+                _buildSuppliesCard('Laundry Payment',
+                    suppliesData['Laundry Payment'] ?? 0, Colors.blue),
+                _buildSuppliesCard('Cash In/Load',
+                    suppliesData['Cash In/Load'] ?? 0, Colors.green),
+                _buildSuppliesCard(
+                    'Cash Out', suppliesData['Cash Out'] ?? 0, Colors.red),
               ],
             ),
           ],
@@ -302,13 +332,19 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
         children: [
           Text(
             label,
-            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: color.shade800),
+            style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: color.shade800),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 8),
           Text(
             '₱${_formatCurrency(amount)}',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: color.shade900),
+            style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: color.shade900),
           ),
         ],
       ),
@@ -333,7 +369,8 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Supplies & Funds Chart', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            const Text('Supplies & Funds Chart',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             const SizedBox(height: 16),
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
@@ -341,7 +378,8 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
                 width: isMobile ? MediaQuery.of(context).size.width - 40 : 600,
                 height: 280,
                 child: Padding(
-                  padding: const EdgeInsets.only(left: 10, right: 20, top: 20, bottom: 40),
+                  padding: const EdgeInsets.only(
+                      left: 10, right: 20, top: 20, bottom: 40),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
@@ -355,8 +393,11 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
                             return Padding(
                               padding: const EdgeInsets.only(right: 8),
                               child: Text(
-                                value >= 1000 ? '${(value / 1000).toStringAsFixed(0)}k' : value.toString(),
-                                style: const TextStyle(fontSize: 10, color: Colors.grey),
+                                value >= 1000
+                                    ? '${(value / 1000).toStringAsFixed(0)}k'
+                                    : value.toString(),
+                                style: const TextStyle(
+                                    fontSize: 10, color: Colors.grey),
                               ),
                             );
                           }).toList(),
@@ -367,11 +408,36 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
-                            _buildSuppliesBar('Funds\nIn', suppliesData['Funds In'] ?? 0, Colors.teal, maxYValue, chartHeight),
-                            _buildSuppliesBar('Funds\nOut', suppliesData['Funds Out'] ?? 0, Colors.orange, maxYValue, chartHeight),
-                            _buildSuppliesBar('Laundry\nPayment', suppliesData['Laundry Payment'] ?? 0, Colors.blue, maxYValue, chartHeight),
-                            _buildSuppliesBar('Cash In/\nLoad', suppliesData['Cash In/Load'] ?? 0, Colors.green, maxYValue, chartHeight),
-                            _buildSuppliesBar('Cash\nOut', suppliesData['Cash Out'] ?? 0, Colors.red, maxYValue, chartHeight),
+                            _buildSuppliesBar(
+                                'Funds\nIn',
+                                suppliesData['Funds In'] ?? 0,
+                                Colors.teal,
+                                maxYValue,
+                                chartHeight),
+                            _buildSuppliesBar(
+                                'Funds\nOut',
+                                suppliesData['Funds Out'] ?? 0,
+                                Colors.orange,
+                                maxYValue,
+                                chartHeight),
+                            _buildSuppliesBar(
+                                'Laundry\nPayment',
+                                suppliesData['Laundry Payment'] ?? 0,
+                                Colors.blue,
+                                maxYValue,
+                                chartHeight),
+                            _buildSuppliesBar(
+                                'Cash In/\nLoad',
+                                suppliesData['Cash In/Load'] ?? 0,
+                                Colors.green,
+                                maxYValue,
+                                chartHeight),
+                            _buildSuppliesBar(
+                                'Cash\nOut',
+                                suppliesData['Cash Out'] ?? 0,
+                                Colors.red,
+                                maxYValue,
+                                chartHeight),
                           ],
                         ),
                       ),
@@ -386,9 +452,10 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
     );
   }
 
-  Widget _buildSuppliesBar(String label, int value, MaterialColor color, int maxYValue, double chartHeight) {
+  Widget _buildSuppliesBar(String label, int value, MaterialColor color,
+      int maxYValue, double chartHeight) {
     final barHeight = maxYValue > 0 ? (value / maxYValue) * chartHeight : 0.0;
-    
+
     return Expanded(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -452,7 +519,7 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
 
   Widget _buildWeeklyChart(bool isMobile) {
     final totalRevenue = _getTotalRevenue();
-    
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -462,8 +529,12 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Weekly Revenue', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                Text('$totalLoads loads, ${completedJobs.length} jobs', style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
+                const Text('Weekly Revenue',
+                    style:
+                        TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                Text('$totalLoads loads, ${completedJobs.length} jobs',
+                    style:
+                        TextStyle(fontSize: 12, color: Colors.grey.shade600)),
               ],
             ),
             const SizedBox(height: 8),
@@ -480,7 +551,10 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('Total Revenue:', style: TextStyle(fontWeight: FontWeight.w600, color: Colors.blue.shade800)),
+                      Text('Total Revenue:',
+                          style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              color: Colors.blue.shade800)),
                       Text(
                         '₱${_formatCurrency(_getTotalRevenue())}',
                       ),
@@ -491,16 +565,22 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
                     children: [
                       Expanded(
                         child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 6, horizontal: 8),
                           decoration: BoxDecoration(
                             color: Colors.green.shade100,
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Column(
                             children: [
-                              Text('Paid', style: TextStyle(fontSize: 11, color: Colors.green.shade700)),
-                              Text('₱${_formatCurrency(_getTotalPaid())}', 
-                                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.green.shade800)),
+                              Text('Paid',
+                                  style: TextStyle(
+                                      fontSize: 11,
+                                      color: Colors.green.shade700)),
+                              Text('₱${_formatCurrency(_getTotalPaid())}',
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.green.shade800)),
                             ],
                           ),
                         ),
@@ -508,16 +588,22 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
                       const SizedBox(width: 8),
                       Expanded(
                         child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 6, horizontal: 8),
                           decoration: BoxDecoration(
                             color: Colors.blue.shade100,
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Column(
                             children: [
-                              Text('Cash', style: TextStyle(fontSize: 11, color: Colors.blue.shade700)),
-                              Text('₱${_formatCurrency(_getTotalPaidCash())}', 
-                                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue.shade800)),
+                              Text('Cash',
+                                  style: TextStyle(
+                                      fontSize: 11,
+                                      color: Colors.blue.shade700)),
+                              Text('₱${_formatCurrency(_getTotalPaidCash())}',
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.blue.shade800)),
                             ],
                           ),
                         ),
@@ -525,16 +611,22 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
                       const SizedBox(width: 8),
                       Expanded(
                         child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 6, horizontal: 8),
                           decoration: BoxDecoration(
                             color: Colors.purple.shade100,
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Column(
                             children: [
-                              Text('GCash', style: TextStyle(fontSize: 11, color: Colors.purple.shade700)),
-                              Text('₱${_formatCurrency(_getTotalPaidGCash())}', 
-                                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.purple.shade800)),
+                              Text('GCash',
+                                  style: TextStyle(
+                                      fontSize: 11,
+                                      color: Colors.purple.shade700)),
+                              Text('₱${_formatCurrency(_getTotalPaidGCash())}',
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.purple.shade800)),
                             ],
                           ),
                         ),
@@ -542,16 +634,22 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
                       const SizedBox(width: 8),
                       Expanded(
                         child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 6, horizontal: 8),
                           decoration: BoxDecoration(
                             color: Colors.red.shade100,
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Column(
                             children: [
-                              Text('Unpaid', style: TextStyle(fontSize: 11, color: Colors.red.shade700)),
-                              Text('₱${_formatCurrency(_getTotalUnpaid())}', 
-                                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.red.shade800)),
+                              Text('Unpaid',
+                                  style: TextStyle(
+                                      fontSize: 11,
+                                      color: Colors.red.shade700)),
+                              Text('₱${_formatCurrency(_getTotalUnpaid())}',
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.red.shade800)),
                             ],
                           ),
                         ),
@@ -571,8 +669,10 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
                     children: [
                       Icon(Icons.bar_chart, size: 48, color: Colors.grey),
                       SizedBox(height: 8),
-                      Text('No data for this month', style: TextStyle(color: Colors.grey, fontSize: 16)),
-                      Text('Try selecting a different month', style: TextStyle(color: Colors.grey, fontSize: 12)),
+                      Text('No data for this month',
+                          style: TextStyle(color: Colors.grey, fontSize: 16)),
+                      Text('Try selecting a different month',
+                          style: TextStyle(color: Colors.grey, fontSize: 12)),
                     ],
                   ),
                 ),
@@ -583,7 +683,9 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: SizedBox(
-                      width: isMobile ? MediaQuery.of(context).size.width - 40 : 600,
+                      width: isMobile
+                          ? MediaQuery.of(context).size.width - 40
+                          : 600,
                       height: 280,
                       child: _buildChartContent(),
                     ),
@@ -592,7 +694,9 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: SizedBox(
-                      width: isMobile ? MediaQuery.of(context).size.width - 40 : null,
+                      width: isMobile
+                          ? MediaQuery.of(context).size.width - 40
+                          : null,
                       child: _buildWeeklySummaryTable(),
                     ),
                   ),
@@ -635,8 +739,11 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
                       return Padding(
                         padding: const EdgeInsets.only(right: 8),
                         child: Text(
-                          value >= 1000 ? '${(value / 1000).toStringAsFixed(0)}k' : value.toString(),
-                          style: const TextStyle(fontSize: 10, color: Colors.grey),
+                          value >= 1000
+                              ? '${(value / 1000).toStringAsFixed(0)}k'
+                              : value.toString(),
+                          style:
+                              const TextStyle(fontSize: 10, color: Colors.grey),
                         ),
                       );
                     }).toList(),
@@ -649,14 +756,25 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
                     children: List.generate(5, (index) {
                       int week = index + 1;
                       final paidValue = (weeklyData[week]?['paid'] ?? 0) as int;
-                      final paidCashValue = (weeklyData[week]?['paidCash'] ?? 0) as int;
-                      final paidGCashValue = (weeklyData[week]?['paidGCash'] ?? 0) as int;
-                      final unpaidValue = (weeklyData[week]?['unpaid'] ?? 0) as int;
+                      final paidCashValue =
+                          (weeklyData[week]?['paidCash'] ?? 0) as int;
+                      final paidGCashValue =
+                          (weeklyData[week]?['paidGCash'] ?? 0) as int;
+                      final unpaidValue =
+                          (weeklyData[week]?['unpaid'] ?? 0) as int;
 
-                      final paidHeight = maxYValue > 0 ? (paidValue / maxYValue) * chartHeight : 0.0;
-                      final paidCashHeight = maxYValue > 0 ? (paidCashValue / maxYValue) * chartHeight : 0.0;
-                      final paidGCashHeight = maxYValue > 0 ? (paidGCashValue / maxYValue) * chartHeight : 0.0;
-                      final unpaidHeight = maxYValue > 0 ? (unpaidValue / maxYValue) * chartHeight : 0.0;
+                      final paidHeight = maxYValue > 0
+                          ? (paidValue / maxYValue) * chartHeight
+                          : 0.0;
+                      final paidCashHeight = maxYValue > 0
+                          ? (paidCashValue / maxYValue) * chartHeight
+                          : 0.0;
+                      final paidGCashHeight = maxYValue > 0
+                          ? (paidGCashValue / maxYValue) * chartHeight
+                          : 0.0;
+                      final unpaidHeight = maxYValue > 0
+                          ? (unpaidValue / maxYValue) * chartHeight
+                          : 0.0;
 
                       return Expanded(
                         child: Padding(
@@ -672,13 +790,17 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
                                     // Paid Revenue Bar (Green)
                                     Expanded(
                                       child: Tooltip(
-                                        message: 'Week $week\nPaid Revenue: ₱${_formatCurrency(paidValue)}',
+                                        message:
+                                            'Week $week\nPaid Revenue: ₱${_formatCurrency(paidValue)}',
                                         child: Container(
-                                          height: paidHeight.clamp(2, chartHeight),
-                                          margin: const EdgeInsets.symmetric(horizontal: 1),
+                                          height:
+                                              paidHeight.clamp(2, chartHeight),
+                                          margin: const EdgeInsets.symmetric(
+                                              horizontal: 1),
                                           decoration: BoxDecoration(
                                             color: Colors.green.shade400,
-                                            borderRadius: BorderRadius.circular(2),
+                                            borderRadius:
+                                                BorderRadius.circular(2),
                                           ),
                                         ),
                                       ),
@@ -686,13 +808,17 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
                                     // Cash Received Bar (Blue)
                                     Expanded(
                                       child: Tooltip(
-                                        message: 'Week $week\nCash Received: ₱${_formatCurrency(paidCashValue)}',
+                                        message:
+                                            'Week $week\nCash Received: ₱${_formatCurrency(paidCashValue)}',
                                         child: Container(
-                                          height: paidCashHeight.clamp(2, chartHeight),
-                                          margin: const EdgeInsets.symmetric(horizontal: 1),
+                                          height: paidCashHeight.clamp(
+                                              2, chartHeight),
+                                          margin: const EdgeInsets.symmetric(
+                                              horizontal: 1),
                                           decoration: BoxDecoration(
                                             color: Colors.blue.shade400,
-                                            borderRadius: BorderRadius.circular(2),
+                                            borderRadius:
+                                                BorderRadius.circular(2),
                                           ),
                                         ),
                                       ),
@@ -700,13 +826,17 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
                                     // GCash Received Bar (Purple)
                                     Expanded(
                                       child: Tooltip(
-                                        message: 'Week $week\nGCash Received: ₱${_formatCurrency(paidGCashValue)}',
+                                        message:
+                                            'Week $week\nGCash Received: ₱${_formatCurrency(paidGCashValue)}',
                                         child: Container(
-                                          height: paidGCashHeight.clamp(2, chartHeight),
-                                          margin: const EdgeInsets.symmetric(horizontal: 1),
+                                          height: paidGCashHeight.clamp(
+                                              2, chartHeight),
+                                          margin: const EdgeInsets.symmetric(
+                                              horizontal: 1),
                                           decoration: BoxDecoration(
                                             color: Colors.purple.shade400,
-                                            borderRadius: BorderRadius.circular(2),
+                                            borderRadius:
+                                                BorderRadius.circular(2),
                                           ),
                                         ),
                                       ),
@@ -714,13 +844,17 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
                                     // Unpaid Revenue Bar (Red)
                                     Expanded(
                                       child: Tooltip(
-                                        message: 'Week $week\nUnpaid Revenue: ₱${_formatCurrency(unpaidValue)}',
+                                        message:
+                                            'Week $week\nUnpaid Revenue: ₱${_formatCurrency(unpaidValue)}',
                                         child: Container(
-                                          height: unpaidHeight.clamp(2, chartHeight),
-                                          margin: const EdgeInsets.symmetric(horizontal: 1),
+                                          height: unpaidHeight.clamp(
+                                              2, chartHeight),
+                                          margin: const EdgeInsets.symmetric(
+                                              horizontal: 1),
                                           decoration: BoxDecoration(
                                             color: Colors.red.shade400,
-                                            borderRadius: BorderRadius.circular(2),
+                                            borderRadius:
+                                                BorderRadius.circular(2),
                                           ),
                                         ),
                                       ),
@@ -729,7 +863,10 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
                                 ),
                               ),
                               const SizedBox(height: 8),
-                              Text(_getWeekDateRange(week), style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600)),
+                              Text(_getWeekDateRange(week),
+                                  style: const TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w600)),
                             ],
                           ),
                         ),
@@ -754,7 +891,10 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
           const SizedBox(height: 8),
           Text(
             'Each week shows 4 separate bars for easy comparison',
-            style: TextStyle(fontSize: 11, color: Colors.grey.shade600, fontStyle: FontStyle.italic),
+            style: TextStyle(
+                fontSize: 11,
+                color: Colors.grey.shade600,
+                fontStyle: FontStyle.italic),
           ),
         ],
       ),
@@ -788,7 +928,7 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
       int unpaidValue = (week['unpaid'] ?? 0) as int;
       int cashValue = (week['paidCash'] ?? 0) as int;
       int gcashValue = (week['paidGCash'] ?? 0) as int;
-      
+
       if (paidValue > max) max = paidValue;
       if (unpaidValue > max) max = unpaidValue;
       if (cashValue > max) max = cashValue;
@@ -849,7 +989,8 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Weekly Summary', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+          const Text('Weekly Summary',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
           const SizedBox(height: 12),
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
@@ -857,7 +998,8 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
               columnSpacing: 20,
               headingRowHeight: 35,
               dataRowHeight: 30,
-              headingTextStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+              headingTextStyle:
+                  const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
               dataTextStyle: const TextStyle(fontSize: 11),
               columns: const [
                 DataColumn(label: Text('Week')),
@@ -874,20 +1016,37 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
                 final gcashValue = (weeklyData[week]?['paidGCash'] ?? 0) as int;
                 final unpaidValue = (weeklyData[week]?['unpaid'] ?? 0) as int;
                 final totalValue = paidValue + unpaidValue;
-                
+
                 return DataRow(
                   cells: [
-                    DataCell(Text('Week $week', style: const TextStyle(fontWeight: FontWeight.w600))),
-                    DataCell(Text('₱${_formatCurrency(totalValue)}', 
-                      style: TextStyle(fontWeight: FontWeight.w600, color: totalValue > 0 ? Colors.blue.shade700 : Colors.grey))),
-                    DataCell(Text('₱${_formatCurrency(paidValue)}', 
-                      style: TextStyle(color: paidValue > 0 ? Colors.green.shade700 : Colors.grey))),
-                    DataCell(Text('₱${_formatCurrency(cashValue)}', 
-                      style: TextStyle(color: cashValue > 0 ? Colors.blue.shade700 : Colors.grey))),
-                    DataCell(Text('₱${_formatCurrency(gcashValue)}', 
-                      style: TextStyle(color: gcashValue > 0 ? Colors.purple.shade700 : Colors.grey))),
-                    DataCell(Text('₱${_formatCurrency(unpaidValue)}', 
-                      style: TextStyle(color: unpaidValue > 0 ? Colors.red.shade700 : Colors.grey))),
+                    DataCell(Text('Week $week',
+                        style: const TextStyle(fontWeight: FontWeight.w600))),
+                    DataCell(Text('₱${_formatCurrency(totalValue)}',
+                        style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            color: totalValue > 0
+                                ? Colors.blue.shade700
+                                : Colors.grey))),
+                    DataCell(Text('₱${_formatCurrency(paidValue)}',
+                        style: TextStyle(
+                            color: paidValue > 0
+                                ? Colors.green.shade700
+                                : Colors.grey))),
+                    DataCell(Text('₱${_formatCurrency(cashValue)}',
+                        style: TextStyle(
+                            color: cashValue > 0
+                                ? Colors.blue.shade700
+                                : Colors.grey))),
+                    DataCell(Text('₱${_formatCurrency(gcashValue)}',
+                        style: TextStyle(
+                            color: gcashValue > 0
+                                ? Colors.purple.shade700
+                                : Colors.grey))),
+                    DataCell(Text('₱${_formatCurrency(unpaidValue)}',
+                        style: TextStyle(
+                            color: unpaidValue > 0
+                                ? Colors.red.shade700
+                                : Colors.grey))),
                   ],
                 );
               }).toList(),
@@ -898,10 +1057,14 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Month Total:', style: TextStyle(fontWeight: FontWeight.bold)),
+              const Text('Month Total:',
+                  style: TextStyle(fontWeight: FontWeight.bold)),
               Text(
                 '₱${_formatCurrency(_getTotalRevenue())}',
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.blue),
+                style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    color: Colors.blue),
               ),
             ],
           ),
@@ -920,7 +1083,8 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Top Unpaid Customers', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            const Text('Top Unpaid Customers',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             const SizedBox(height: 12),
             if (completedJobs.isEmpty)
               const Padding(
@@ -930,7 +1094,8 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
                     children: [
                       Icon(Icons.people_outline, size: 48, color: Colors.grey),
                       SizedBox(height: 8),
-                      Text('No completed jobs this month', style: TextStyle(color: Colors.grey)),
+                      Text('No completed jobs this month',
+                          style: TextStyle(color: Colors.grey)),
                     ],
                   ),
                 ),
@@ -941,9 +1106,13 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
                 child: Center(
                   child: Column(
                     children: [
-                      Icon(Icons.check_circle_outline, size: 48, color: Colors.green),
+                      Icon(Icons.check_circle_outline,
+                          size: 48, color: Colors.green),
                       SizedBox(height: 8),
-                      Text('All customers paid!', style: TextStyle(color: Colors.green, fontWeight: FontWeight.w600)),
+                      Text('All customers paid!',
+                          style: TextStyle(
+                              color: Colors.green,
+                              fontWeight: FontWeight.w600)),
                     ],
                   ),
                 ),
@@ -959,9 +1128,13 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
                   rows: sortedCustomers.take(10).map((entry) {
                     return DataRow(
                       cells: [
-                        DataCell(Text(entry.key, style: const TextStyle(fontSize: 12))),
+                        DataCell(Text(entry.key,
+                            style: const TextStyle(fontSize: 12))),
                         DataCell(
-                          Text('₱${_formatCurrency(entry.value)}', style: const TextStyle(fontWeight: FontWeight.w600, color: Colors.red)),
+                          Text('₱${_formatCurrency(entry.value)}',
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.red)),
                           onTap: () {},
                         ),
                       ],
@@ -973,19 +1146,23 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: unpaidCustomers.isEmpty ? Colors.green.shade50 : Colors.red.shade50,
+                color: unpaidCustomers.isEmpty
+                    ? Colors.green.shade50
+                    : Colors.red.shade50,
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('Total Unpaid:', style: TextStyle(fontWeight: FontWeight.bold)),
+                  const Text('Total Unpaid:',
+                      style: TextStyle(fontWeight: FontWeight.bold)),
                   Text(
                     '₱${_formatCurrency(unpaidCustomers.values.fold(0, (sum, val) => sum + val))}',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
-                      color: unpaidCustomers.isEmpty ? Colors.green : Colors.red,
+                      color:
+                          unpaidCustomers.isEmpty ? Colors.green : Colors.red,
                     ),
                   ),
                 ],
