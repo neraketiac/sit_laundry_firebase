@@ -18,6 +18,7 @@ import 'package:laundry_firebase/features/pages/body/JobsCompleted/readDataJobsC
 import 'package:laundry_firebase/features/pages/body/JobsOnGoing/readDataJobsOnGoing.dart';
 import 'package:laundry_firebase/features/pages/body/JobsOnQueue/readDataJobsOnQueue.dart';
 import 'package:laundry_firebase/features/pages/body/JobsDone/readDataJobsDone.dart';
+import 'package:laundry_firebase/features/pages/body/rider/show_rider_orders.dart';
 import 'package:laundry_firebase/features/pages/body/Supplies/readSuppliesCurrent.dart';
 import 'package:laundry_firebase/features/pages/body/Supplies/readSuppliesHist.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/showAdminMainPage.dart';
@@ -406,6 +407,12 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                       () => setState(() {}),
                     ),
                     color: LaundryColors.completed,
+                  ),
+                  animatedPanel(
+                    visible: empSetup.showLaundry,
+                    width: 360,
+                    child: const ShowRiderOrders(),
+                    color: Colors.teal.shade100,
                   ),
                   animatedPanel(
                       visible: empSetup.showFunds,
