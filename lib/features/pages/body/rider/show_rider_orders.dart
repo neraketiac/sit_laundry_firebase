@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:laundry_firebase/core/global/variables.dart';
 import 'package:laundry_firebase/core/services/firebase_service.dart';
 import 'loyalty_order_online_model.dart';
 
@@ -60,6 +61,10 @@ class _ShowRiderOrdersState extends State<ShowRiderOrders> {
   Future<void> _updateStatus(
       LoyaltyOrderOnlineModel order, PickupStatus newStatus) async {
     await _col.doc(order.docId).update({'pickupStatus': newStatus.value});
+  }
+
+  Future<void> _deleteOrder(LoyaltyOrderOnlineModel order) async {
+    await _col.doc(order.docId).delete();
   }
 
   Future<void> _pickDate() async {
@@ -141,6 +146,7 @@ class _ShowRiderOrdersState extends State<ShowRiderOrders> {
               itemBuilder: (_, i) => _OrderCard(
                 order: orders[i],
                 onStatusChanged: (s) => _updateStatus(orders[i], s),
+                onDelete: () => _deleteOrder(orders[i]),
               ),
             );
           },
@@ -199,8 +205,13 @@ class _ShowRiderOrdersState extends State<ShowRiderOrders> {
 class _OrderCard extends StatelessWidget {
   final LoyaltyOrderOnlineModel order;
   final void Function(PickupStatus) onStatusChanged;
+  final VoidCallback onDelete;
 
-  const _OrderCard({required this.order, required this.onStatusChanged});
+  const _OrderCard({
+    required this.order,
+    required this.onStatusChanged,
+    required this.onDelete,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -219,7 +230,7 @@ class _OrderCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header row: name + status badge
+            // Header row: name + status badge + delete
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -229,6 +240,14 @@ class _OrderCard extends StatelessWidget {
                           fontSize: 16, fontWeight: FontWeight.bold)),
                 ),
                 _StatusBadge(status: status),
+                IconButton(
+                  icon: const Icon(Icons.delete_outline,
+                      color: Colors.red, size: 20),
+                  tooltip: 'Delete',
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  onPressed: () => _confirmDelete(context),
+                ),
               ],
             ),
             const SizedBox(height: 8),
@@ -278,6 +297,28 @@ class _OrderCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _confirmDelete(BuildContext context) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Delete Order'),
+        content: Text(
+            'Delete pickup order for "${order.name}" on ${DateFormat('MMM d, yyyy').format(order.scheduleDate)}?\n\nThis cannot be undone.'),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('No')),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Yes, Delete'),
+          ),
+        ],
+      ),
+    );
+    if (confirm == true) onDelete();
   }
 
   Future<void> _confirmChange(
