@@ -10,6 +10,7 @@ import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/showDelete
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/batch_fix_promo_counter_page.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/loyalty_validation_page.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/migrateToThird.dart';
+import 'package:laundry_firebase/features/pages/header/Admin/rider/show_rider_management.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/reports/monthly_analytics/monthly_analytics_page.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/other_item_admin/showOtherItemsMaintenance.dart';
@@ -161,6 +162,32 @@ class _ShowAdminMainPageState extends State<ShowAdminMainPage> {
                       context,
                       MaterialPageRoute(
                         builder: (_) => const MonthlyAnalyticsPage(),
+                      ),
+                    );
+                  },
+                ),
+              ),
+
+            const SizedBox(height: 30),
+
+            if (isAdmin)
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.cyan.shade200,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: ListTile(
+                  leading:
+                      const Icon(Icons.delivery_dining, color: Colors.cyan),
+                  title: const Text("Rider Schedule Management"),
+                  subtitle: const Text("Set rider availability slots per day"),
+                  trailing: const Icon(Icons.arrow_forward_ios),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const ShowRiderManagement(),
                       ),
                     );
                   },
