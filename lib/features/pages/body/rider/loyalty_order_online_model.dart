@@ -1,24 +1,24 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-enum PickupStatus { pending, ongoing, completed }
+enum PickupStatus { queued, enroute, done }
 
 extension PickupStatusExt on PickupStatus {
   String get label => switch (this) {
-        PickupStatus.pending => 'Pending',
-        PickupStatus.ongoing => 'Ongoing',
-        PickupStatus.completed => 'Completed',
+        PickupStatus.queued => 'Queued',
+        PickupStatus.enroute => 'En Route',
+        PickupStatus.done => 'Done',
       };
 
   static PickupStatus fromString(String? v) => switch (v) {
-        'ongoing' => PickupStatus.ongoing,
-        'completed' => PickupStatus.completed,
-        _ => PickupStatus.pending,
+        'enroute' => PickupStatus.enroute,
+        'done' => PickupStatus.done,
+        _ => PickupStatus.queued,
       };
 
   String get value => switch (this) {
-        PickupStatus.pending => 'pending',
-        PickupStatus.ongoing => 'ongoing',
-        PickupStatus.completed => 'completed',
+        PickupStatus.queued => 'queued',
+        PickupStatus.enroute => 'enroute',
+        PickupStatus.done => 'done',
       };
 }
 
@@ -31,6 +31,7 @@ class LoyaltyOrderOnlineModel {
   final String timeSlot;
   final Timestamp createdAt;
   final PickupStatus pickupStatus;
+  final int cardNumber;
 
   LoyaltyOrderOnlineModel({
     required this.docId,
@@ -40,7 +41,8 @@ class LoyaltyOrderOnlineModel {
     required this.scheduleDate,
     required this.timeSlot,
     required this.createdAt,
-    this.pickupStatus = PickupStatus.pending,
+    required this.cardNumber,
+    this.pickupStatus = PickupStatus.queued,
   });
 
   factory LoyaltyOrderOnlineModel.fromFirestore(DocumentSnapshot doc) {
@@ -54,6 +56,7 @@ class LoyaltyOrderOnlineModel {
       scheduleDate: schedTs is Timestamp ? schedTs.toDate() : DateTime.now(),
       timeSlot: d['timeSlot'] ?? '',
       createdAt: d['createdAt'] ?? Timestamp.now(),
+      cardNumber: d['cardNumber'] ?? 0,
       pickupStatus: PickupStatusExt.fromString(d['pickupStatus']),
     );
   }
@@ -65,6 +68,7 @@ class LoyaltyOrderOnlineModel {
         'scheduleDate': Timestamp.fromDate(scheduleDate),
         'timeSlot': timeSlot,
         'createdAt': createdAt,
+        'cardNumber': cardNumber,
         'pickupStatus': pickupStatus.value,
       };
 }

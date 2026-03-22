@@ -28,7 +28,7 @@ class ShowRiderOrders extends StatefulWidget {
 
 class _ShowRiderOrdersState extends State<ShowRiderOrders> {
   final _col =
-      FirebaseService.forthFirestore.collection('loyalty_order_online');
+      FirebaseService.secondaryFirestore.collection('loyalty_order_online');
 
   // Filter state
   PickupStatus? _filterStatus; // null = all
@@ -380,7 +380,7 @@ class _StatusBadge extends StatelessWidget {
 }
 
 Color _statusColor(PickupStatus s) => switch (s) {
-      PickupStatus.pending => Colors.orange,
-      PickupStatus.ongoing => Colors.blue,
-      PickupStatus.completed => Colors.green,
+      PickupStatus.queued => Colors.orange,
+      PickupStatus.enroute => Colors.blue,
+      PickupStatus.done => Colors.green,
     };
