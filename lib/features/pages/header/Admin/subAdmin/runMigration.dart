@@ -17,7 +17,20 @@ class RunMigration extends StatefulWidget {
 }
 
 class _RunMigrationState extends State<RunMigration> {
+  final Map<String, bool> _selected = {
+    for (final c in _forthCollections) c: false,
+  };
   bool _deleteBeforeMigrate = false;
+
+  bool get _anySelected => _selected.values.any((v) => v);
+
+  void _toggleAll(bool value) {
+    setState(() {
+      for (final key in _selected.keys) {
+        _selected[key] = value;
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,30 +45,38 @@ class _RunMigrationState extends State<RunMigration> {
         ),
         const SizedBox(height: 4),
         const Text(
-          "Move data from main firestore to forth database.",
+          "Select collections from main firestore to migrate to forth database.",
           style: TextStyle(color: Colors.grey),
         ),
         const SizedBox(height: 12),
-        const Text("Collections to migrate:"),
-        const SizedBox(height: 6),
-        ..._forthCollections.map(
-          (col) => Padding(
-            padding: const EdgeInsets.symmetric(vertical: 2),
-            child: Row(
-              children: [
-                const Icon(Icons.circle, size: 6, color: Colors.grey),
-                const SizedBox(width: 8),
-                Text(col),
-              ],
-            ),
-          ),
+        Row(
+          children: [
+            TextButton(
+                onPressed: () => _toggleAll(true),
+                child: const Text("Select All")),
+            TextButton(
+                onPressed: () => _toggleAll(false),
+                child: const Text("Deselect All")),
+          ],
         ),
+        ..._forthCollections.map((col) => CheckboxListTile(
+              title: Text(col),
+              value: _selected[col],
+              onChanged: (val) => setState(() => _selected[col] = val ?? false),
+              dense: true,
+              controlAffinity: ListTileControlAffinity.leading,
+            )),
         const SizedBox(height: 16),
         SwitchListTile(
           title: const Text("Delete destination before migrating"),
-          subtitle: const Text(
-            "Clears collections in forth database before writing",
-            style: TextStyle(color: Colors.red, fontSize: 12),
+          subtitle: Text(
+            _deleteBeforeMigrate
+                ? "Will DELETE then overwrite — full replace"
+                : "Will merge — only updates changed fields, keeps existing data",
+            style: TextStyle(
+              color: _deleteBeforeMigrate ? Colors.red : Colors.green.shade700,
+              fontSize: 12,
+            ),
           ),
           value: _deleteBeforeMigrate,
           onChanged: (val) => setState(() => _deleteBeforeMigrate = val),
@@ -63,7 +84,7 @@ class _RunMigrationState extends State<RunMigration> {
         ),
         const SizedBox(height: 12),
         ElevatedButton.icon(
-          onPressed: () => _confirmAndMigrate(context),
+          onPressed: _anySelected ? () => _confirmAndMigrate(context) : null,
           icon: const Icon(Icons.sync_alt),
           label: const Text("Run Migration"),
         ),
@@ -73,6 +94,8 @@ class _RunMigrationState extends State<RunMigration> {
   }
 
   Future<void> _confirmAndMigrate(BuildContext context) async {
+    final selected =
+        _selected.entries.where((e) => e.value).map((e) => e.key).toList();
     final deleteFirst = _deleteBeforeMigrate;
 
     final confirm = await showDialog<bool>(
@@ -80,8 +103,8 @@ class _RunMigrationState extends State<RunMigration> {
       builder: (_) => AlertDialog(
         title: const Text("Confirm Migration"),
         content: Text(
-          "${deleteFirst ? '⚠️ DELETE then migrate' : 'Migrate'} the following collections to forth database?\n\n${_forthCollections.join('\n')}"
-          "${deleteFirst ? '\n\nDestination docs will be permanently deleted first.' : ''}",
+          "${deleteFirst ? '⚠️ DELETE then migrate' : 'Merge-migrate'} the following collections to forth database?\n\n${selected.join('\n')}"
+          "${deleteFirst ? '\n\nDestination docs will be permanently deleted first.' : '\n\nOnly changed fields will be updated (merge mode).'}",
         ),
         actions: [
           TextButton(
@@ -93,7 +116,7 @@ class _RunMigrationState extends State<RunMigration> {
                 ? ElevatedButton.styleFrom(backgroundColor: Colors.red)
                 : null,
             onPressed: () => Navigator.pop(context, true),
-            child: Text(deleteFirst ? "Delete & Migrate" : "Yes"),
+            child: Text(deleteFirst ? "Delete & Migrate" : "Yes, Merge"),
           ),
         ],
       ),
@@ -119,7 +142,7 @@ class _RunMigrationState extends State<RunMigration> {
       // Step 1: delete destination if requested
       if (deleteFirst) {
         progressKey.currentState?.setStatus("Deleting destination...");
-        for (final col in _forthCollections) {
+        for (final col in selected) {
           final snap = await forth.collection(col).get();
           WriteBatch batch = forth.batch();
           int ops = 0;
@@ -139,7 +162,7 @@ class _RunMigrationState extends State<RunMigration> {
       // Step 2: count source docs
       progressKey.currentState?.setStatus("Counting documents...");
       int totalDocs = 0;
-      for (final col in _forthCollections) {
+      for (final col in selected) {
         final snap = await main.collection(col).get();
         totalDocs += snap.docs.length;
       }
@@ -147,8 +170,10 @@ class _RunMigrationState extends State<RunMigration> {
       int processed = 0;
 
       // Step 3: migrate
-      progressKey.currentState?.setStatus("Migrating to Forth DB...");
-      for (final col in _forthCollections) {
+      progressKey.currentState?.setStatus(
+        deleteFirst ? "Migrating to Forth DB..." : "Merging to Forth DB...",
+      );
+      for (final col in selected) {
         final snap = await main.collection(col).get();
         WriteBatch batch = forth.batch();
         int ops = 0;
@@ -158,7 +183,9 @@ class _RunMigrationState extends State<RunMigration> {
           batch.set(
             forth.collection(col).doc(doc.id),
             doc.data(),
-            SetOptions(merge: false),
+            // merge: true = only update changed fields, keep existing destination data
+            // merge: false = full overwrite (used after delete)
+            SetOptions(merge: !deleteFirst),
           );
           ops++;
           colCount++;
@@ -194,7 +221,7 @@ class _RunMigrationState extends State<RunMigration> {
         title: Text(success ? "Migration Complete" : "Migration Failed"),
         content: Text(
           success
-              ? "SUCCESS: YES\n\nMigrated to forth database:\n$resultMessage"
+              ? "SUCCESS: YES\n\nMode: ${deleteFirst ? 'Full replace' : 'Merge'}\n\n$resultMessage"
               : "SUCCESS: NO\n\n$resultMessage",
         ),
         actions: [

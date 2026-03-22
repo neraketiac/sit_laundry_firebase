@@ -236,17 +236,17 @@ class _ShowAdminMainPageState extends State<ShowAdminMainPage> {
 
             // const SizedBox(height: 30),
 
-            if (isAdmin)
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const ShowDeleteSecondaryData(),
-              ),
+            // if (isAdmin)
+            //   Container(
+            //     padding: const EdgeInsets.all(16),
+            //     decoration: BoxDecoration(
+            //       color: Colors.grey.shade300,
+            //       borderRadius: BorderRadius.circular(8),
+            //     ),
+            //     child: const ShowDeleteSecondaryData(),
+            //   ),
 
-            const SizedBox(height: 40),
+            // const SizedBox(height: 40),
 
             // const SizedBox(height: 40),
 

@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:laundry_firebase/core/global/variables_oth.dart';
-import 'package:laundry_firebase/core/utils/sharedMethods.dart';
 import 'package:laundry_firebase/core/utils/sharedmethodsdatabase.dart';
 import 'package:laundry_firebase/core/services/database_loyalty.dart';
 import 'package:laundry_firebase/features/jobs/repository/jobmodel_repository.dart';
@@ -21,11 +20,15 @@ class AdminJobRepoViewer extends StatefulWidget {
 
 class _AdminJobRepoViewerState extends State<AdminJobRepoViewer> {
   late JobModelRepository jobRepo;
-  int _expandedSection = 0;
 
   Future<void> saveButtonSetRepository() async {
     jobRepo.currentEmpId = empIdGlobal;
+    // Capture admin's explicit unpaid choice before sync overwrites it
+    final adminUnpaid = jobRepo.selectedUnpaid;
     jobRepo.syncSelectedToRepoAll(jobRepo);
+    // Restore admin override — syncSelectedToRepoAll recalculates unpaid from payment logic
+    jobRepo.unpaid = adminUnpaid;
+    jobRepo.selectedUnpaid = adminUnpaid;
     await callDatabaseUpdateJob(context, jobRepo.getJobsModel()!);
   }
 
@@ -48,25 +51,30 @@ class _AdminJobRepoViewerState extends State<AdminJobRepoViewer> {
 
   Widget _buildFieldRow(String label, dynamic repo, dynamic selected) {
     final isMobile = MediaQuery.of(context).size.width < 600;
-    
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: isMobile
           ? Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12)),
+                Text(label,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w600, fontSize: 12)),
                 const SizedBox(height: 6),
                 _buildEditWidget(label, repo, selected),
               ],
             )
           : Row(
               children: [
-                SizedBox(width: 150, child: Text(label, style: const TextStyle(fontWeight: FontWeight.w600))),
+                SizedBox(
+                    width: 150,
+                    child: Text(label,
+                        style: const TextStyle(fontWeight: FontWeight.w600))),
                 Expanded(
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8),
-                    child: Text(formatValue(repo), style: TextStyle(color: Colors.grey.shade700)),
+                    child: Text(formatValue(repo),
+                        style: TextStyle(color: Colors.grey.shade700)),
                   ),
                 ),
                 Expanded(child: _buildEditWidget(label, repo, selected)),
@@ -90,21 +98,18 @@ class _AdminJobRepoViewerState extends State<AdminJobRepoViewer> {
         },
       );
     }
-    
     if (selected is TextEditingController) {
       return TextFormField(
         controller: selected,
         decoration: InputDecoration(
           isDense: true,
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(4)),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
         ),
-        onChanged: (v) {
-          setState(() => _updateField(label, v));
-        },
+        onChanged: (v) => setState(() => _updateField(label, v)),
       );
     }
-    
     return TextFormField(
       initialValue: formatValue(selected),
       decoration: InputDecoration(
@@ -112,9 +117,7 @@ class _AdminJobRepoViewerState extends State<AdminJobRepoViewer> {
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(4)),
         contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
       ),
-      onChanged: (v) {
-        setState(() => _updateField(label, v));
-      },
+      onChanged: (v) => setState(() => _updateField(label, v)),
     );
   }
 
@@ -122,91 +125,62 @@ class _AdminJobRepoViewerState extends State<AdminJobRepoViewer> {
     switch (label) {
       case "jobId":
         jobRepo.selectedJobId = int.tryParse(value.toString()) ?? 0;
-        break;
       case "customerId":
         jobRepo.selectedCustomerId = int.tryParse(value.toString()) ?? 0;
-        break;
       case "customerName":
         jobRepo.selectedCustomerNameVar.text = value;
-        break;
       case "isCustomerPickedUp":
         jobRepo.selectedIsCustomerPickedUp = value;
-        break;
       case "isDeliveredToCustomer":
         jobRepo.selectedIsDeliveredToCustomer = value;
-        break;
       case "fold":
         jobRepo.selectedFold = value;
-        break;
       case "mix":
         jobRepo.selectedMix = value;
-        break;
       case "unpaid":
         jobRepo.selectedUnpaid = value;
-        break;
       case "paidCash":
         jobRepo.selectedPaidCash = value;
-        break;
       case "paidGCash":
         jobRepo.selectedPaidGCash = value;
-        break;
       case "paidGCashVerified":
         jobRepo.selectedPaidGCashVerified = value;
-        break;
       case "forDisposal":
         jobRepo.selectedForDisposal = value;
-        break;
       case "disposed":
         jobRepo.selectedDisposed = value;
-        break;
       case "paidCashAmount":
         jobRepo.selectedPaidCashAmount = int.tryParse(value.toString()) ?? 0;
-        break;
       case "paidGCashAmount":
         jobRepo.selectedPaidGCashAmount = int.tryParse(value.toString()) ?? 0;
-        break;
       case "remarks":
         jobRepo.selectedRemarksVar.text = value;
-        break;
       case "perKilo":
         jobRepo.selectedPerKilo = value == "true";
-        break;
       case "perLoad":
         jobRepo.selectedPerLoad = value == "true";
-        break;
       case "finalKilo":
         jobRepo.selectedFinalKilo = double.tryParse(value.toString()) ?? 0;
-        break;
       case "finalLoad":
         jobRepo.selectedFinalLoad = int.tryParse(value.toString()) ?? 0;
-        break;
       case "finalPrice":
         jobRepo.selectedFinalPrice = int.tryParse(value.toString()) ?? 0;
-        break;
       case "promoCounter":
         jobRepo.selectedPromoCounter = int.tryParse(value.toString()) ?? 0;
-        break;
       case "basket":
         jobRepo.selectedBasket = int.tryParse(value.toString()) ?? 0;
-        break;
       case "ebag":
         jobRepo.selectedEbag = int.tryParse(value.toString()) ?? 0;
-        break;
       case "sako":
         jobRepo.selectedSako = int.tryParse(value.toString()) ?? 0;
-        break;
       case "paymentReceivedBy":
         jobRepo.selectedPaymentReceivedBy = value;
-        break;
       case "processStep":
         jobRepo.selectedProcessStep = value;
-        break;
       case "allStatus":
         jobRepo.selectedAllStatus = double.tryParse(value.toString()) ?? 0;
-        break;
       case "PromoErrorCode":
         jobRepo.selectedPromoErrorCode = int.tryParse(value.toString()) ?? 0;
-        break;
     }
   }
 
@@ -214,7 +188,8 @@ class _AdminJobRepoViewerState extends State<AdminJobRepoViewer> {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8),
       child: ExpansionTile(
-        title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+        title: Text(title,
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
         backgroundColor: Colors.blue.shade50,
         children: [
           Padding(
@@ -240,14 +215,16 @@ class _AdminJobRepoViewerState extends State<AdminJobRepoViewer> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Current Items:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+              const Text('Current Items:',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
               const SizedBox(height: 10),
               if (jobRepo.selectedItems.isEmpty)
-                const Text('No items added', style: TextStyle(color: Colors.grey, fontSize: 12))
+                const Text('No items added',
+                    style: TextStyle(color: Colors.grey, fontSize: 12))
               else
                 ...jobRepo.selectedItems.asMap().entries.map((entry) {
-                  int index = entry.key;
-                  var item = entry.value;
+                  final index = entry.key;
+                  final item = entry.value;
                   return Container(
                     margin: const EdgeInsets.only(bottom: 6),
                     padding: const EdgeInsets.all(8),
@@ -258,19 +235,21 @@ class _AdminJobRepoViewerState extends State<AdminJobRepoViewer> {
                     ),
                     child: Row(
                       children: [
-                        Expanded(child: Text('${item.itemName} (₱${item.itemPrice})', style: const TextStyle(fontSize: 12))),
+                        Expanded(
+                            child: Text('${item.itemName} (₱${item.itemPrice})',
+                                style: const TextStyle(fontSize: 12))),
                         IconButton(
-                          icon: const Icon(Icons.delete, color: Colors.red, size: 18),
-                          onPressed: () {
-                            setState(() => jobRepo.selectedItems.removeAt(index));
-                          },
+                          icon: const Icon(Icons.delete,
+                              color: Colors.red, size: 18),
+                          onPressed: () => setState(
+                              () => jobRepo.selectedItems.removeAt(index)),
                           padding: EdgeInsets.zero,
                           constraints: const BoxConstraints(),
                         ),
                       ],
                     ),
                   );
-                }).toList(),
+                }),
             ],
           ),
         ),
@@ -285,21 +264,25 @@ class _AdminJobRepoViewerState extends State<AdminJobRepoViewer> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Add Items:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+              const Text('Add Items:',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
               const SizedBox(height: 10),
               Row(
                 children: [
                   ElevatedButton.icon(
-                    onPressed: () {
-                      setState(() => jobRepo.selectedItems.clear());
-                    },
+                    onPressed: () =>
+                        setState(() => jobRepo.selectedItems.clear()),
                     icon: const Icon(Icons.delete_sweep, size: 18),
                     label: const Text('Clear All'),
-                    style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                    style:
+                        ElevatedButton.styleFrom(backgroundColor: Colors.red),
                   ),
                   const SizedBox(width: 10),
-                  Text('Total: ₱${jobRepo.selectedItems.fold(0, (sum, item) => sum + item.itemPrice)}', 
-                    style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12)),
+                  Text(
+                    'Total: ₱${jobRepo.selectedItems.fold(0, (t, item) => t + item.itemPrice)}',
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w600, fontSize: 12),
+                  ),
                 ],
               ),
               const SizedBox(height: 10),
@@ -308,22 +291,22 @@ class _AdminJobRepoViewerState extends State<AdminJobRepoViewer> {
                 runSpacing: 6,
                 children: [
                   ElevatedButton(
-                    onPressed: () {
-                      setState(() => jobRepo.selectedItems.add(promoFree));
-                    },
-                    style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-                    child: Text('${promoFree.itemName} (₱${promoFree.itemPrice})', style: const TextStyle(fontSize: 11)),
+                    onPressed: () =>
+                        setState(() => jobRepo.selectedItems.add(promoFree)),
+                    style:
+                        ElevatedButton.styleFrom(backgroundColor: Colors.green),
+                    child: Text(
+                        '${promoFree.itemName} (₱${promoFree.itemPrice})',
+                        style: const TextStyle(fontSize: 11)),
                   ),
                   ...listOthItems
                       .where((item) => item.itemId != promoFree.itemId)
-                      .map((item) {
-                    return ElevatedButton(
-                      onPressed: () {
-                        setState(() => jobRepo.selectedItems.add(item));
-                      },
-                      child: Text('${item.itemName} (₱${item.itemPrice})', style: const TextStyle(fontSize: 11)),
-                    );
-                  }).toList(),
+                      .map((item) => ElevatedButton(
+                            onPressed: () =>
+                                setState(() => jobRepo.selectedItems.add(item)),
+                            child: Text('${item.itemName} (₱${item.itemPrice})',
+                                style: const TextStyle(fontSize: 11)),
+                          )),
                 ],
               ),
             ],
@@ -333,10 +316,53 @@ class _AdminJobRepoViewerState extends State<AdminJobRepoViewer> {
     );
   }
 
+  Widget _buildPromoErrorLegend() {
+    const codes = [
+      (0, '0 - No error, eligible, included in promo, paid'),
+      (1, '1 - On review, partial eligible, unpaid'),
+      (2, '2 - Not eligible: unpaid for 2+ weeks'),
+      (3, '3 - Not eligible: last laundry not within 2 weeks'),
+      (4, '4 - Promo ended (manually set)'),
+      (5, '5 - Reset: previous eligible jobs now considered not eligible'),
+      (99, '99 - Default, no status'),
+    ];
+    final current = jobRepo.selectedPromoErrorCode;
+    return Container(
+      margin: const EdgeInsets.only(top: 8),
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: Colors.amber.shade50,
+        border: Border.all(color: Colors.amber.shade200),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('PromoErrorCode legend:',
+              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12)),
+          const SizedBox(height: 6),
+          ...codes.map((entry) {
+            final isCurrent = entry.$1 == current;
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 1),
+              child: Text(
+                entry.$2,
+                style: TextStyle(
+                  fontSize: 11,
+                  color: isCurrent ? Colors.deepOrange : Colors.grey.shade700,
+                  fontWeight: isCurrent ? FontWeight.bold : FontWeight.normal,
+                ),
+              ),
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isMobile = MediaQuery.of(context).size.width < 600;
-    
     return Dialog(
       insetPadding: EdgeInsets.all(isMobile ? 8 : 16),
       child: Scaffold(
@@ -368,48 +394,80 @@ class _AdminJobRepoViewerState extends State<AdminJobRepoViewer> {
                 _buildFieldRow("dateC", jobRepo.dateC, jobRepo.dateC),
               ]),
               _buildSection("Customer", [
-                _buildFieldRow("customerId", jobRepo.customerId, jobRepo.selectedCustomerId),
-                _buildFieldRow("customerName", jobRepo.customerName, jobRepo.selectedCustomerNameVar.text),
-                _buildFieldRow("isCustomerPickedUp", jobRepo.isCustomerPickedUp, jobRepo.selectedIsCustomerPickedUp),
-                _buildFieldRow("isDeliveredToCustomer", jobRepo.isDeliveredToCustomer, jobRepo.selectedIsDeliveredToCustomer),
+                _buildFieldRow("customerId", jobRepo.customerId,
+                    jobRepo.selectedCustomerId),
+                _buildFieldRow("customerName", jobRepo.customerName,
+                    jobRepo.selectedCustomerNameVar.text),
+                _buildFieldRow("isCustomerPickedUp", jobRepo.isCustomerPickedUp,
+                    jobRepo.selectedIsCustomerPickedUp),
+                _buildFieldRow(
+                    "isDeliveredToCustomer",
+                    jobRepo.isDeliveredToCustomer,
+                    jobRepo.selectedIsDeliveredToCustomer),
               ]),
               _buildSection("Pricing", [
-                _buildFieldRow("perKilo", jobRepo.perKilo, jobRepo.selectedPerKilo),
-                _buildFieldRow("perLoad", jobRepo.perLoad, jobRepo.selectedPerLoad),
-                _buildFieldRow("finalKilo", jobRepo.finalKilo, jobRepo.selectedFinalKilo),
-                _buildFieldRow("finalLoad", jobRepo.finalLoad, jobRepo.selectedFinalLoad),
-                _buildFieldRow("finalPrice", jobRepo.finalPrice, jobRepo.selectedFinalPrice),
-                _buildFieldRow("promoCounter", jobRepo.promoCounter, jobRepo.selectedPromoCounter),
+                _buildFieldRow(
+                    "perKilo", jobRepo.perKilo, jobRepo.selectedPerKilo),
+                _buildFieldRow(
+                    "perLoad", jobRepo.perLoad, jobRepo.selectedPerLoad),
+                _buildFieldRow(
+                    "finalKilo", jobRepo.finalKilo, jobRepo.selectedFinalKilo),
+                _buildFieldRow(
+                    "finalLoad", jobRepo.finalLoad, jobRepo.selectedFinalLoad),
+                _buildFieldRow("finalPrice", jobRepo.finalPrice,
+                    jobRepo.selectedFinalPrice),
+                _buildFieldRow("promoCounter", jobRepo.promoCounter,
+                    jobRepo.selectedPromoCounter),
+                _buildFieldRow("PromoErrorCode", jobRepo.promoErrorCode,
+                    jobRepo.selectedPromoErrorCode),
+                _buildPromoErrorLegend(),
               ]),
               _buildSection("Options", [
                 _buildFieldRow("fold", jobRepo.fold, jobRepo.selectedFold),
                 _buildFieldRow("mix", jobRepo.mix, jobRepo.selectedMix),
               ]),
               _buildSection("Containers", [
-                _buildFieldRow("basket", jobRepo.basket, jobRepo.selectedBasket),
+                _buildFieldRow(
+                    "basket", jobRepo.basket, jobRepo.selectedBasket),
                 _buildFieldRow("ebag", jobRepo.ebag, jobRepo.selectedEbag),
                 _buildFieldRow("sako", jobRepo.sako, jobRepo.selectedSako),
               ]),
               _buildSection("Payment", [
-                _buildFieldRow("unpaid", jobRepo.unpaid, jobRepo.selectedUnpaid),
-                _buildFieldRow("paidCash", jobRepo.paidCash, jobRepo.selectedPaidCash),
-                _buildFieldRow("paidGCash", jobRepo.paidGCash, jobRepo.selectedPaidGCash),
-                _buildFieldRow("paidGCashVerified", jobRepo.paidGCashVerified, jobRepo.selectedPaidGCashVerified),
-                _buildFieldRow("paidCashAmount", jobRepo.paidCashAmount, jobRepo.repoVarCashAmountVar),
-                _buildFieldRow("paidGCashAmount", jobRepo.paidGCashAmount, jobRepo.repoVarGCashAmountVar),
-                _buildFieldRow("paymentReceivedBy", jobRepo.paymentReceivedBy, jobRepo.selectedPaymentReceivedBy),
+                _buildFieldRow(
+                    "unpaid", jobRepo.unpaid, jobRepo.selectedUnpaid),
+                _buildFieldRow(
+                    "paidCash", jobRepo.paidCash, jobRepo.selectedPaidCash),
+                _buildFieldRow(
+                    "paidGCash", jobRepo.paidGCash, jobRepo.selectedPaidGCash),
+                _buildFieldRow("paidGCashVerified", jobRepo.paidGCashVerified,
+                    jobRepo.selectedPaidGCashVerified),
+                _buildFieldRow("paidCashAmount", jobRepo.paidCashAmount,
+                    jobRepo.repoVarCashAmountVar),
+                _buildFieldRow("paidGCashAmount", jobRepo.paidGCashAmount,
+                    jobRepo.repoVarGCashAmountVar),
+                _buildFieldRow("paymentReceivedBy", jobRepo.paymentReceivedBy,
+                    jobRepo.selectedPaymentReceivedBy),
               ]),
               _buildSection("Remarks", [
-                _buildFieldRow("remarks", jobRepo.remarks, jobRepo.selectedRemarksVar),
+                _buildFieldRow(
+                    "remarks", jobRepo.remarks, jobRepo.selectedRemarksVar),
               ]),
               _buildSection("Items", [
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8),
                   child: Row(
                     children: [
-                      const SizedBox(width: 150, child: Text("Items Count", style: TextStyle(fontWeight: FontWeight.w600))),
-                      Expanded(child: Text("${jobRepo.items.length}", style: TextStyle(color: Colors.grey.shade700))),
-                      Expanded(child: Text("${jobRepo.selectedItems.length}", style: const TextStyle(fontWeight: FontWeight.w600))),
+                      const SizedBox(
+                          width: 150,
+                          child: Text("Items Count",
+                              style: TextStyle(fontWeight: FontWeight.w600))),
+                      Expanded(
+                          child: Text("${jobRepo.items.length}",
+                              style: TextStyle(color: Colors.grey.shade700))),
+                      Expanded(
+                          child: Text("${jobRepo.selectedItems.length}",
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.w600))),
                     ],
                   ),
                 ),
@@ -417,12 +475,16 @@ class _AdminJobRepoViewerState extends State<AdminJobRepoViewer> {
                 _buildItemsEditor(),
               ]),
               _buildSection("Workflow", [
-                _buildFieldRow("processStep", jobRepo.processStep, jobRepo.selectedProcessStep),
-                _buildFieldRow("allStatus", jobRepo.allStatus, jobRepo.selectedAllStatus),
+                _buildFieldRow("processStep", jobRepo.processStep,
+                    jobRepo.selectedProcessStep),
+                _buildFieldRow(
+                    "allStatus", jobRepo.allStatus, jobRepo.selectedAllStatus),
               ]),
               _buildSection("Disposal", [
-                _buildFieldRow("forDisposal", jobRepo.forDisposal, jobRepo.selectedForDisposal),
-                _buildFieldRow("disposed", jobRepo.disposed, jobRepo.selectedDisposed),
+                _buildFieldRow("forDisposal", jobRepo.forDisposal,
+                    jobRepo.selectedForDisposal),
+                _buildFieldRow(
+                    "disposed", jobRepo.disposed, jobRepo.selectedDisposed),
               ]),
               const SizedBox(height: 20),
             ],
@@ -448,44 +510,48 @@ class _AdminJobRepoViewerState extends State<AdminJobRepoViewer> {
                     onPressed: () async {
                       final confirm = await showDialog<bool>(
                         context: context,
-                        builder: (context) => AlertDialog(
+                        builder: (ctx) => AlertDialog(
                           title: const Text("Delete Job"),
-                          content: const Text("Are you sure? This cannot be undone."),
+                          content: const Text(
+                              "Are you sure? This cannot be undone."),
                           actions: [
                             TextButton(
-                              onPressed: () => Navigator.pop(context, false),
+                              onPressed: () => Navigator.pop(ctx, false),
                               child: const Text("Cancel"),
                             ),
                             TextButton(
-                              onPressed: () => Navigator.pop(context, true),
-                              child: const Text("Delete", style: TextStyle(color: Colors.red)),
+                              onPressed: () => Navigator.pop(ctx, true),
+                              child: const Text("Delete",
+                                  style: TextStyle(color: Colors.red)),
                             ),
                           ],
                         ),
                       );
-
-                      if (confirm == true) {
+                      if (confirm == true && context.mounted) {
                         await FirebaseFirestore.instance
                             .collection('Jobs_queue')
                             .doc(jobRepo.docId)
                             .delete();
-
-                        bool hasPromoFree = jobRepo.items
-                            .any((item) => item.itemUniqueId == promoFree.itemUniqueId);
-
+                        final hasPromoFree = jobRepo.items.any((item) =>
+                            item.itemUniqueId == promoFree.itemUniqueId);
                         if (hasPromoFree) {
-                          DatabaseLoyalty loyalty = DatabaseLoyalty();
-                          loyalty.addCountByCardNumber(jobRepo.customerId, 10);
+                          DatabaseLoyalty()
+                              .addCountByCardNumber(jobRepo.customerId, 10);
                         }
-
-                        Navigator.pop(context);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text("Job deleted: ${jobRepo.customerName}")),
-                        );
+                        if (context.mounted) {
+                          Navigator.pop(context);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                                content: Text(
+                                    "Job deleted: ${jobRepo.customerName}")),
+                          );
+                        }
                       }
                     },
-                    style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                    child: const Text('Delete', style: TextStyle(color: Colors.white)),
+                    style:
+                        ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                    child: const Text('Delete',
+                        style: TextStyle(color: Colors.white)),
                   ),
                 ),
               const SizedBox(width: 8),
@@ -494,15 +560,18 @@ class _AdminJobRepoViewerState extends State<AdminJobRepoViewer> {
                   onPressed: () async {
                     if (jobRepo.selectedCustomerId == 0) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Please select customer name.')),
+                        const SnackBar(
+                            content: Text('Please select customer name.')),
                       );
                       return;
                     }
                     await saveButtonSetRepository();
-                    Navigator.pop(context);
+                    if (context.mounted) Navigator.pop(context);
                   },
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-                  child: const Text('Save', style: TextStyle(color: Colors.white)),
+                  style:
+                      ElevatedButton.styleFrom(backgroundColor: Colors.green),
+                  child:
+                      const Text('Save', style: TextStyle(color: Colors.white)),
                 ),
               ),
             ],
