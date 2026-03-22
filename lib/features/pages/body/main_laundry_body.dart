@@ -256,7 +256,7 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
             MenuItemButton(
               onPressed: () => showDialog(
                   context: context, builder: (_) => const ShareRiderGps()),
-              child: const Text("Rider GPS"),
+              child: const Text("📍 Rider GPS"),
             ),
             MenuItemButton(
               leadingIcon: const Icon(Icons.logout, size: 18),
