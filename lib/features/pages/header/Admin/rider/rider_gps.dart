@@ -53,9 +53,9 @@ class _AdminRiderPanelState extends State<AdminRiderPanel> {
       int stale = 0;
       for (final doc in snap.docs) {
         final ts = doc.data()['lastSeen'];
-        if (ts == null) {
-          stale++; // no timestamp = treat as stale
-        } else if (ts is Timestamp) {
+        // Only mark stale if lastSeen exists AND is old
+        // If no lastSeen field, assume customer app doesn't write it — treat as active
+        if (ts is Timestamp) {
           final age = now.difference(ts.toDate());
           if (age > _kStaleThreshold) stale++;
         }
@@ -86,13 +86,12 @@ class _AdminRiderPanelState extends State<AdminRiderPanel> {
     int removed = 0;
     for (final doc in snap.docs) {
       final ts = doc.data()['lastSeen'];
-      bool isStale = ts == null;
-      if (!isStale && ts is Timestamp) {
-        isStale = now.difference(ts.toDate()) > _kStaleThreshold;
-      }
-      if (isStale) {
-        batch.delete(doc.reference);
-        removed++;
+      // Only remove if lastSeen exists AND is old
+      if (ts is Timestamp) {
+        if (now.difference(ts.toDate()) > _kStaleThreshold) {
+          batch.delete(doc.reference);
+          removed++;
+        }
       }
     }
     if (removed > 0) await batch.commit();
