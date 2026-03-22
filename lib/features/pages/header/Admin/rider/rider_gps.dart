@@ -13,25 +13,31 @@ const _kDoc = 'current';
 const _kSubCollection = 'push_subscriptions';
 const _kPushServer = 'https://rider-push-server.onrender.com/send';
 
-class ShareRiderGps extends StatefulWidget {
-  const ShareRiderGps({super.key});
+// Watcher is considered stale if lastSeen is older than this
+const _kStaleThreshold = Duration(minutes: 2);
+
+class AdminRiderPanel extends StatefulWidget {
+  const AdminRiderPanel({super.key});
 
   @override
-  State<ShareRiderGps> createState() => _ShareRiderGpsState();
+  State<AdminRiderPanel> createState() => _AdminRiderPanelState();
 }
 
-class _ShareRiderGpsState extends State<ShareRiderGps> {
+class _AdminRiderPanelState extends State<AdminRiderPanel> {
   bool _sharing = false;
   bool _locating = false;
   bool _notified = false;
   String? _error;
-  Timer? _timer;
+  Timer? _locationTimer;
+  Timer? _cleanupTimer;
   int _watcherCount = 0;
+  int _staleCount = 0;
   StreamSubscription? _watcherSub;
 
   @override
   void dispose() {
-    _timer?.cancel();
+    _locationTimer?.cancel();
+    _cleanupTimer?.cancel();
     _watcherSub?.cancel();
     super.dispose();
   }
@@ -42,14 +48,55 @@ class _ShareRiderGpsState extends State<ShareRiderGps> {
         .collection(_kWatchers)
         .snapshots()
         .listen((snap) {
-      if (mounted) setState(() => _watcherCount = snap.docs.length);
+      if (!mounted) return;
+      final now = DateTime.now();
+      int stale = 0;
+      for (final doc in snap.docs) {
+        final ts = doc.data()['lastSeen'];
+        if (ts == null) {
+          stale++; // no timestamp = treat as stale
+        } else if (ts is Timestamp) {
+          final age = now.difference(ts.toDate());
+          if (age > _kStaleThreshold) stale++;
+        }
+      }
+      setState(() {
+        _watcherCount = snap.docs.length;
+        _staleCount = stale;
+      });
     });
   }
 
   void _stopWatcherStream() {
     _watcherSub?.cancel();
     _watcherSub = null;
-    if (mounted) setState(() => _watcherCount = 0);
+    if (mounted)
+      setState(() {
+        _watcherCount = 0;
+        _staleCount = 0;
+      });
+  }
+
+  /// Deletes watcher docs with missing or stale lastSeen
+  Future<int> _cleanStaleWatchers() async {
+    final snap =
+        await FirebaseService.secondaryFirestore.collection(_kWatchers).get();
+    final now = DateTime.now();
+    final batch = FirebaseService.secondaryFirestore.batch();
+    int removed = 0;
+    for (final doc in snap.docs) {
+      final ts = doc.data()['lastSeen'];
+      bool isStale = ts == null;
+      if (!isStale && ts is Timestamp) {
+        isStale = now.difference(ts.toDate()) > _kStaleThreshold;
+      }
+      if (isStale) {
+        batch.delete(doc.reference);
+        removed++;
+      }
+    }
+    if (removed > 0) await batch.commit();
+    return removed;
   }
 
   void _toggleSharing(bool val) {
@@ -60,12 +107,18 @@ class _ShareRiderGpsState extends State<ShareRiderGps> {
     if (val) {
       _pushLocation(notify: true);
       _startWatcherStream();
-      _timer = Timer.periodic(
+      _locationTimer = Timer.periodic(
         const Duration(seconds: 15),
         (_) => _pushLocation(notify: false),
       );
+      // Auto-clean stale watchers every 60 seconds
+      _cleanupTimer = Timer.periodic(
+        const Duration(seconds: 60),
+        (_) => _cleanStaleWatchers(),
+      );
     } else {
-      _timer?.cancel();
+      _locationTimer?.cancel();
+      _cleanupTimer?.cancel();
       _stopWatcherStream();
       FirebaseService.secondaryFirestore
           .collection(_kCollection)
@@ -118,7 +171,8 @@ class _ShareRiderGpsState extends State<ShareRiderGps> {
       actions: [
         TextButton(
           onPressed: () {
-            _timer?.cancel();
+            _locationTimer?.cancel();
+            _cleanupTimer?.cancel();
             Navigator.pop(context);
           },
           child: const Text('Close'),
@@ -152,7 +206,7 @@ class _ShareRiderGpsState extends State<ShareRiderGps> {
               ),
           ],
         ),
-        if (_sharing)
+        if (_sharing) ...[
           Padding(
             padding: const EdgeInsets.only(top: 8),
             child: Column(
@@ -165,11 +219,8 @@ class _ShareRiderGpsState extends State<ShareRiderGps> {
                 const SizedBox(height: 6),
                 Row(
                   children: [
-                    const Icon(
-                      Icons.remove_red_eye,
-                      size: 15,
-                      color: Colors.blueGrey,
-                    ),
+                    const Icon(Icons.remove_red_eye,
+                        size: 15, color: Colors.blueGrey),
                     const SizedBox(width: 4),
                     Text(
                       '$_watcherCount ${_watcherCount == 1 ? 'customer' : 'customers'} watching',
@@ -179,8 +230,39 @@ class _ShareRiderGpsState extends State<ShareRiderGps> {
                         fontWeight: FontWeight.w600,
                       ),
                     ),
+                    if (_staleCount > 0) ...[
+                      const SizedBox(width: 6),
+                      Text(
+                        '($_staleCount stale)',
+                        style:
+                            const TextStyle(fontSize: 11, color: Colors.orange),
+                      ),
+                    ],
                   ],
                 ),
+                if (_staleCount > 0)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 6),
+                    child: TextButton.icon(
+                      onPressed: () async {
+                        final removed = await _cleanStaleWatchers();
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                                content:
+                                    Text('Removed $removed stale watcher(s).')),
+                          );
+                        }
+                      },
+                      icon: const Icon(Icons.cleaning_services, size: 14),
+                      label: const Text('Clean stale watchers',
+                          style: TextStyle(fontSize: 12)),
+                      style: TextButton.styleFrom(
+                        foregroundColor: Colors.orange,
+                        padding: EdgeInsets.zero,
+                      ),
+                    ),
+                  ),
                 if (_notified)
                   const Padding(
                     padding: EdgeInsets.only(top: 4),
@@ -192,6 +274,7 @@ class _ShareRiderGpsState extends State<ShareRiderGps> {
               ],
             ),
           ),
+        ],
         if (_error != null) ...[
           const SizedBox(height: 6),
           Text(
