@@ -6,6 +6,9 @@ class FirebaseService {
   static late FirebaseApp secondaryApp;
   static late FirebaseFirestore secondaryFirestore;
 
+  static late FirebaseApp forthApp;
+  static late FirebaseFirestore forthFirestore;
+
   static FirebaseFirestore get primaryFirestore => FirebaseFirestore.instance;
 
   static Future<void> initialize() async {
@@ -19,9 +22,15 @@ class FirebaseService {
       name: 'secondary',
       options: DefaultFirebaseOptions.secondaryWeb,
     );
-
     secondaryFirestore = FirebaseFirestore.instanceFor(app: secondaryApp);
 
-    print("Both Firebase projects initialized properly");
+    // FORTH Firebase
+    forthApp = await Firebase.initializeApp(
+      name: 'forth',
+      options: DefaultFirebaseOptions.forthWeb,
+    );
+    forthFirestore = FirebaseFirestore.instanceFor(app: forthApp);
+
+    print("Firebase projects initialized");
   }
 }

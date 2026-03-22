@@ -75,6 +75,16 @@ class DefaultFirebaseOptions {
     storageBucket: "splannofb.firebasestorage.app",
   );
 
+  // TODO: Replace with actual forthWeb Firebase project credentials
+  static const FirebaseOptions forthWeb = FirebaseOptions(
+    apiKey: "AIzaSyCdITzOwEzJ0S3BxeiFWzJyG_QeetguJeU",
+    appId: "1:622437507678:web:4a0230dabb6e6161d5cacf",
+    messagingSenderId: "622437507678",
+    projectId: "signuptest-53277",
+    authDomain: "signuptest-53277.firebaseapp.com",
+    storageBucket: "signuptest-53277.firebasestorage.app",
+  );
+
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyABXoKDWC1JUR1FwE4es4O-glGHGpDFbI8',
     appId: '1:248306194923:android:246830746ad13f22b7a1ae',

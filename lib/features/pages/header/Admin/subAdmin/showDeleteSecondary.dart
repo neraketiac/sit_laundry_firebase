@@ -111,7 +111,7 @@ Future<void> deleteSecondaryCollection(
 
   if (confirm != true) return;
 
-  final secondary = FirebaseService.secondaryFirestore;
+  final secondary = FirebaseService.forthFirestore;
 
   /// Loading dialog
   showDialog(

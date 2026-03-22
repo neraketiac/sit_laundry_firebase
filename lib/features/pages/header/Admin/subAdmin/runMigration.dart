@@ -100,7 +100,7 @@ Future<void> runMigration(BuildContext context) async {
   );
 
   final main = FirebaseService.primaryFirestore;
-  final secondary = FirebaseService.secondaryFirestore;
+  final secondary = FirebaseService.forthFirestore;
 
   const collectionsToMigrate = [
     'loyalty',
