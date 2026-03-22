@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:laundry_firebase/core/global/variables.dart';
 import 'package:laundry_firebase/core/services/firebase_service.dart';
 import 'loyalty_order_online_model.dart';
 

@@ -84,12 +84,15 @@ class _ShowRiderManagementState extends State<ShowRiderManagement> {
                 children: [
                   const Text('Save the following schedule to Firestore?'),
                   const SizedBox(height: 12),
-                  ...List.generate(4, (i) {
+                  ...List.generate(7, (i) {
                     final checked = [
                       updated.slot7to9,
-                      updated.slot9to12,
-                      updated.slot12to4,
-                      updated.slot4to9,
+                      updated.slot9to10,
+                      updated.slot10to12,
+                      updated.slot1to3,
+                      updated.slot3to5,
+                      updated.slot5to7,
+                      updated.slot7to9pm,
                     ][i];
                     return Padding(
                       padding: const EdgeInsets.symmetric(vertical: 3),
@@ -252,12 +255,7 @@ class _ShowRiderManagementState extends State<ShowRiderManagement> {
     final past = _isPast(date);
     final today = _isToday(date);
     final avail = _getOrDefault(date);
-    final slots = [
-      avail.slot7to9,
-      avail.slot9to12,
-      avail.slot12to4,
-      avail.slot4to9,
-    ];
+    final slots = avail.slotList;
     final hasAny = avail.hasAnySlot;
 
     Color bgColor;
@@ -308,7 +306,7 @@ class _ShowRiderManagementState extends State<ShowRiderManagement> {
                 spacing: 2,
                 runSpacing: 2,
                 alignment: WrapAlignment.center,
-                children: List.generate(4, (i) {
+                children: List.generate(7, (i) {
                   return Container(
                     width: 6,
                     height: 6,
@@ -327,7 +325,7 @@ class _ShowRiderManagementState extends State<ShowRiderManagement> {
                 spacing: 2,
                 runSpacing: 2,
                 alignment: WrapAlignment.center,
-                children: List.generate(4, (i) {
+                children: List.generate(7, (i) {
                   return Container(
                     width: 7,
                     height: 7,
@@ -434,9 +432,12 @@ class _DaySheetState extends State<_DaySheet> {
     setState(() {
       _avail = switch (i) {
         0 => _avail.copyWith(slot7to9: v),
-        1 => _avail.copyWith(slot9to12: v),
-        2 => _avail.copyWith(slot12to4: v),
-        _ => _avail.copyWith(slot4to9: v),
+        1 => _avail.copyWith(slot9to10: v),
+        2 => _avail.copyWith(slot10to12: v),
+        3 => _avail.copyWith(slot1to3: v),
+        4 => _avail.copyWith(slot3to5: v),
+        5 => _avail.copyWith(slot5to7: v),
+        _ => _avail.copyWith(slot7to9pm: v),
       };
     });
   }
@@ -444,12 +445,7 @@ class _DaySheetState extends State<_DaySheet> {
   @override
   Widget build(BuildContext context) {
     final label = DateFormat('EEEE, MMMM d yyyy').format(widget.date);
-    final slots = [
-      _avail.slot7to9,
-      _avail.slot9to12,
-      _avail.slot12to4,
-      _avail.slot4to9
-    ];
+    final slots = _avail.slotList;
 
     return Padding(
       padding: EdgeInsets.only(
@@ -480,7 +476,7 @@ class _DaySheetState extends State<_DaySheet> {
             Text('Tap slots to toggle availability',
                 style: TextStyle(fontSize: 13, color: Colors.grey.shade600)),
             const SizedBox(height: 16),
-            ...List.generate(4, (i) => _slotTile(i, slots[i])),
+            ...List.generate(7, (i) => _slotTile(i, slots[i])),
             const SizedBox(height: 20),
             SizedBox(
               width: double.infinity,
@@ -515,10 +511,13 @@ class _DaySheetState extends State<_DaySheet> {
 
   Widget _slotTile(int i, bool value) {
     const icons = [
-      Icons.wb_twilight,
-      Icons.wb_sunny_outlined,
-      Icons.wb_sunny,
-      Icons.nights_stay_outlined,
+      Icons.wb_twilight, // 7am-9am
+      Icons.wb_sunny_outlined, // 9am-10am
+      Icons.wb_sunny, // 10am-12pm
+      Icons.lunch_dining, // 1pm-3pm
+      Icons.wb_cloudy_outlined, // 3pm-5pm
+      Icons.wb_cloudy, // 5pm-7pm
+      Icons.nights_stay_outlined, // 7pm-9pm
     ];
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
