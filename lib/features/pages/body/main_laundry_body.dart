@@ -21,7 +21,7 @@ import 'package:laundry_firebase/features/pages/body/JobsDone/readDataJobsDone.d
 import 'package:laundry_firebase/features/pages/body/rider/show_rider_orders.dart';
 import 'package:laundry_firebase/features/pages/body/Supplies/readSuppliesCurrent.dart';
 import 'package:laundry_firebase/features/pages/body/Supplies/readSuppliesHist.dart';
-import 'package:laundry_firebase/features/pages/header/Admin/rider/rider_gps.dart';
+import 'package:laundry_firebase/features/pages/header/Admin/rider/rider_location.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/showAdminMainPage.dart';
 import 'package:laundry_firebase/features/pages/header/Employee/showSalaryMaintenance.dart';
 import 'package:laundry_firebase/features/pages/header/Employee/showCalendarDialog.dart';
@@ -254,10 +254,12 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
             ),
             //share gps
             MenuItemButton(
-              onPressed: () => showDialog(
-                  context: context,
-                  barrierDismissible: false,
-                  builder: (_) => const AdminRiderPanel()),
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const RiderLocationScreen(),
+                ),
+              ),
               child: const Text("📍 Rider GPS"),
             ),
             MenuItemButton(
