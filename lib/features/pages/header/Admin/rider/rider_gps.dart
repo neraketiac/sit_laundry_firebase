@@ -32,20 +32,18 @@ class _AdminRiderPanelState extends State<AdminRiderPanel> {
   bool _locating = false;
   bool _notified = false;
   String? _error;
-  Timer? _locationTimer;
+  Timer? _timer;
   Timer? _cleanupTimer;
   int _watcherCount = 0;
   int _staleCount = 0;
   StreamSubscription? _watcherSub;
   JSObject? _wakeLock;
-  double? _prevLng; // previous X position to determine left/right facing
+  double? _prevLng;
 
   Future<void> _acquireWakeLock() async {
     try {
       _wakeLock = await _requestWakeLock('screen'.toJS).toDart;
-    } catch (_) {
-      // Wake Lock not supported or denied — silently ignore
-    }
+    } catch (_) {}
   }
 
   Future<void> _releaseWakeLock() async {
@@ -57,7 +55,7 @@ class _AdminRiderPanelState extends State<AdminRiderPanel> {
 
   @override
   void dispose() {
-    _locationTimer?.cancel();
+    _timer?.cancel();
     _cleanupTimer?.cancel();
     _watcherSub?.cancel();
     _releaseWakeLock();
@@ -75,11 +73,8 @@ class _AdminRiderPanelState extends State<AdminRiderPanel> {
       int stale = 0;
       for (final doc in snap.docs) {
         final ts = doc.data()['lastSeen'];
-        // Only mark stale if lastSeen exists AND is old
-        // If no lastSeen field, assume customer app doesn't write it — treat as active
         if (ts is Timestamp) {
-          final age = now.difference(ts.toDate());
-          if (age > _kStaleThreshold) stale++;
+          if (now.difference(ts.toDate()) > _kStaleThreshold) stale++;
         }
       }
       setState(() {
@@ -92,14 +87,14 @@ class _AdminRiderPanelState extends State<AdminRiderPanel> {
   void _stopWatcherStream() {
     _watcherSub?.cancel();
     _watcherSub = null;
-    if (mounted)
+    if (mounted) {
       setState(() {
         _watcherCount = 0;
         _staleCount = 0;
       });
+    }
   }
 
-  /// Deletes watcher docs with missing or stale lastSeen
   Future<int> _cleanStaleWatchers() async {
     final snap =
         await FirebaseService.secondaryFirestore.collection(_kWatchers).get();
@@ -108,7 +103,6 @@ class _AdminRiderPanelState extends State<AdminRiderPanel> {
     int removed = 0;
     for (final doc in snap.docs) {
       final ts = doc.data()['lastSeen'];
-      // Only remove if lastSeen exists AND is old
       if (ts is Timestamp) {
         if (now.difference(ts.toDate()) > _kStaleThreshold) {
           batch.delete(doc.reference);
@@ -129,17 +123,16 @@ class _AdminRiderPanelState extends State<AdminRiderPanel> {
       _acquireWakeLock();
       _pushLocation(notify: true);
       _startWatcherStream();
-      _locationTimer = Timer.periodic(
+      _timer = Timer.periodic(
         const Duration(seconds: 5),
         (_) => _pushLocation(notify: false),
       );
-      // Auto-clean stale watchers every 60 seconds
       _cleanupTimer = Timer.periodic(
         const Duration(seconds: 60),
         (_) => _cleanStaleWatchers(),
       );
     } else {
-      _locationTimer?.cancel();
+      _timer?.cancel();
       _cleanupTimer?.cancel();
       _releaseWakeLock();
       _stopWatcherStream();
@@ -147,7 +140,7 @@ class _AdminRiderPanelState extends State<AdminRiderPanel> {
       FirebaseService.secondaryFirestore
           .collection(_kCollection)
           .doc(_kDoc)
-          .delete();
+          .update({'isOnline': false});
     }
   }
 
@@ -165,7 +158,7 @@ class _AdminRiderPanelState extends State<AdminRiderPanel> {
       );
       final (lat, lng) = await completer.future;
 
-      // Determine facing direction based on X (longitude) change only
+      // Determine facing direction from longitude delta only
       String? facing;
       if (_prevLng != null && lng != _prevLng) {
         facing = lng > _prevLng! ? 'right' : 'left';
@@ -180,6 +173,7 @@ class _AdminRiderPanelState extends State<AdminRiderPanel> {
         'lng': lng,
         if (facing != null) 'facing': facing,
         'updatedAt': Timestamp.now(),
+        'isOnline': true,
       });
 
       if (notify && !_notified) {
@@ -204,7 +198,7 @@ class _AdminRiderPanelState extends State<AdminRiderPanel> {
       actions: [
         TextButton(
           onPressed: () {
-            _locationTimer?.cancel();
+            _timer?.cancel();
             _cleanupTimer?.cancel();
             _releaseWakeLock();
             Navigator.pop(context);
@@ -240,7 +234,7 @@ class _AdminRiderPanelState extends State<AdminRiderPanel> {
               ),
           ],
         ),
-        if (_sharing) ...[
+        if (_sharing)
           Padding(
             padding: const EdgeInsets.only(top: 8),
             child: Column(
@@ -283,8 +277,9 @@ class _AdminRiderPanelState extends State<AdminRiderPanel> {
                         if (mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                                content:
-                                    Text('Removed $removed stale watcher(s).')),
+                              content:
+                                  Text('Removed $removed stale watcher(s).'),
+                            ),
                           );
                         }
                       },
@@ -308,7 +303,6 @@ class _AdminRiderPanelState extends State<AdminRiderPanel> {
               ],
             ),
           ),
-        ],
         if (_error != null) ...[
           const SizedBox(height: 6),
           Text(
