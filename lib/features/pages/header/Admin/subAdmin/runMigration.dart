@@ -180,9 +180,12 @@ class _RunMigrationState extends State<RunMigration> {
         int colCount = 0;
 
         for (final doc in snap.docs) {
+          // PRIVACY: zero out finalPrice on destination db to hide actual pricing.
+          // To restore real prices, remove the _sanitize call below.
+          final data = _sanitizeForDestination(col, doc.data());
           batch.set(
             forth.collection(col).doc(doc.id),
-            doc.data(),
+            data,
             // merge: true = only update changed fields, keep existing destination data
             // merge: false = full overwrite (used after delete)
             SetOptions(merge: !deleteFirst),
@@ -233,6 +236,22 @@ class _RunMigrationState extends State<RunMigration> {
       ),
     );
   }
+}
+
+/// Strips sensitive fields before writing to the destination (forth) database.
+/// finalPrice is zeroed out for Jobs_done and Jobs_complete so the destination
+/// db never contains real pricing data.
+///
+/// TO RESTORE real prices: remove the finalPrice override lines below,
+/// or delete this function and replace _sanitizeForDestination(col, doc.data())
+/// back to doc.data() in the migration loop.
+Map<String, dynamic> _sanitizeForDestination(
+    String collection, Map<String, dynamic> data) {
+  final result = Map<String, dynamic>.from(data);
+  if (collection == JOBS_DONE_REF || collection == JOBS_COMPLETED_REF) {
+    result['Q06_FinalPrice'] = 0; // ← remove this line to restore real prices
+  }
+  return result;
 }
 
 class _MigrationProgressDialog extends StatefulWidget {
