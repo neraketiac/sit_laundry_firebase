@@ -40,12 +40,12 @@ class _RunMigrationState extends State<RunMigration> {
         const Divider(),
         const SizedBox(height: 20),
         const Text(
-          "Migrate to Forth DB",
+          "Migrate to Update Customer Loyalty",
           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 4),
         const Text(
-          "Select collections from main firestore to migrate to forth database.",
+          "Select collections from main to customer Loyalty DB.",
           style: TextStyle(color: Colors.grey),
         ),
         const SizedBox(height: 12),

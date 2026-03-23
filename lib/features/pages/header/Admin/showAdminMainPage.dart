@@ -6,7 +6,6 @@ import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/other_item
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/runMigration.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/showAdminDateDPage.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/showBatchPromo.dart';
-import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/showDeleteSecondary.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/batch_fix_promo_counter_page.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/loyalty_validation_page.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/migrateToThird.dart';
@@ -271,9 +270,9 @@ class _ShowAdminMainPageState extends State<ShowAdminMainPage> {
                 ),
                 child: ListTile(
                   leading: const Icon(Icons.sync_alt, color: Colors.teal),
-                  title: const Text("Migrate to ThirdWeb"),
+                  title: const Text("Migrate Reports DB"),
                   subtitle: const Text(
-                      "Select collections to migrate from main to thirdWeb"),
+                      "Select collections to migrate from main to Reports DB"),
                   trailing: const Icon(Icons.arrow_forward_ios),
                   onTap: () {
                     Navigator.push(
