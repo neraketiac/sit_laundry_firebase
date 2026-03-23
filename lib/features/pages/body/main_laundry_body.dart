@@ -255,7 +255,9 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
             //share gps
             MenuItemButton(
               onPressed: () => showDialog(
-                  context: context, builder: (_) => const AdminRiderPanel()),
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (_) => const AdminRiderPanel()),
               child: const Text("📍 Rider GPS"),
             ),
             MenuItemButton(

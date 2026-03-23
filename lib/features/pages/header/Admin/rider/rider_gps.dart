@@ -1,11 +1,15 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:js_interop';
+import 'dart:js_interop_unsafe';
 import 'package:http/http.dart' as http;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:web/web.dart' as web;
 import 'package:laundry_firebase/core/services/firebase_service.dart';
+
+@JS('navigator.wakeLock.request')
+external JSPromise<JSObject> _requestWakeLock(JSString type);
 
 const _kWatchers = 'rider_watchers';
 const _kCollection = 'rider_location';
@@ -33,12 +37,30 @@ class _AdminRiderPanelState extends State<AdminRiderPanel> {
   int _watcherCount = 0;
   int _staleCount = 0;
   StreamSubscription? _watcherSub;
+  JSObject? _wakeLock;
+  double? _prevLng; // previous X position to determine left/right facing
+
+  Future<void> _acquireWakeLock() async {
+    try {
+      _wakeLock = await _requestWakeLock('screen'.toJS).toDart;
+    } catch (_) {
+      // Wake Lock not supported or denied — silently ignore
+    }
+  }
+
+  Future<void> _releaseWakeLock() async {
+    try {
+      _wakeLock?.callMethod('release'.toJS);
+    } catch (_) {}
+    _wakeLock = null;
+  }
 
   @override
   void dispose() {
     _locationTimer?.cancel();
     _cleanupTimer?.cancel();
     _watcherSub?.cancel();
+    _releaseWakeLock();
     super.dispose();
   }
 
@@ -104,10 +126,11 @@ class _AdminRiderPanelState extends State<AdminRiderPanel> {
       _notified = false;
     });
     if (val) {
+      _acquireWakeLock();
       _pushLocation(notify: true);
       _startWatcherStream();
       _locationTimer = Timer.periodic(
-        const Duration(seconds: 15),
+        const Duration(seconds: 5),
         (_) => _pushLocation(notify: false),
       );
       // Auto-clean stale watchers every 60 seconds
@@ -118,7 +141,9 @@ class _AdminRiderPanelState extends State<AdminRiderPanel> {
     } else {
       _locationTimer?.cancel();
       _cleanupTimer?.cancel();
+      _releaseWakeLock();
       _stopWatcherStream();
+      _prevLng = null;
       FirebaseService.secondaryFirestore
           .collection(_kCollection)
           .doc(_kDoc)
@@ -139,12 +164,21 @@ class _AdminRiderPanelState extends State<AdminRiderPanel> {
         }.toJS,
       );
       final (lat, lng) = await completer.future;
+
+      // Determine facing direction based on X (longitude) change only
+      String? facing;
+      if (_prevLng != null && lng != _prevLng) {
+        facing = lng > _prevLng! ? 'right' : 'left';
+      }
+      _prevLng = lng;
+
       await FirebaseService.secondaryFirestore
           .collection(_kCollection)
           .doc(_kDoc)
           .set({
         'lat': lat,
         'lng': lng,
+        if (facing != null) 'facing': facing,
         'updatedAt': Timestamp.now(),
       });
 
@@ -172,6 +206,7 @@ class _AdminRiderPanelState extends State<AdminRiderPanel> {
           onPressed: () {
             _locationTimer?.cancel();
             _cleanupTimer?.cancel();
+            _releaseWakeLock();
             Navigator.pop(context);
           },
           child: const Text('Close'),
@@ -212,7 +247,7 @@ class _AdminRiderPanelState extends State<AdminRiderPanel> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'GPS updates every 15 seconds.\nCustomers can now see your location.',
+                  'GPS updates every 5 seconds.\nCustomers can now see your location.',
                   style: TextStyle(fontSize: 12, color: Colors.blueGrey),
                 ),
                 const SizedBox(height: 6),
