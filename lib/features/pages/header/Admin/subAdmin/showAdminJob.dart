@@ -6,6 +6,7 @@ import 'package:laundry_firebase/core/utils/sharedmethodsdatabase.dart';
 import 'package:laundry_firebase/core/services/database_loyalty.dart';
 import 'package:laundry_firebase/features/jobs/repository/jobmodel_repository.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
+import 'package:laundry_firebase/features/pages/body/Loyalty/loyalty_single.dart';
 
 class AdminJobRepoViewer extends StatefulWidget {
   final JobModelRepository jobRepo;

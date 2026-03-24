@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:laundry_firebase/features/jobs/models/jobmodel.dart';
 
 class LoyaltyModel {
   final String name;
@@ -12,6 +13,9 @@ class LoyaltyModel {
   final int cardNumber;
   final Timestamp logDate;
 
+  // 🔥 NOT final anymore
+  List<JobModel> jobs;
+
   LoyaltyModel({
     required this.name,
     required this.contact,
@@ -20,6 +24,7 @@ class LoyaltyModel {
     required this.count,
     required this.cardNumber,
     required this.logDate,
+    this.jobs = const [],
   });
 
   LoyaltyModel.fromJson(Map<String, dynamic> json)
@@ -31,6 +36,7 @@ class LoyaltyModel {
           count: json['Count'] as int,
           cardNumber: json['cardNumber'] as int,
           logDate: json['logDate'] as Timestamp,
+          jobs: [],
         );
 
   LoyaltyModel copyWith({

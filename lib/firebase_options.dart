@@ -57,6 +57,7 @@ class DefaultFirebaseOptions {
     // measurementId: 'G-S5RTGDB4DL',
   );
 
+  //rider db
   static const FirebaseOptions secondaryWeb = FirebaseOptions(
     apiKey: 'AIzaSyAY9RKLaW6ngSCHvQqiujNxpRwJ9kzssgU',
     appId: '1:368198382683:web:1c00691fe118faa041fb7e',
@@ -66,6 +67,7 @@ class DefaultFirebaseOptions {
     storageBucket: 'zpos-d985c.firebasestorage.app',
   );
 
+  //report db
   static const FirebaseOptions thirdWeb = FirebaseOptions(
     apiKey: "AIzaSyDZbBFuPDmvEHEvI94_aCZA5vphxaB39Fc",
     appId: "1:224993515336:web:b76439d1d92884b17b457d",
@@ -76,6 +78,7 @@ class DefaultFirebaseOptions {
   );
 
   // TODO: Replace with actual forthWeb Firebase project credentials
+  //single card db
   static const FirebaseOptions forthWeb = FirebaseOptions(
     apiKey: "AIzaSyCdITzOwEzJ0S3BxeiFWzJyG_QeetguJeU",
     appId: "1:622437507678:web:4a0230dabb6e6161d5cacf",

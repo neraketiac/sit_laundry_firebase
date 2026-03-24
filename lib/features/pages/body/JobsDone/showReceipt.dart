@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:laundry_firebase/features/jobs/repository/jobmodel_repository.dart';
+import 'package:laundry_firebase/features/loyalty/pages/loyalty_single_full.dart';
 
 void showReceipt(BuildContext context, JobModelRepository jobRepo) {
   jobRepo.syncRepoToSelectedAll(jobRepo);
@@ -197,13 +198,30 @@ void showReceipt(BuildContext context, JobModelRepository jobRepo) {
                 const SizedBox(height: 12),
 
                 /// CLOSE BUTTON
-                Center(
-                  child: TextButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    child: const Text("CLOSE"),
-                  ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text("CLOSE"),
+                      ),
+                    ),
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => MyLoyaltyCardFull(
+                                  jobRepo.customerId.toString()),
+                            ),
+                          );
+                        },
+                        child: const Text('View Card'),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
