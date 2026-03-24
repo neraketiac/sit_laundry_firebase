@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:js_interop';
 import 'dart:js_interop_unsafe';
+import 'dart:math' as math;
 import 'dart:ui_web' as ui_web;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -633,6 +634,8 @@ class _AdminRiderPanelState extends State<AdminRiderPanel> {
   StreamSubscription? _watcherSub;
   JSObject? _wakeLock;
   double? _prevLng;
+  double? _prevLat;
+  DateTime? _lastWritten;
   String _lastFacing = 'right';
 
   Future<void> _acquireWakeLock() async {
@@ -713,6 +716,19 @@ class _AdminRiderPanelState extends State<AdminRiderPanel> {
     _pushLocation(notify: notify);
   }
 
+  /// Haversine distance in metres between two lat/lng points
+  double _distanceMeters(double lat1, double lng1, double lat2, double lng2) {
+    const r = 6371000.0;
+    final dLat = (lat2 - lat1) * math.pi / 180;
+    final dLng = (lng2 - lng1) * math.pi / 180;
+    final a = math.sin(dLat / 2) * math.sin(dLat / 2) +
+        math.cos(lat1 * math.pi / 180) *
+            math.cos(lat2 * math.pi / 180) *
+            math.sin(dLng / 2) *
+            math.sin(dLng / 2);
+    return r * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a));
+  }
+
   void _toggleSharing(bool val) {
     setState(() {
       _sharing = val;
@@ -725,15 +741,13 @@ class _AdminRiderPanelState extends State<AdminRiderPanel> {
         const Duration(seconds: 5),
         (_) => _pushLocation(notify: false),
       );
-      _cleanupTimer = Timer.periodic(
-        const Duration(seconds: 60),
-        (_) => _cleanStaleWatchers(),
-      );
     } else {
       _timer?.cancel();
       _cleanupTimer?.cancel();
       if (!_previewSelf) _releaseWakeLock();
       _prevLng = null;
+      _prevLat = null;
+      _lastWritten = null;
       // _lastFacing intentionally NOT reset — keep last known direction
       _db.collection(_kCollection).doc(_kDoc).update({'isOnline': false});
     }
@@ -753,24 +767,37 @@ class _AdminRiderPanelState extends State<AdminRiderPanel> {
       );
       final (lat, lng) = await completer.future;
 
-      // Only update facing when X (longitude) actually changes.
-      // Never write null — always carry the last known direction.
-      if (_prevLng != null && lng != _prevLng) {
-        _lastFacing = lng > _prevLng! ? 'right' : 'left';
-      }
-      _prevLng = lng;
+      // Decide whether to write to Firestore:
+      // - Always write on first call (no previous position)
+      // - Write if moved > 10 metres
+      // - Write as fallback if 15+ seconds since last write (stay-online heartbeat)
+      final now = DateTime.now();
+      final movedEnough = _prevLat == null ||
+          _distanceMeters(_prevLat!, _prevLng!, lat, lng) > 10;
+      final fallbackDue = _lastWritten == null ||
+          now.difference(_lastWritten!) >= const Duration(seconds: 15);
 
-      await _db.collection(_kCollection).doc(_kDoc).set({
-        'lat': lat,
-        'lng': lng,
-        'facing': _lastFacing,
-        'updatedAt': Timestamp.now(),
-        'isOnline': true,
-      });
+      if (movedEnough || fallbackDue) {
+        // Update facing only when longitude actually changes
+        if (_prevLng != null && lng != _prevLng) {
+          _lastFacing = lng > _prevLng! ? 'right' : 'left';
+        }
+        _prevLat = lat;
+        _prevLng = lng;
+        _lastWritten = now;
 
-      if (notify && !_notified) {
-        await _notifyAllSubscribers();
-        if (mounted) setState(() => _notified = true);
+        await _db.collection(_kCollection).doc(_kDoc).set({
+          'lat': lat,
+          'lng': lng,
+          'facing': _lastFacing,
+          'updatedAt': Timestamp.now(),
+          'isOnline': true,
+        });
+
+        if (notify && !_notified) {
+          await _notifyAllSubscribers();
+          if (mounted) setState(() => _notified = true);
+        }
       }
     } catch (e) {
       if (mounted) setState(() => _error = 'Location error: $e');
@@ -824,11 +851,27 @@ class _AdminRiderPanelState extends State<AdminRiderPanel> {
         ),
         if (_watcherCount > 0) ...[
           const SizedBox(width: 4),
-          Text(
-            '$_watcherCount 👁${_staleCount > 0 ? ' ($_staleCount stale)' : ''}',
-            style: TextStyle(
-              fontSize: 11,
-              color: _staleCount > 0 ? Colors.orange : Colors.blueGrey,
+          GestureDetector(
+            onTap: _staleCount > 0
+                ? () async {
+                    final removed = await _cleanStaleWatchers();
+                    if (mounted && removed > 0) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Removed $removed stale watcher(s).'),
+                          duration: const Duration(seconds: 2),
+                        ),
+                      );
+                    }
+                  }
+                : null,
+            child: Text(
+              '$_watcherCount 👁${_staleCount > 0 ? ' ($_staleCount stale ✕)' : ''}',
+              style: TextStyle(
+                fontSize: 11,
+                color: _staleCount > 0 ? Colors.orange : Colors.blueGrey,
+                decoration: _staleCount > 0 ? TextDecoration.underline : null,
+              ),
             ),
           ),
         ],

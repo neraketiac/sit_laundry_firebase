@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:laundry_firebase/core/global/app_version.dart';
 import 'package:laundry_firebase/core/global/variables_ble.dart';
 import 'package:laundry_firebase/core/global/variables_det.dart';
 import 'package:laundry_firebase/core/global/variables_fab.dart';
@@ -157,7 +158,7 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
         appBar: AppBar(
           toolbarHeight: 48,
           title: Text(
-            "Hello $empIdGlobal",
+            "Hello $empIdGlobal v$appVersion",
             style: const TextStyle(fontSize: 14),
           ),
         ),
