@@ -7,6 +7,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:web/web.dart' as web;
+import 'package:laundry_firebase/core/services/firebase_service.dart';
 
 @JS('navigator.wakeLock.request')
 external JSPromise<JSObject> _requestWakeLock(JSString type);
@@ -20,11 +21,13 @@ const _kPushServer = 'https://rider-push-server.onrender.com/send';
 // Watcher is considered stale if lastSeen is older than this
 const _kStaleThreshold = Duration(minutes: 2);
 
+// Shorthand for the secondary Firestore (zpos-d985c) — same DB the customer app uses
+FirebaseFirestore get _db => FirebaseService.secondaryFirestore;
+
 // ===================== NOTIFICATION HELPERS =====================
 
 Future<void> _notifyAllSubscribers() async {
-  final snap =
-      await FirebaseFirestore.instance.collection(_kSubCollection).get();
+  final snap = await _db.collection(_kSubCollection).get();
   final tokens =
       snap.docs.map((d) => d.data()['token']).whereType<String>().toList();
 
@@ -96,10 +99,7 @@ class _RiderLocationWidgetState extends State<RiderLocationWidget> {
         '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
     setState(() => _loadingSlots = true);
     try {
-      final doc = await FirebaseFirestore.instance
-          .collection('Rider_schedule')
-          .doc(docId)
-          .get();
+      final doc = await _db.collection('Rider_schedule').doc(docId).get();
       if (!doc.exists) {
         if (mounted)
           setState(() {
@@ -132,7 +132,7 @@ class _RiderLocationWidgetState extends State<RiderLocationWidget> {
   }
 
   void _openStream() {
-    final ref = FirebaseFirestore.instance.collection(_kCollection).doc(_kDoc);
+    final ref = _db.collection(_kCollection).doc(_kDoc);
     _sub = ref.snapshots().listen((snap) {
       if (!snap.exists) {
         if (mounted)
@@ -511,14 +511,14 @@ class _RiderLocationScreenState extends State<RiderLocationScreen> {
   }
 
   Future<void> _registerWatcher() async {
-    await FirebaseFirestore.instance.collection(_kWatchers).doc(_sessionId).set(
+    await _db.collection(_kWatchers).doc(_sessionId).set(
       {'joinedAt': Timestamp.now(), 'lastSeen': Timestamp.now()},
     );
   }
 
   Future<void> _updateLastSeen() async {
     try {
-      await FirebaseFirestore.instance
+      await _db
           .collection(_kWatchers)
           .doc(_sessionId)
           .update({'lastSeen': Timestamp.now()});
@@ -528,7 +528,7 @@ class _RiderLocationScreenState extends State<RiderLocationScreen> {
   @override
   void dispose() {
     _watcherTimer?.cancel();
-    FirebaseFirestore.instance.collection(_kWatchers).doc(_sessionId).delete();
+    _db.collection(_kWatchers).doc(_sessionId).delete();
     super.dispose();
   }
 
@@ -649,6 +649,12 @@ class _AdminRiderPanelState extends State<AdminRiderPanel> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    _startWatcherStream();
+  }
+
+  @override
   void dispose() {
     _timer?.cancel();
     _cleanupTimer?.cancel();
@@ -659,10 +665,7 @@ class _AdminRiderPanelState extends State<AdminRiderPanel> {
 
   void _startWatcherStream() {
     _watcherSub?.cancel();
-    _watcherSub = FirebaseFirestore.instance
-        .collection(_kWatchers)
-        .snapshots()
-        .listen((snap) {
+    _watcherSub = _db.collection(_kWatchers).snapshots().listen((snap) {
       if (!mounted) return;
       final now = DateTime.now();
       int stale = 0;
@@ -679,21 +682,10 @@ class _AdminRiderPanelState extends State<AdminRiderPanel> {
     });
   }
 
-  void _stopWatcherStream() {
-    _watcherSub?.cancel();
-    _watcherSub = null;
-    if (mounted) {
-      setState(() {
-        _watcherCount = 0;
-        _staleCount = 0;
-      });
-    }
-  }
-
   Future<int> _cleanStaleWatchers() async {
-    final snap = await FirebaseFirestore.instance.collection(_kWatchers).get();
+    final snap = await _db.collection(_kWatchers).get();
     final now = DateTime.now();
-    final batch = FirebaseFirestore.instance.batch();
+    final batch = _db.batch();
     int removed = 0;
     for (final doc in snap.docs) {
       final ts = doc.data()['lastSeen'];
@@ -712,10 +704,7 @@ class _AdminRiderPanelState extends State<AdminRiderPanel> {
   /// Falls back to 'right' only if the doc has no facing field yet (first ever run).
   Future<void> _loadFacingThenStart({bool notify = false}) async {
     try {
-      final doc = await FirebaseFirestore.instance
-          .collection(_kCollection)
-          .doc(_kDoc)
-          .get();
+      final doc = await _db.collection(_kCollection).doc(_kDoc).get();
       if (doc.exists) {
         final saved = doc.data()?['facing'] as String?;
         if (saved != null) _lastFacing = saved;
@@ -732,7 +721,6 @@ class _AdminRiderPanelState extends State<AdminRiderPanel> {
     if (val) {
       _acquireWakeLock();
       _loadFacingThenStart(notify: true);
-      _startWatcherStream();
       _timer = Timer.periodic(
         const Duration(seconds: 5),
         (_) => _pushLocation(notify: false),
@@ -744,14 +732,10 @@ class _AdminRiderPanelState extends State<AdminRiderPanel> {
     } else {
       _timer?.cancel();
       _cleanupTimer?.cancel();
-      _releaseWakeLock();
-      _stopWatcherStream();
+      if (!_previewSelf) _releaseWakeLock();
       _prevLng = null;
       // _lastFacing intentionally NOT reset — keep last known direction
-      FirebaseFirestore.instance
-          .collection(_kCollection)
-          .doc(_kDoc)
-          .update({'isOnline': false});
+      _db.collection(_kCollection).doc(_kDoc).update({'isOnline': false});
     }
   }
 
@@ -776,7 +760,7 @@ class _AdminRiderPanelState extends State<AdminRiderPanel> {
       }
       _prevLng = lng;
 
-      await FirebaseFirestore.instance.collection(_kCollection).doc(_kDoc).set({
+      await _db.collection(_kCollection).doc(_kDoc).set({
         'lat': lat,
         'lng': lng,
         'facing': _lastFacing,
@@ -829,14 +813,24 @@ class _AdminRiderPanelState extends State<AdminRiderPanel> {
           value: _previewSelf,
           onChanged: (v) {
             setState(() => _previewSelf = v);
+            if (v) {
+              _acquireWakeLock();
+            } else if (!_sharing) {
+              _releaseWakeLock();
+            }
             widget.onPreviewSelfChanged?.call(v);
           },
           materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
         ),
-        if (_sharing && _watcherCount > 0) ...[
+        if (_watcherCount > 0) ...[
           const SizedBox(width: 4),
-          Text('$_watcherCount 👁',
-              style: const TextStyle(fontSize: 11, color: Colors.blueGrey)),
+          Text(
+            '$_watcherCount 👁${_staleCount > 0 ? ' ($_staleCount stale)' : ''}',
+            style: TextStyle(
+              fontSize: 11,
+              color: _staleCount > 0 ? Colors.orange : Colors.blueGrey,
+            ),
+          ),
         ],
         if (_error != null)
           const Padding(

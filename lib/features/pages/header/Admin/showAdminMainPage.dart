@@ -7,6 +7,7 @@ import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/runMigrati
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/showAdminDateDPage.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/showBatchPromo.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/batch_fix_promo_counter_page.dart';
+import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/batch_promo_review_page.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/loyalty_validation_page.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/migrateToThird.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/rider/show_rider_management.dart';
@@ -113,6 +114,32 @@ class _ShowAdminMainPageState extends State<ShowAdminMainPage> {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const BatchPromo(),
+              ),
+
+            const SizedBox(height: 30),
+
+            if (isAdmin)
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.deepOrange.shade100,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: ListTile(
+                  leading: const Icon(Icons.preview, color: Colors.deepOrange),
+                  title: const Text("Batch Promo Review"),
+                  subtitle: const Text(
+                      "Preview & apply promo error code changes per customer"),
+                  trailing: const Icon(Icons.arrow_forward_ios),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const BatchPromoReviewPage(),
+                      ),
+                    );
+                  },
+                ),
               ),
 
             const SizedBox(height: 30),
