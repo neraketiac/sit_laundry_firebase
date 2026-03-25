@@ -20,14 +20,14 @@ class FirebaseService {
     // SECONDARY Firebase
     secondaryApp = await Firebase.initializeApp(
       name: 'secondary',
-      options: DefaultFirebaseOptions.secondaryWeb,
+      options: DefaultFirebaseOptions.riderDb,
     );
     secondaryFirestore = FirebaseFirestore.instanceFor(app: secondaryApp);
 
     // FORTH Firebase
     forthApp = await Firebase.initializeApp(
       name: 'forth',
-      options: DefaultFirebaseOptions.forthWeb,
+      options: DefaultFirebaseOptions.loyaltyCardDb,
     );
     forthFirestore = FirebaseFirestore.instanceFor(app: forthApp);
 

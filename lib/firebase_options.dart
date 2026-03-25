@@ -17,7 +17,7 @@ import 'package:flutter/foundation.dart'
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
-      return web;
+      return staffDb;
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
@@ -40,7 +40,7 @@ class DefaultFirebaseOptions {
     }
   }
 
-  static const FirebaseOptions web = FirebaseOptions(
+  static const FirebaseOptions staffDb = FirebaseOptions(
     apiKey: "AIzaSyChXE4nw_k-s27PCTIwgM7oIwJtKjJr0ak",
     authDomain: "wash-ko-lang-sit.firebaseapp.com",
     projectId: "wash-ko-lang-sit",
@@ -58,7 +58,7 @@ class DefaultFirebaseOptions {
   );
 
   //rider db
-  static const FirebaseOptions secondaryWeb = FirebaseOptions(
+  static const FirebaseOptions riderDb = FirebaseOptions(
     apiKey: 'AIzaSyAY9RKLaW6ngSCHvQqiujNxpRwJ9kzssgU',
     appId: '1:368198382683:web:1c00691fe118faa041fb7e',
     messagingSenderId: '368198382683',
@@ -68,7 +68,7 @@ class DefaultFirebaseOptions {
   );
 
   //report db
-  static const FirebaseOptions thirdWeb = FirebaseOptions(
+  static const FirebaseOptions reportsDb = FirebaseOptions(
     apiKey: "AIzaSyDZbBFuPDmvEHEvI94_aCZA5vphxaB39Fc",
     appId: "1:224993515336:web:b76439d1d92884b17b457d",
     messagingSenderId: "224993515336",
@@ -79,7 +79,7 @@ class DefaultFirebaseOptions {
 
   // TODO: Replace with actual forthWeb Firebase project credentials
   //single card db
-  static const FirebaseOptions forthWeb = FirebaseOptions(
+  static const FirebaseOptions loyaltyCardDb = FirebaseOptions(
     apiKey: "AIzaSyCdITzOwEzJ0S3BxeiFWzJyG_QeetguJeU",
     appId: "1:622437507678:web:4a0230dabb6e6161d5cacf",
     messagingSenderId: "622437507678",

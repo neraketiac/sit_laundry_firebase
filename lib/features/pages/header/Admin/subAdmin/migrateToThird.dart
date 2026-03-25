@@ -156,7 +156,7 @@ class _MigrateToThirdState extends State<MigrateToThird> {
     } catch (_) {
       thirdApp = await Firebase.initializeApp(
         name: 'thirdWeb',
-        options: DefaultFirebaseOptions.thirdWeb,
+        options: DefaultFirebaseOptions.reportsDb,
       );
     }
     final third = FirebaseFirestore.instanceFor(app: thirdApp);

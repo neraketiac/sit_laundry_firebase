@@ -69,7 +69,7 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
       } catch (_) {
         thirdApp = await Firebase.initializeApp(
           name: 'thirdWeb',
-          options: DefaultFirebaseOptions.thirdWeb,
+          options: DefaultFirebaseOptions.reportsDb,
         );
       }
       final db = FirebaseFirestore.instanceFor(app: thirdApp);
