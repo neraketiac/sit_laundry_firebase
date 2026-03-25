@@ -121,6 +121,7 @@ class WeeklyRevenueChart extends StatelessWidget {
         border: Border.all(color: Colors.blue.shade200),
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -133,16 +134,15 @@ class WeeklyRevenueChart extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 8),
-          Row(
+          // Wrap so tiles flow to next line on narrow screens
+          Wrap(
+            spacing: 6,
+            runSpacing: 6,
             children: [
               _miniTile('Paid', _totalPaid, Colors.green),
-              const SizedBox(width: 8),
               _miniTile('Cash', _totalPaidCash, Colors.blue),
-              const SizedBox(width: 8),
               _miniTile('GCash', _totalPaidGCash, Colors.purple),
-              const SizedBox(width: 8),
               _miniTile('Unpaid', _totalUnpaid, Colors.red),
-              const SizedBox(width: 8),
               _miniTileNeg('Expense', totalExpense, Colors.orange),
             ],
           ),
@@ -152,41 +152,45 @@ class WeeklyRevenueChart extends StatelessWidget {
   }
 
   Widget _miniTile(String label, int amount, MaterialColor color) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
-        decoration: BoxDecoration(
-          color: color.shade100,
-          borderRadius: BorderRadius.circular(6),
-        ),
-        child: Column(
-          children: [
-            Text(label, style: TextStyle(fontSize: 11, color: color.shade700)),
-            Text('₱${formatCurrency(amount)}',
-                style: TextStyle(
-                    fontWeight: FontWeight.bold, color: color.shade800)),
-          ],
-        ),
+    return Container(
+      constraints: const BoxConstraints(minWidth: 70),
+      padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 10),
+      decoration: BoxDecoration(
+        color: color.shade100,
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: TextStyle(fontSize: 11, color: color.shade700)),
+          Text('₱${formatCurrency(amount)}',
+              style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
+                  color: color.shade800)),
+        ],
       ),
     );
   }
 
   Widget _miniTileNeg(String label, int amount, MaterialColor color) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
-        decoration: BoxDecoration(
-          color: color.shade100,
-          borderRadius: BorderRadius.circular(6),
-        ),
-        child: Column(
-          children: [
-            Text(label, style: TextStyle(fontSize: 11, color: color.shade700)),
-            Text('-₱${formatCurrency(amount)}',
-                style: TextStyle(
-                    fontWeight: FontWeight.bold, color: color.shade800)),
-          ],
-        ),
+    return Container(
+      constraints: const BoxConstraints(minWidth: 70),
+      padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 10),
+      decoration: BoxDecoration(
+        color: color.shade100,
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: TextStyle(fontSize: 11, color: color.shade700)),
+          Text('-₱${formatCurrency(amount)}',
+              style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
+                  color: color.shade800)),
+        ],
       ),
     );
   }

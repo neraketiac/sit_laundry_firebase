@@ -8,8 +8,10 @@ import 'package:laundry_firebase/firebase_options.dart';
 import 'widgets/month_selector.dart';
 import 'widgets/supplies_summary_card.dart';
 import 'widgets/supplies_chart.dart';
+import 'widgets/supplies_detail_card.dart';
 import 'widgets/weekly_revenue_chart.dart';
 import 'widgets/unpaid_customers_card.dart';
+import 'widgets/top_expense_card.dart';
 import 'widgets/expense_data.dart';
 import 'widgets/unpaid_data.dart';
 import 'widgets/weekly_data.dart';
@@ -124,7 +126,9 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
           .where('LogDate',
               isGreaterThanOrEqualTo: Timestamp.fromDate(startDate))
           .where('LogDate', isLessThanOrEqualTo: Timestamp.fromDate(endDate))
-          .where('ItemUniqueId', isEqualTo: 4406)
+          //.where('ItemUniqueId', isEqualTo: 4406)  //automated laundry payment, value is positive
+          .where('ItemUniqueId',
+              isEqualTo: 4404) //found out, but value is negative
           .get();
 
       // Process
@@ -171,6 +175,8 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
                   const SizedBox(height: 20),
                   SuppliesChart(
                       suppliesData: _supplies.data, isMobile: isMobile),
+                  const SizedBox(height: 12),
+                  SuppliesDetailCard(byItemName: _supplies.byItemName),
                   const SizedBox(height: 20),
                   WeeklyRevenueChart(
                     weeklyData: _weekly.data,
@@ -187,6 +193,13 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
                     unpaidCustomersByWeek: _unpaid.customersByWeek,
                     currentMonth: currentMonth,
                     hasJobs: completedJobs.isNotEmpty,
+                  ),
+                  const SizedBox(height: 20),
+                  TopExpenseCard(
+                    expenseByEmployee: _expense.byEmployee,
+                    expenseByWeek: _expense.byWeek,
+                    employeeByWeek: _expense.employeeByWeek,
+                    currentMonth: currentMonth,
                   ),
                   const SizedBox(height: 20),
                 ],

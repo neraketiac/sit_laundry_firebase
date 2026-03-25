@@ -10,6 +10,9 @@ class SuppliesData {
     'Cash Out': 0,
   };
 
+  /// Sum of CurrentCounter grouped by ItemName
+  Map<String, int> byItemName = {};
+
   void process(List<QueryDocumentSnapshot> docs) {
     data = {
       'Funds In': 0,
@@ -18,6 +21,7 @@ class SuppliesData {
       'Cash In/Load': 0,
       'Cash Out': 0,
     };
+    byItemName = {};
 
     for (final doc in docs) {
       final d = doc.data() as Map<String, dynamic>;
@@ -25,8 +29,10 @@ class SuppliesData {
       final raw = d['CurrentCounter'] ?? 0;
       final counter = raw is int ? raw : (raw as double).toInt();
 
-      if (counter > 0) data['Funds In'] = data['Funds In']! + counter;
-      if (counter < 0) data['Funds Out'] = data['Funds Out']! + counter.abs();
+      // Summary buckets
+      if (itemId == 4403) data['Funds In'] = data['Funds In']! + counter;
+      if (itemId == 4404)
+        data['Funds Out'] = data['Funds Out']! + counter.abs();
       if (itemId == 4405) {
         data['Laundry Payment'] = data['Laundry Payment']! + counter;
       }
@@ -34,8 +40,14 @@ class SuppliesData {
         data['Cash In/Load'] = data['Cash In/Load']! + counter;
       }
       if (itemId == 4402) {
-        data['Cash Out'] = data['Cash Out']! + counter;
+        data['Cash Out'] = data['Cash Out']! + counter.abs();
       }
+
+      // Per-item breakdown
+      final name = (d['ItemName']?.toString().trim().isNotEmpty == true
+          ? d['ItemName'].toString().trim()
+          : 'Unknown');
+      byItemName[name] = (byItemName[name] ?? 0) + counter;
     }
   }
 }
