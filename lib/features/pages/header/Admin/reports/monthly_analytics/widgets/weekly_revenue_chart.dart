@@ -31,7 +31,7 @@ class WeeklyRevenueChart extends StatelessWidget {
 
   int get _maxValue {
     int max = 0;
-    for (var w in weeklyData.values) {
+    for (final w in weeklyData.values) {
       for (final key in ['paid', 'paidCash', 'paidGCash', 'unpaid']) {
         final v = w[key] as int? ?? 0;
         if (v > max) max = v;
@@ -109,6 +109,8 @@ class WeeklyRevenueChart extends StatelessWidget {
       ),
     );
   }
+
+  // ── Revenue summary tiles ──────────────────────────────────────────────────
 
   Widget _buildRevenueSummary() {
     return Container(
@@ -188,6 +190,8 @@ class WeeklyRevenueChart extends StatelessWidget {
       ),
     );
   }
+
+  // ── Bar chart ──────────────────────────────────────────────────────────────
 
   Widget _buildBars() {
     const chartHeight = 180.0;
@@ -337,6 +341,8 @@ class WeeklyRevenueChart extends StatelessWidget {
     );
   }
 
+  // ── Summary table ──────────────────────────────────────────────────────────
+
   Widget _buildSummaryTable() {
     return Container(
       padding: const EdgeInsets.all(12),
@@ -410,50 +416,65 @@ class WeeklyRevenueChart extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           const Divider(),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text('Month Total:',
-                  style: TextStyle(fontWeight: FontWeight.bold)),
-              Text('₱${formatCurrency(_totalRevenue)}',
-                  style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                      color: Colors.blue)),
-            ],
+          // Month Total: revenue (paid + unpaid) → expense → net
+          _summaryBlock(
+            label: 'Month Total',
+            amount: _totalRevenue,
+            expense: totalExpense,
+            amountColor: Colors.blue,
           ),
-          if (totalExpense > 0) ...[
-            const SizedBox(height: 4),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text('Total Expense:',
-                    style: TextStyle(fontWeight: FontWeight.bold)),
-                Text('-₱${formatCurrency(totalExpense)}',
-                    style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                        color: Colors.orange)),
-              ],
-            ),
-            const SizedBox(height: 4),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text('Net:',
-                    style: TextStyle(fontWeight: FontWeight.bold)),
-                Text('₱${formatCurrency(_totalRevenue - totalExpense)}',
-                    style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                        color: (_totalRevenue - totalExpense) >= 0
-                            ? Colors.green
-                            : Colors.red)),
-              ],
+          const SizedBox(height: 4),
+          const Divider(),
+          // Month Paid Total: only collected cash → expense → net
+          _summaryBlock(
+            label: 'Month Paid Total',
+            amount: _totalPaid,
+            expense: totalExpense,
+            amountColor: Colors.green,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _summaryBlock({
+    required String label,
+    required int amount,
+    required int expense,
+    required Color amountColor,
+  }) {
+    final net = amount - expense;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Column(
+        children: [
+          _summaryRow(label, '₱${formatCurrency(amount)}', amountColor),
+          if (expense > 0) ...[
+            const SizedBox(height: 2),
+            _summaryRow(
+                'Expense', '-₱${formatCurrency(expense)}', Colors.orange),
+            const SizedBox(height: 2),
+            _summaryRow(
+              'Net',
+              '₱${formatCurrency(net)}',
+              net >= 0 ? Colors.green : Colors.red,
             ),
           ],
         ],
       ),
+    );
+  }
+
+  Widget _summaryRow(String label, String value, Color valueColor) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(label,
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+        Text(value,
+            style: TextStyle(
+                fontWeight: FontWeight.bold, fontSize: 15, color: valueColor)),
+      ],
     );
   }
 }
