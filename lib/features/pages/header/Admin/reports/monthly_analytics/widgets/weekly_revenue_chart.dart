@@ -95,12 +95,8 @@ class WeeklyRevenueChart extends StatelessWidget {
                   const SizedBox(height: 20),
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
-                    child: SizedBox(
-                      width: isMobile
-                          ? MediaQuery.of(context).size.width - 40
-                          : null,
-                      child: _buildSummaryTable(),
-                    ),
+                    physics: const ClampingScrollPhysics(),
+                    child: _buildSummaryTable(),
                   ),
                 ],
               ),

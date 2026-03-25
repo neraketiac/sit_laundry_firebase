@@ -1,4 +1,5 @@
 //########################### Supplies History ###############################
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 import 'package:intl/intl.dart';
@@ -140,54 +141,108 @@ Widget _buildSupplyRow(SuppliesModelHist sMH) {
 }
 
 Widget readDataSuppliesHistory() {
-  return Builder(
-    builder: (context) {
-      return Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text("📊💰 FUNDS HISTORY", style: TextStyle(color: Colors.white)),
-            ],
-          ),
-          SizedBox(
-            height: MediaQuery.of(context).size.height * 0.9,
-            child: StreamBuilder(
-              stream: dbFundsHist.getSuppliesHistory(false),
-              builder: (context, snapshot) {
-                if (snapshot.hasError) {
-                  return Center(child: Text('Error: ${snapshot.error}'));
-                }
+  return const _SuppliesHistoryList();
+}
 
-                if (!snapshot.hasData) {
-                  return const Center(child: CircularProgressIndicator());
-                }
+class _SuppliesHistoryList extends StatefulWidget {
+  const _SuppliesHistoryList();
 
-                final docs = snapshot.data!.docs;
-                final supplies =
-                    docs.map((doc) => doc.data() as SuppliesModelHist).toList();
+  @override
+  State<_SuppliesHistoryList> createState() => _SuppliesHistoryListState();
+}
 
-                if (supplies.isEmpty) {
-                  return const Center(child: Text('No supplies history'));
-                }
+class _SuppliesHistoryListState extends State<_SuppliesHistoryList> {
+  final List<SuppliesModelHist> _items = [];
+  DocumentSnapshot? _lastDoc;
+  bool _loading = false;
+  bool _hasMore = true;
+  final ScrollController _scroll = ScrollController();
 
-                return ListView.builder(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  itemCount: supplies.length,
-                  itemBuilder: (context, index) {
-                    final sMH = supplies[index];
-                    return SizedBox(
-                      height: 24,
-                      child: _buildSupplyRow(sMH),
-                    );
-                  },
-                );
-              },
-            ),
-          ),
-        ],
-      );
-    },
-  );
+  static const int _pageSize = 50;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadMore();
+    _scroll.addListener(() {
+      if (_scroll.position.pixels >= _scroll.position.maxScrollExtent - 200) {
+        _loadMore();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _scroll.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadMore() async {
+    if (_loading || !_hasMore) return;
+    setState(() => _loading = true);
+
+    final snap = await dbFundsHist.getSuppliesHistoryPaginated(
+      false,
+      lastDoc: _lastDoc,
+    );
+
+    final newItems =
+        snap.docs.map((d) => d.data() as SuppliesModelHist).toList();
+
+    setState(() {
+      _loading = false;
+      if (newItems.length < _pageSize) _hasMore = false;
+      if (snap.docs.isNotEmpty) _lastDoc = snap.docs.last;
+      _items.addAll(newItems);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text('📊💰 FUNDS HISTORY', style: TextStyle(color: Colors.white)),
+          ],
+        ),
+        SizedBox(
+          height: MediaQuery.of(context).size.height * 0.9,
+          child: _items.isEmpty && _loading
+              ? const Center(child: CircularProgressIndicator())
+              : _items.isEmpty
+                  ? const Center(child: Text('No supplies history'))
+                  : ListView.builder(
+                      controller: _scroll,
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      itemCount: _items.length + (_hasMore ? 1 : 0),
+                      itemBuilder: (context, index) {
+                        if (index == _items.length) {
+                          // Bottom loader — schedule after frame to avoid setState during build
+                          if (!_loading) {
+                            WidgetsBinding.instance
+                                .addPostFrameCallback((_) => _loadMore());
+                          }
+                          return const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 8),
+                            child: Center(
+                                child: SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )),
+                          );
+                        }
+                        return SizedBox(
+                          height: 24,
+                          child: _buildSupplyRow(_items[index]),
+                        );
+                      },
+                    ),
+        ),
+      ],
+    );
+  }
 }

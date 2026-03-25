@@ -1,4 +1,5 @@
 //########################### Supplies History ###############################
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:laundry_firebase/core/global/variables_supplies.dart';
@@ -16,20 +17,49 @@ class ReadDataItemsHistoryWidget extends StatefulWidget {
 
 class _ReadDataItemsHistoryWidgetState
     extends State<ReadDataItemsHistoryWidget> {
+  final List<SuppliesModelHist> _items = [];
+  DocumentSnapshot? _lastDoc;
+  bool _loading = false;
+  bool _hasMore = true;
   late ScrollController _scrollController;
   late DatabaseItemsHist dbItemsHist;
+
+  static const int _pageSize = 50;
 
   @override
   void initState() {
     super.initState();
     _scrollController = ScrollController();
     dbItemsHist = DatabaseItemsHist();
+    _loadMore();
+    _scrollController.addListener(() {
+      if (_scrollController.position.pixels >=
+          _scrollController.position.maxScrollExtent - 200) {
+        _loadMore();
+      }
+    });
   }
 
   @override
   void dispose() {
     _scrollController.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadMore() async {
+    if (_loading || !_hasMore) return;
+    setState(() => _loading = true);
+
+    final snap = await dbItemsHist.getItemsHistoryPaginated(lastDoc: _lastDoc);
+    final newItems =
+        snap.docs.map((d) => d.data() as SuppliesModelHist).toList();
+
+    setState(() {
+      _loading = false;
+      if (newItems.length < _pageSize) _hasMore = false;
+      if (snap.docs.isNotEmpty) _lastDoc = snap.docs.last;
+      _items.addAll(newItems);
+    });
   }
 
   Widget _buildItemRow(SuppliesModelHist sMH) {
@@ -190,7 +220,7 @@ class _ReadDataItemsHistoryWidgetState
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Row(
+        const Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text("📑✨ ITEMS HISTORY", style: TextStyle(color: Colors.white)),
@@ -198,39 +228,38 @@ class _ReadDataItemsHistoryWidgetState
         ),
         SizedBox(
           height: MediaQuery.of(context).size.height * 0.9,
-          child: StreamBuilder(
-            stream: dbItemsHist.getItemsHistory(false),
-            builder: (context, snapshot) {
-              if (snapshot.hasError) {
-                return Center(child: Text('Error: ${snapshot.error}'));
-              }
-
-              if (!snapshot.hasData) {
-                return const Center(child: CircularProgressIndicator());
-              }
-
-              final docs = snapshot.data!.docs;
-              final items =
-                  docs.map((doc) => doc.data() as SuppliesModelHist).toList();
-
-              if (items.isEmpty) {
-                return const Center(child: Text('No items history'));
-              }
-
-              return ListView.builder(
-                controller: _scrollController,
-                physics: const AlwaysScrollableScrollPhysics(),
-                itemCount: items.length,
-                itemBuilder: (context, index) {
-                  final sMH = items[index];
-                  return SizedBox(
-                    height: 24,
-                    child: _buildItemRow(sMH),
-                  );
-                },
-              );
-            },
-          ),
+          child: _items.isEmpty && _loading
+              ? const Center(child: CircularProgressIndicator())
+              : _items.isEmpty
+                  ? const Center(child: Text('No items history'))
+                  : ListView.builder(
+                      controller: _scrollController,
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      itemCount: _items.length + (_hasMore ? 1 : 0),
+                      itemBuilder: (context, index) {
+                        if (index == _items.length) {
+                          if (!_loading) {
+                            WidgetsBinding.instance
+                                .addPostFrameCallback((_) => _loadMore());
+                          }
+                          return const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 8),
+                            child: Center(
+                              child: SizedBox(
+                                width: 20,
+                                height: 20,
+                                child:
+                                    CircularProgressIndicator(strokeWidth: 2),
+                              ),
+                            ),
+                          );
+                        }
+                        return SizedBox(
+                          height: 24,
+                          child: _buildItemRow(_items[index]),
+                        );
+                      },
+                    ),
         ),
       ],
     );
