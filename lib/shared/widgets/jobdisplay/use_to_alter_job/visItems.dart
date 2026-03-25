@@ -173,7 +173,14 @@ Widget visItemsOnly(
                 () => TextEditingController(text: "-1"),
               );
 
+              jobRepo.itemExpenseControllers.putIfAbsent(
+                e.itemId,
+                () => TextEditingController(text: "0"),
+              );
+
               final controller = jobRepo.itemQtyControllers[e.itemId]!;
+              final expenseController =
+                  jobRepo.itemExpenseControllers[e.itemId]!;
 
               return Container(
                 margin: const EdgeInsets.only(bottom: 8),
@@ -190,6 +197,7 @@ Widget visItemsOnly(
                       onTap: () {
                         removeOtherItem(jobRepo, e);
                         jobRepo.itemQtyControllers.remove(e.itemId);
+                        jobRepo.itemExpenseControllers.remove(e.itemId);
                         dialogSetState();
                       },
                       child: const Icon(
@@ -202,44 +210,70 @@ Widget visItemsOnly(
 
                     /// ITEM NAME
                     Expanded(
-                      child: Text(
-                        e.itemName,
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                    ),
-
-                    /// PCS INPUT
-                    SizedBox(
-                      width: 60,
-                      child: TextField(
-                        controller: controller,
-                        keyboardType: TextInputType.number,
-                        textAlign: TextAlign.center,
-                        inputFormatters: [
-                          FilteringTextInputFormatter.allow(RegExp(r'^-?\d*'))
-                        ],
-                        style: const TextStyle(color: Colors.white),
-                        decoration: InputDecoration(
-                          hintText: "1",
-                          filled: true,
-                          fillColor: Colors.black.withOpacity(0.35),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
+                      child: Column(
+                        children: [
+                          Text(
+                            e.itemName,
+                            style: const TextStyle(color: Colors.white),
                           ),
-                          contentPadding: const EdgeInsets.symmetric(
-                              vertical: 6, horizontal: 4),
-                        ),
-                      ),
-                    ),
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              /// PCS INPUT
+                              SizedBox(
+                                width: 60,
+                                child: TextField(
+                                  controller: controller,
+                                  keyboardType: TextInputType.number,
+                                  textAlign: TextAlign.center,
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter.allow(
+                                        RegExp(r'^-?\d*'))
+                                  ],
+                                  style: const TextStyle(color: Colors.white),
+                                  decoration: InputDecoration(
+                                    labelText: e.stocksType,
+                                    labelStyle: TextStyle(color: Colors.white),
+                                    hintText: "1",
+                                    filled: true,
+                                    fillColor: Colors.black.withOpacity(0.35),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                        vertical: 6, horizontal: 4),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
 
-                    const SizedBox(width: 12),
-
-                    /// PRICE
-                    Text(
-                      e.stocksType,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
+                              //expense
+                              Expanded(
+                                child: TextField(
+                                  controller: expenseController,
+                                  keyboardType: TextInputType.number,
+                                  textAlign: TextAlign.right,
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter.digitsOnly
+                                  ],
+                                  style: const TextStyle(color: Colors.white),
+                                  decoration: InputDecoration(
+                                    labelText: "Expense Amount",
+                                    labelStyle: TextStyle(color: Colors.white),
+                                    hintText: "0",
+                                    filled: true,
+                                    fillColor: Colors.black.withOpacity(0.35),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                        vertical: 6, horizontal: 4),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          )
+                        ],
                       ),
                     ),
                   ],

@@ -10,6 +10,10 @@ import 'widgets/supplies_summary_card.dart';
 import 'widgets/supplies_chart.dart';
 import 'widgets/weekly_revenue_chart.dart';
 import 'widgets/unpaid_customers_card.dart';
+import 'widgets/expense_data.dart';
+import 'widgets/unpaid_data.dart';
+import 'widgets/weekly_data.dart';
+import 'widgets/supplies_data.dart';
 
 class MonthlyAnalyticsPage extends StatefulWidget {
   const MonthlyAnalyticsPage({super.key});
@@ -21,10 +25,12 @@ class MonthlyAnalyticsPage extends StatefulWidget {
 class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
   late DateTime currentMonth;
   List<JobModelRepository> completedJobs = [];
-  Map<int, Map<String, dynamic>> weeklyData = {};
-  Map<String, int> unpaidCustomers = {};
-  Map<String, int> suppliesData = {};
-  int totalLoads = 0;
+
+  final _weekly = WeeklyData();
+  final _unpaid = UnpaidData();
+  final _expense = ExpenseData();
+  final _supplies = SuppliesData();
+
   bool isLoading = true;
 
   @override
@@ -32,6 +38,22 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
     super.initState();
     currentMonth = DateTime(DateTime.now().year, DateTime.now().month);
     _loadMonthlyData();
+  }
+
+  int _weekNumber(DateTime date) {
+    if (date.day <= 7) return 1;
+    if (date.day <= 14) return 2;
+    if (date.day <= 21) return 3;
+    if (date.day <= 28) return 4;
+    return 5;
+  }
+
+  String _weekDateRange(int week) {
+    final startDay = (week - 1) * 7 + 1;
+    final endDay = week == 5
+        ? DateTime(currentMonth.year, currentMonth.month + 1, 0).day
+        : week * 7;
+    return '${DateFormat('MMM').format(currentMonth)}$startDay-$endDay';
   }
 
   Future<void> _loadMonthlyData() async {
@@ -52,6 +74,7 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
       }
       final db = FirebaseFirestore.instanceFor(app: thirdApp);
 
+      // Jobs
       final doneSnap = await db
           .collection('Jobs_done')
           .where('A05_DateD',
@@ -79,6 +102,7 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
         }),
       ];
 
+      // Supplies
       final suppliesSnap = await db
           .collection('SuppliesHist')
           .where('LogDate',
@@ -86,103 +110,34 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
           .where('LogDate', isLessThanOrEqualTo: Timestamp.fromDate(endDate))
           .get();
 
-      _processSuppliesData(suppliesSnap.docs);
-      _processWeeklyData();
-      _processUnpaidCustomers();
+      // ItemsHist expense
+      final itemsHistSnap = await db
+          .collection('ItemsHist')
+          .where('LogDate',
+              isGreaterThanOrEqualTo: Timestamp.fromDate(startDate))
+          .where('LogDate', isLessThanOrEqualTo: Timestamp.fromDate(endDate))
+          .get();
+
+      // EmployeeHist expense (ItemUniqueId=4406 filtered server-side)
+      final empHistSnap = await db
+          .collection('EmployeeHist')
+          .where('LogDate',
+              isGreaterThanOrEqualTo: Timestamp.fromDate(startDate))
+          .where('LogDate', isLessThanOrEqualTo: Timestamp.fromDate(endDate))
+          .where('ItemUniqueId', isEqualTo: 4406)
+          .get();
+
+      // Process
+      _supplies.process(suppliesSnap.docs);
+      _expense.process(itemsHistSnap.docs, empHistSnap.docs, _weekNumber);
+      _weekly.process(completedJobs, _weekNumber);
+      _weekly.mergeExpense(_expense.byWeek);
+      _unpaid.process(completedJobs, _weekNumber);
     } catch (e) {
       debugPrint('Error loading monthly data: $e');
     }
 
     setState(() => isLoading = false);
-  }
-
-  void _processWeeklyData() {
-    weeklyData = {
-      for (int w = 1; w <= 5; w++)
-        w: {'paid': 0, 'paidCash': 0, 'paidGCash': 0, 'unpaid': 0}
-    };
-    totalLoads = 0;
-
-    for (var job in completedJobs) {
-      if (job.dateD == null) continue;
-      final jobDate = job.dateD is Timestamp
-          ? (job.dateD as Timestamp).toDate()
-          : job.dateD as DateTime;
-      final week = _weekNumber(jobDate);
-
-      final finalPrice = job.finalPrice ?? 0;
-      final paidCash = job.paidCashAmount ?? 0;
-      final paidGCash =
-          (job.paidGCashVerified ?? false) ? (job.paidGCashAmount ?? 0) : 0;
-      final totalPaid = paidCash + paidGCash;
-      final unpaid = finalPrice - totalPaid;
-
-      totalLoads += job.finalLoad ?? 0;
-      if (totalPaid > 0) weeklyData[week]!['paid'] += totalPaid;
-      if (paidCash > 0) weeklyData[week]!['paidCash'] += paidCash;
-      if (paidGCash > 0) weeklyData[week]!['paidGCash'] += paidGCash;
-      if (unpaid > 0) weeklyData[week]!['unpaid'] += unpaid;
-    }
-  }
-
-  void _processSuppliesData(List<QueryDocumentSnapshot> docs) {
-    suppliesData = {
-      'Funds In': 0,
-      'Funds Out': 0,
-      'Laundry Payment': 0,
-      'Cash In/Load': 0,
-      'Cash Out': 0
-    };
-
-    for (var doc in docs) {
-      final data = doc.data() as Map<String, dynamic>;
-      final itemId = data['ItemUniqueId'] ?? 0;
-      final counter = (data['CurrentCounter'] ?? 0) is int
-          ? data['CurrentCounter'] as int
-          : (data['CurrentCounter'] as double).toInt();
-
-      if (counter > 0)
-        suppliesData['Funds In'] = suppliesData['Funds In']! + counter;
-      if (counter < 0)
-        suppliesData['Funds Out'] = suppliesData['Funds Out']! + counter.abs();
-      if (itemId == 4405)
-        suppliesData['Laundry Payment'] =
-            suppliesData['Laundry Payment']! + counter;
-      if (itemId == 4401 || itemId == 431)
-        suppliesData['Cash In/Load'] = suppliesData['Cash In/Load']! + counter;
-      if (itemId == 4402)
-        suppliesData['Cash Out'] = suppliesData['Cash Out']! + counter;
-    }
-  }
-
-  void _processUnpaidCustomers() {
-    unpaidCustomers.clear();
-    for (var job in completedJobs) {
-      if (job.customerName == null) continue;
-      final unpaid = (job.finalPrice ?? 0) -
-          (job.paidCashAmount ?? 0) -
-          ((job.paidGCashVerified ?? false) ? (job.paidGCashAmount ?? 0) : 0);
-      if (unpaid > 0) {
-        unpaidCustomers[job.customerName!] =
-            (unpaidCustomers[job.customerName!] ?? 0) + unpaid;
-      }
-    }
-  }
-
-  int _weekNumber(DateTime date) {
-    if (date.day <= 7) return 1;
-    if (date.day <= 14) return 2;
-    if (date.day <= 21) return 3;
-    if (date.day <= 28) return 4;
-    return 5;
-  }
-
-  String _weekDateRange(int week) {
-    final startDay = (week - 1) * 7 + 1;
-    final endDay = week == 5
-        ? DateTime(currentMonth.year, currentMonth.month + 1, 0).day
-        : week * 7;
-    return '${DateFormat('MMM').format(currentMonth)}$startDay-$endDay';
   }
 
   @override
@@ -212,20 +167,24 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
                   ),
                   const SizedBox(height: 20),
                   SuppliesSummaryCard(
-                      suppliesData: suppliesData, isMobile: isMobile),
+                      suppliesData: _supplies.data, isMobile: isMobile),
                   const SizedBox(height: 20),
-                  SuppliesChart(suppliesData: suppliesData, isMobile: isMobile),
+                  SuppliesChart(
+                      suppliesData: _supplies.data, isMobile: isMobile),
                   const SizedBox(height: 20),
                   WeeklyRevenueChart(
-                    weeklyData: weeklyData,
-                    totalLoads: totalLoads,
+                    weeklyData: _weekly.data,
+                    totalLoads: _weekly.totalLoads,
                     totalJobs: completedJobs.length,
+                    totalExpense: _expense.totalExpense,
                     isMobile: isMobile,
                     getWeekDateRange: _weekDateRange,
                   ),
                   const SizedBox(height: 30),
                   UnpaidCustomersCard(
-                    unpaidCustomers: unpaidCustomers,
+                    unpaidCustomers: _unpaid.byCustomer,
+                    unpaidByWeek: _unpaid.byWeek,
+                    unpaidCustomersByWeek: _unpaid.customersByWeek,
                     currentMonth: currentMonth,
                     hasJobs: completedJobs.isNotEmpty,
                   ),

@@ -85,10 +85,16 @@ void showItemsInOut(BuildContext context) {
           ) ??
           1;
 
+      int expense = int.tryParse(
+            jobRepo.itemExpenseControllers[item.itemId]?.text ?? "0",
+          ) ??
+          0;
+
       sMH.itemName = item.itemName;
       sMH.itemId = item.itemId;
       sMH.itemUniqueId = item.itemUniqueId;
       sMH.currentCounter = qty; //add qty here
+      sMH.expenseAmount = expense;
 
       sMH.customerId = 123; //dummy
       sMH.logDate = (Timestamp.fromDate(DateTime.now()));

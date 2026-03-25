@@ -6,7 +6,6 @@ import 'package:laundry_firebase/core/services/database_items_history.dart';
 import 'package:laundry_firebase/features/items/models/suppliesmodelhist.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
 
-
 class ReadDataItemsHistoryWidget extends StatefulWidget {
   const ReadDataItemsHistoryWidget({super.key});
 
@@ -71,6 +70,15 @@ class _ReadDataItemsHistoryWidgetState
               ),
             ),
             const SizedBox(width: 4),
+            Text(
+              "₱${value.format(sMH.expenseAmount)}",
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
+                color: Color.fromARGB(255, 185, 57, 48),
+              ),
+            ),
+            const SizedBox(width: 4),
             Expanded(
               child: Text(
                 "${sMH.itemName} by ${sMH.empId} : ${sMH.remarks}",
@@ -132,6 +140,16 @@ class _ReadDataItemsHistoryWidgetState
             ),
           ),
           const SizedBox(width: 4),
+          if ((sMH.expenseAmount ?? 0) > 0)
+            Text(
+              "₱${value.format(sMH.expenseAmount)}",
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
+                color: Color.fromARGB(255, 185, 57, 48),
+              ),
+            ),
+          const SizedBox(width: 4),
           Expanded(
             child: Text(
               "${sMH.itemName} ${ifMenuUniqueIsCashIn(sMH) ? 'to' : 'by'} ${sMH.customerName} : ${sMH.remarks}",
@@ -175,8 +193,7 @@ class _ReadDataItemsHistoryWidgetState
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text("📑✨ ITEMS HISTORY",
-                style: TextStyle(color: Colors.white)),
+            Text("📑✨ ITEMS HISTORY", style: TextStyle(color: Colors.white)),
           ],
         ),
         SizedBox(
@@ -187,18 +204,19 @@ class _ReadDataItemsHistoryWidgetState
               if (snapshot.hasError) {
                 return Center(child: Text('Error: ${snapshot.error}'));
               }
-              
+
               if (!snapshot.hasData) {
                 return const Center(child: CircularProgressIndicator());
               }
-              
+
               final docs = snapshot.data!.docs;
-              final items = docs.map((doc) => doc.data() as SuppliesModelHist).toList();
-              
+              final items =
+                  docs.map((doc) => doc.data() as SuppliesModelHist).toList();
+
               if (items.isEmpty) {
                 return const Center(child: Text('No items history'));
               }
-              
+
               return ListView.builder(
                 controller: _scrollController,
                 physics: const AlwaysScrollableScrollPhysics(),

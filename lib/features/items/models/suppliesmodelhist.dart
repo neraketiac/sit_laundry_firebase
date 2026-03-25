@@ -13,6 +13,7 @@ class SuppliesModelHist {
   int customerId;
   String customerName;
   String remarks;
+  int? expenseAmount;
 
   SuppliesModelHist({
     required this.docId,
@@ -27,6 +28,7 @@ class SuppliesModelHist {
     required this.customerId,
     required this.customerName,
     required this.remarks,
+    this.expenseAmount,
   });
 
   SuppliesModelHist.fromJson(Map<String, dynamic> json)
@@ -43,6 +45,7 @@ class SuppliesModelHist {
           customerId: json['CustomerId']! as int,
           customerName: json['CustomerName']! as String,
           remarks: json['Remarks']! as String,
+          expenseAmount: json['ExpenseAmount'] as int?,
         );
 
   SuppliesModelHist copyWith({
@@ -58,6 +61,7 @@ class SuppliesModelHist {
     int? customerId,
     String? customerName,
     String? remarks,
+    int? expenseAmount,
   }) {
     return SuppliesModelHist(
       docId: docId ?? this.docId,
@@ -72,6 +76,7 @@ class SuppliesModelHist {
       customerId: customerId ?? this.customerId,
       customerName: customerName ?? this.customerName,
       remarks: remarks ?? this.remarks,
+      expenseAmount: expenseAmount ?? this.expenseAmount,
     );
   }
 
@@ -88,5 +93,6 @@ class SuppliesModelHist {
         'CustomerId': customerId,
         'CustomerName': customerName,
         'Remarks': remarks,
+        'ExpenseAmount': expenseAmount ?? 0,
       };
 }

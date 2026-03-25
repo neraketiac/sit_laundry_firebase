@@ -475,6 +475,11 @@ class JobModelRepository {
   set itemQtyControllers(Map<int, TextEditingController> value) =>
       jobselectedRepository.itemQtyControllers = value;
 
+  Map<int, TextEditingController> get itemExpenseControllers =>
+      jobselectedRepository.itemExpenseControllers;
+  set itemExpenseControllers(Map<int, TextEditingController> value) =>
+      jobselectedRepository.itemExpenseControllers = value;
+
   /////////////////////////////////////////////////////////////
   //                    GETTER SETTER                         //
   //                          LOYALTY                         //

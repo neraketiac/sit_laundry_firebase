@@ -115,6 +115,7 @@ class JobselectedRepository {
   int _selectedOthersShortCut = menuOth155; //use for selected add shortcuts
   bool _thisJobHasPromo = false;
   Map<int, TextEditingController> _itemQtyControllers = {};
+  Map<int, TextEditingController> _itemExpenseControllers = {};
 
   //================= GETTERS =================
 
@@ -168,6 +169,8 @@ class JobselectedRepository {
   int get selectedOthersShortCut => _selectedOthersShortCut;
   bool get thisJobHasPromo => _thisJobHasPromo;
   Map<int, TextEditingController> get itemQtyControllers => _itemQtyControllers;
+  Map<int, TextEditingController> get itemExpenseControllers =>
+      _itemExpenseControllers;
 
   //================= SETTERS =================
 
@@ -230,6 +233,10 @@ class JobselectedRepository {
     _itemQtyControllers = value;
   }
 
+  set itemExpenseControllers(Map<int, TextEditingController> value) {
+    _itemExpenseControllers = value;
+  }
+
   void reset() {
     selectedJobId = 0;
     selectedCustomerId = 0;
@@ -280,5 +287,6 @@ class JobselectedRepository {
     selectedOthersShortCut = 0;
     thisJobHasPromo = false;
     itemQtyControllers.clear();
+    itemExpenseControllers.clear();
   }
 }

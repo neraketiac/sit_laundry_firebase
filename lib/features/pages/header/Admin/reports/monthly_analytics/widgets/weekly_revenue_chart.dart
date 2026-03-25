@@ -5,6 +5,7 @@ class WeeklyRevenueChart extends StatelessWidget {
   final Map<int, Map<String, dynamic>> weeklyData;
   final int totalLoads;
   final int totalJobs;
+  final int totalExpense;
   final bool isMobile;
   final String Function(int week) getWeekDateRange;
 
@@ -13,6 +14,7 @@ class WeeklyRevenueChart extends StatelessWidget {
     required this.weeklyData,
     required this.totalLoads,
     required this.totalJobs,
+    required this.totalExpense,
     required this.isMobile,
     required this.getWeekDateRange,
   });
@@ -138,6 +140,8 @@ class WeeklyRevenueChart extends StatelessWidget {
               _miniTile('GCash', _totalPaidGCash, Colors.purple),
               const SizedBox(width: 8),
               _miniTile('Unpaid', _totalUnpaid, Colors.red),
+              const SizedBox(width: 8),
+              _miniTileNeg('Expense', totalExpense, Colors.orange),
             ],
           ),
         ],
@@ -157,6 +161,26 @@ class WeeklyRevenueChart extends StatelessWidget {
           children: [
             Text(label, style: TextStyle(fontSize: 11, color: color.shade700)),
             Text('₱${formatCurrency(amount)}',
+                style: TextStyle(
+                    fontWeight: FontWeight.bold, color: color.shade800)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _miniTileNeg(String label, int amount, MaterialColor color) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+        decoration: BoxDecoration(
+          color: color.shade100,
+          borderRadius: BorderRadius.circular(6),
+        ),
+        child: Column(
+          children: [
+            Text(label, style: TextStyle(fontSize: 11, color: color.shade700)),
+            Text('-₱${formatCurrency(amount)}',
                 style: TextStyle(
                     fontWeight: FontWeight.bold, color: color.shade800)),
           ],
@@ -330,7 +354,8 @@ class WeeklyRevenueChart extends StatelessWidget {
           DataTable(
             columnSpacing: 20,
             headingRowHeight: 35,
-            dataRowHeight: 30,
+            dataRowMinHeight: 28,
+            dataRowMaxHeight: 32,
             headingTextStyle:
                 const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
             dataTextStyle: const TextStyle(fontSize: 11),
@@ -341,6 +366,7 @@ class WeeklyRevenueChart extends StatelessWidget {
               DataColumn(label: Text('Cash'), numeric: true),
               DataColumn(label: Text('GCash'), numeric: true),
               DataColumn(label: Text('Unpaid'), numeric: true),
+              DataColumn(label: Text('Expense'), numeric: true),
             ],
             rows: List.generate(5, (i) {
               final week = i + 1;
@@ -348,6 +374,7 @@ class WeeklyRevenueChart extends StatelessWidget {
               final cash = weeklyData[week]?['paidCash'] as int? ?? 0;
               final gcash = weeklyData[week]?['paidGCash'] as int? ?? 0;
               final unpaid = weeklyData[week]?['unpaid'] as int? ?? 0;
+              final expense = weeklyData[week]?['expense'] as int? ?? 0;
               final total = paid + unpaid;
               return DataRow(cells: [
                 DataCell(Text('Week $week',
@@ -372,6 +399,12 @@ class WeeklyRevenueChart extends StatelessWidget {
                     style: TextStyle(
                         color:
                             unpaid > 0 ? Colors.red.shade700 : Colors.grey))),
+                DataCell(Text(
+                    expense > 0 ? '-₱${formatCurrency(expense)}' : '—',
+                    style: TextStyle(
+                        color: expense > 0
+                            ? Colors.orange.shade700
+                            : Colors.grey))),
               ]);
             }),
           ),
@@ -389,6 +422,36 @@ class WeeklyRevenueChart extends StatelessWidget {
                       color: Colors.blue)),
             ],
           ),
+          if (totalExpense > 0) ...[
+            const SizedBox(height: 4),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('Total Expense:',
+                    style: TextStyle(fontWeight: FontWeight.bold)),
+                Text('-₱${formatCurrency(totalExpense)}',
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: Colors.orange)),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('Net:',
+                    style: TextStyle(fontWeight: FontWeight.bold)),
+                Text('₱${formatCurrency(_totalRevenue - totalExpense)}',
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: (_totalRevenue - totalExpense) >= 0
+                            ? Colors.green
+                            : Colors.red)),
+              ],
+            ),
+          ],
         ],
       ),
     );
