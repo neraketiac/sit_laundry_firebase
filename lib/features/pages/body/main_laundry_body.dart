@@ -423,7 +423,7 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                   ),
                   animatedPanel(
                     visible: empSetup.showLaundry,
-                    width: 360,
+                    width: 400,
                     child: const ShowRiderOrders(),
                     color: Colors.teal.shade100,
                   ),
