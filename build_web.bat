@@ -3,40 +3,40 @@ setlocal enabledelayedexpansion
 
 set VERSION_FILE=lib\core\global\app_version.dart
 
-:: Read current version from the dart file
+echo [1/6] Reading current version...
 for /f "tokens=*" %%a in ('findstr /r "appVersion = " "%VERSION_FILE%"') do set LINE=%%a
 
-:: Extract version string e.g. '1.0.1'
 for /f "tokens=2 delims='" %%v in ("!LINE!") do set CURRENT=%%v
 
-:: Split into major.minor.patch
 for /f "tokens=1,2,3 delims=." %%a in ("!CURRENT!") do (
     set MAJOR=%%a
     set MINOR=%%b
     set PATCH=%%c
 )
 
-:: Bump patch
+echo [2/6] Bumping version...
 set /a PATCH=PATCH+1
 set NEW_VERSION=!MAJOR!.!MINOR!.!PATCH!
+echo       !CURRENT! -^> !NEW_VERSION!
 
-echo Bumping version: !CURRENT! -^> !NEW_VERSION!
-
-:: Write new version file
 (
 echo // Auto-updated by build.bat -- do not edit manually
 echo const String appVersion = '!NEW_VERSION!';
 ) > "%VERSION_FILE%"
+echo       Version file updated.
 
-echo Version file updated.
-
-:: Clean and build
-echo Running flutter clean...
+echo [3/6] Running flutter clean...
 call flutter clean
+if errorlevel 1 ( echo ERROR: flutter clean failed & exit /b 1 )
 
-echo Running flutter build web...
+echo [4/6] Running flutter build web --release...
 call flutter build web --release
+if errorlevel 1 ( echo ERROR: flutter build web failed & exit /b 1 )
+
+echo [5/6] Deploying to Firebase Hosting...
+call firebase deploy --only hosting
+if errorlevel 1 ( echo ERROR: firebase deploy failed & exit /b 1 )
 
 echo.
-echo Done. Version: !NEW_VERSION!
+echo [6/6] Done. Version: !NEW_VERSION!
 endlocal

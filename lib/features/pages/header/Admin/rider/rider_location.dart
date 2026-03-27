@@ -831,7 +831,10 @@ class _AdminRiderPanelState extends State<AdminRiderPanel> {
           'facing': _lastFacing,
           'updatedAt': Timestamp.now(),
           'isOnline': true,
-        });
+          'status': _onDelivery
+              ? '🚚 On Delivery / Pickup'
+              : '✅ Done Delivery / Pickup',
+        }, SetOptions(merge: true));
 
         if (notify && !_notified) {
           await _notifyAllSubscribers();
@@ -847,92 +850,108 @@ class _AdminRiderPanelState extends State<AdminRiderPanel> {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return Column(
       mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.end,
       children: [
-        // Share GPS
-        const Icon(Icons.share_location, size: 14, color: Colors.blueGrey),
-        const SizedBox(width: 2),
-        const Text('GPS',
-            style: TextStyle(fontSize: 11, color: Colors.blueGrey)),
-        if (_locating)
-          const Padding(
-            padding: EdgeInsets.only(left: 3),
-            child: SizedBox(
-              width: 10,
-              height: 10,
-              child: CircularProgressIndicator(strokeWidth: 1.5),
-            ),
-          ),
-        Switch(
-          value: _sharing,
-          onChanged: _toggleSharing,
-          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        ),
-        const SizedBox(width: 6),
-        // Preview self
-        const Icon(Icons.electric_moped, size: 14, color: Colors.blueGrey),
-        const SizedBox(width: 2),
-        const Text('Me',
-            style: TextStyle(fontSize: 11, color: Colors.blueGrey)),
-        Switch(
-          value: _previewSelf,
-          onChanged: (v) {
-            setState(() => _previewSelf = v);
-            if (v) {
-              _acquireWakeLock();
-            } else if (!_sharing) {
-              _releaseWakeLock();
-            }
-            widget.onPreviewSelfChanged?.call(v);
-          },
-          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        ),
-        const SizedBox(width: 6),
-        // Delivery status
-        Text(
-          _onDelivery ? '🚚' : '✅',
-          style: const TextStyle(fontSize: 14),
-        ),
-        const SizedBox(width: 2),
-        const Text('Delivery',
-            style: TextStyle(fontSize: 11, color: Colors.blueGrey)),
-        Switch(
-          value: _onDelivery,
-          onChanged: _toggleDeliveryStatus,
-          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        ),
-        if (_watcherCount > 0) ...[
-          const SizedBox(width: 4),
-          GestureDetector(
-            onTap: _staleCount > 0
-                ? () async {
-                    final removed = await _cleanStaleWatchers();
-                    if (mounted && removed > 0) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Removed $removed stale watcher(s).'),
-                          duration: const Duration(seconds: 2),
-                        ),
-                      );
-                    }
-                  }
-                : null,
-            child: Text(
-              '$_watcherCount 👁${_staleCount > 0 ? ' ($_staleCount stale ✕)' : ''}',
-              style: TextStyle(
-                fontSize: 11,
-                color: _staleCount > 0 ? Colors.orange : Colors.blueGrey,
-                decoration: _staleCount > 0 ? TextDecoration.underline : null,
+        // ── Row 1: GPS toggle + watchers ──────────────────────────
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.share_location, size: 14, color: Colors.blueGrey),
+            const SizedBox(width: 2),
+            const Text('GPS',
+                style: TextStyle(fontSize: 11, color: Colors.blueGrey)),
+            if (_locating)
+              const Padding(
+                padding: EdgeInsets.only(left: 3),
+                child: SizedBox(
+                  width: 10,
+                  height: 10,
+                  child: CircularProgressIndicator(strokeWidth: 1.5),
+                ),
               ),
+            Checkbox(
+              value: _sharing,
+              onChanged: (v) => _toggleSharing(v ?? false),
+              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              visualDensity: VisualDensity.compact,
             ),
-          ),
-        ],
-        if (_error != null)
-          const Padding(
-            padding: EdgeInsets.only(left: 4),
-            child: Icon(Icons.error_outline, size: 14, color: Colors.redAccent),
-          ),
+            if (_watcherCount > 0) ...[
+              const SizedBox(width: 4),
+              GestureDetector(
+                onTap: _staleCount > 0
+                    ? () async {
+                        final removed = await _cleanStaleWatchers();
+                        if (mounted && removed > 0) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content:
+                                  Text('Removed $removed stale watcher(s).'),
+                              duration: const Duration(seconds: 2),
+                            ),
+                          );
+                        }
+                      }
+                    : null,
+                child: Text(
+                  '$_watcherCount 👁${_staleCount > 0 ? ' ($_staleCount stale ✕)' : ''}',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: _staleCount > 0 ? Colors.orange : Colors.blueGrey,
+                    decoration:
+                        _staleCount > 0 ? TextDecoration.underline : null,
+                  ),
+                ),
+              ),
+            ],
+            if (_error != null)
+              const Padding(
+                padding: EdgeInsets.only(left: 4),
+                child: Icon(Icons.error_outline,
+                    size: 14, color: Colors.redAccent),
+              ),
+          ],
+        ),
+        // ── Row 2: Me toggle + Delivery toggle ────────────────────
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.electric_moped, size: 14, color: Colors.blueGrey),
+            const SizedBox(width: 2),
+            const Text('Me',
+                style: TextStyle(fontSize: 11, color: Colors.blueGrey)),
+            Checkbox(
+              value: _previewSelf,
+              onChanged: (v) {
+                final val = v ?? false;
+                setState(() => _previewSelf = val);
+                if (val) {
+                  _acquireWakeLock();
+                } else if (!_sharing) {
+                  _releaseWakeLock();
+                }
+                widget.onPreviewSelfChanged?.call(val);
+              },
+              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              visualDensity: VisualDensity.compact,
+            ),
+            const SizedBox(width: 6),
+            Text(
+              _onDelivery ? '🚚' : '✅',
+              style: const TextStyle(fontSize: 13),
+            ),
+            const SizedBox(width: 2),
+            const Text('Delivery',
+                style: TextStyle(fontSize: 11, color: Colors.blueGrey)),
+            Checkbox(
+              value: _onDelivery,
+              onChanged: (v) => _toggleDeliveryStatus(v ?? false),
+              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              visualDensity: VisualDensity.compact,
+            ),
+          ],
+        ),
       ],
     );
   }
