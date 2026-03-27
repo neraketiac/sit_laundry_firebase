@@ -626,6 +626,7 @@ class _AdminRiderPanelState extends State<AdminRiderPanel> {
   bool _locating = false;
   bool _notified = false;
   bool _previewSelf = false; // show own position on the map
+  bool _onDelivery = false;
   String? _error;
   Timer? _timer;
   Timer? _cleanupTimer;
@@ -636,6 +637,7 @@ class _AdminRiderPanelState extends State<AdminRiderPanel> {
   double? _prevLng;
   double? _prevLat;
   DateTime? _lastWritten;
+  DateTime? _sessionStart;
   String _lastFacing = 'right';
 
   Future<void> _acquireWakeLock() async {
@@ -694,6 +696,15 @@ class _AdminRiderPanelState extends State<AdminRiderPanel> {
       final ts = doc.data()['lastSeen'];
       if (ts is Timestamp) {
         if (now.difference(ts.toDate()) > _kStaleThreshold) {
+          // Save to history before deleting
+          batch.set(
+            _db.collection('rider_watchers_history').doc(),
+            {
+              ...doc.data(),
+              'watcherId': doc.id,
+              'clearedAt': Timestamp.now(),
+            },
+          );
           batch.delete(doc.reference);
           removed++;
         }
@@ -701,6 +712,23 @@ class _AdminRiderPanelState extends State<AdminRiderPanel> {
     }
     if (removed > 0) await batch.commit();
     return removed;
+  }
+
+  /// Saves a history record to `rider_location_history` when the rider goes offline.
+  Future<void> _saveRiderHistory() async {
+    if (_prevLat == null || _prevLng == null) return;
+    try {
+      await _db.collection('rider_location_history').add({
+        'lat': _prevLat,
+        'lng': _prevLng,
+        'facing': _lastFacing,
+        'sessionStart':
+            _sessionStart != null ? Timestamp.fromDate(_sessionStart!) : null,
+        'clearedAt': Timestamp.now(),
+        'lastWritten':
+            _lastWritten != null ? Timestamp.fromDate(_lastWritten!) : null,
+      });
+    } catch (_) {}
   }
 
   /// On sharing start, read existing facing from Firestore so we never lose it.
@@ -729,6 +757,14 @@ class _AdminRiderPanelState extends State<AdminRiderPanel> {
     return r * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a));
   }
 
+  void _toggleDeliveryStatus(bool val) {
+    setState(() => _onDelivery = val);
+    _db.collection(_kCollection).doc(_kDoc).set(
+      {'status': val ? '🚚 On Delivery / Pickup' : '✅ Done Delivery / Pickup'},
+      SetOptions(merge: true),
+    );
+  }
+
   void _toggleSharing(bool val) {
     setState(() {
       _sharing = val;
@@ -736,6 +772,7 @@ class _AdminRiderPanelState extends State<AdminRiderPanel> {
     });
     if (val) {
       _acquireWakeLock();
+      _sessionStart = DateTime.now();
       _loadFacingThenStart(notify: true);
       _timer = Timer.periodic(
         const Duration(seconds: 5),
@@ -745,9 +782,11 @@ class _AdminRiderPanelState extends State<AdminRiderPanel> {
       _timer?.cancel();
       _cleanupTimer?.cancel();
       if (!_previewSelf) _releaseWakeLock();
+      _saveRiderHistory();
       _prevLng = null;
       _prevLat = null;
       _lastWritten = null;
+      _sessionStart = null;
       // _lastFacing intentionally NOT reset — keep last known direction
       _db.collection(_kCollection).doc(_kDoc).update({'isOnline': false});
     }
@@ -847,6 +886,20 @@ class _AdminRiderPanelState extends State<AdminRiderPanel> {
             }
             widget.onPreviewSelfChanged?.call(v);
           },
+          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        ),
+        const SizedBox(width: 6),
+        // Delivery status
+        Text(
+          _onDelivery ? '🚚' : '✅',
+          style: const TextStyle(fontSize: 14),
+        ),
+        const SizedBox(width: 2),
+        const Text('Delivery',
+            style: TextStyle(fontSize: 11, color: Colors.blueGrey)),
+        Switch(
+          value: _onDelivery,
+          onChanged: _toggleDeliveryStatus,
           materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
         ),
         if (_watcherCount > 0) ...[
