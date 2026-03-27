@@ -1,4 +1,5 @@
 //########################### Supplies History ###############################
+import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -23,6 +24,8 @@ class _ReadDataItemsHistoryWidgetState
   bool _hasMore = true;
   late ScrollController _scrollController;
   late DatabaseItemsHist dbItemsHist;
+  StreamSubscription? _newDocSub;
+  Timestamp? _newestLogDate;
 
   static const int _pageSize = 50;
 
@@ -43,7 +46,38 @@ class _ReadDataItemsHistoryWidgetState
   @override
   void dispose() {
     _scrollController.dispose();
+    _newDocSub?.cancel();
     super.dispose();
+  }
+
+  void _startNewDocListener() {
+    _newDocSub?.cancel();
+    if (_newestLogDate == null) return;
+    _newDocSub = FirebaseFirestore.instance
+        .collection('ItemsHist')
+        .orderBy('LogDate', descending: true)
+        .where('LogDate', isGreaterThan: _newestLogDate)
+        .snapshots()
+        .listen((snap) {
+      if (!mounted || snap.docs.isEmpty) return;
+      final incoming =
+          snap.docs.map((d) => SuppliesModelHist.fromJson(d.data())).toList();
+      setState(() {
+        _items.insertAll(0, incoming);
+        _newestLogDate = snap.docs.first.data()['LogDate'] as Timestamp?;
+      });
+    });
+  }
+
+  Future<void> _refresh() async {
+    _newDocSub?.cancel();
+    setState(() {
+      _items.clear();
+      _lastDoc = null;
+      _hasMore = true;
+      _newestLogDate = null;
+    });
+    await _loadMore();
   }
 
   Future<void> _loadMore() async {
@@ -59,6 +93,11 @@ class _ReadDataItemsHistoryWidgetState
       if (newItems.length < _pageSize) _hasMore = false;
       if (snap.docs.isNotEmpty) _lastDoc = snap.docs.last;
       _items.addAll(newItems);
+      if (_newestLogDate == null && snap.docs.isNotEmpty) {
+        final firstData = snap.docs.first.data() as SuppliesModelHist;
+        _newestLogDate = firstData.logDate;
+        _startNewDocListener();
+      }
     });
   }
 
@@ -232,33 +271,36 @@ class _ReadDataItemsHistoryWidgetState
               ? const Center(child: CircularProgressIndicator())
               : _items.isEmpty
                   ? const Center(child: Text('No items history'))
-                  : ListView.builder(
-                      controller: _scrollController,
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      itemCount: _items.length + (_hasMore ? 1 : 0),
-                      itemBuilder: (context, index) {
-                        if (index == _items.length) {
-                          if (!_loading) {
-                            WidgetsBinding.instance
-                                .addPostFrameCallback((_) => _loadMore());
-                          }
-                          return const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 8),
-                            child: Center(
-                              child: SizedBox(
-                                width: 20,
-                                height: 20,
-                                child:
-                                    CircularProgressIndicator(strokeWidth: 2),
+                  : RefreshIndicator(
+                      onRefresh: _refresh,
+                      child: ListView.builder(
+                        controller: _scrollController,
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        itemCount: _items.length + (_hasMore ? 1 : 0),
+                        itemBuilder: (context, index) {
+                          if (index == _items.length) {
+                            if (!_loading) {
+                              WidgetsBinding.instance
+                                  .addPostFrameCallback((_) => _loadMore());
+                            }
+                            return const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 8),
+                              child: Center(
+                                child: SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child:
+                                      CircularProgressIndicator(strokeWidth: 2),
+                                ),
                               ),
-                            ),
+                            );
+                          }
+                          return SizedBox(
+                            height: 24,
+                            child: _buildItemRow(_items[index]),
                           );
-                        }
-                        return SizedBox(
-                          height: 24,
-                          child: _buildItemRow(_items[index]),
-                        );
-                      },
+                        },
+                      ),
                     ),
         ),
       ],

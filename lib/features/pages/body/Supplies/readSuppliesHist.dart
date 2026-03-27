@@ -1,4 +1,5 @@
 //########################### Supplies History ###############################
+import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
@@ -157,6 +158,8 @@ class _SuppliesHistoryListState extends State<_SuppliesHistoryList> {
   bool _loading = false;
   bool _hasMore = true;
   final ScrollController _scroll = ScrollController();
+  StreamSubscription? _newDocSub;
+  Timestamp? _newestLogDate;
 
   static const int _pageSize = 50;
 
@@ -174,7 +177,39 @@ class _SuppliesHistoryListState extends State<_SuppliesHistoryList> {
   @override
   void dispose() {
     _scroll.dispose();
+    _newDocSub?.cancel();
     super.dispose();
+  }
+
+  void _startNewDocListener() {
+    _newDocSub?.cancel();
+    if (_newestLogDate == null) return;
+    _newDocSub = FirebaseFirestore.instance
+        .collection('SuppliesHist')
+        .orderBy('LogDate', descending: true)
+        .where('LogDate', isGreaterThan: _newestLogDate)
+        .snapshots()
+        .listen((snap) {
+      if (!mounted || snap.docs.isEmpty) return;
+      final incoming =
+          snap.docs.map((d) => SuppliesModelHist.fromJson(d.data())).toList();
+      // newest first — already ordered descending
+      setState(() {
+        _items.insertAll(0, incoming);
+        _newestLogDate = snap.docs.first.data()['LogDate'] as Timestamp?;
+      });
+    });
+  }
+
+  Future<void> _refresh() async {
+    _newDocSub?.cancel();
+    setState(() {
+      _items.clear();
+      _lastDoc = null;
+      _hasMore = true;
+      _newestLogDate = null;
+    });
+    await _loadMore();
   }
 
   Future<void> _loadMore() async {
@@ -194,6 +229,12 @@ class _SuppliesHistoryListState extends State<_SuppliesHistoryList> {
       if (newItems.length < _pageSize) _hasMore = false;
       if (snap.docs.isNotEmpty) _lastDoc = snap.docs.last;
       _items.addAll(newItems);
+      // Track the newest LogDate from the first page for the live listener
+      if (_newestLogDate == null && snap.docs.isNotEmpty) {
+        final firstData = snap.docs.first.data() as SuppliesModelHist;
+        _newestLogDate = firstData.logDate;
+        _startNewDocListener();
+      }
     });
   }
 
@@ -214,32 +255,35 @@ class _SuppliesHistoryListState extends State<_SuppliesHistoryList> {
               ? const Center(child: CircularProgressIndicator())
               : _items.isEmpty
                   ? const Center(child: Text('No supplies history'))
-                  : ListView.builder(
-                      controller: _scroll,
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      itemCount: _items.length + (_hasMore ? 1 : 0),
-                      itemBuilder: (context, index) {
-                        if (index == _items.length) {
-                          // Bottom loader — schedule after frame to avoid setState during build
-                          if (!_loading) {
-                            WidgetsBinding.instance
-                                .addPostFrameCallback((_) => _loadMore());
+                  : RefreshIndicator(
+                      onRefresh: _refresh,
+                      child: ListView.builder(
+                        controller: _scroll,
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        itemCount: _items.length + (_hasMore ? 1 : 0),
+                        itemBuilder: (context, index) {
+                          if (index == _items.length) {
+                            if (!_loading) {
+                              WidgetsBinding.instance
+                                  .addPostFrameCallback((_) => _loadMore());
+                            }
+                            return const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 8),
+                              child: Center(
+                                  child: SizedBox(
+                                width: 20,
+                                height: 20,
+                                child:
+                                    CircularProgressIndicator(strokeWidth: 2),
+                              )),
+                            );
                           }
-                          return const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 8),
-                            child: Center(
-                                child: SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )),
+                          return SizedBox(
+                            height: 24,
+                            child: _buildSupplyRow(_items[index]),
                           );
-                        }
-                        return SizedBox(
-                          height: 24,
-                          child: _buildSupplyRow(_items[index]),
-                        );
-                      },
+                        },
+                      ),
                     ),
         ),
       ],

@@ -1,5 +1,4 @@
 //########################### Employee History ###############################
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
@@ -98,18 +97,19 @@ Widget readDataEmployeeHist() {
                 if (snapshot.hasError) {
                   return Center(child: Text('Error: ${snapshot.error}'));
                 }
-                
+
                 if (!snapshot.hasData) {
                   return const Center(child: CircularProgressIndicator());
                 }
-                
+
                 final docs = snapshot.data!.docs;
-                final employees = docs.map((doc) => doc.data() as EmployeeModel).toList();
-                
+                final employees =
+                    docs.map((doc) => doc.data() as EmployeeModel).toList();
+
                 if (employees.isEmpty) {
                   return const Center(child: Text('No employee history'));
                 }
-                
+
                 return ListView.builder(
                   physics: const AlwaysScrollableScrollPhysics(),
                   itemCount: employees.length,
