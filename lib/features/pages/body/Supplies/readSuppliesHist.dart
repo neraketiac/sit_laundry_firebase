@@ -154,6 +154,7 @@ class _SuppliesHistoryList extends StatefulWidget {
 
 class _SuppliesHistoryListState extends State<_SuppliesHistoryList> {
   final List<SuppliesModelHist> _items = [];
+  final Set<String> _loadedIds = {};
   DocumentSnapshot? _lastDoc;
   bool _loading = false;
   bool _hasMore = true;
@@ -192,8 +193,11 @@ class _SuppliesHistoryListState extends State<_SuppliesHistoryList> {
         .listen((snap) {
       if (!mounted || snap.docs.isEmpty) return;
       final incoming =
-          snap.docs.map((d) => SuppliesModelHist.fromJson(d.data())).toList();
-      // newest first — already ordered descending
+          snap.docs.where((d) => !_loadedIds.contains(d.id)).map((d) {
+        _loadedIds.add(d.id);
+        return SuppliesModelHist.fromJson(d.data());
+      }).toList();
+      if (incoming.isEmpty) return;
       setState(() {
         _items.insertAll(0, incoming);
         _newestLogDate = snap.docs.first.data()['LogDate'] as Timestamp?;
@@ -205,6 +209,7 @@ class _SuppliesHistoryListState extends State<_SuppliesHistoryList> {
     _newDocSub?.cancel();
     setState(() {
       _items.clear();
+      _loadedIds.clear();
       _lastDoc = null;
       _hasMore = true;
       _newestLogDate = null;
@@ -228,7 +233,12 @@ class _SuppliesHistoryListState extends State<_SuppliesHistoryList> {
       _loading = false;
       if (newItems.length < _pageSize) _hasMore = false;
       if (snap.docs.isNotEmpty) _lastDoc = snap.docs.last;
-      _items.addAll(newItems);
+      for (int i = 0; i < snap.docs.length; i++) {
+        if (!_loadedIds.contains(snap.docs[i].id)) {
+          _loadedIds.add(snap.docs[i].id);
+          _items.add(newItems[i]);
+        }
+      }
       // Track the newest LogDate from the first page for the live listener
       if (_newestLogDate == null && snap.docs.isNotEmpty) {
         final firstData = snap.docs.first.data() as SuppliesModelHist;
