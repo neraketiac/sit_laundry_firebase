@@ -6,7 +6,6 @@ import 'package:laundry_firebase/core/utils/sharedmethodsdatabase.dart';
 import 'package:laundry_firebase/core/services/database_loyalty.dart';
 import 'package:laundry_firebase/features/jobs/repository/jobmodel_repository.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
-import 'package:laundry_firebase/features/pages/body/Loyalty/loyalty_single.dart';
 
 class AdminJobRepoViewer extends StatefulWidget {
   final JobModelRepository jobRepo;
@@ -23,13 +22,38 @@ class _AdminJobRepoViewerState extends State<AdminJobRepoViewer> {
   late JobModelRepository jobRepo;
 
   Future<void> saveButtonSetRepository() async {
+    // Admin override — assign all fields directly, no recalculation
     jobRepo.currentEmpId = empIdGlobal;
-    // Capture admin's explicit unpaid choice before sync overwrites it
-    final adminUnpaid = jobRepo.selectedUnpaid;
-    jobRepo.syncSelectedToRepoAll(jobRepo);
-    // Restore admin override — syncSelectedToRepoAll recalculates unpaid from payment logic
-    jobRepo.unpaid = adminUnpaid;
-    jobRepo.selectedUnpaid = adminUnpaid;
+    jobRepo.jobId = jobRepo.selectedJobId;
+    jobRepo.customerId = jobRepo.selectedCustomerId;
+    jobRepo.customerName = jobRepo.selectedCustomerNameVar.text;
+    jobRepo.perKilo = jobRepo.selectedPerKilo;
+    jobRepo.perLoad = jobRepo.selectedPerLoad;
+    jobRepo.finalKilo = jobRepo.selectedFinalKilo;
+    jobRepo.finalLoad = jobRepo.selectedFinalLoad;
+    jobRepo.finalPrice = jobRepo.selectedFinalPrice;
+    jobRepo.promoCounter = jobRepo.selectedPromoCounter;
+    jobRepo.fold = jobRepo.selectedFold;
+    jobRepo.mix = jobRepo.selectedMix;
+    jobRepo.basket = jobRepo.selectedBasket;
+    jobRepo.ebag = jobRepo.selectedEbag;
+    jobRepo.sako = jobRepo.selectedSako;
+    jobRepo.unpaid = jobRepo.selectedUnpaid;
+    jobRepo.paidCash = jobRepo.selectedPaidCash;
+    jobRepo.paidGCash = jobRepo.selectedPaidGCash;
+    jobRepo.paidGCashVerified = jobRepo.selectedPaidGCashVerified;
+    jobRepo.paidCashAmount = jobRepo.selectedPaidCashAmount;
+    jobRepo.paidGCashAmount = jobRepo.selectedPaidGCashAmount;
+    jobRepo.paymentReceivedBy = jobRepo.selectedPaymentReceivedBy;
+    jobRepo.remarks = jobRepo.selectedRemarksVar.text;
+    jobRepo.items = jobRepo.selectedItems;
+    jobRepo.processStep = jobRepo.selectedProcessStep;
+    jobRepo.allStatus = jobRepo.selectedAllStatus;
+    jobRepo.forDisposal = jobRepo.selectedForDisposal;
+    jobRepo.disposed = jobRepo.selectedDisposed;
+    jobRepo.promoErrorCode = jobRepo.selectedPromoErrorCode;
+    jobRepo.isCustomerPickedUp = jobRepo.selectedIsCustomerPickedUp;
+    jobRepo.isDeliveredToCustomer = jobRepo.selectedIsDeliveredToCustomer;
     await callDatabaseUpdateJob(context, jobRepo.getJobsModel()!);
   }
 
@@ -130,6 +154,12 @@ class _AdminJobRepoViewerState extends State<AdminJobRepoViewer> {
         jobRepo.selectedCustomerId = int.tryParse(value.toString()) ?? 0;
       case "customerName":
         jobRepo.selectedCustomerNameVar.text = value;
+      case "address":
+        jobRepo.address = value;
+      case "forSorting":
+        jobRepo.forSorting = value;
+      case "riderPickup":
+        jobRepo.riderPickup = value;
       case "isCustomerPickedUp":
         jobRepo.selectedIsCustomerPickedUp = value;
       case "isDeliveredToCustomer":
@@ -138,6 +168,14 @@ class _AdminJobRepoViewerState extends State<AdminJobRepoViewer> {
         jobRepo.selectedFold = value;
       case "mix":
         jobRepo.selectedMix = value;
+      case "regular":
+        jobRepo.regular = value;
+      case "sayosabon":
+        jobRepo.sayosabon = value;
+      case "addOn":
+        jobRepo.addOn = value;
+      case "pricingSetup":
+        jobRepo.pricingSetup = value;
       case "unpaid":
         jobRepo.selectedUnpaid = value;
       case "paidCash":
@@ -150,12 +188,18 @@ class _AdminJobRepoViewerState extends State<AdminJobRepoViewer> {
         jobRepo.selectedForDisposal = value;
       case "disposed":
         jobRepo.selectedDisposed = value;
+      case "isSyncToDB2":
+        jobRepo.isSyncToDB2 = value;
       case "paidCashAmount":
         jobRepo.selectedPaidCashAmount = int.tryParse(value.toString()) ?? 0;
       case "paidGCashAmount":
         jobRepo.selectedPaidGCashAmount = int.tryParse(value.toString()) ?? 0;
       case "remarks":
         jobRepo.selectedRemarksVar.text = value;
+      case "createdBy":
+        jobRepo.createdBy = value;
+      case "currentEmpId":
+        jobRepo.currentEmpId = value;
       case "perKilo":
         jobRepo.selectedPerKilo = value == "true";
       case "perLoad":
@@ -385,6 +429,10 @@ class _AdminJobRepoViewerState extends State<AdminJobRepoViewer> {
               _buildSection("Identity", [
                 _buildFieldRow("docId", jobRepo.docId, jobRepo.docId),
                 _buildFieldRow("jobId", jobRepo.jobId, jobRepo.selectedJobId),
+                _buildFieldRow(
+                    "createdBy", jobRepo.createdBy, jobRepo.createdBy),
+                _buildFieldRow(
+                    "currentEmpId", jobRepo.currentEmpId, jobRepo.currentEmpId),
               ]),
               _buildSection("Dates", [
                 _buildFieldRow("dateQ", jobRepo.dateQ, jobRepo.dateQ),
@@ -393,12 +441,21 @@ class _AdminJobRepoViewerState extends State<AdminJobRepoViewer> {
                 _buildFieldRow("paidD", jobRepo.paidD, jobRepo.paidD),
                 _buildFieldRow("dateD", jobRepo.dateD, jobRepo.dateD),
                 _buildFieldRow("dateC", jobRepo.dateC, jobRepo.dateC),
+                _buildFieldRow("customerPickupDate", jobRepo.customerPickupDate,
+                    jobRepo.customerPickupDate),
+                _buildFieldRow("riderDeliveryDate", jobRepo.riderDeliveryDate,
+                    jobRepo.riderDeliveryDate),
               ]),
               _buildSection("Customer", [
                 _buildFieldRow("customerId", jobRepo.customerId,
                     jobRepo.selectedCustomerId),
                 _buildFieldRow("customerName", jobRepo.customerName,
                     jobRepo.selectedCustomerNameVar.text),
+                _buildFieldRow("address", jobRepo.address, jobRepo.address),
+                _buildFieldRow(
+                    "forSorting", jobRepo.forSorting, jobRepo.forSorting),
+                _buildFieldRow(
+                    "riderPickup", jobRepo.riderPickup, jobRepo.riderPickup),
                 _buildFieldRow("isCustomerPickedUp", jobRepo.isCustomerPickedUp,
                     jobRepo.selectedIsCustomerPickedUp),
                 _buildFieldRow(
@@ -419,11 +476,17 @@ class _AdminJobRepoViewerState extends State<AdminJobRepoViewer> {
                     jobRepo.selectedFinalPrice),
                 _buildFieldRow("promoCounter", jobRepo.promoCounter,
                     jobRepo.selectedPromoCounter),
+                _buildFieldRow(
+                    "pricingSetup", jobRepo.pricingSetup, jobRepo.pricingSetup),
                 _buildFieldRow("PromoErrorCode", jobRepo.promoErrorCode,
                     jobRepo.selectedPromoErrorCode),
                 _buildPromoErrorLegend(),
               ]),
               _buildSection("Options", [
+                _buildFieldRow("regular", jobRepo.regular, jobRepo.regular),
+                _buildFieldRow(
+                    "sayosabon", jobRepo.sayosabon, jobRepo.sayosabon),
+                _buildFieldRow("addOn", jobRepo.addOn, jobRepo.addOn),
                 _buildFieldRow("fold", jobRepo.fold, jobRepo.selectedFold),
                 _buildFieldRow("mix", jobRepo.mix, jobRepo.selectedMix),
               ]),
@@ -486,6 +549,8 @@ class _AdminJobRepoViewerState extends State<AdminJobRepoViewer> {
                     jobRepo.selectedForDisposal),
                 _buildFieldRow(
                     "disposed", jobRepo.disposed, jobRepo.selectedDisposed),
+                _buildFieldRow(
+                    "isSyncToDB2", jobRepo.isSyncToDB2, jobRepo.isSyncToDB2),
               ]),
               const SizedBox(height: 20),
             ],
