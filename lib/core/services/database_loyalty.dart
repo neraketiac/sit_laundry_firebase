@@ -1,11 +1,9 @@
-import 'dart:ui';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:laundry_firebase/core/utils/firestore_timeout.dart';
 import 'package:laundry_firebase/features/loyalty/models/loyaltymodel.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
 
 const String LOYALTY_REF = "loyalty";
-const Color _gcButtons = Color.fromRGBO(134, 218, 252, 0.733);
 
 class DatabaseLoyalty {
   final _firestore = FirebaseFirestore.instance;
@@ -59,18 +57,14 @@ class DatabaseLoyalty {
       final snapshot = await _customerRef
           .where('cardNumber', isEqualTo: cardNumber)
           .limit(1)
-          .get();
+          .get()
+          .withFsTimeout();
 
-      if (snapshot.docs.isEmpty) {
-        print("Customer not found for cardNumber: $cardNumber");
-        return;
-      }
-
+      if (snapshot.docs.isEmpty) return;
       final docId = snapshot.docs.first.id;
-
       await _customerRef.doc(docId).update({
         'Count': FieldValue.increment(i),
-      });
+      }).withFsTimeout();
 
       autocompleteSelected.loyaltyCount += i;
 
@@ -86,18 +80,14 @@ class DatabaseLoyalty {
       final snapshot = await _customerRef
           .where('cardNumber', isEqualTo: cardNumber)
           .limit(1)
-          .get();
+          .get()
+          .withFsTimeout();
 
-      if (snapshot.docs.isEmpty) {
-        print("Customer not found for cardNumber: $cardNumber");
-        return;
-      }
-
+      if (snapshot.docs.isEmpty) return;
       final docId = snapshot.docs.first.id;
-
       await _customerRef.doc(docId).update({
         'Count': newCount,
-      });
+      }).withFsTimeout();
 
       print("Count set to $newCount for cardNumber: $cardNumber");
     } catch (e) {

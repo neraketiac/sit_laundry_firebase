@@ -1,19 +1,18 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:laundry_firebase/core/utils/firestore_timeout.dart';
 import 'package:laundry_firebase/features/items/models/suppliesmodelhist.dart';
 
 const String ITEMS_HIS_REF = "ItemsHist";
 
 class DatabaseItemsHist {
   final _firestore = FirebaseFirestore.instance;
-
   late final CollectionReference _suppliesHistRef;
 
   DatabaseItemsHist() {
-    _suppliesHistRef =
-        _firestore.collection(ITEMS_HIS_REF).withConverter<SuppliesModelHist>(
-            fromFirestore: (snapshots, _) => SuppliesModelHist.fromJson(
-                  snapshots.data()!,
-                ),
+    _suppliesHistRef = _firestore
+        .collection(ITEMS_HIS_REF)
+        .withConverter<SuppliesModelHist>(
+            fromFirestore: (s, _) => SuppliesModelHist.fromJson(s.data()!),
             toFirestore: (sMH, _) => sMH.toJson());
   }
 
@@ -35,21 +34,15 @@ class DatabaseItemsHist {
       {DocumentSnapshot? lastDoc}) async {
     Query query = _suppliesHistRef.orderBy('LogDate', descending: true);
     if (lastDoc != null) query = query.startAfterDocument(lastDoc);
-    return query.limit(50).get();
+    return query.limit(50).get().withFsTimeout();
   }
 
   Future<bool> addItemsHist(SuppliesModelHist sMH) async {
-    bool bSuccess = false;
-    await _suppliesHistRef
-        .add(sMH)
-        .then((value) => {
-              print("Items History Save done."),
-              bSuccess = true,
-            })
-        .catchError((error) => {
-              print("Failed : $error ${sMH.itemId}"),
-              bSuccess = false,
-            });
-    return bSuccess;
+    try {
+      await _suppliesHistRef.add(sMH).withFsTimeout();
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 }

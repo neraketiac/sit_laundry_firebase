@@ -10,9 +10,11 @@ class EmployeeModel {
   int itemId;
   int itemUniqueId;
   String itemName;
-  Timestamp logDate; //* last transaction date
-  String logBy; //different name who log records
+  Timestamp logDate; //* transaction recorded date (always now)
+  String logBy;
   String remarks;
+  Timestamp?
+      autoSalaryDate; //* actual work date when auto-generated from calendar
 
   EmployeeModel({
     required this.docId,
@@ -27,6 +29,7 @@ class EmployeeModel {
     required this.logDate,
     required this.logBy,
     required this.remarks,
+    this.autoSalaryDate,
   });
 
   EmployeeModel.fromJson(Map<String, dynamic> json)
@@ -43,6 +46,7 @@ class EmployeeModel {
           logDate: json['LogDate']! as Timestamp,
           logBy: json['LogBy']! as String,
           remarks: json['Remarks']! as String,
+          autoSalaryDate: json['AutoSalaryDate'] as Timestamp?,
         );
 
   EmployeeModel coyWith({
@@ -58,6 +62,7 @@ class EmployeeModel {
     Timestamp? logDate,
     String? logBy,
     String? remarks,
+    Timestamp? autoSalaryDate,
   }) {
     return EmployeeModel(
       docId: docId ?? this.docId,
@@ -72,6 +77,7 @@ class EmployeeModel {
       logDate: logDate ?? this.logDate,
       logBy: logBy ?? this.logBy,
       remarks: remarks ?? this.remarks,
+      autoSalaryDate: autoSalaryDate ?? this.autoSalaryDate,
     );
   }
 
@@ -88,5 +94,6 @@ class EmployeeModel {
         'LogDate': logDate,
         'LogBy': logBy,
         'Remarks': remarks,
+        if (autoSalaryDate != null) 'AutoSalaryDate': autoSalaryDate,
       };
 }

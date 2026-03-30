@@ -1,12 +1,11 @@
 import 'dart:typed_data';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:laundry_firebase/core/utils/firestore_timeout.dart';
 import 'package:laundry_firebase/core/global/variables_all_codes.dart';
-
 import 'package:laundry_firebase/features/payments/models/gcashmodel.dart';
 import 'package:laundry_firebase/core/utils/sharedMethods.dart';
 import 'package:laundry_firebase/core/utils/sharedmethodsdatabase.dart';
-import 'package:laundry_firebase/core/global/variables_oth.dart';
 
 /// 🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦
 /// 🔹 COLLECTION REFERENCES
@@ -46,7 +45,7 @@ class DatabaseGCashPending {
     modelValue.docId = docRef.id;
 
     try {
-      await docRef.set(modelValue.toJson());
+      await docRef.set(modelValue.toJson()).withFsTimeout();
       return true;
     } catch (e) {
       return false;
@@ -55,7 +54,7 @@ class DatabaseGCashPending {
 
   /// 📥 Get single modelValue
   Future<GCashModel?> get(String docId) async {
-    final doc = await _ref.doc(docId).get();
+    final doc = await _ref.doc(docId).get().withFsTimeout();
     if (!doc.exists || doc.data() == null) return null;
     return GCashModel.fromJson(doc.data()!);
   }
@@ -99,7 +98,7 @@ class DatabaseGCashPending {
   }
 
   Future<void> updateVoid(GCashModel gM) async {
-    await _ref.doc(gM.docId).update(gM.toJson());
+    await _ref.doc(gM.docId).update(gM.toJson()).withFsTimeout();
   }
 
   Future<bool> updateBool(GCashModel gM) async {

@@ -28,9 +28,9 @@ Widget readDataJobsOnGoing(bool visible, Color color) {
         return const Center(child: Text('Error loading jobs'));
       }
 
-      // if (!snapshot.hasData || snapshot.data!.isEmpty) {
-      //   return const SizedBox();
-      // }
+      if (!snapshot.hasData) {
+        return const Center(child: CircularProgressIndicator());
+      }
 
       final jobs = snapshot.data!;
 

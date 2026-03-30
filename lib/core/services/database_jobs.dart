@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/foundation.dart';
+import 'package:laundry_firebase/core/utils/firestore_timeout.dart';
 import 'package:laundry_firebase/features/jobs/models/jobmodel.dart';
 import 'package:laundry_firebase/core/services/database_loyalty.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
@@ -42,7 +42,7 @@ class DatabaseJobsQueue {
 
   /// 📥 Get single job
   Future<JobModel?> get(String docId) async {
-    final doc = await _ref.doc(docId).get();
+    final doc = await _ref.doc(docId).get().withFsTimeout();
     if (!doc.exists || doc.data() == null) return null;
     return JobModel.fromJson(doc.data()!);
   }
@@ -60,17 +60,15 @@ class DatabaseJobsQueue {
 
   /// ❌ Delete job
   Future<void> delete(String docId) async {
-    await _ref.doc(docId).delete();
+    await _ref.doc(docId).delete().withFsTimeout();
   }
 
   Future<void> updateJobId(String docId, int jobId) async {
-    await _ref.doc(docId).update({
-      'A00_JobId': jobId,
-    });
+    await _ref.doc(docId).update({'A00_JobId': jobId}).withFsTimeout();
   }
 
   Future<void> updatePaidUnpaid(JobModel jM) async {
-    await _ref.doc(jM.docId).update(jM.toJson());
+    await _ref.doc(jM.docId).update(jM.toJson()).withFsTimeout();
   }
 
   Future<bool> update(JobModel jM) async {
@@ -109,15 +107,11 @@ class DatabaseJobsOngoing {
   /// 🔁 Update process step
   /// Values: 'washing' | 'drying' | 'folding'
   Future<void> updateStep(String docId, String step) async {
-    await _ref.doc(docId).update({
-      'O00_ProcessStep': step,
-    });
+    await _ref.doc(docId).update({'O00_ProcessStep': step}).withFsTimeout();
   }
 
   Future<void> updateJobId(String docId, int jobId) async {
-    await _ref.doc(docId).update({
-      'A00_JobId': jobId,
-    });
+    await _ref.doc(docId).update({'A00_JobId': jobId}).withFsTimeout();
   }
 
   Future<bool> update(JobModel jM) async {
@@ -437,8 +431,10 @@ Future<void> moveAllDoneToCompleted() async {
   final completedCollection = firestore.collection(JOBS_COMPLETED_REF);
 
   // 🔥 Only get PAID jobs
-  final snapshot =
-      await doneCollection.where('O01_AllStatus', isEqualTo: 1).get();
+  final snapshot = await doneCollection
+      .where('O01_AllStatus', isEqualTo: 1)
+      .get()
+      .withFsTimeout();
 
   if (snapshot.docs.isEmpty) {
     print("No paid documents to move.");
@@ -473,7 +469,8 @@ Future<int> getMaxJobId() async {
       .collection(JOBS_ONGOING_REF)
       .orderBy('A00_JobId', descending: true)
       .limit(1)
-      .get();
+      .get()
+      .withFsTimeout();
 
   final maxNumber =
       snapshot.docs.isNotEmpty ? snapshot.docs.first.get('A00_JobId') : 0;

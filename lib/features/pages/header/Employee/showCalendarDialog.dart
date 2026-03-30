@@ -484,7 +484,7 @@ Future<Map<DateTime, DaySelection>?> showCalendarDialog(BuildContext context) {
                                         if (context.mounted) {
                                           await setSuppliesRepository(
                                             context,
-                                            logDate: Timestamp.fromDate(
+                                            autoSalaryDate: Timestamp.fromDate(
                                                 coverageDateTime),
                                           );
                                         }

@@ -26,7 +26,8 @@ import 'dart:convert';
 import 'package:laundry_firebase/core/global/variables_oth.dart';
 
 //insert new Supplies
-Future<bool> callDatabaseSuppliesCurrentAdd(SuppliesModelHist sMH) async {
+Future<bool> callDatabaseSuppliesCurrentAdd(SuppliesModelHist sMH,
+    {Timestamp? autoSalaryDate}) async {
   //if cashout or funds out, make current counter negative
   if (ifMenuUniqueIsCashOut(sMH) ||
       ifMenuUniqueIsFundsOut(sMH) ||
@@ -80,10 +81,11 @@ Future<bool> callDatabaseSuppliesCurrentAdd(SuppliesModelHist sMH) async {
         itemId: sMH.itemId,
         itemUniqueId: sMH.itemUniqueId,
         itemName: sMH.itemName,
-        logDate: sMH.logDate,
+        logDate: Timestamp.now(),
         logBy: empIdGlobal,
         empName: sMH.customerName,
         remarks: sMH.remarks,
+        autoSalaryDate: autoSalaryDate,
       ))) {
         debugPrint("Employee Current updated...");
         //prevent generating another record in Supplies Current

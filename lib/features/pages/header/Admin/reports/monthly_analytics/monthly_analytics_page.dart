@@ -123,9 +123,10 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
       // EmployeeHist expense (ItemUniqueId=4406 filtered server-side)
       final empHistSnap = await db
           .collection('EmployeeHist')
-          .where('LogDate',
+          .where('AutoSalaryDate',
               isGreaterThanOrEqualTo: Timestamp.fromDate(startDate))
-          .where('LogDate', isLessThanOrEqualTo: Timestamp.fromDate(endDate))
+          .where('AutoSalaryDate',
+              isLessThanOrEqualTo: Timestamp.fromDate(endDate))
           //.where('ItemUniqueId', isEqualTo: 4406)  //automated laundry payment, value is positive
           .where('ItemUniqueId',
               isEqualTo: 4404) //found out, but value is negative

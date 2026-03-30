@@ -711,7 +711,7 @@ void resetPaymentStatus(JobModelRepository jobRepo) {
 // }
 
 Future<void> setSuppliesRepository(BuildContext context,
-    {Timestamp? logDate}) async {
+    {Timestamp? autoSalaryDate}) async {
   void resetAfterInsert() {
     SuppliesHistRepository.instance.reset();
     autocompleteSelected = CustomerModel(
@@ -730,11 +730,11 @@ Future<void> setSuppliesRepository(BuildContext context,
   //save to repository
 
   SuppliesHistRepository.instance.setCustomerId(123); //dummy
-  SuppliesHistRepository.instance
-      .setLogDate(logDate ?? Timestamp.fromDate(DateTime.now()));
+  SuppliesHistRepository.instance.setLogDate(Timestamp.now());
 
   if (await callDatabaseSuppliesCurrentAdd(
-      SuppliesHistRepository.instance.suppliesModelHist!)) {
+      SuppliesHistRepository.instance.suppliesModelHist!,
+      autoSalaryDate: autoSalaryDate)) {
     showSuccessSnackBar(context, 'Success');
     print("Sucess");
     resetAfterInsert();

@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:laundry_firebase/core/utils/firestore_timeout.dart';
 import 'package:laundry_firebase/features/employees/models/employeemodel.dart';
 import 'package:laundry_firebase/core/services/database_employee_hist.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
@@ -51,6 +52,7 @@ class DatabaseEmployeeCurrent {
       print("Is empty");
       await _employeeCurrRef
           .add(eM)
+          .withFsTimeout()
           .then((value) => {
                 eM.docId = value.id,
                 print("DocID${value.id}"),
@@ -87,7 +89,7 @@ class DatabaseEmployeeCurrent {
     var collectionRef = FirebaseFirestore.instance
         .collection('EmployeeCurr')
         .where('EmpId', isEqualTo: eM.empId);
-    var querySnapshots = await collectionRef.get();
+    var querySnapshots = await collectionRef.get().withFsTimeout();
     for (var doc in querySnapshots.docs) {
       eM.currentStocks = doc['CurrentStocks'];
       eM.countId = doc['CountId'] + 1;
@@ -102,6 +104,7 @@ class DatabaseEmployeeCurrent {
     await _employeeCurrRef
         .doc(eM.docId)
         .update(eM.toJson())
+        .withFsTimeout()
         .then((value) => {
               print("Update Done updateDocId database_employee_current"),
             })

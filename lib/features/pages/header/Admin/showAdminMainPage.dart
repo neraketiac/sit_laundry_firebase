@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/AutoSalaryDateOneTimeBatch.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/other_item_admin/showBleItemsMaintenance.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/other_item_admin/showDetItemsMaintenance.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/other_item_admin/showFabItemsMaintenance.dart';
@@ -420,6 +421,32 @@ class _ShowAdminMainPageState extends State<ShowAdminMainPage> {
                       context,
                       MaterialPageRoute(
                         builder: (_) => const BleItemsPage(),
+                      ),
+                    );
+                  },
+                ),
+              ),
+
+            const SizedBox(height: 40),
+
+            if (isAdmin)
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.green.shade100,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: ListTile(
+                  leading: const Icon(Icons.update, color: Colors.green),
+                  title: const Text("Auto Salary Date — One Time Batch"),
+                  subtitle: const Text(
+                      "Copy LogDate → AutoSalaryDate for all EmployeeHist records"),
+                  trailing: const Icon(Icons.arrow_forward_ios),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const AutoSalaryDateOneTimeBatch(),
                       ),
                     );
                   },

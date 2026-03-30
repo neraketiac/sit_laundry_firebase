@@ -74,7 +74,7 @@ class ExpenseData {
               ?.toString() ??
           'Unknown';
 
-      _add(label, amount, data['LogDate'] as Timestamp?, weekNumber);
+      _add(label, amount, data['AutoSalaryDate'] as Timestamp?, weekNumber);
     }
   }
 

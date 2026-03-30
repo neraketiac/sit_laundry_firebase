@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:laundry_firebase/core/global/variables_all_codes.dart';
 import 'package:laundry_firebase/core/services/database_items_history.dart';
+import 'package:laundry_firebase/core/utils/firestore_timeout.dart';
 import 'package:laundry_firebase/features/items/models/suppliesmodelhist.dart';
 import 'package:laundry_firebase/core/services/database_funds_history.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
@@ -31,7 +31,7 @@ class DatabaseSuppliesCurrent {
     var collectionRef = FirebaseFirestore.instance
         .collection('SuppliesCurr')
         .where('ItemId', isEqualTo: sMH.itemId);
-    var querySnapshots = await collectionRef.get();
+    var querySnapshots = await collectionRef.get().withFsTimeout();
     // var querySnapshots = await _suppliesCurrRef.get();  --if reuse, will not work
     print("Size=${querySnapshots.size}");
     for (var doc in querySnapshots.docs) {
@@ -83,6 +83,7 @@ class DatabaseSuppliesCurrent {
       print("Is empty");
       await _suppliesCurrRef
           .add(sMH)
+          .withFsTimeout()
           .then((value) => {
                 sMH.docId = value.id,
                 print("docID${value.id}"),
@@ -121,6 +122,7 @@ class DatabaseSuppliesCurrent {
       print("Is empty");
       await _suppliesCurrRef
           .add(sMH)
+          .withFsTimeout()
           .then((value) => {
                 sMH.docId = value.id,
                 print("docID${value.id}"),
@@ -141,6 +143,7 @@ class DatabaseSuppliesCurrent {
     await _suppliesCurrRef
         .doc(sMH.docId)
         .update(sMH.toJson())
+        .withFsTimeout()
         .then((value) => {
               print("Update Done updateDocId database_jobsonqueuefbmodel"),
             })
