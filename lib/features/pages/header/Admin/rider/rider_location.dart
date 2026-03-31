@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:web/web.dart' as web;
 import 'package:laundry_firebase/core/services/firebase_service.dart';
+import 'package:laundry_firebase/core/global/variables.dart';
 
 @JS('navigator.wakeLock.request')
 external JSPromise<JSObject> _requestWakeLock(JSString type);
@@ -504,7 +505,7 @@ class _RiderLocationScreenState extends State<RiderLocationScreen> {
   @override
   void initState() {
     super.initState();
-    _registerWatcher();
+    if (!isAdmin) _registerWatcher();
     _watcherTimer = Timer.periodic(
       const Duration(seconds: 30),
       (_) => _updateLastSeen(),
@@ -518,6 +519,7 @@ class _RiderLocationScreenState extends State<RiderLocationScreen> {
   }
 
   Future<void> _updateLastSeen() async {
+    if (isAdmin) return;
     try {
       await _db
           .collection(_kWatchers)
@@ -529,7 +531,7 @@ class _RiderLocationScreenState extends State<RiderLocationScreen> {
   @override
   void dispose() {
     _watcherTimer?.cancel();
-    _db.collection(_kWatchers).doc(_sessionId).delete();
+    if (!isAdmin) _db.collection(_kWatchers).doc(_sessionId).delete();
     super.dispose();
   }
 
