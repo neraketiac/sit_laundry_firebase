@@ -60,10 +60,15 @@ class DatabaseCoverage {
     for (final r in records) {
       final doc = _ref(empName).doc(r.coverageDate.toString());
 
+      // use merge so isGenerated set by Generate is never overwritten by Save
       batch.set(doc, {
-        ...r.toMap(),
+        "amountEarned": r.amountEarned,
+        "coverageDate": r.coverageDate,
+        "absent": r.absent,
+        "empId": r.empId,
+        "remarks": r.remarks,
         "updatedAt": FieldValue.serverTimestamp(),
-      });
+      }, SetOptions(merge: true));
     }
 
     await batch.commit();

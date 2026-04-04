@@ -8,6 +8,7 @@ class CoverageRecordModel {
       absent; //0 - present, 1 - absent am, 2 - absent pm, 3 - absent whole day
   final String empId;
   final String remarks;
+  final bool isGenerated;
   final Timestamp? createdAt;
 
   CoverageRecordModel({
@@ -17,6 +18,7 @@ class CoverageRecordModel {
     required this.absent,
     required this.empId,
     required this.remarks,
+    required this.isGenerated,
     this.createdAt,
   });
 
@@ -27,6 +29,7 @@ class CoverageRecordModel {
       "absent": absent,
       "empId": empId,
       "remarks": remarks,
+      "isGenerated": isGenerated,
       "createdAt": createdAt ?? FieldValue.serverTimestamp(),
     };
   }
@@ -41,6 +44,7 @@ class CoverageRecordModel {
       absent: d["absent"] ?? 0,
       empId: d["empId"] ?? "",
       remarks: d["remarks"] ?? "",
+      isGenerated: d["isGenerated"] ?? false,
       createdAt: d["createdAt"],
     );
   }
