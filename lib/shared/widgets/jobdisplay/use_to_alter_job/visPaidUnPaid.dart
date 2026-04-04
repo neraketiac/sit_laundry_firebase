@@ -136,9 +136,14 @@ Visibility visPaidUnPaid(BuildContext context, VoidCallback dialogSetState,
                   label: "Cash",
                   selected: jobRepo.selectedPaidCash,
                   onTap: () {
+                    if (!jobRepo.unpaid && jobRepo.paidCash) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Cash payment is already saved and cannot be removed.')),
+                      );
+                      return;
+                    }
                     jobRepo.selectedPaidCash = !jobRepo.selectedPaidCash;
                     actualPaymentStatus = returnPaymentStatusDuringToggle();
-
                     dialogSetState();
                   },
                 ),
@@ -149,9 +154,15 @@ Visibility visPaidUnPaid(BuildContext context, VoidCallback dialogSetState,
                   label: "GCash",
                   selected: jobRepo.selectedPaidGCash,
                   onTap: () {
+                    // prevent reverting to unpaid if already saved as paid
+                    if (jobRepo.selectedPaidGCash && !jobRepo.selectedPaidCash && !jobRepo.unpaid) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Cannot revert to unpaid once payment is saved.')),
+                      );
+                      return;
+                    }
                     jobRepo.selectedPaidGCash = !jobRepo.selectedPaidGCash;
                     actualPaymentStatus = returnPaymentStatusDuringToggle();
-
                     dialogSetState();
                   },
                 ),
