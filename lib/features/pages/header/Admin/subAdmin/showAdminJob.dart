@@ -369,6 +369,10 @@ class _AdminJobRepoViewerState extends State<AdminJobRepoViewer> {
       (3, '3 - Not eligible: last laundry not within 2 weeks'),
       (4, '4 - Promo ended (manually set)'),
       (5, '5 - Reset: previous eligible jobs now considered not eligible'),
+      (
+        6,
+        '6 - No error, eligible, included in promo, paid but manually setup by admin, skip by batch'
+      ),
       (99, '99 - Default, no status'),
     ];
     final current = jobRepo.selectedPromoErrorCode;

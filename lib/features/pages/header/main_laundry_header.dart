@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:laundry_firebase/features/pages/body/main_laundry_body.dart';
 import 'package:laundry_firebase/features/pages/header/GCash/showGCashOnly.dart';
 import 'package:laundry_firebase/features/pages/header/GCash/showGCashPending.dart';
+import 'package:laundry_firebase/features/pages/header/Funds/showFundsInFundsOut.dart';
 import 'package:laundry_firebase/features/pages/header/Funds/showLaundryPayment.dart';
 import 'package:laundry_firebase/features/pages/header/Items/showItemsInOut.dart';
 import 'package:laundry_firebase/features/pages/header/JobOnQueue/showJobOnQueue.dart';
@@ -133,13 +134,13 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader>
         child: Stack(
           clipBehavior: Clip.none,
           children: [
-            /// Laundry Payment (Top Right)
+            /// Laundry Payment
             if (_isOpen)
               _fab(
                 hero: 'Laundry Payment',
                 icon: Icons.payments_outlined,
                 label: 'Laundry Payment',
-                bottom: base + step * 3,
+                bottom: base + step * 4,
                 right: base,
                 onTap: () {
                   setState(() => _isOpen = false);
@@ -148,13 +149,13 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader>
                 backgroundColor: Colors.teal,
               ),
 
-            /// Cash In/Out (Middle Right)
+            /// Cash In/Out
             if (_isOpen)
               _fab(
                 hero: 'Gcash Funds',
                 icon: Icons.attach_money_sharp,
                 label: 'Cash In/Out',
-                bottom: base + step * 2,
+                bottom: base + step * 3,
                 right: base,
                 onTap: () {
                   setState(() => _isOpen = false);
@@ -163,7 +164,22 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader>
                 backgroundColor: Colors.green,
               ),
 
-            /// Inventory (Bottom Right)
+            /// Funds In/Out
+            if (_isOpen)
+              _fab(
+                hero: 'Funds In Out',
+                icon: Icons.swap_vert,
+                label: 'Funds In/Out',
+                bottom: base + step * 2,
+                right: base,
+                onTap: () {
+                  setState(() => _isOpen = false);
+                  showFundsInFundsOut(context);
+                },
+                backgroundColor: Colors.deepPurple,
+              ),
+
+            /// Inventory
             if (_isOpen)
               _fab(
                 hero: 'Supplies',

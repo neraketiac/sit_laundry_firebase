@@ -226,10 +226,10 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                 },
                 child: const Text("🧺 Done → Completed"),
               ),
-            MenuItemButton(
-              onPressed: () => showFundsInFundsOut(context),
-              child: const Text("💰 Funds In/Out"),
-            ),
+            // MenuItemButton(
+            //   onPressed: () => showFundsInFundsOut(context),
+            //   child: const Text("💰 Funds In/Out"),
+            // ),
             MenuItemButton(
               onPressed: () => showFundCheck(context),
               child: const Text("💵 Funds Check"),
@@ -240,7 +240,7 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
             ),
             MenuItemButton(
               onPressed: () => showCalendarDialog(context),
-              child: const Text("📅 Calendar"),
+              child: const Text("📅 Staff Schedule"),
             ),
             MenuItemButton(
               onPressed: () {
