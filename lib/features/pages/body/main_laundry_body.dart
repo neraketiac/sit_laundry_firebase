@@ -22,12 +22,32 @@ import 'package:laundry_firebase/features/pages/body/JobsDone/readDataJobsDone.d
 import 'package:laundry_firebase/features/pages/body/rider/show_rider_orders.dart';
 import 'package:laundry_firebase/features/pages/body/Supplies/readSuppliesCurrent.dart';
 import 'package:laundry_firebase/features/pages/body/Supplies/readSuppliesHist.dart';
-import 'package:laundry_firebase/features/pages/header/Admin/rider/rider_location.dart';
-import 'package:laundry_firebase/features/pages/header/Admin/showAdminMainPage.dart';
-import 'package:laundry_firebase/features/pages/header/Employee/showSalaryMaintenance.dart';
-import 'package:laundry_firebase/features/pages/header/Employee/showCalendarDialog.dart';
-import 'package:laundry_firebase/features/pages/header/Funds/showFundCheck.dart';
-import 'package:laundry_firebase/features/pages/header/Funds/showFundsInFundsOut.dart';
+// ── Daily Routine ──────────────────────────────────────────────
+import 'package:laundry_firebase/features/pages/header/daily_routine/showFundCheck.dart';
+import 'package:laundry_firebase/features/pages/header/daily_routine/showItemsInOut.dart';
+import 'package:laundry_firebase/features/pages/header/daily_routine/showCalendarDialog.dart';
+import 'package:laundry_firebase/features/pages/header/daily_routine/showClosingCheck.dart';
+// ── Rider ──────────────────────────────────────────────────────
+import 'package:laundry_firebase/features/pages/header/rider/rider_location.dart';
+import 'package:laundry_firebase/features/pages/header/rider/show_rider_management.dart';
+// ── Tools ──────────────────────────────────────────────────────
+import 'package:laundry_firebase/features/pages/header/tools/showAdminMainPage.dart';
+// ── Tools > Admin ──────────────────────────────────────────────
+import 'package:laundry_firebase/features/pages/header/tools/admin/showSalaryMaintenance.dart';
+import 'package:laundry_firebase/features/pages/header/tools/admin/showBatchPromo.dart';
+import 'package:laundry_firebase/features/pages/header/tools/admin/batch_promo_review_page.dart';
+import 'package:laundry_firebase/features/pages/header/tools/admin/batch_fix_promo_counter_page.dart';
+import 'package:laundry_firebase/features/pages/header/tools/admin/reports/monthly_analytics/monthly_analytics_page.dart';
+import 'package:laundry_firebase/features/pages/header/tools/admin/loyalty_validation_page.dart';
+import 'package:laundry_firebase/features/pages/header/tools/admin/runMigration.dart';
+import 'package:laundry_firebase/features/pages/header/tools/admin/migrateToThird.dart';
+import 'package:laundry_firebase/features/pages/header/tools/admin/showAdminDateDPage.dart';
+import 'package:laundry_firebase/features/pages/header/tools/admin/other_item_admin/showOtherItemsMaintenance.dart';
+import 'package:laundry_firebase/features/pages/header/tools/admin/other_item_admin/showDetItemsMaintenance.dart';
+import 'package:laundry_firebase/features/pages/header/tools/admin/other_item_admin/showFabItemsMaintenance.dart';
+import 'package:laundry_firebase/features/pages/header/tools/admin/other_item_admin/showBleItemsMaintenance.dart';
+import 'package:laundry_firebase/features/pages/header/tools/admin/AutoSalaryDateOneTimeBatch.dart';
+// ── Core ───────────────────────────────────────────────────────
 import 'package:laundry_firebase/core/utils/sharedMethods.dart';
 import 'package:laundry_firebase/core/utils/sharedmethodsdatabase.dart';
 import 'package:laundry_firebase/core/services/database_employee_setup.dart';
@@ -109,19 +129,9 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
 
     putEntries();
 
-    // Add local items to stocksTypeLookup
     for (var item in listSuppItemsAll) {
       stocksTypeLookup[(item.itemId, item.itemUniqueId)] = item.stocksType;
-      // if (item.itemId == 422 || item.itemUniqueId == 429) {
-      //   debugPrint(
-      //       'Local: id=${item.itemId}, uniqueId=${item.itemUniqueId}, name=${item.itemName}, stocksType=${item.stocksType}');
-      // }
     }
-
-    // debugPrint('stocksTypeLookup size: ${stocksTypeLookup.length}');
-    // debugPrint('listAllItemsFB size: ${listAllItemsFB.length}');
-    // debugPrint('Lookup key (422, 429): ${stocksTypeLookup[(422, 429)]}');
-    // debugPrint('422 429=${getItemNameStocksType(422, 429)}');
 
     if (mounted) {
       setState(() => isLoading = false);
@@ -186,102 +196,160 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
             );
           },
           menuChildren: [
-            //done to completed
-            if (isAdmin)
-              MenuItemButton(
-                onPressed: () async {
-                  if (isProcessing) return;
 
-                  final bool? confirm = await showDialog<bool>(
-                    context: context,
-                    builder: (context) => AlertDialog(
-                      title: const Text("Confirm Action"),
-                      content: const Text(
-                        "Move ALL Done jobs to Completed?\n\nThis action cannot be undone.",
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(context, false),
-                          child: const Text("No"),
-                        ),
-                        ElevatedButton(
-                          onPressed: () => Navigator.pop(context, true),
-                          child: const Text("Yes"),
-                        ),
-                      ],
-                    ),
-                  );
-
-                  if (confirm != true) return;
-
-                  setState(() => isProcessing = true);
-
-                  try {
-                    await moveAllDoneToCompleted();
-                  } finally {
-                    if (mounted) {
-                      setState(() => isProcessing = false);
-                    }
-                  }
-                },
-                child: const Text("🧺 Done → Completed"),
-              ),
-            // MenuItemButton(
-            //   onPressed: () => showFundsInFundsOut(context),
-            //   child: const Text("💰 Funds In/Out"),
-            // ),
-            MenuItemButton(
-              onPressed: () => showFundCheck(context),
-              child: const Text("💵 Funds Check"),
-            ),
-            MenuItemButton(
-              onPressed: () => showSalaryMaintenance(context),
-              child: const Text("💸 Salary"),
-            ),
-            MenuItemButton(
-              onPressed: () => showCalendarDialog(context),
-              child: const Text("📅 Staff Schedule"),
-            ),
-            MenuItemButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const ShowAdminMainPage(),
-                  ),
-                );
-              },
-              child: const Text("🔧 Tools"),
-            ),
-            //share gps
-            MenuItemButton(
-              onPressed: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const RiderLocationScreen(),
+            // ── DAILY ROUTINE ──────────────────────────────────
+            SubmenuButton(
+              menuChildren: [
+                MenuItemButton(
+                  onPressed: () => showFundCheck(context),
+                  child: const Text('💵 Funds Check'),
                 ),
-              ),
-              child: const Text("📍 Rider GPS"),
+                MenuItemButton(
+                  onPressed: () => showItemsInOut(context),
+                  child: const Text('📦 Inventory Check'),
+                ),
+                MenuItemButton(
+                  onPressed: () => showCalendarDialog(context),
+                  child: const Text('📅 Staff Schedule'),
+                ),
+                MenuItemButton(
+                  onPressed: () => showClosingCheck(context),
+                  child: const Text('🔒 Closing Check'),
+                ),
+              ],
+              child: const Text('📋 Daily Routine'),
             ),
+
+            // ── RIDER ──────────────────────────────────────────
+            SubmenuButton(
+              menuChildren: [
+                MenuItemButton(
+                  onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ShowRiderManagement())),
+                  child: const Text('🚴 Rider Schedule'),
+                ),
+                MenuItemButton(
+                  onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const RiderLocationScreen())),
+                  child: const Text('📍 Rider GPS'),
+                ),
+              ],
+              child: const Text('🚴 Rider'),
+            ),
+
+            // ── TOOLS ──────────────────────────────────────────
+            SubmenuButton(
+              menuChildren: [
+                MenuItemButton(
+                  onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ShowAdminMainPage())),
+                  child: const Text('🔢 Edit Counter'),
+                ),
+                MenuItemButton(
+                  onPressed: () async {
+                    if (isProcessing) return;
+                    final bool? confirm = await showDialog<bool>(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: const Text('Confirm Action'),
+                        content: const Text('Move ALL Done jobs to Completed?\n\nThis action cannot be undone.'),
+                        actions: [
+                          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('No')),
+                          ElevatedButton(onPressed: () => Navigator.pop(context, true), child: const Text('Yes')),
+                        ],
+                      ),
+                    );
+                    if (confirm != true) return;
+                    setState(() => isProcessing = true);
+                    try {
+                      await moveAllDoneToCompleted();
+                    } finally {
+                      if (mounted) setState(() => isProcessing = false);
+                    }
+                  },
+                  child: const Text('🧺 Done → Completed'),
+                ),
+
+                // ── TOOLS > ADMIN ───────────────────────────────
+                if (isAdmin)
+                  SubmenuButton(
+                    menuChildren: [
+                      MenuItemButton(
+                        onPressed: () => showSalaryMaintenance(context),
+                        child: const Text('💸 Salary Correction'),
+                      ),
+                      MenuItemButton(
+                        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => Scaffold(appBar: AppBar(title: const Text('Batch Promo')), body: const BatchPromo()))),
+                        child: const Text('🎁 Batch Promo'),
+                      ),
+                      MenuItemButton(
+                        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const BatchPromoReviewPage())),
+                        child: const Text('🔍 Batch Promo Review'),
+                      ),
+                      MenuItemButton(
+                        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const BatchFixPromoCounterPage())),
+                        child: const Text('🔧 Fix PromoCounter'),
+                      ),
+                      MenuItemButton(
+                        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MonthlyAnalyticsPage())),
+                        child: const Text('📊 Monthly Analytics'),
+                      ),
+                      MenuItemButton(
+                        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const LoyaltyValidationPage())),
+                        child: const Text('🏅 Loyalty Validation'),
+                      ),
+                      MenuItemButton(
+                        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => Scaffold(appBar: AppBar(title: const Text('Run Migration')), body: const RunMigration()))),
+                        child: const Text('⚙️ Run Migration'),
+                      ),
+                      MenuItemButton(
+                        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => Scaffold(appBar: AppBar(title: const Text('Migrate to ThirdWeb')), body: const SingleChildScrollView(padding: EdgeInsets.all(16), child: MigrateToThird())))),
+                        child: const Text('🔄 Migrate Reports DB'),
+                      ),
+                      MenuItemButton(
+                        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => Scaffold(appBar: AppBar(title: const Text('Admin Date D')), body: const AdminDateDPage()))),
+                        child: const Text('📅 Admin Date D'),
+                      ),
+                      MenuItemButton(
+                        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const OtherItemsPage())),
+                        child: const Text('📦 Other Items'),
+                      ),
+                      MenuItemButton(
+                        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DetItemsPage())),
+                        child: const Text('🧴 Detergent Items'),
+                      ),
+                      MenuItemButton(
+                        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const FabItemsPage())),
+                        child: const Text('🧺 Fabricon Items'),
+                      ),
+                      MenuItemButton(
+                        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const BleItemsPage())),
+                        child: const Text('🫧 Bleach Items'),
+                      ),
+                      MenuItemButton(
+                        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AutoSalaryDateOneTimeBatch())),
+                        child: const Text('💰 Auto Salary Date Batch'),
+                      ),
+                    ],
+                    child: const Text('🔑 Admin'),
+                  ),
+              ],
+              child: const Text('🔧 Tools'),
+            ),
+
+            // ── LOGOUT ─────────────────────────────────────────
             MenuItemButton(
               leadingIcon: const Icon(Icons.logout, size: 18),
               onPressed: () {
                 web.window.localStorage.removeItem(storageKey);
-
                 setState(() {
                   loggedIn = false;
                   rememberMe = true;
                 });
-
                 Navigator.pushAndRemoveUntil(
                   context,
-                  MaterialPageRoute(
-                    builder: (_) => const EnterLoyaltyCode(),
-                  ),
+                  MaterialPageRoute(builder: (_) => const EnterLoyaltyCode()),
                   (route) => false,
                 );
               },
-              child: const Text("🚪 Logout"),
+              child: const Text('🚪 Logout'),
             ),
           ],
         ),
@@ -319,9 +387,7 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                 child: const Text('💳 GCash'),
                 onPressed: () {
                   updateEmployeeSetup(
-                    empSetup.copyWith(
-                      showFundsHistory: !empSetup.showFundsHistory,
-                    ),
+                    empSetup.copyWith(showFundsHistory: !empSetup.showFundsHistory),
                   );
                 },
               ),
@@ -334,9 +400,7 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                 child: const Text('🧺 Laundry'),
                 onPressed: () {
                   updateEmployeeSetup(
-                    empSetup.copyWith(
-                      showLaundry: !empSetup.showLaundry,
-                    ),
+                    empSetup.copyWith(showLaundry: !empSetup.showLaundry),
                   );
                 },
               ),
@@ -349,9 +413,7 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                 child: const Text('💰 Funds'),
                 onPressed: () {
                   updateEmployeeSetup(
-                    empSetup.copyWith(
-                      showFunds: !empSetup.showFunds,
-                    ),
+                    empSetup.copyWith(showFunds: !empSetup.showFunds),
                   );
                 },
               ),
@@ -361,12 +423,10 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                     empSetup.showEmployee ? Colors.grey[300] : null,
                   ),
                 ),
-                child: const Text("🪪 Id"),
+                child: const Text('🪪 Id'),
                 onPressed: () {
                   updateEmployeeSetup(
-                    empSetup.copyWith(
-                      showEmployee: !empSetup.showEmployee,
-                    ),
+                    empSetup.copyWith(showEmployee: !empSetup.showEmployee),
                   );
                 },
               ),
@@ -428,31 +488,35 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                     color: Colors.teal.shade100,
                   ),
                   animatedPanel(
-                      visible: empSetup.showFunds,
-                      width: 400,
-                      child: readDataSuppliesCurrent(),
-                      color: cFundsInFundsOut),
+                    visible: empSetup.showFunds,
+                    width: 400,
+                    child: readDataSuppliesCurrent(),
+                    color: cFundsInFundsOut,
+                  ),
                   animatedPanel(
-                      visible: empSetup.showFunds,
-                      width: 550,
-                      child: readDataSuppliesHistory(),
-                      color: cFundsInFundsOut),
+                    visible: empSetup.showFunds,
+                    width: 550,
+                    child: readDataSuppliesHistory(),
+                    color: cFundsInFundsOut,
+                  ),
                   animatedPanel(
-                      visible: empSetup.showFunds,
-                      width: 400,
-                      child: readDataItemsHistory(),
-                      color: cFundsInFundsOut),
+                    visible: empSetup.showFunds,
+                    width: 400,
+                    child: readDataItemsHistory(),
+                    color: cFundsInFundsOut,
+                  ),
                   animatedPanel(
-                      visible: empSetup.showEmployee,
-                      width: 600,
-                      child: Column(
-                        children: [
-                          const SizedBox(height: 1),
-                          readDataEmployeeCurr(),
-                          readDataEmployeeHist(),
-                        ],
-                      ),
-                      color: cEmployeeMaintenance),
+                    visible: empSetup.showEmployee,
+                    width: 600,
+                    child: Column(
+                      children: [
+                        const SizedBox(height: 1),
+                        readDataEmployeeCurr(),
+                        readDataEmployeeHist(),
+                      ],
+                    ),
+                    color: cEmployeeMaintenance,
+                  ),
                 ],
               ),
             ),

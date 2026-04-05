@@ -5,7 +5,6 @@ import 'package:laundry_firebase/features/pages/header/GCash/showGCashOnly.dart'
 import 'package:laundry_firebase/features/pages/header/GCash/showGCashPending.dart';
 import 'package:laundry_firebase/features/pages/header/Funds/showFundsInFundsOut.dart';
 import 'package:laundry_firebase/features/pages/header/Funds/showLaundryPayment.dart';
-import 'package:laundry_firebase/features/pages/header/Items/showItemsInOut.dart';
 import 'package:laundry_firebase/features/pages/header/JobOnQueue/showJobOnQueue.dart';
 import 'package:laundry_firebase/features/jobs/repository/jobmodel_repository.dart';
 import 'package:laundry_firebase/features/items/repository/supplies_hist_repository.dart';
@@ -140,7 +139,7 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader>
                 hero: 'Laundry Payment',
                 icon: Icons.payments_outlined,
                 label: 'Laundry Payment',
-                bottom: base + step * 4,
+                bottom: base + step * 3,
                 right: base,
                 onTap: () {
                   setState(() => _isOpen = false);
@@ -155,7 +154,7 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader>
                 hero: 'Gcash Funds',
                 icon: Icons.attach_money_sharp,
                 label: 'Cash In/Out',
-                bottom: base + step * 3,
+                bottom: base + step * 2,
                 right: base,
                 onTap: () {
                   setState(() => _isOpen = false);
@@ -170,7 +169,7 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader>
                 hero: 'Funds In Out',
                 icon: Icons.swap_vert,
                 label: 'Funds In/Out',
-                bottom: base + step * 2,
+                bottom: base + step,
                 right: base,
                 onTap: () {
                   setState(() => _isOpen = false);
@@ -179,20 +178,20 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader>
                 backgroundColor: Colors.deepPurple,
               ),
 
-            /// Inventory
-            if (_isOpen)
-              _fab(
-                hero: 'Supplies',
-                icon: Icons.inventory,
-                label: 'Inventory',
-                bottom: base + step,
-                right: base,
-                onTap: () {
-                  setState(() => _isOpen = false);
-                  showItemsInOut(context);
-                },
-                backgroundColor: Colors.orange,
-              ),
+            // /// Inventory
+            // if (_isOpen)
+            //   _fab(
+            //     hero: 'Supplies',
+            //     icon: Icons.inventory,
+            //     label: 'Inventory',
+            //     bottom: base + step,
+            //     right: base,
+            //     onTap: () {
+            //       setState(() => _isOpen = false);
+            //       showItemsInOut(context);
+            //     },
+            //     backgroundColor: Colors.orange,
+            //   ),
 
             /// Enter GCash (Bottom Middle - No Label)
             if (_isOpen)
