@@ -20,6 +20,16 @@ void showGCashOnly(BuildContext context, JobModelRepository jobRepo) {
   ];
 
   final feeController = TextEditingController(text: '0');
+  final feeFocusNode = FocusNode();
+
+  feeFocusNode.addListener(() {
+    if (feeFocusNode.hasFocus) {
+      feeController.selection = TextSelection(
+        baseOffset: 0,
+        extentOffset: feeController.text.length,
+      );
+    }
+  });
 
   if (fundTypeCodes1stLayer.contains(selectedFundCode)) {
   } else {
@@ -188,6 +198,7 @@ void showGCashOnly(BuildContext context, JobModelRepository jobRepo) {
                           Expanded(
                             child: TextField(
                               controller: feeController,
+                              focusNode: feeFocusNode,
                               keyboardType: TextInputType.number,
                               decoration: InputDecoration(
                                 isDense: true,
