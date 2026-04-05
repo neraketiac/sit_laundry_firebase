@@ -10,7 +10,6 @@ import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_alter_job/cust
 import 'package:laundry_firebase/features/jobs/repository/jobmodel_repository.dart';
 import 'package:laundry_firebase/features/items/repository/supplies_hist_repository.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
-import 'package:laundry_firebase/core/global/variables_oth.dart';
 import 'package:laundry_firebase/core/global/variables_supplies.dart';
 
 void showFundsInFundsOut(BuildContext context) {
@@ -99,7 +98,7 @@ void showFundsInFundsOut(BuildContext context) {
               },
               borderRadius: BorderRadius.circular(8),
               selectedColor: Colors.black,
-              fillColor: Colors.yellowAccent,
+              fillColor: Colors.yellow.shade200,
               color: Colors.black,
               borderColor: cSalaryOut,
               constraints: const BoxConstraints(minWidth: 110, minHeight: 40),
@@ -116,7 +115,7 @@ void showFundsInFundsOut(BuildContext context) {
                     applyCategory(fundsOutCategories[index], dialogSetState),
                 borderRadius: BorderRadius.circular(8),
                 selectedColor: Colors.white,
-                fillColor: Colors.deepOrange,
+                fillColor: Colors.deepOrange.shade200,
                 color: Colors.black,
                 constraints: const BoxConstraints(minWidth: 72, minHeight: 34),
                 children: fundsOutCategories
@@ -161,12 +160,12 @@ void showFundsInFundsOut(BuildContext context) {
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 child: Row(
                   children: [
-                    const Icon(Icons.person, color: Colors.white70, size: 16),
+                    const Icon(Icons.person, color: Colors.black54, size: 16),
                     const SizedBox(width: 8),
                     Text(
                       autocompleteSelected.name,
                       style: const TextStyle(
-                          color: Colors.white,
+                          color: Colors.black87,
                           fontWeight: FontWeight.w600,
                           fontSize: 13),
                     ),
@@ -202,7 +201,7 @@ void showFundsInFundsOut(BuildContext context) {
     builder: (BuildContext context) {
       return StatefulBuilder(builder: (context, setState) {
         return AlertDialog(
-          backgroundColor: cFundsInFundsOut,
+          backgroundColor: const Color.fromARGB(255, 255, 243, 194),
           contentPadding: const EdgeInsets.all(0),
           titlePadding:
               const EdgeInsets.only(top: 0, left: 5, right: 5, bottom: 0),
@@ -214,7 +213,7 @@ void showFundsInFundsOut(BuildContext context) {
             child: Container(
               padding: const EdgeInsets.all(1.0),
               decoration: BoxDecoration(
-                  border: Border.all(color: Colors.blueAccent, width: 2.0)),
+                  border: Border.all(color: Colors.amber.shade300, width: 1.5)),
               child: Form(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,

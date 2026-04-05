@@ -54,29 +54,13 @@ Widget visItemsOnly(
   return Visibility(
     visible: true,
     child: Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(22),
-        gradient: LinearGradient(
-          colors: [
-            Colors.white.withOpacity(0.12),
-            Colors.white.withOpacity(0.05),
-          ],
-        ),
-        border: Border.all(color: Colors.white.withOpacity(0.25)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.35),
-            blurRadius: 30,
-            offset: const Offset(0, 18),
-          ),
-        ],
-      ),
+      padding: const EdgeInsets.all(12),
       child: Column(
         children: [
           /// SHORTCUTS
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
             children: listOthersItems.map((shortcut) {
               return glassShortcutButton(
                 label: getShortcutLabel(shortcut),
@@ -90,14 +74,13 @@ Widget visItemsOnly(
                   } else if (shortcut == menuFabDowny36mlDVal) {
                     addOtherItem(jobRepo, addFabDowny36mlModel);
                   }
-
                   dialogSetState();
                 },
               );
             }).toList(),
           ),
 
-          const SizedBox(height: 20),
+          const SizedBox(height: 16),
 
           /// CATEGORY TOGGLE
           ToggleButtons(
@@ -107,89 +90,107 @@ Widget visItemsOnly(
             ),
             onPressed: (index) {
               jobRepo.selectedOthers = listOthersDropDown[index];
-
               final newItems = getCurrentDropdownItems();
               if (newItems.isNotEmpty) {
                 jobRepo.repoVarSelectedItem = newItems.first;
               }
-
               dialogSetState();
             },
-            borderRadius: BorderRadius.circular(14),
-            selectedColor: Colors.black,
-            fillColor: Colors.cyanAccent,
-            color: Colors.white70,
-            borderColor: Colors.white24,
-            selectedBorderColor: Colors.cyanAccent,
+            borderRadius: BorderRadius.circular(10),
+            selectedColor: Colors.white,
+            fillColor: Colors.blueGrey.shade600,
+            color: Colors.blueGrey.shade700,
+            borderColor: Colors.blueGrey.shade200,
+            selectedBorderColor: Colors.blueGrey.shade600,
+            constraints: const BoxConstraints(minWidth: 56, minHeight: 36),
             children: const [
-              Text('Oth'),
-              Text('Det'),
-              Text('Fab'),
-              Text('Ble'),
+              Text('Oth', style: TextStyle(fontSize: 13)),
+              Text('Det', style: TextStyle(fontSize: 13)),
+              Text('Fab', style: TextStyle(fontSize: 13)),
+              Text('Ble', style: TextStyle(fontSize: 13)),
             ],
           ),
 
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
 
           /// DROPDOWN + ADD BUTTON
           Row(
             children: [
               Expanded(
-                child: DropdownButton<OtherItemModel>(
-                  value: jobRepo.repoVarSelectedItem,
-                  isExpanded: true,
-                  items: currentItems
-                      .map(
-                        (e) => DropdownMenuItem(
-                          value: e,
-                          child: Text("${e.itemName}  ₱${e.itemPrice}"),
-                        ),
-                      )
-                      .toList(),
-                  onChanged: (val) {
-                    jobRepo.repoVarSelectedItem = val!;
-                    dialogSetState();
-                  },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Colors.blueGrey.shade200),
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<OtherItemModel>(
+                      value: jobRepo.repoVarSelectedItem,
+                      isExpanded: true,
+                      items: currentItems
+                          .map((e) => DropdownMenuItem(
+                                value: e,
+                                child: Text('${e.itemName}  ₱${e.itemPrice}',
+                                    style: const TextStyle(fontSize: 13)),
+                              ))
+                          .toList(),
+                      onChanged: (val) {
+                        jobRepo.repoVarSelectedItem = val!;
+                        dialogSetState();
+                      },
+                    ),
+                  ),
                 ),
               ),
-              const SizedBox(width: 10),
-              IconButton(
-                icon: const Icon(Icons.add),
+              const SizedBox(width: 8),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blueGrey.shade600,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                ),
                 onPressed: () {
                   addOtherItem(jobRepo, jobRepo.repoVarSelectedItem!);
                   dialogSetState();
                 },
-              )
+                child: const Icon(Icons.add),
+              ),
             ],
           ),
 
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
 
-          /// SELECTED ITEMS WITH PCS INPUT
+          /// SELECTED ITEMS
           Column(
             children: jobRepo.selectedItems.map((e) {
               jobRepo.itemQtyControllers.putIfAbsent(
                 e.itemId,
                 () => TextEditingController(text: "-1"),
               );
-
               jobRepo.itemExpenseControllers.putIfAbsent(
                 e.itemId,
                 () => TextEditingController(text: "0"),
               );
 
               final controller = jobRepo.itemQtyControllers[e.itemId]!;
-              final expenseController =
-                  jobRepo.itemExpenseControllers[e.itemId]!;
+              final expenseController = jobRepo.itemExpenseControllers[e.itemId]!;
 
               return Container(
                 margin: const EdgeInsets.only(bottom: 8),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(16),
-                  color: Colors.black.withOpacity(0.25),
-                  border: Border.all(color: Colors.white.withOpacity(0.2)),
+                  borderRadius: BorderRadius.circular(12),
+                  color: Colors.white,
+                  border: Border.all(color: Colors.blueGrey.shade100),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.blueGrey.withOpacity(0.08),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
                 child: Row(
                   children: [
@@ -200,79 +201,71 @@ Widget visItemsOnly(
                         jobRepo.itemExpenseControllers.remove(e.itemId);
                         dialogSetState();
                       },
-                      child: const Icon(
-                        Icons.remove_circle,
-                        color: Colors.redAccent,
-                        size: 18,
-                      ),
+                      child: const Icon(Icons.remove_circle_outline,
+                          color: Colors.redAccent, size: 20),
                     ),
-                    const SizedBox(width: 12),
-
-                    /// ITEM NAME
+                    const SizedBox(width: 10),
                     Expanded(
                       child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             e.itemName,
-                            style: const TextStyle(color: Colors.white),
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 13,
+                              color: Colors.blueGrey.shade800,
+                            ),
                           ),
                           const SizedBox(height: 8),
                           Row(
                             children: [
-                              /// PCS INPUT
                               SizedBox(
-                                width: 60,
+                                width: 70,
                                 child: TextField(
                                   controller: controller,
                                   keyboardType: TextInputType.number,
                                   textAlign: TextAlign.center,
                                   inputFormatters: [
-                                    FilteringTextInputFormatter.allow(
-                                        RegExp(r'^-?\d*'))
+                                    FilteringTextInputFormatter.allow(RegExp(r'^-?\d*'))
                                   ],
-                                  style: const TextStyle(color: Colors.white),
+                                  style: const TextStyle(fontSize: 13),
                                   decoration: InputDecoration(
                                     labelText: e.stocksType,
-                                    labelStyle: TextStyle(color: Colors.white),
-                                    hintText: "1",
-                                    filled: true,
-                                    fillColor: Colors.black.withOpacity(0.35),
-                                    border: OutlineInputBorder(
+                                    labelStyle: TextStyle(fontSize: 11, color: Colors.blueGrey.shade500),
+                                    isDense: true,
+                                    contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+                                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                    focusedBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(8),
+                                      borderSide: BorderSide(color: Colors.blueGrey.shade400),
                                     ),
-                                    contentPadding: const EdgeInsets.symmetric(
-                                        vertical: 6, horizontal: 4),
                                   ),
                                 ),
                               ),
-                              const SizedBox(width: 12),
-
-                              //expense
+                              const SizedBox(width: 10),
                               Expanded(
                                 child: TextField(
                                   controller: expenseController,
                                   keyboardType: TextInputType.number,
                                   textAlign: TextAlign.right,
-                                  inputFormatters: [
-                                    FilteringTextInputFormatter.digitsOnly
-                                  ],
-                                  style: const TextStyle(color: Colors.white),
+                                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                                  style: const TextStyle(fontSize: 13),
                                   decoration: InputDecoration(
-                                    labelText: "Expense Amount",
-                                    labelStyle: TextStyle(color: Colors.white),
-                                    hintText: "0",
-                                    filled: true,
-                                    fillColor: Colors.black.withOpacity(0.35),
-                                    border: OutlineInputBorder(
+                                    labelText: 'Expense ₱',
+                                    labelStyle: TextStyle(fontSize: 11, color: Colors.blueGrey.shade500),
+                                    isDense: true,
+                                    contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+                                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                    focusedBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(8),
+                                      borderSide: BorderSide(color: Colors.blueGrey.shade400),
                                     ),
-                                    contentPadding: const EdgeInsets.symmetric(
-                                        vertical: 6, horizontal: 4),
                                   ),
                                 ),
                               ),
                             ],
-                          )
+                          ),
                         ],
                       ),
                     ),

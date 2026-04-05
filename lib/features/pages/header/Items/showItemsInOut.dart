@@ -108,60 +108,43 @@ void showItemsInOut(BuildContext context) {
     builder: (BuildContext dialogContext) {
       return StatefulBuilder(builder: (context, setState) {
         return AlertDialog(
-          backgroundColor: cFundsInFundsOut,
-          contentPadding: const EdgeInsets.all(0),
-          titlePadding: const EdgeInsets.only(
-            top: 0,
-            left: 5,
-            right: 5,
-            bottom: 0,
-          ),
-          actionsPadding: const EdgeInsets.symmetric(
-            horizontal: 5,
-            vertical: 5,
-          ),
-          title: Text(
-            "Items In/Out",
-            textAlign: TextAlign.center,
+          backgroundColor: Colors.blueGrey.shade50,
+          contentPadding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+          titlePadding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+          actionsPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Row(
+            children: [
+              const Icon(Icons.inventory_2_outlined, color: Colors.blueGrey),
+              const SizedBox(width: 8),
+              const Text(
+                'Inventory Check',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+            ],
           ),
           content: SingleChildScrollView(
-            scrollDirection: Axis.vertical,
-            child: Container(
-              padding: EdgeInsets.all(1.0),
-              decoration: BoxDecoration(
-                  border: Border.all(color: Colors.blueAccent, width: 2.0)),
-              child: Form(
-                //key: _formKey,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    visItemsOnly(context, () => setState(() {}), jobRepo)
-                  ],
-                ),
-              ),
-            ),
+            child: visItemsOnly(context, () => setState(() {}), jobRepo),
           ),
-          // 👇 Bottom buttons
           actionsAlignment: MainAxisAlignment.end,
           actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(dialogContext); // close popup
-              },
-              child: const Text(
-                'Cancel',
-                style: TextStyle(color: Colors.black),
-              ),
+            OutlinedButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('Cancel'),
             ),
             if (jobRepo.selectedItems.isNotEmpty)
-              boxButtonElevated(
-                  context: context,
-                  label: 'Save',
-                  onPressed: () async {
-                    await saveButtonSetRepository();
-                    // Don't call Navigator.pop here - let the button handler do it
-                    return true;
-                  }),
+              ElevatedButton.icon(
+                icon: const Icon(Icons.save_outlined, size: 16),
+                label: const Text('Save'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blueGrey.shade700,
+                  foregroundColor: Colors.white,
+                ),
+                onPressed: () async {
+                  await saveButtonSetRepository();
+                  if (dialogContext.mounted) Navigator.pop(dialogContext);
+                },
+              ),
           ],
         );
       });
