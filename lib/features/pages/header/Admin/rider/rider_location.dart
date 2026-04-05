@@ -501,6 +501,10 @@ class RiderLocationScreen extends StatefulWidget {
 class _RiderLocationScreenState extends State<RiderLocationScreen> {
   final String _sessionId = DateTime.now().millisecondsSinceEpoch.toString();
   Timer? _watcherTimer;
+  JSObject? _screenWakeLock;
+
+  // Keep AdminRiderPanel alive across bottom sheet open/close
+  final _adminPanelKey = GlobalKey<_AdminRiderPanelState>();
 
   // Live rider position streamed from Firestore → passed to route planner
   double? _riderLat;
@@ -516,6 +520,20 @@ class _RiderLocationScreenState extends State<RiderLocationScreen> {
       (_) => _updateLastSeen(),
     );
     _listenRiderPosition();
+    _acquireScreenWakeLock();
+  }
+
+  Future<void> _acquireScreenWakeLock() async {
+    try {
+      _screenWakeLock = await _requestWakeLock('screen'.toJS).toDart;
+    } catch (_) {}
+  }
+
+  void _releaseScreenWakeLock() {
+    try {
+      _screenWakeLock?.callMethod('release'.toJS);
+    } catch (_) {}
+    _screenWakeLock = null;
   }
 
   void _listenRiderPosition() {
@@ -554,6 +572,7 @@ class _RiderLocationScreenState extends State<RiderLocationScreen> {
   void dispose() {
     _watcherTimer?.cancel();
     _riderPosSub?.cancel();
+    _releaseScreenWakeLock();
     if (!isAdmin) _db.collection(_kWatchers).doc(_sessionId).delete();
     super.dispose();
   }
@@ -599,7 +618,8 @@ class _RiderLocationScreenState extends State<RiderLocationScreen> {
                         context: context,
                         isScrollControlled: true,
                         backgroundColor: Colors.transparent,
-                        builder: (_) => _ControlsSheet(),
+                        builder: (_) =>
+                            _ControlsSheet(panelKey: _adminPanelKey),
                       ),
                     ),
                   ],
@@ -626,7 +646,8 @@ class _RiderLocationScreenState extends State<RiderLocationScreen> {
 // ===================== CONTROLS BOTTOM SHEET =====================
 
 class _ControlsSheet extends StatelessWidget {
-  const _ControlsSheet();
+  final GlobalKey<_AdminRiderPanelState> panelKey;
+  const _ControlsSheet({required this.panelKey});
 
   @override
   Widget build(BuildContext context) {
@@ -655,7 +676,7 @@ class _ControlsSheet extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                   color: Colors.blueGrey)),
           const SizedBox(height: 20),
-          const AdminRiderPanel(),
+          AdminRiderPanel(key: panelKey),
           const SizedBox(height: 8),
         ],
       ),

@@ -50,6 +50,13 @@ class _RiderRoutePlannerState extends State<RiderRoutePlanner> {
   bool _autoUpdate = false;
   Timer? _autoSaveDebounce;
 
+  // Arrival detection
+  static const double _arrivalRadiusMeters = 50.0;
+  static const int _arrivalCountdownSecs = 10;
+  bool _arrivalPending = false;
+  int _arrivalCountdown = _arrivalCountdownSecs;
+  Timer? _arrivalTimer;
+
   // Map
   late final String _mapId;
   late web.HTMLIFrameElement _iframe;
@@ -66,6 +73,7 @@ class _RiderRoutePlannerState extends State<RiderRoutePlanner> {
     _searchController.dispose();
     _stopTimeController.dispose();
     _autoSaveDebounce?.cancel();
+    _arrivalTimer?.cancel();
     super.dispose();
   }
 
@@ -303,7 +311,73 @@ class _RiderRoutePlannerState extends State<RiderRoutePlanner> {
     super.didUpdateWidget(old);
     if (old.riderLat != widget.riderLat || old.riderLng != widget.riderLng) {
       _pushRouteToMap();
+      _checkArrival();
     }
+  }
+
+  // ── Haversine distance in metres ────────────────────────────────────────────
+  double _distanceMeters(double lat1, double lng1, double lat2, double lng2) {
+    const r = 6371000.0;
+    final dLat = (lat2 - lat1) * 3.141592653589793 / 180;
+    final dLng = (lng2 - lng1) * 3.141592653589793 / 180;
+    final a = (dLat / 2) * (dLat / 2) +
+        (lat1 * 3.141592653589793 / 180).abs() *
+            (lat2 * 3.141592653589793 / 180).abs() *
+            (dLng / 2) *
+            (dLng / 2);
+    return r * 2 * (a < 1 ? a : 1);
+  }
+
+  void _checkArrival() {
+    if (_stops.isEmpty) return;
+    if (widget.riderLat == null || widget.riderLng == null) return;
+    if (_arrivalPending) return; // already counting down
+
+    final next = _stops.first;
+    final dist =
+        _distanceMeters(widget.riderLat!, widget.riderLng!, next.lat, next.lng);
+
+    if (dist <= _arrivalRadiusMeters) {
+      _startArrivalCountdown(next.name);
+    }
+  }
+
+  void _startArrivalCountdown(String stopName) {
+    setState(() {
+      _arrivalPending = true;
+      _arrivalCountdown = _arrivalCountdownSecs;
+    });
+
+    _arrivalTimer?.cancel();
+    _arrivalTimer = Timer.periodic(const Duration(seconds: 1), (t) {
+      if (!mounted) {
+        t.cancel();
+        return;
+      }
+      setState(() => _arrivalCountdown--);
+      if (_arrivalCountdown <= 0) {
+        t.cancel();
+        _autoRemoveFirstStop();
+      }
+    });
+  }
+
+  void _cancelArrival() {
+    _arrivalTimer?.cancel();
+    setState(() {
+      _arrivalPending = false;
+      _arrivalCountdown = _arrivalCountdownSecs;
+    });
+  }
+
+  void _autoRemoveFirstStop() {
+    if (_stops.isEmpty) return;
+    setState(() {
+      _stops.removeAt(0);
+      _arrivalPending = false;
+      _arrivalCountdown = _arrivalCountdownSecs;
+    });
+    _pushRouteToMap();
   }
 
   @override
@@ -400,6 +474,56 @@ class _RiderRoutePlannerState extends State<RiderRoutePlanner> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // ── Arrival banner ─────────────────────────────────────
+                if (_arrivalPending && _stops.isNotEmpty)
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    margin: const EdgeInsets.only(bottom: 8),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: Colors.teal.shade700,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Row(
+                      children: [
+                        const Text('📍', style: TextStyle(fontSize: 18)),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Arrived at ${_stops.first.name}',
+                                style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 13),
+                              ),
+                              Text(
+                                'Removing in $_arrivalCountdown s...',
+                                style: const TextStyle(
+                                    color: Colors.white70, fontSize: 11),
+                              ),
+                            ],
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: _cancelArrival,
+                          style: TextButton.styleFrom(
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 4),
+                            minimumSize: Size.zero,
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                          child: const Text('Keep',
+                              style: TextStyle(fontSize: 12)),
+                        ),
+                      ],
+                    ),
+                  ),
+
                 // ── Rider start ────────────────────────────────────────
                 if (widget.riderLat != null)
                   _stopTile(
