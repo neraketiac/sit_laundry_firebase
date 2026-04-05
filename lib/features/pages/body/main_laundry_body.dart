@@ -31,6 +31,7 @@ import 'package:laundry_firebase/features/pages/header/Closing/showClosingCheck.
 // ── Rider ──────────────────────────────────────────────────────
 import 'package:laundry_firebase/features/pages/header/Admin/rider/rider_location.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/rider/show_rider_management.dart';
+import 'package:laundry_firebase/features/pages/header/Admin/rider/route_planner/rider_route_planner_page.dart';
 // ── Tools ──────────────────────────────────────────────────────
 import 'package:laundry_firebase/features/pages/header/Admin/showAdminMainPage.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/showCustomerLocationPage.dart';
@@ -237,6 +238,13 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                       MaterialPageRoute(
                           builder: (_) => const RiderLocationScreen())),
                   child: const Text('📍 Rider GPS'),
+                ),
+                MenuItemButton(
+                  onPressed: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => const RiderRoutePlannerPage())),
+                  child: const Text('🗺️ Route Planner'),
                 ),
               ],
               child: const Text('🚴 Rider'),

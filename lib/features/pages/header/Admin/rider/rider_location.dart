@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:web/web.dart' as web;
 import 'package:laundry_firebase/core/services/firebase_service.dart';
+import 'package:laundry_firebase/features/pages/header/Admin/rider/rider_route_planner.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
 
 @JS('navigator.wakeLock.request')
@@ -500,7 +501,11 @@ class RiderLocationScreen extends StatefulWidget {
 class _RiderLocationScreenState extends State<RiderLocationScreen> {
   final String _sessionId = DateTime.now().millisecondsSinceEpoch.toString();
   Timer? _watcherTimer;
-  bool _previewSelf = false;
+
+  // Live rider position streamed from Firestore → passed to route planner
+  double? _riderLat;
+  double? _riderLng;
+  StreamSubscription? _riderPosSub;
 
   @override
   void initState() {
@@ -510,6 +515,23 @@ class _RiderLocationScreenState extends State<RiderLocationScreen> {
       const Duration(seconds: 30),
       (_) => _updateLastSeen(),
     );
+    _listenRiderPosition();
+  }
+
+  void _listenRiderPosition() {
+    _riderPosSub =
+        _db.collection(_kCollection).doc(_kDoc).snapshots().listen((snap) {
+      if (!snap.exists || !mounted) return;
+      final data = snap.data()!;
+      final lat = (data['lat'] as num?)?.toDouble();
+      final lng = (data['lng'] as num?)?.toDouble();
+      if (lat != null && lng != null) {
+        setState(() {
+          _riderLat = lat;
+          _riderLng = lng;
+        });
+      }
+    });
   }
 
   Future<void> _registerWatcher() async {
@@ -531,6 +553,7 @@ class _RiderLocationScreenState extends State<RiderLocationScreen> {
   @override
   void dispose() {
     _watcherTimer?.cancel();
+    _riderPosSub?.cancel();
     if (!isAdmin) _db.collection(_kWatchers).doc(_sessionId).delete();
     super.dispose();
   }
@@ -567,44 +590,20 @@ class _RiderLocationScreenState extends State<RiderLocationScreen> {
                       ),
                     ),
                     const Spacer(),
-                    // GPS sharing toggle
-                    AdminRiderPanel(
-                      onPreviewSelfChanged: (v) =>
-                          setState(() => _previewSelf = v),
-                    ),
+                    AdminRiderPanel(),
                   ],
                 ),
               ),
-              // ── Map (only when preview is on) ────────────────────────
-              if (_previewSelf)
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
-                    child: ClipRRect(
-                      borderRadius: const BorderRadius.all(Radius.circular(16)),
-                      child: RiderLocationWidget(previewSelf: _previewSelf),
-                    ),
-                  ),
-                )
-              else
-                Expanded(
-                  child: Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.electric_moped,
-                            size: 52, color: Colors.blueGrey),
-                        const SizedBox(height: 12),
-                        Text(
-                          'Toggle "Preview my position"\nto see yourself on the map.',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                              fontSize: 13, color: Colors.blueGrey.shade400),
-                        ),
-                      ],
-                    ),
+              // ── Route planner (full screen) ───────────────────────────
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
+                  child: RiderRoutePlanner(
+                    riderLat: _riderLat,
+                    riderLng: _riderLng,
                   ),
                 ),
+              ),
             ],
           ),
         ),
@@ -616,8 +615,7 @@ class _RiderLocationScreenState extends State<RiderLocationScreen> {
 // ===================== ADMIN PANEL (floating overlay) =====================
 
 class AdminRiderPanel extends StatefulWidget {
-  final ValueChanged<bool>? onPreviewSelfChanged;
-  const AdminRiderPanel({super.key, this.onPreviewSelfChanged});
+  const AdminRiderPanel({super.key});
 
   @override
   State<AdminRiderPanel> createState() => _AdminRiderPanelState();
@@ -627,7 +625,6 @@ class _AdminRiderPanelState extends State<AdminRiderPanel> {
   bool _sharing = false;
   bool _locating = false;
   bool _notified = false;
-  bool _previewSelf = false; // show own position on the map
   bool _onDelivery = false;
   String? _error;
   Timer? _timer;
@@ -783,7 +780,7 @@ class _AdminRiderPanelState extends State<AdminRiderPanel> {
     } else {
       _timer?.cancel();
       _cleanupTimer?.cancel();
-      if (!_previewSelf) _releaseWakeLock();
+      _releaseWakeLock();
       _saveRiderHistory();
       _prevLng = null;
       _prevLat = null;
@@ -915,44 +912,43 @@ class _AdminRiderPanelState extends State<AdminRiderPanel> {
               ),
           ],
         ),
-        // ── Row 2: Me toggle + Delivery toggle ────────────────────
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.electric_moped, size: 14, color: Colors.blueGrey),
-            const SizedBox(width: 2),
-            const Text('Me',
-                style: TextStyle(fontSize: 11, color: Colors.blueGrey)),
-            Checkbox(
-              value: _previewSelf,
-              onChanged: (v) {
-                final val = v ?? false;
-                setState(() => _previewSelf = val);
-                if (val) {
-                  _acquireWakeLock();
-                } else if (!_sharing) {
-                  _releaseWakeLock();
-                }
-                widget.onPreviewSelfChanged?.call(val);
-              },
-              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              visualDensity: VisualDensity.compact,
+        // ── Row 2: Delivery status button ─────────────────────────
+        GestureDetector(
+          onTap: () => _toggleDeliveryStatus(!_onDelivery),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            decoration: BoxDecoration(
+              color:
+                  _onDelivery ? Colors.orange.shade100 : Colors.green.shade100,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: _onDelivery
+                    ? Colors.orange.shade400
+                    : Colors.green.shade400,
+              ),
             ),
-            const SizedBox(width: 6),
-            Text(
-              _onDelivery ? '🚚' : '✅',
-              style: const TextStyle(fontSize: 13),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  _onDelivery ? '🚚' : '✅',
+                  style: const TextStyle(fontSize: 13),
+                ),
+                const SizedBox(width: 5),
+                Text(
+                  _onDelivery ? 'On Delivery' : 'Done',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: _onDelivery
+                        ? Colors.orange.shade800
+                        : Colors.green.shade800,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(width: 2),
-            const Text('Delivery',
-                style: TextStyle(fontSize: 11, color: Colors.blueGrey)),
-            Checkbox(
-              value: _onDelivery,
-              onChanged: (v) => _toggleDeliveryStatus(v ?? false),
-              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              visualDensity: VisualDensity.compact,
-            ),
-          ],
+          ),
         ),
       ],
     );
