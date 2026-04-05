@@ -1,4 +1,5 @@
 //floating button new record  ###########################################################
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:laundry_firebase/core/constants/sharedConstantsFinal.dart';
 import 'package:laundry_firebase/core/global/variables_all_codes.dart';
@@ -8,6 +9,8 @@ import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_alter_job/cust
 import 'package:laundry_firebase/features/jobs/repository/jobmodel_repository.dart';
 import 'package:laundry_firebase/features/items/repository/supplies_hist_repository.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
+import 'package:laundry_firebase/core/services/database_supplies_current.dart';
+import 'package:laundry_firebase/features/items/models/suppliesmodelhist.dart';
 
 void showGCashOnly(BuildContext context, JobModelRepository jobRepo) {
   final List<int> fundTypeCodes1stLayer = [
@@ -15,6 +18,8 @@ void showGCashOnly(BuildContext context, JobModelRepository jobRepo) {
     menuOthUniqIdLoad,
     menuOthUniqIdCashOut,
   ];
+
+  final feeController = TextEditingController(text: '0');
 
   if (fundTypeCodes1stLayer.contains(selectedFundCode)) {
   } else {
@@ -115,6 +120,26 @@ void showGCashOnly(BuildContext context, JobModelRepository jobRepo) {
     SuppliesHistRepository.instance.setCurrentCounter(
         int.parse(customerAmountVar.text.replaceAll(',', '')));
     await setSuppliesRepository(context);
+
+    // Save fee as a separate record if fee > 0
+    final fee = int.tryParse(feeController.text.replaceAll(',', '')) ?? 0;
+    if (fee > 0) {
+      final feeSMH = SuppliesModelHist(
+        docId: '',
+        countId: 0,
+        itemId: menuOthCashInOutFunds,
+        itemUniqueId: menuOthUniqIdFee,
+        itemName: 'Gcash Fee',
+        currentCounter: fee,
+        currentStocks: 0,
+        logDate: Timestamp.now(),
+        empId: empIdGlobal,
+        customerId: 123,
+        customerName: autocompleteSelected.name,
+        remarks: remarksSuppliesVar.text,
+      );
+      await DatabaseSuppliesCurrent().addSuppliesCurr(feeSMH);
+    }
   }
 
   showDialog(
@@ -150,6 +175,34 @@ void showGCashOnly(BuildContext context, JobModelRepository jobRepo) {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     customerAmount(context, customerAmountVar),
+                    // ── Fee input ──────────────────────────────────────
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
+                      child: Row(
+                        children: [
+                          const Text('Fee:',
+                              style: TextStyle(
+                                  fontSize: 13, fontWeight: FontWeight.w600)),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: TextField(
+                              controller: feeController,
+                              keyboardType: TextInputType.number,
+                              decoration: InputDecoration(
+                                isDense: true,
+                                hintText: '0',
+                                border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(6)),
+                                contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 8),
+                              ),
+                              style: const TextStyle(fontSize: 13),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                     fundTypeToggle(() => setState(() {})),
                     conRemarks(
                         context, () => setState(() {}), remarksSuppliesVar),

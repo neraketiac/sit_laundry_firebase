@@ -259,10 +259,14 @@ class _AutoCompleteCustomerState extends State<AutoCompleteCustomer> {
 
     widget.jobRepo.selectedCustomerNameVar.text = selected.name;
     widget.jobRepo.selectedCustomerId = selected.customerId;
-    widget.jobRepo.address = selected.address;
 
-    if (widget.jobRepo.processStep == '') {
-      widget.jobRepo.items.remove(promoFree);
-    }
+    // Guard jobModel-dependent setters — jobModel may not be initialized
+    // when AutoCompleteCustomer is used outside a job context (e.g. funds/supplies)
+    try {
+      widget.jobRepo.address = selected.address;
+      if (widget.jobRepo.processStep == '') {
+        widget.jobRepo.items.remove(promoFree);
+      }
+    } catch (_) {}
   }
 }
