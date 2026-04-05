@@ -33,6 +33,7 @@ import 'package:laundry_firebase/features/pages/header/Admin/rider/rider_locatio
 import 'package:laundry_firebase/features/pages/header/Admin/rider/show_rider_management.dart';
 // ── Tools ──────────────────────────────────────────────────────
 import 'package:laundry_firebase/features/pages/header/Admin/showAdminMainPage.dart';
+import 'package:laundry_firebase/features/pages/header/Admin/showCustomerLocationPage.dart';
 // ── Tools > Admin ──────────────────────────────────────────────
 import 'package:laundry_firebase/features/pages/header/Employee/showSalaryMaintenance.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/showBatchPromo.dart';
@@ -250,6 +251,10 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                       MaterialPageRoute(
                           builder: (_) => const ShowAdminMainPage())),
                   child: const Text('🔢 Edit Counter'),
+                ),
+                MenuItemButton(
+                  onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CustomerLocationPage())),
+                  child: const Text('📍 Edit Customer Location'),
                 ),
                 MenuItemButton(
                   onPressed: () async {

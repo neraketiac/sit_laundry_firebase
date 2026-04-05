@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:laundry_firebase/core/utils/firestore_timeout.dart';
 import 'package:laundry_firebase/features/loyalty/models/loyaltymodel.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
@@ -75,6 +76,46 @@ class DatabaseLoyalty {
   }
 
   /// Set count to specific value
+  /// Save lat/lng location for a customer by name
+  Future<bool> saveLocation(int cardNumber, double lat, double lng) async {
+    try {
+      // try by cardNumber first
+      var snapshot = await FirebaseFirestore.instance
+          .collection(LOYALTY_REF)
+          .where('cardNumber', isEqualTo: cardNumber)
+          .limit(1)
+          .get()
+          .withFsTimeout();
+
+      // fallback: try by A5_CustomerId via customers collection
+      if (snapshot.docs.isEmpty) {
+        snapshot = await FirebaseFirestore.instance
+            .collection(LOYALTY_REF)
+            .where('cardNumber', isEqualTo: cardNumber)
+            .limit(1)
+            .get()
+            .withFsTimeout();
+      }
+
+      if (snapshot.docs.isEmpty) {
+        debugPrint('saveLocation: no loyalty doc found for cardNumber=$cardNumber');
+        return false;
+      }
+
+      final docId = snapshot.docs.first.id;
+      await FirebaseFirestore.instance.collection(LOYALTY_REF).doc(docId).update({
+        'lat': lat,
+        'lng': lng,
+        'locationUpdatedAt': FieldValue.serverTimestamp(),
+      });
+      debugPrint('saveLocation: saved lat=$lat lng=$lng for docId=$docId');
+      return true;
+    } catch (e) {
+      debugPrint('saveLocation error: \$e');
+      return false;
+    }
+  }
+
   Future<void> setCountByCardNumber(int cardNumber, int newCount) async {
     try {
       final snapshot = await _customerRef
