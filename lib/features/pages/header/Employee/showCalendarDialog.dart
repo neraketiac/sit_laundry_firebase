@@ -22,10 +22,7 @@ class _W extends StatelessWidget {
   Widget build(BuildContext context) {
     return Expanded(
       child: Center(
-        child: Text(
-          t,
-          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
-        ),
+        child: Text(t, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
       ),
     );
   }
@@ -98,46 +95,27 @@ Future<Map<DateTime, DaySelection>?> showCalendarDialog(BuildContext context) {
 
   Future<void> queryDropDown(VoidCallback dialogSetState, String v) async {
     selectedEmp = v;
-
     final empName = mapEmpId[v]!;
     final db = DatabaseCoverage();
-
     final records = await db.getAll(empName);
-
     selections.clear();
 
     for (final r in records) {
       final dateStr = r.coverageDate.toString();
-
       final date = DateTime(
         int.parse(dateStr.substring(0, 4)),
         int.parse(dateStr.substring(4, 6)),
         int.parse(dateStr.substring(6, 8)),
       );
-
-      bool am = false;
-      bool pm = false;
-
+      bool am = false, pm = false;
       switch (r.absent) {
-        case 0:
-          am = true;
-          pm = true;
-          break;
-        case 1:
-          pm = true;
-          break;
-        case 2:
-          am = true;
-          break;
-        case 3:
-          am = false;
-          pm = false;
-          break;
+        case 0: am = true; pm = true; break;
+        case 1: pm = true; break;
+        case 2: am = true; break;
+        case 3: am = false; pm = false; break;
       }
-
       selections[date] = DaySelection(a: am, b: pm);
     }
-
     dialogSetState();
   }
 
@@ -153,12 +131,13 @@ Future<Map<DateTime, DaySelection>?> showCalendarDialog(BuildContext context) {
           final daysInMonth = DateTime(month.year, month.month + 1, 0).day;
           final offset = firstDay.weekday % 7;
 
-          if (!isAdmin && !initialized) {
+          if (!initialized) {
             initialized = true;
             Future.microtask(() {
               queryDropDown(() => setState(() {}), empNameToId[empIdGlobal]!);
             });
           }
+
           return Dialog(
             insetPadding: isSmall ? EdgeInsets.zero : const EdgeInsets.all(24),
             child: SizedBox(
@@ -171,24 +150,19 @@ Future<Map<DateTime, DaySelection>?> showCalendarDialog(BuildContext context) {
                     children: [
                       IconButton(
                         icon: const Icon(Icons.chevron_left),
-                        onPressed: () => setState(
-                          () => month = DateTime(month.year, month.month - 1),
-                        ),
+                        onPressed: () => setState(() => month = DateTime(month.year, month.month - 1)),
                       ),
                       Expanded(
                         child: Center(
                           child: Text(
                             DateFormat('MMMM yyyy').format(month),
-                            style: const TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.bold),
+                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                           ),
                         ),
                       ),
                       IconButton(
                         icon: const Icon(Icons.chevron_right),
-                        onPressed: () => setState(
-                          () => month = DateTime(month.year, month.month + 1),
-                        ),
+                        onPressed: () => setState(() => month = DateTime(month.year, month.month + 1)),
                       ),
                     ],
                   ),
@@ -196,13 +170,8 @@ Future<Map<DateTime, DaySelection>?> showCalendarDialog(BuildContext context) {
                   /// WEEKDAYS
                   const Row(
                     children: [
-                      _W('Sun'),
-                      _W('Mon'),
-                      _W('Tue'),
-                      _W('Wed'),
-                      _W('Thu'),
-                      _W('Fri'),
-                      _W('Sat'),
+                      _W('Sun'), _W('Mon'), _W('Tue'), _W('Wed'),
+                      _W('Thu'), _W('Fri'), _W('Sat'),
                     ],
                   ),
 
@@ -213,8 +182,7 @@ Future<Map<DateTime, DaySelection>?> showCalendarDialog(BuildContext context) {
                     child: GridView.builder(
                       padding: const EdgeInsets.all(4),
                       itemCount: ((daysInMonth + offset) / 7).ceil() * 7,
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: 7,
                         mainAxisSpacing: 2,
                         crossAxisSpacing: 2,
@@ -230,8 +198,7 @@ Future<Map<DateTime, DaySelection>?> showCalendarDialog(BuildContext context) {
                           final isPastWeek = date.isBefore(startOfWeek);
                           final isLocked = !isAdmin && isPastWeek;
                           selections.putIfAbsent(date, () => DaySelection());
-                          final d = selections[date]!;
-                          return _buildDayCell(day, date, d, isPastWeek, false, isLocked, setState, Colors.grey.shade300);
+                          return _buildDayCell(day, date, selections[date]!, isPastWeek, false, isLocked, setState, Colors.grey.shade300);
                         }
 
                         final day = i - offset + 1;
@@ -244,73 +211,58 @@ Future<Map<DateTime, DaySelection>?> showCalendarDialog(BuildContext context) {
                           final isPastWeek = date.isBefore(startOfWeek);
                           final isLocked = !isAdmin && isPastWeek;
                           selections.putIfAbsent(date, () => DaySelection());
-                          final d = selections[date]!;
-                          return _buildDayCell(nextDay, date, d, isPastWeek, false, isLocked, setState, Colors.grey.shade300);
+                          return _buildDayCell(nextDay, date, selections[date]!, isPastWeek, false, isLocked, setState, Colors.grey.shade300);
                         }
+
                         final date = DateTime(month.year, month.month, day);
-
                         final now = DateTime.now();
-                        final startOfWeek =
-                            DateTime(now.year, now.month, now.day)
-                                .subtract(Duration(days: now.weekday - 1));
-
+                        final startOfWeek = DateTime(now.year, now.month, now.day).subtract(Duration(days: now.weekday - 1));
                         final isPastWeek = date.isBefore(startOfWeek);
-
-                        /// admins can bypass lock
                         final isLocked = !isAdmin && isPastWeek;
-
                         final today = DateTime.now();
-                        final isToday = date.year == today.year &&
-                            date.month == today.month &&
-                            date.day == today.day;
-
+                        final isToday = date.year == today.year && date.month == today.month && date.day == today.day;
                         selections.putIfAbsent(date, () => DaySelection());
-                        final d = selections[date]!;
-
-                        return _buildDayCell(day, date, d, isPastWeek, isToday, isLocked, setState, null);
+                        return _buildDayCell(day, date, selections[date]!, isPastWeek, isToday, isLocked, setState, null);
                       },
                     ),
                   ),
 
-                  /// 🔹 DROPDOWN + GENERATE
-                  if (isAdmin)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 6),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: DropdownButtonFormField<String>(
-                              initialValue: selectedEmp,
-                              hint: const Text("Select Employee"),
-                              items: [
-                                  const DropdownMenuItem(value: 'ALL', child: Text('All')),
-                                  ...mapEmpId.entries
+                  /// DROPDOWN + GENERATE (generate only for admin)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: DropdownButtonFormField<String>(
+                            value: (selectedEmp == null || selectedEmp == 'ALL' ||
+                                    !mapEmpId.keys.where((k) => k != '1313#' && k != '1616#').contains(selectedEmp))
+                                ? null
+                                : selectedEmp,
+                            hint: const Text('Select Employee'),
+                            items: [
+                              if (isAdmin)
+                                const DropdownMenuItem(value: 'ALL', child: Text('All')),
+                              ...mapEmpId.entries
                                   .where((e) => e.key != '1313#' && e.key != '1616#')
-                                  .map(
-                                    (e) => DropdownMenuItem(
-                                      value: e.key,
-                                      child: Text(e.value),
-                                    ),
-                                  )
-                                  ],
-                              onChanged: (v) async {
-                                if (v == 'ALL') {
-                                  setState(() => selectedEmp = 'ALL');
-                                  return;
-                                }
-                                await queryDropDown(() => setState(() {}), v!);
-                                setState(() {});
-                              },
-                            ),
+                                  .map((e) => DropdownMenuItem(value: e.key, child: Text(e.value))),
+                            ],
+                            onChanged: (v) async {
+                              if (v == 'ALL') {
+                                setState(() => selectedEmp = 'ALL');
+                                return;
+                              }
+                              await queryDropDown(() => setState(() {}), v!);
+                              setState(() {});
+                            },
                           ),
+                        ),
+                        if (isAdmin) ...[
                           const SizedBox(width: 10),
                           ElevatedButton(
                             onPressed: isGenerating
                                 ? null
                                 : () async {
                                     if (selectedEmp == null) return;
-
                                     final empKeys = selectedEmp == 'ALL'
                                         ? mapEmpId.keys.where((k) => k != '1313#' && k != '1616#').toList()
                                         : [selectedEmp!];
@@ -351,14 +303,12 @@ Future<Map<DateTime, DaySelection>?> showCalendarDialog(BuildContext context) {
                                       final existing = await db.getAll(empName);
 
                                       final Set<int> alreadyGenerated = {
-                                        for (var r in existing)
-                                          if (r.isGenerated) r.coverageDate
+                                        for (var r in existing) if (r.isGenerated) r.coverageDate
                                       };
                                       final Map<int, int> firestoreMap = {
                                         for (var r in existing) r.coverageDate: r.absent
                                       };
 
-                                      // for ALL, use coverage_records directly (not UI selections)
                                       final sourceEntries = selectedEmp == 'ALL'
                                           ? existing.map((r) {
                                               final ds = r.coverageDate.toString();
@@ -429,7 +379,6 @@ Future<Map<DateTime, DaySelection>?> showCalendarDialog(BuildContext context) {
 
                                       if (changedDays.isNotEmpty) {
                                         await batch.commit();
-
                                         for (final r in changedDays) {
                                           if (r.amountEarned != 0) {
                                             final ds = r.coverageDate.toString();
@@ -493,16 +442,14 @@ Future<Map<DateTime, DaySelection>?> showCalendarDialog(BuildContext context) {
                                 ? const SizedBox(
                                     height: 18,
                                     width: 18,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      color: Colors.white,
-                                    ),
+                                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                                   )
                                 : const Text('Generate'),
-                          )
+                          ),
                         ],
-                      ),
+                      ],
                     ),
+                  ),
 
                   /// ACTIONS
                   Padding(
@@ -521,10 +468,10 @@ Future<Map<DateTime, DaySelection>?> showCalendarDialog(BuildContext context) {
                             onPressed: isSaving
                                 ? null
                                 : () async {
-                                    final empId = isAdmin ? selectedEmp : empNameToId[empIdGlobal];
-                                    if (empId == null) {
+                                    final empId = selectedEmp;
+                                    if (empId == null || empId == 'ALL') {
                                       ScaffoldMessenger.of(context).showSnackBar(
-                                        const SnackBar(content: Text('No employee selected')),
+                                        const SnackBar(content: Text('Please select an employee')),
                                       );
                                       return;
                                     }
@@ -535,27 +482,20 @@ Future<Map<DateTime, DaySelection>?> showCalendarDialog(BuildContext context) {
                                     final db = DatabaseCoverage();
                                     final existing = await db.getAll(empName);
                                     final existingDates = {for (var r in existing) r.coverageDate};
-
                                     final toSave = <CoverageRecordModel>[];
 
                                     for (final entry in selections.entries) {
                                       final date = entry.key;
                                       final sel = entry.value;
-
                                       final coverageDate = int.parse(DateFormat('yyyyMMdd').format(date));
 
                                       if (!sel.a && !sel.b && !existingDates.contains(coverageDate)) continue;
 
                                       int absent;
-                                      if (sel.a && sel.b) {
-                                        absent = 0;
-                                      } else if (!sel.a && sel.b) {
-                                        absent = 1;
-                                      } else if (sel.a && !sel.b) {
-                                        absent = 2;
-                                      } else {
-                                        absent = 3;
-                                      }
+                                      if (sel.a && sel.b) absent = 0;
+                                      else if (!sel.a && sel.b) absent = 1;
+                                      else if (sel.a && !sel.b) absent = 2;
+                                      else absent = 3;
 
                                       toSave.add(CoverageRecordModel(
                                         docId: '',

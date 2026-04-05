@@ -22,7 +22,6 @@ void showClosingCheck(BuildContext context) {
               final latest = hist.first;
               final ts = latest['logDate'] as Timestamp?;
               final latestDate = ts?.toDate();
-              // if latest record is not today, default both to true (enabled)
               final isToday = latestDate != null &&
                   latestDate.year == now.year &&
                   latestDate.month == now.month &&
@@ -78,7 +77,8 @@ void showClosingCheck(BuildContext context) {
                       ),
                       const SizedBox(height: 8),
                       if (history.isEmpty)
-                        const Text('No history yet.', style: TextStyle(fontSize: 11, color: Colors.grey))
+                        const Text('No history yet.',
+                            style: TextStyle(fontSize: 11, color: Colors.grey))
                       else
                         ...history.map((r) {
                           final ts = r['logDate'] as Timestamp?;
@@ -90,7 +90,8 @@ void showClosingCheck(BuildContext context) {
                           final rFuse = r['fuse'] == true;
                           return Container(
                             margin: const EdgeInsets.only(bottom: 6),
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 6),
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(8),
@@ -99,16 +100,16 @@ void showClosingCheck(BuildContext context) {
                             child: Row(
                               children: [
                                 Expanded(
-                                  child: Text(
-                                    dateStr,
-                                    style: const TextStyle(fontSize: 10),
-                                  ),
+                                  child: Text(dateStr,
+                                      style: const TextStyle(fontSize: 10)),
                                 ),
                                 _chip('LPG', rLpg),
                                 const SizedBox(width: 4),
                                 _chip('Fuse', rFuse),
                                 const SizedBox(width: 6),
-                                Text(empName, style: const TextStyle(fontSize: 10, color: Colors.grey)),
+                                Text(empName,
+                                    style: const TextStyle(
+                                        fontSize: 10, color: Colors.grey)),
                               ],
                             ),
                           );
@@ -154,7 +155,6 @@ void showClosingCheck(BuildContext context) {
                         empName: empIdGlobal,
                       );
 
-                      // reload history after save
                       final newHistory = await db.getHistory();
                       if (context.mounted) {
                         setState(() => history = newHistory);
@@ -187,7 +187,9 @@ Widget _toggleRow({
     child: Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+        Text(label,
+            style:
+                const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
         Switch(
           value: value,
           activeColor: Colors.green,

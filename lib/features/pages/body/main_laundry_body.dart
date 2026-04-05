@@ -23,30 +23,30 @@ import 'package:laundry_firebase/features/pages/body/rider/show_rider_orders.dar
 import 'package:laundry_firebase/features/pages/body/Supplies/readSuppliesCurrent.dart';
 import 'package:laundry_firebase/features/pages/body/Supplies/readSuppliesHist.dart';
 // ── Daily Routine ──────────────────────────────────────────────
-import 'package:laundry_firebase/features/pages/header/daily_routine/showFundCheck.dart';
-import 'package:laundry_firebase/features/pages/header/daily_routine/showItemsInOut.dart';
-import 'package:laundry_firebase/features/pages/header/daily_routine/showCalendarDialog.dart';
-import 'package:laundry_firebase/features/pages/header/daily_routine/showClosingCheck.dart';
+import 'package:laundry_firebase/features/pages/header/Funds/showFundCheck.dart';
+import 'package:laundry_firebase/features/pages/header/Items/showItemsInOut.dart';
+import 'package:laundry_firebase/features/pages/header/Employee/showCalendarDialog.dart';
+import 'package:laundry_firebase/features/pages/header/Closing/showClosingCheck.dart';
 // ── Rider ──────────────────────────────────────────────────────
-import 'package:laundry_firebase/features/pages/header/rider/rider_location.dart';
-import 'package:laundry_firebase/features/pages/header/rider/show_rider_management.dart';
+import 'package:laundry_firebase/features/pages/header/Admin/rider/rider_location.dart';
+import 'package:laundry_firebase/features/pages/header/Admin/rider/show_rider_management.dart';
 // ── Tools ──────────────────────────────────────────────────────
-import 'package:laundry_firebase/features/pages/header/tools/showAdminMainPage.dart';
+import 'package:laundry_firebase/features/pages/header/Admin/showAdminMainPage.dart';
 // ── Tools > Admin ──────────────────────────────────────────────
-import 'package:laundry_firebase/features/pages/header/tools/admin/showSalaryMaintenance.dart';
-import 'package:laundry_firebase/features/pages/header/tools/admin/showBatchPromo.dart';
-import 'package:laundry_firebase/features/pages/header/tools/admin/batch_promo_review_page.dart';
-import 'package:laundry_firebase/features/pages/header/tools/admin/batch_fix_promo_counter_page.dart';
-import 'package:laundry_firebase/features/pages/header/tools/admin/reports/monthly_analytics/monthly_analytics_page.dart';
-import 'package:laundry_firebase/features/pages/header/tools/admin/loyalty_validation_page.dart';
-import 'package:laundry_firebase/features/pages/header/tools/admin/runMigration.dart';
-import 'package:laundry_firebase/features/pages/header/tools/admin/migrateToThird.dart';
-import 'package:laundry_firebase/features/pages/header/tools/admin/showAdminDateDPage.dart';
-import 'package:laundry_firebase/features/pages/header/tools/admin/other_item_admin/showOtherItemsMaintenance.dart';
-import 'package:laundry_firebase/features/pages/header/tools/admin/other_item_admin/showDetItemsMaintenance.dart';
-import 'package:laundry_firebase/features/pages/header/tools/admin/other_item_admin/showFabItemsMaintenance.dart';
-import 'package:laundry_firebase/features/pages/header/tools/admin/other_item_admin/showBleItemsMaintenance.dart';
-import 'package:laundry_firebase/features/pages/header/tools/admin/AutoSalaryDateOneTimeBatch.dart';
+import 'package:laundry_firebase/features/pages/header/Employee/showSalaryMaintenance.dart';
+import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/showBatchPromo.dart';
+import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/batch_promo_review_page.dart';
+import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/batch_fix_promo_counter_page.dart';
+import 'package:laundry_firebase/features/pages/header/Admin/reports/monthly_analytics/monthly_analytics_page.dart';
+import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/loyalty_validation_page.dart';
+import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/runMigration.dart';
+import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/migrateToThird.dart';
+import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/showAdminDateDPage.dart';
+import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/other_item_admin/showOtherItemsMaintenance.dart';
+import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/other_item_admin/showDetItemsMaintenance.dart';
+import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/other_item_admin/showFabItemsMaintenance.dart';
+import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/other_item_admin/showBleItemsMaintenance.dart';
+import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/AutoSalaryDateOneTimeBatch.dart';
 // ── Core ───────────────────────────────────────────────────────
 import 'package:laundry_firebase/core/utils/sharedMethods.dart';
 import 'package:laundry_firebase/core/utils/sharedmethodsdatabase.dart';
