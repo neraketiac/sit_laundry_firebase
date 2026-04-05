@@ -3,8 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:laundry_firebase/core/services/database_closing_check.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
+import 'package:laundry_firebase/features/pages/header/Funds/showFundCheck.dart';
+import 'package:laundry_firebase/features/pages/header/Items/showItemsInOut.dart';
+import 'package:laundry_firebase/features/pages/header/Employee/showCalendarDialog.dart';
 
 void showClosingCheck(BuildContext context) {
+  final outerContext = context;
   final db = DatabaseClosingCheck();
   bool lpg = false;
   bool fuse = false;
@@ -59,11 +63,11 @@ void showClosingCheck(BuildContext context) {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _toggleRow(label: '💵 Funds Check', value: fundCheck, onChanged: (v) => setState(() => fundCheck = v), trueLabel: 'Done', falseLabel: 'Not Done'),
+                      _toggleRow(label: '💵 Funds Check', value: fundCheck, onChanged: (v) => setState(() => fundCheck = v), trueLabel: 'Done', falseLabel: 'Not Done', onTap: () => showFundCheck(outerContext)),
                       const SizedBox(height: 8),
-                      _toggleRow(label: '📦 Inventory Check', value: inventory, onChanged: (v) => setState(() => inventory = v), trueLabel: 'Done', falseLabel: 'Not Done'),
+                      _toggleRow(label: '📦 Inventory Check', value: inventory, onChanged: (v) => setState(() => inventory = v), trueLabel: 'Done', falseLabel: 'Not Done', onTap: () => showItemsInOut(outerContext)),
                       const SizedBox(height: 8),
-                      _toggleRow(label: '📅 Staff Schedule', value: schedule, onChanged: (v) => setState(() => schedule = v), trueLabel: 'Done', falseLabel: 'Not Done'),
+                      _toggleRow(label: '📅 Staff Schedule', value: schedule, onChanged: (v) => setState(() => schedule = v), trueLabel: 'Done', falseLabel: 'Not Done', onTap: () => showCalendarDialog(outerContext)),
                       const SizedBox(height: 8),
                       _toggleRow(label: '🔥 LPG', value: lpg, onChanged: (v) => setState(() => lpg = v), trueLabel: 'Close', falseLabel: 'Open'),
                       const SizedBox(height: 8),
@@ -180,33 +184,45 @@ Widget _toggleRow({
   required ValueChanged<bool> onChanged,
   String trueLabel = 'ON',
   String falseLabel = 'OFF',
+  VoidCallback? onTap,
 }) {
-  return Container(
-    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-    decoration: BoxDecoration(
-      color: value ? Colors.green.shade100 : Colors.red.shade50,
-      borderRadius: BorderRadius.circular(10),
-      border: Border.all(color: value ? Colors.green : Colors.red.shade200),
-    ),
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(label, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-        Row(
-          children: [
-            Text(
-              value ? trueLabel : falseLabel,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: value ? Colors.green.shade800 : Colors.red.shade700,
+  return GestureDetector(
+    onTap: onTap,
+    child: Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: value ? Colors.green.shade100 : Colors.red.shade50,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: value ? Colors.green : Colors.red.shade200),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            children: [
+              Text(label, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+              if (onTap != null) ...[
+                const SizedBox(width: 6),
+                Icon(Icons.open_in_new, size: 14, color: Colors.grey.shade500),
+              ],
+            ],
+          ),
+          Row(
+            children: [
+              Text(
+                value ? trueLabel : falseLabel,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: value ? Colors.green.shade800 : Colors.red.shade700,
+                ),
               ),
-            ),
-            const SizedBox(width: 8),
-            Switch(value: value, activeColor: Colors.green, onChanged: onChanged),
-          ],
-        ),
-      ],
+              const SizedBox(width: 8),
+              Switch(value: value, activeColor: Colors.green, onChanged: onChanged),
+            ],
+          ),
+        ],
+      ),
     ),
   );
 }
