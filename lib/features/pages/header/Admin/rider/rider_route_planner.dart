@@ -5,8 +5,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:web/web.dart' as web;
+import 'package:laundry_firebase/core/services/firebase_service.dart';
 import 'package:laundry_firebase/features/customers/models/customermodel.dart';
 import 'package:laundry_firebase/features/customers/repository/customer_repository.dart';
+
+FirebaseFirestore get _secondaryDb => FirebaseService.secondaryFirestore;
 
 // ── Stop model ────────────────────────────────────────────────────────────────
 class RouteStop {
@@ -265,6 +268,19 @@ class _RiderRoutePlannerState extends State<RiderRoutePlanner> {
       }
 
       await batch.commit();
+
+      // Write anonymized route to rider_location/current (secondary DB)
+      await _secondaryDb.collection('rider_location').doc('current').set({
+        'routeStops': stopsWithEta
+            .map((s) => {
+                  'lat': s.lat,
+                  'lng': s.lng,
+                  'etaTime':
+                      '${s.etaTime!.hour.toString().padLeft(2, '0')}:${s.etaTime!.minute.toString().padLeft(2, '0')}',
+                })
+            .toList(),
+        'routeUpdatedAt': Timestamp.now(),
+      }, SetOptions(merge: true));
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(

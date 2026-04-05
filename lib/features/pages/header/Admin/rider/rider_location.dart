@@ -677,6 +677,7 @@ class _AdminRiderPanelState extends State<AdminRiderPanel> {
   bool _locating = false;
   bool _notified = false;
   bool _onDelivery = false;
+  bool _showEta = false;
   String? _error;
   Timer? _timer;
   Timer? _cleanupTimer;
@@ -815,6 +816,27 @@ class _AdminRiderPanelState extends State<AdminRiderPanel> {
     );
   }
 
+  void _toggleShowEta(bool val) {
+    setState(() => _showEta = val);
+    if (val) {
+      // Just flip the flag — routeStops already saved from last Save ETAs
+      _db.collection(_kCollection).doc(_kDoc).set(
+        {'showEta': true},
+        SetOptions(merge: true),
+      );
+    } else {
+      // Hide route from customers — clear stops and flag together
+      _db.collection(_kCollection).doc(_kDoc).set(
+        {
+          'showEta': false,
+          'routeStops': [],
+          'routeUpdatedAt': Timestamp.now(),
+        },
+        SetOptions(merge: true),
+      );
+    }
+  }
+
   void _toggleSharing(bool val) {
     setState(() {
       _sharing = val;
@@ -839,6 +861,11 @@ class _AdminRiderPanelState extends State<AdminRiderPanel> {
       _sessionStart = null;
       // _lastFacing intentionally NOT reset — keep last known direction
       _db.collection(_kCollection).doc(_kDoc).update({'isOnline': false});
+      // Clear route stops when GPS sharing stops
+      _db.collection(_kCollection).doc(_kDoc).set({
+        'routeStops': [],
+        'routeUpdatedAt': Timestamp.now(),
+      }, SetOptions(merge: true));
     }
   }
 
@@ -932,6 +959,24 @@ class _AdminRiderPanelState extends State<AdminRiderPanel> {
             ],
           ),
           color: _sharing ? Colors.green.shade50 : null,
+        ),
+
+        const SizedBox(height: 10),
+
+        // ── Show ETA to customers ─────────────────────────────────
+        _controlTile(
+          icon: _showEta ? Icons.access_time_filled : Icons.access_time,
+          iconColor: _showEta ? Colors.teal.shade700 : Colors.blueGrey,
+          label: 'Show ETA to Customers',
+          sublabel: _showEta
+              ? 'Customers can see estimated arrival time'
+              : 'ETA hidden from customers',
+          trailing: Switch(
+            value: _showEta,
+            onChanged: _toggleShowEta,
+            activeColor: Colors.teal.shade700,
+          ),
+          color: _showEta ? Colors.teal.shade50 : null,
         ),
 
         const SizedBox(height: 10),
