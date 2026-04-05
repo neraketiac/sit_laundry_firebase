@@ -2,8 +2,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:laundry_firebase/core/global/variables_all_codes.dart';
+import 'package:laundry_firebase/core/utils/firestore_handler.dart';
 import 'package:laundry_firebase/core/services/database_supplies_current.dart';
-import 'package:laundry_firebase/core/utils/sharedMethods.dart';
 import 'package:laundry_firebase/features/items/models/suppliesmodelhist.dart';
 import 'package:laundry_firebase/features/jobs/repository/jobmodel_repository.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
@@ -46,12 +46,12 @@ void showItemsInOut(BuildContext context) {
 
   Future<void> callDBCurrHist(
       BuildContext context, SuppliesModelHist sMH) async {
-    DatabaseSuppliesCurrent databaseSuppliesCurrent = DatabaseSuppliesCurrent();
-    if (await databaseSuppliesCurrent.addItemsCurr(sMH)) {
-      print("Success");
-    } else {
-      print("Failed");
-    }
+    await FsHandler.run(
+      context: context,
+      operation: () => DatabaseSuppliesCurrent().addItemsCurr(sMH),
+      successMessage: 'Saved',
+      onRetry: () => callDBCurrHist(context, sMH),
+    );
   }
 
   Future<void> saveButtonSetRepository() async {
@@ -111,8 +111,10 @@ void showItemsInOut(BuildContext context) {
           backgroundColor: Colors.blueGrey.shade50,
           contentPadding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
           titlePadding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-          actionsPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          actionsPadding:
+              const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           title: Row(
             children: [
               const Icon(Icons.inventory_2_outlined, color: Colors.blueGrey),

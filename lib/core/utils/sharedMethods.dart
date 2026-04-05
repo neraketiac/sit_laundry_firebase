@@ -14,6 +14,7 @@ import 'package:laundry_firebase/core/utils/sharedmethodsdatabase.dart';
 import 'package:laundry_firebase/features/jobs/repository/jobmodel_repository.dart';
 import 'package:laundry_firebase/features/items/repository/supplies_hist_repository.dart';
 import 'package:laundry_firebase/core/utils/snackbar_helper.dart';
+import 'package:laundry_firebase/core/utils/firestore_handler.dart';
 
 import 'package:flutter/foundation.dart';
 // ignore: avoid_web_libraries_in_flutter
@@ -722,26 +723,24 @@ Future<void> setSuppliesRepository(BuildContext context,
         remarks: '',
         loyaltyCount: 0);
     customerAmountVar.text = "";
-    // customerNameVar.text = "";
     remarksSuppliesVar.text = "";
     selectedFundCode = null;
   }
-  //insert to database
-  //save to repository
 
   SuppliesHistRepository.instance.setCustomerId(123); //dummy
   SuppliesHistRepository.instance.setLogDate(Timestamp.now());
 
-  if (await callDatabaseSuppliesCurrentAdd(
-      SuppliesHistRepository.instance.suppliesModelHist!,
-      autoSalaryDate: autoSalaryDate)) {
-    showSuccessSnackBar(context, 'Success');
-    print("Sucess");
-    resetAfterInsert();
-  } else {
-    showErrorSnackBar(context, 'Cannot Save');
-    print("Failed");
-  }
+  final sMH = SuppliesHistRepository.instance.suppliesModelHist!;
+
+  await FsHandler.run(
+    context: context,
+    operation: () =>
+        callDatabaseSuppliesCurrentAdd(sMH, autoSalaryDate: autoSalaryDate),
+    successMessage: 'Saved successfully',
+    onSuccess: resetAfterInsert,
+    onRetry: () =>
+        setSuppliesRepository(context, autoSalaryDate: autoSalaryDate),
+  );
 }
 
 //laundry payment

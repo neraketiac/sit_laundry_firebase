@@ -16,6 +16,7 @@ import 'package:laundry_firebase/core/services/database_loyalty.dart';
 import 'package:laundry_firebase/core/services/database_supplies_current.dart';
 import 'package:laundry_firebase/features/jobs/repository/jobmodel_repository.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
+import 'package:laundry_firebase/core/utils/firestore_handler.dart';
 
 import 'package:flutter/foundation.dart';
 // ignore: avoid_web_libraries_in_flutter
@@ -25,8 +26,8 @@ import 'dart:convert';
 
 import 'package:laundry_firebase/core/global/variables_oth.dart';
 
-//insert new Supplies
-Future<bool> callDatabaseSuppliesCurrentAdd(SuppliesModelHist sMH,
+//insert new Supplies — throws on failure, caller uses FsHandler
+Future<void> callDatabaseSuppliesCurrentAdd(SuppliesModelHist sMH,
     {Timestamp? autoSalaryDate}) async {
   //if cashout or funds out, make current counter negative
   if (ifMenuUniqueIsCashOut(sMH) ||
@@ -88,19 +89,17 @@ Future<bool> callDatabaseSuppliesCurrentAdd(SuppliesModelHist sMH,
         autoSalaryDate: autoSalaryDate,
       ))) {
         debugPrint("Employee Current updated...");
-        //prevent generating another record in Supplies Current
         if (isGcashCredit ||
             ((isAdmin) && sMH.itemUniqueId == menuOthSalaryPayment)) {
           isGcashCredit = false;
-          return true;
+          return;
         }
       } else {
         debugPrint("Employee Current failed to update...");
-        //prevent generating another record in Supplies Current
         if (isGcashCredit ||
             ((isAdmin) && sMH.itemUniqueId == menuOthSalaryPayment)) {
           isGcashCredit = false;
-          return false;
+          throw Exception('Failed to update employee record.');
         }
       }
       //############### end insert to Employee Current #################
@@ -111,8 +110,7 @@ Future<bool> callDatabaseSuppliesCurrentAdd(SuppliesModelHist sMH,
   //if exists in Supplies Current, it will update
   //if not exists, it will add new record in Supplies Current
   DatabaseSuppliesCurrent databaseSuppliesCurrent = DatabaseSuppliesCurrent();
-  return await databaseSuppliesCurrent.addSuppliesCurr(sMH);
-  // return false;
+  await databaseSuppliesCurrent.addSuppliesCurr(sMH);
 }
 
 Future<void> callDatabaseJobsQueueAdd(
@@ -285,111 +283,29 @@ Future<void> notifyAllUsers({
 }
 
 Future<void> callDatabaseUpdateJob(BuildContext context, JobModel jM) async {
-  if (jM.processStep == 'completed') {
-    DatabaseJobsCompleted dbJ = DatabaseJobsCompleted();
-
-    if (await dbJ.update(jM)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Update on job completed.')),
-      );
+  Future<void> doUpdate() async {
+    if (jM.processStep == 'completed') {
+      await DatabaseJobsCompleted().update(jM);
+    } else if (jM.processStep == 'done') {
+      await DatabaseJobsDone().update(jM);
+    } else if (jM.processStep == 'waiting' ||
+        jM.processStep == 'washing' ||
+        jM.processStep == 'drying' ||
+        jM.processStep == 'folding') {
+      await DatabaseJobsOngoing().update(jM);
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Error update Jobs Done.')),
-      );
-    }
-  } else if (jM.processStep == 'done') {
-    DatabaseJobsDone dbJ = DatabaseJobsDone();
-
-    if (await dbJ.update(jM)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Update on job done.')),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Error update Jobs Done.')),
-      );
-    }
-  } else if (jM.processStep == 'waiting' ||
-      jM.processStep == 'washing' ||
-      jM.processStep == 'drying' ||
-      jM.processStep == 'folding') {
-    DatabaseJobsOngoing dbJ = DatabaseJobsOngoing();
-
-    if (await dbJ.update(jM)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Update on-going done.')),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Error update Jobs On-Going.')),
-      );
-    }
-  } else {
-    DatabaseJobsQueue dbJ = DatabaseJobsQueue();
-
-    if (await dbJ.update(jM)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Update on Queue done.')),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Error update Jobs On Queue.')),
-      );
+      await DatabaseJobsQueue().update(jM);
     }
   }
+
+  await FsHandler.run(
+    context: context,
+    operation: doUpdate,
+    successMessage: 'Job updated',
+    onRetry: () => callDatabaseUpdateJob(context, jM),
+  );
 }
 
 Future<void> callDeleteJobAdminOnly(BuildContext context, JobModel jM) async {
-  if (jM.processStep == 'completed') {
-    DatabaseJobsCompleted dbJ = DatabaseJobsCompleted();
-
-    if (await dbJ.update(jM)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Update on job completed.')),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Error update Jobs Done.')),
-      );
-    }
-  } else if (jM.processStep == 'done') {
-    DatabaseJobsDone dbJ = DatabaseJobsDone();
-
-    if (await dbJ.update(jM)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Update on job done.')),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Error update Jobs Done.')),
-      );
-    }
-  } else if (jM.processStep == 'waiting' ||
-      jM.processStep == 'washing' ||
-      jM.processStep == 'drying' ||
-      jM.processStep == 'folding') {
-    DatabaseJobsOngoing dbJ = DatabaseJobsOngoing();
-
-    if (await dbJ.update(jM)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Update on-going done.')),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Error update Jobs On-Going.')),
-      );
-    }
-  } else {
-    DatabaseJobsQueue dbJ = DatabaseJobsQueue();
-
-    if (await dbJ.update(jM)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Update on Queue done.')),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Error update Jobs On Queue.')),
-      );
-    }
-  }
+  await callDatabaseUpdateJob(context, jM);
 }

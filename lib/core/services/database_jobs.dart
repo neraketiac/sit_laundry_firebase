@@ -71,20 +71,8 @@ class DatabaseJobsQueue {
     await _ref.doc(jM.docId).update(jM.toJson()).withFsTimeout();
   }
 
-  Future<bool> update(JobModel jM) async {
-    bool bSuccess = false;
-    await _ref
-        .doc(jM.docId)
-        .update(jM.toJson())
-        .then((value) => {
-              print("Update Done"),
-              bSuccess = true,
-            })
-        .catchError((error) => {
-              print("Failed Update Jobs On Queue : $error ${jM.customerName}"),
-              bSuccess = false,
-            });
-    return bSuccess;
+  Future<void> update(JobModel jM) async {
+    await _ref.doc(jM.docId).update(jM.toJson()).withFsTimeout();
   }
 }
 
@@ -114,20 +102,8 @@ class DatabaseJobsOngoing {
     await _ref.doc(docId).update({'A00_JobId': jobId}).withFsTimeout();
   }
 
-  Future<bool> update(JobModel jM) async {
-    bool bSuccess = false;
-    await _ref
-        .doc(jM.docId)
-        .update(jM.toJson())
-        .then((value) => {
-              print("Update Done"),
-              bSuccess = true,
-            })
-        .catchError((error) => {
-              print("Failed Update Jobs On-Going : $error ${jM.customerName}"),
-              bSuccess = false,
-            });
-    return bSuccess;
+  Future<void> update(JobModel jM) async {
+    await _ref.doc(jM.docId).update(jM.toJson()).withFsTimeout();
   }
 
   // Future<void> swapOrInsert({
@@ -224,20 +200,8 @@ class DatabaseJobsDone {
         );
   }
 
-  Future<bool> update(JobModel jM) async {
-    bool bSuccess = false;
-    await _ref
-        .doc(jM.docId)
-        .update(jM.toJson())
-        .then((value) => {
-              print("Update Done"),
-              bSuccess = true,
-            })
-        .catchError((error) => {
-              print("Failed Update Jobs Done : $error ${jM.customerName}"),
-              bSuccess = false,
-            });
-    return bSuccess;
+  Future<void> update(JobModel jM) async {
+    await _ref.doc(jM.docId).update(jM.toJson()).withFsTimeout();
   }
 }
 
@@ -258,20 +222,8 @@ class DatabaseJobsCompleted {
   }
 
   //admin only
-  Future<bool> update(JobModel jM) async {
-    bool bSuccess = false;
-    await _ref
-        .doc(jM.docId)
-        .update(jM.toJson())
-        .then((value) => {
-              print("Update Done"),
-              bSuccess = true,
-            })
-        .catchError((error) => {
-              print("Failed Update Jobs Done : $error ${jM.customerName}"),
-              bSuccess = false,
-            });
-    return bSuccess;
+  Future<void> update(JobModel jM) async {
+    await _ref.doc(jM.docId).update(jM.toJson()).withFsTimeout();
   }
 
   Future<QuerySnapshot> fetchCompletedJobs({
