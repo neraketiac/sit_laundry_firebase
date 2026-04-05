@@ -22,6 +22,7 @@ import 'package:laundry_firebase/features/pages/body/JobsDone/readDataJobsDone.d
 import 'package:laundry_firebase/features/pages/body/rider/show_rider_orders.dart';
 import 'package:laundry_firebase/features/pages/body/Supplies/readSuppliesCurrent.dart';
 import 'package:laundry_firebase/features/pages/body/Supplies/readSuppliesHist.dart';
+import 'package:laundry_firebase/features/pages/body/Unpaid/readUnpaidLaundry.dart';
 // ── Daily Routine ──────────────────────────────────────────────
 import 'package:laundry_firebase/features/pages/header/Funds/showFundCheck.dart';
 import 'package:laundry_firebase/features/pages/header/Items/showItemsInOut.dart';
@@ -196,7 +197,6 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
             );
           },
           menuChildren: [
-
             // ── DAILY ROUTINE ──────────────────────────────────
             SubmenuButton(
               menuChildren: [
@@ -224,11 +224,17 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
             SubmenuButton(
               menuChildren: [
                 MenuItemButton(
-                  onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ShowRiderManagement())),
+                  onPressed: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => const ShowRiderManagement())),
                   child: const Text('🚴 Rider Schedule'),
                 ),
                 MenuItemButton(
-                  onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const RiderLocationScreen())),
+                  onPressed: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => const RiderLocationScreen())),
                   child: const Text('📍 Rider GPS'),
                 ),
               ],
@@ -239,7 +245,10 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
             SubmenuButton(
               menuChildren: [
                 MenuItemButton(
-                  onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ShowAdminMainPage())),
+                  onPressed: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => const ShowAdminMainPage())),
                   child: const Text('🔢 Edit Counter'),
                 ),
                 MenuItemButton(
@@ -249,10 +258,15 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                       context: context,
                       builder: (context) => AlertDialog(
                         title: const Text('Confirm Action'),
-                        content: const Text('Move ALL Done jobs to Completed?\n\nThis action cannot be undone.'),
+                        content: const Text(
+                            'Move ALL Done jobs to Completed?\n\nThis action cannot be undone.'),
                         actions: [
-                          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('No')),
-                          ElevatedButton(onPressed: () => Navigator.pop(context, true), child: const Text('Yes')),
+                          TextButton(
+                              onPressed: () => Navigator.pop(context, false),
+                              child: const Text('No')),
+                          ElevatedButton(
+                              onPressed: () => Navigator.pop(context, true),
+                              child: const Text('Yes')),
                         ],
                       ),
                     );
@@ -276,55 +290,111 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                         child: const Text('💸 Salary Correction'),
                       ),
                       MenuItemButton(
-                        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => Scaffold(appBar: AppBar(title: const Text('Batch Promo')), body: const BatchPromo()))),
+                        onPressed: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => Scaffold(
+                                    appBar: AppBar(
+                                        title: const Text('Batch Promo')),
+                                    body: const BatchPromo()))),
                         child: const Text('🎁 Batch Promo'),
                       ),
                       MenuItemButton(
-                        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const BatchPromoReviewPage())),
+                        onPressed: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => const BatchPromoReviewPage())),
                         child: const Text('🔍 Batch Promo Review'),
                       ),
                       MenuItemButton(
-                        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const BatchFixPromoCounterPage())),
+                        onPressed: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) =>
+                                    const BatchFixPromoCounterPage())),
                         child: const Text('🔧 Fix PromoCounter'),
                       ),
                       MenuItemButton(
-                        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MonthlyAnalyticsPage())),
+                        onPressed: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => const MonthlyAnalyticsPage())),
                         child: const Text('📊 Monthly Analytics'),
                       ),
                       MenuItemButton(
-                        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const LoyaltyValidationPage())),
+                        onPressed: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => const LoyaltyValidationPage())),
                         child: const Text('🏅 Loyalty Validation'),
                       ),
                       MenuItemButton(
-                        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => Scaffold(appBar: AppBar(title: const Text('Run Migration')), body: const RunMigration()))),
+                        onPressed: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => Scaffold(
+                                    appBar: AppBar(
+                                        title: const Text('Run Migration')),
+                                    body: const RunMigration()))),
                         child: const Text('⚙️ Run Migration'),
                       ),
                       MenuItemButton(
-                        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => Scaffold(appBar: AppBar(title: const Text('Migrate to ThirdWeb')), body: const SingleChildScrollView(padding: EdgeInsets.all(16), child: MigrateToThird())))),
+                        onPressed: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => Scaffold(
+                                    appBar: AppBar(
+                                        title:
+                                            const Text('Migrate to ThirdWeb')),
+                                    body: const SingleChildScrollView(
+                                        padding: EdgeInsets.all(16),
+                                        child: MigrateToThird())))),
                         child: const Text('🔄 Migrate Reports DB'),
                       ),
                       MenuItemButton(
-                        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => Scaffold(appBar: AppBar(title: const Text('Admin Date D')), body: const AdminDateDPage()))),
+                        onPressed: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => Scaffold(
+                                    appBar: AppBar(
+                                        title: const Text('Admin Date D')),
+                                    body: const AdminDateDPage()))),
                         child: const Text('📅 Admin Date D'),
                       ),
                       MenuItemButton(
-                        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const OtherItemsPage())),
+                        onPressed: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => const OtherItemsPage())),
                         child: const Text('📦 Other Items'),
                       ),
                       MenuItemButton(
-                        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DetItemsPage())),
+                        onPressed: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => const DetItemsPage())),
                         child: const Text('🧴 Detergent Items'),
                       ),
                       MenuItemButton(
-                        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const FabItemsPage())),
+                        onPressed: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => const FabItemsPage())),
                         child: const Text('🧺 Fabricon Items'),
                       ),
                       MenuItemButton(
-                        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const BleItemsPage())),
+                        onPressed: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => const BleItemsPage())),
                         child: const Text('🫧 Bleach Items'),
                       ),
                       MenuItemButton(
-                        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AutoSalaryDateOneTimeBatch())),
+                        onPressed: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) =>
+                                    const AutoSalaryDateOneTimeBatch())),
                         child: const Text('💰 Auto Salary Date Batch'),
                       ),
                     ],
@@ -387,7 +457,8 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                 child: const Text('💳 GCash'),
                 onPressed: () {
                   updateEmployeeSetup(
-                    empSetup.copyWith(showFundsHistory: !empSetup.showFundsHistory),
+                    empSetup.copyWith(
+                        showFundsHistory: !empSetup.showFundsHistory),
                   );
                 },
               ),
@@ -423,10 +494,23 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                     empSetup.showEmployee ? Colors.grey[300] : null,
                   ),
                 ),
-                child: const Text('🪪 Id'),
+                child: const Text('🪪 Staff'),
                 onPressed: () {
                   updateEmployeeSetup(
                     empSetup.copyWith(showEmployee: !empSetup.showEmployee),
+                  );
+                },
+              ),
+              MenuItemButton(
+                style: ButtonStyle(
+                  backgroundColor: WidgetStateProperty.all(
+                    empSetup.showUnpaidLaundry ? Colors.grey[300] : null,
+                  ),
+                ),
+                child: const Text('💸 Unpaid Laundry'),
+                onPressed: () {
+                  updateEmployeeSetup(
+                    empSetup.copyWith(showUnpaidLaundry: !empSetup.showUnpaidLaundry),
                   );
                 },
               ),
@@ -517,6 +601,14 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                     ),
                     color: cEmployeeMaintenance,
                   ),
+                  if (empSetup.showUnpaidLaundry)
+                    IntrinsicWidth(
+                      child: Container(
+                        color: Colors.red.shade100,
+                        padding: const EdgeInsets.all(8),
+                        child: readUnpaidLaundry(),
+                      ),
+                    ),
                 ],
               ),
             ),

@@ -1,4 +1,3 @@
-//########################### Employee ###############################
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:laundry_firebase/features/employees/models/employeemodel.dart';
@@ -6,58 +5,41 @@ import 'package:laundry_firebase/core/services/database_employee_current.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
 import 'package:laundry_firebase/core/global/variables_supplies.dart';
 
-Widget readDataEmployeeCurr() {
-  bool bHeader = true;
-  Container conDisplayEmployeeCurr(
-    BuildContext context,
-    EmployeeModel eM,
-  ) {
-    bool bNegativePCF = (eM.currentStocks < 0 ? true : false);
+Widget readDataEmployeeCurr() => const _EmployeeCurrWidget();
+
+class _EmployeeCurrWidget extends StatefulWidget {
+  const _EmployeeCurrWidget();
+
+  @override
+  State<_EmployeeCurrWidget> createState() => _EmployeeCurrWidgetState();
+}
+
+class _EmployeeCurrWidgetState extends State<_EmployeeCurrWidget> {
+  Widget _buildRow(BuildContext context, EmployeeModel eM) {
+    final bNegative = eM.currentStocks < 0;
     return Container(
       height: 22,
       color: cSalaryCurrent,
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Expanded(
-            child: Column(
-              children: [
-                SizedBox(
-                  height: 2,
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      " ${eM.empName}",
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Visibility(
-                      visible: (isAdmin ? true : false),
-                      child: Text(
-                        eM.empId,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    Text(
-                      "₱ ${value.format(eM.currentStocks)}  ",
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: (bNegativePCF
-                            ? Color.fromARGB(255, 185, 57, 48)
-                            : Color(0xFF0D47A1)),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+          Text(
+            ' ${eM.empName}',
+            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+          ),
+          if (isAdmin)
+            Text(
+              eM.empId,
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+            ),
+          Text(
+            '₱ ${value.format(eM.currentStocks)}  ',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              color: bNegative
+                  ? const Color.fromARGB(255, 185, 57, 48)
+                  : const Color(0xFF0D47A1),
             ),
           ),
         ],
@@ -65,52 +47,44 @@ Widget readDataEmployeeCurr() {
     );
   }
 
-  DatabaseEmployeeCurrent databaseEmployeeCurrent = DatabaseEmployeeCurrent();
-  //read
-  return StreamBuilder<QuerySnapshot>(
-    stream: databaseEmployeeCurrent.get(),
-    builder: (context, snapshot) {
-      List listEM = snapshot.data?.docs ?? [];
-      bHeader = true;
-      List<TableRow> rowDatas = [];
-      if (listEM.isNotEmpty) {
-        //header
-        if (bHeader) {
-          const rowData = TableRow(
-              decoration: BoxDecoration(color: Colors.lightBlueAccent),
-              children: [
-                Text(
-                  "Current Balance",
-                  style: TextStyle(fontSize: 10),
-                ),
-              ]);
-          rowDatas.add(rowData);
-          bHeader = false;
-        }
+  @override
+  Widget build(BuildContext context) {
+    final db = DatabaseEmployeeCurrent();
 
-        for (var eMData in listEM) {
-          EmployeeModel eM = eMData.data();
-          final rowData = TableRow(
-              decoration: BoxDecoration(color: Colors.black),
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(2.0),
-                  child: Center(
-                    child: GestureDetector(
-                      onTap: () {},
-                      child: conDisplayEmployeeCurr(context, eM),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        StreamBuilder<QuerySnapshot>(
+          stream: db.get(),
+          builder: (context, snapshot) {
+            final listEM = snapshot.data?.docs ?? [];
+            if (listEM.isEmpty) return const SizedBox();
+
+            final rows = <TableRow>[
+              const TableRow(
+                decoration: BoxDecoration(color: Colors.lightBlueAccent),
+                children: [
+                  Text('Current Balance', style: TextStyle(fontSize: 10)),
+                ],
+              ),
+              ...listEM.map((doc) {
+                final eM = doc.data() as EmployeeModel;
+                return TableRow(
+                  decoration: const BoxDecoration(color: Colors.black),
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(2),
+                      child: _buildRow(context, eM),
                     ),
-                  ),
-                )
-              ]);
+                  ],
+                );
+              }),
+            ];
 
-          rowDatas.add(rowData);
-        }
-      }
-
-      return Table(
-        children: rowDatas,
-      );
-    },
-  );
+            return Table(children: rows);
+          },
+        ),
+      ],
+    );
+  }
 }

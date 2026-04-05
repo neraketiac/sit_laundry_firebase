@@ -56,7 +56,8 @@ final finalEmpSetup = EmployeeSetupModel(
     showFunds: false,
     showFundsHistory: false,
     showEmployee: false,
-    showIncome: false);
+    showIncome: false,
+    showUnpaidLaundry: false);
 bool loading = true;
 bool loggedIn = false;
 bool rememberMe = true;

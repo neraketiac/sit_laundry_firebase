@@ -17,7 +17,14 @@ class DatabaseEmployeeHist {
             toFirestore: (eM, _) => eM.toJson());
   }
 
-  Stream<QuerySnapshot> getEmployeeHistory() {
+  Stream<QuerySnapshot> getEmployeeHistory({String? filterEmpId}) {
+    if (filterEmpId != null) {
+      return _employeeHistRef
+          .where('EmpId', isEqualTo: filterEmpId)
+          .orderBy('LogDate', descending: true)
+          .limit(100)
+          .snapshots();
+    }
     if (empIdGlobal == 'Ket' || empIdGlobal == 'DonF') {
       return _employeeHistRef
           .orderBy('LogDate', descending: true)

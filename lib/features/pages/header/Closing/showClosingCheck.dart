@@ -8,6 +8,9 @@ void showClosingCheck(BuildContext context) {
   final db = DatabaseClosingCheck();
   bool lpg = false;
   bool fuse = false;
+  bool fundCheck = false;
+  bool inventory = false;
+  bool schedule = false;
   bool isLoading = true;
   List<Map<String, dynamic>> history = [];
 
@@ -26,11 +29,17 @@ void showClosingCheck(BuildContext context) {
                   latestDate.year == now.year &&
                   latestDate.month == now.month &&
                   latestDate.day == now.day;
-              lpg = isToday ? (latest['lpg'] ?? false) : true;
-              fuse = isToday ? (latest['fuse'] ?? false) : true;
+              lpg = isToday ? (latest['lpg'] ?? false) : false;
+              fuse = isToday ? (latest['fuse'] ?? false) : false;
+              fundCheck = isToday ? (latest['fundCheck'] ?? false) : false;
+              inventory = isToday ? (latest['inventory'] ?? false) : false;
+              schedule = isToday ? (latest['schedule'] ?? false) : false;
             } else {
-              lpg = true;
-              fuse = true;
+              lpg = false;
+              fuse = false;
+              fundCheck = false;
+              inventory = false;
+              schedule = false;
             }
             setState(() {
               history = hist;
@@ -44,72 +53,63 @@ void showClosingCheck(BuildContext context) {
           backgroundColor: Colors.deepPurple.shade50,
           contentPadding: const EdgeInsets.all(16),
           content: isLoading
-              ? const SizedBox(
-                  height: 80,
-                  child: Center(child: CircularProgressIndicator()),
-                )
+              ? const SizedBox(height: 80, child: Center(child: CircularProgressIndicator()))
               : SingleChildScrollView(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _toggleRow(
-                        label: '🔥 LPG',
-                        value: lpg,
-                        onChanged: (v) => setState(() => lpg = v),
-                      ),
-                      const SizedBox(height: 12),
-                      _toggleRow(
-                        label: '⚡ Fuse',
-                        value: fuse,
-                        onChanged: (v) => setState(() => fuse = v),
-                      ),
+                      _toggleRow(label: '💵 Funds Check', value: fundCheck, onChanged: (v) => setState(() => fundCheck = v), trueLabel: 'Done', falseLabel: 'Not Done'),
                       const SizedBox(height: 8),
-                      Text(
-                        'By: $empIdGlobal',
-                        style: const TextStyle(fontSize: 11, color: Colors.grey),
-                      ),
+                      _toggleRow(label: '📦 Inventory Check', value: inventory, onChanged: (v) => setState(() => inventory = v), trueLabel: 'Done', falseLabel: 'Not Done'),
+                      const SizedBox(height: 8),
+                      _toggleRow(label: '📅 Staff Schedule', value: schedule, onChanged: (v) => setState(() => schedule = v), trueLabel: 'Done', falseLabel: 'Not Done'),
+                      const SizedBox(height: 8),
+                      _toggleRow(label: '🔥 LPG', value: lpg, onChanged: (v) => setState(() => lpg = v), trueLabel: 'Close', falseLabel: 'Open'),
+                      const SizedBox(height: 8),
+                      _toggleRow(label: '⚡ Fuse', value: fuse, onChanged: (v) => setState(() => fuse = v), trueLabel: 'Close', falseLabel: 'Open'),
+                      const SizedBox(height: 8),
+                      Text('By: $empIdGlobal', style: const TextStyle(fontSize: 11, color: Colors.grey)),
                       const SizedBox(height: 20),
                       const Divider(),
-                      const Text(
-                        'Last 10 History',
-                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-                      ),
+                      const Text('Last 10 History', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
                       const SizedBox(height: 8),
                       if (history.isEmpty)
-                        const Text('No history yet.',
-                            style: TextStyle(fontSize: 11, color: Colors.grey))
+                        const Text('No history yet.', style: TextStyle(fontSize: 11, color: Colors.grey))
                       else
                         ...history.map((r) {
                           final ts = r['logDate'] as Timestamp?;
                           final dateStr = ts != null
                               ? DateFormat('MMM dd, yyyy hh:mm a').format(ts.toDate())
                               : '—';
-                          final empName = r['empName'] ?? '';
-                          final rLpg = r['lpg'] == true;
-                          final rFuse = r['fuse'] == true;
                           return Container(
                             margin: const EdgeInsets.only(bottom: 6),
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 6),
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(8),
                               border: Border.all(color: Colors.grey.shade300),
                             ),
-                            child: Row(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Expanded(
-                                  child: Text(dateStr,
-                                      style: const TextStyle(fontSize: 10)),
+                                Row(
+                                  children: [
+                                    Expanded(child: Text(dateStr, style: const TextStyle(fontSize: 10))),
+                                    Text(r['empName'] ?? '', style: const TextStyle(fontSize: 10, color: Colors.grey)),
+                                  ],
                                 ),
-                                _chip('LPG', rLpg),
-                                const SizedBox(width: 4),
-                                _chip('Fuse', rFuse),
-                                const SizedBox(width: 6),
-                                Text(empName,
-                                    style: const TextStyle(
-                                        fontSize: 10, color: Colors.grey)),
+                                const SizedBox(height: 4),
+                                Wrap(
+                                  spacing: 4,
+                                  children: [
+                                    _chip('Funds', r['fundCheck'] == true, 'Done', 'Not Done'),
+                                    _chip('Inv', r['inventory'] == true, 'Done', 'Not Done'),
+                                    _chip('Sched', r['schedule'] == true, 'Done', 'Not Done'),
+                                    _chip('LPG', r['lpg'] == true, 'Close', 'Open'),
+                                    _chip('Fuse', r['fuse'] == true, 'Close', 'Open'),
+                                  ],
+                                ),
                               ],
                             ),
                           );
@@ -131,17 +131,16 @@ void showClosingCheck(BuildContext context) {
                         builder: (_) => AlertDialog(
                           title: const Text('Confirm Save'),
                           content: Text(
-                            'LPG: ${lpg ? "ON" : "OFF"}\nFuse: ${fuse ? "ON" : "OFF"}\n\nSave closing check?',
+                            'Funds Check: ${fundCheck ? "Done" : "Not Done"}\n'
+                            'Inventory Check: ${inventory ? "Done" : "Not Done"}\n'
+                            'Staff Schedule: ${schedule ? "Done" : "Not Done"}\n'
+                            'LPG: ${lpg ? "Close" : "Open"}\n'
+                            'Fuse: ${fuse ? "Close" : "Open"}\n\n'
+                            'Save closing check?',
                           ),
                           actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(context, false),
-                              child: const Text('Cancel'),
-                            ),
-                            ElevatedButton(
-                              onPressed: () => Navigator.pop(context, true),
-                              child: const Text('Save'),
-                            ),
+                            TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+                            ElevatedButton(onPressed: () => Navigator.pop(context, true), child: const Text('Save')),
                           ],
                         ),
                       );
@@ -151,6 +150,9 @@ void showClosingCheck(BuildContext context) {
                       await db.save(
                         lpg: lpg,
                         fuse: fuse,
+                        fundCheck: fundCheck,
+                        inventory: inventory,
+                        schedule: schedule,
                         empId: empIdGlobal,
                         empName: empIdGlobal,
                       );
@@ -176,6 +178,8 @@ Widget _toggleRow({
   required String label,
   required bool value,
   required ValueChanged<bool> onChanged,
+  String trueLabel = 'ON',
+  String falseLabel = 'OFF',
 }) {
   return Container(
     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -187,20 +191,27 @@ Widget _toggleRow({
     child: Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label,
-            style:
-                const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-        Switch(
-          value: value,
-          activeColor: Colors.green,
-          onChanged: onChanged,
+        Text(label, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+        Row(
+          children: [
+            Text(
+              value ? trueLabel : falseLabel,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: value ? Colors.green.shade800 : Colors.red.shade700,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Switch(value: value, activeColor: Colors.green, onChanged: onChanged),
+          ],
         ),
       ],
     ),
   );
 }
 
-Widget _chip(String label, bool on) {
+Widget _chip(String label, bool on, [String trueLabel = 'ON', String falseLabel = 'OFF']) {
   return Container(
     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
     decoration: BoxDecoration(
@@ -209,7 +220,7 @@ Widget _chip(String label, bool on) {
       border: Border.all(color: on ? Colors.green : Colors.red.shade200),
     ),
     child: Text(
-      '$label: ${on ? "ON" : "OFF"}',
+      '$label: ${on ? trueLabel : falseLabel}',
       style: TextStyle(
         fontSize: 10,
         color: on ? Colors.green.shade800 : Colors.red.shade700,

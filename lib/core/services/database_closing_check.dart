@@ -15,12 +15,18 @@ class DatabaseClosingCheck {
   Future<void> save({
     required bool lpg,
     required bool fuse,
+    required bool fundCheck,
+    required bool inventory,
+    required bool schedule,
     required String empId,
     required String empName,
   }) async {
     await _db.collection('closing_check_history').add({
       'lpg': lpg,
       'fuse': fuse,
+      'fundCheck': fundCheck,
+      'inventory': inventory,
+      'schedule': schedule,
       'empId': empId,
       'empName': empName,
       'logDate': FieldValue.serverTimestamp(),

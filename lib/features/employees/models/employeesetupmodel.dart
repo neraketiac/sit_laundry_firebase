@@ -12,6 +12,7 @@ class EmployeeSetupModel {
   bool showFundsHistory;
   bool showEmployee;
   bool showIncome;
+  bool showUnpaidLaundry;
 
   EmployeeSetupModel({
     required this.docId,
@@ -25,6 +26,7 @@ class EmployeeSetupModel {
     required this.showFundsHistory,
     required this.showEmployee,
     required this.showIncome,
+    required this.showUnpaidLaundry,
   });
 
   EmployeeSetupModel.fromJson(Map<String, dynamic> json)
@@ -40,6 +42,7 @@ class EmployeeSetupModel {
           showFundsHistory: json['ShowFundsHistory'] ?? false,
           showEmployee: json['ShowEmployee'] ?? false,
           showIncome: json['ShowIncome'] ?? false,
+          showUnpaidLaundry: json['ShowUnpaidLaundry'] ?? false,
         );
 
   EmployeeSetupModel copyWith({
@@ -54,6 +57,7 @@ class EmployeeSetupModel {
     bool? showFundsHistory,
     bool? showEmployee,
     bool? showIncome,
+    bool? showUnpaidLaundry,
   }) {
     return EmployeeSetupModel(
       docId: docId ?? this.docId,
@@ -67,6 +71,7 @@ class EmployeeSetupModel {
       showFundsHistory: showFundsHistory ?? this.showFundsHistory,
       showEmployee: showEmployee ?? this.showEmployee,
       showIncome: showIncome ?? this.showIncome,
+      showUnpaidLaundry: showUnpaidLaundry ?? this.showUnpaidLaundry,
     );
   }
 
@@ -82,5 +87,6 @@ class EmployeeSetupModel {
         'ShowFundsHistory': showFundsHistory,
         'ShowEmployee': showEmployee,
         'ShowIncome': showIncome,
+        'ShowUnpaidLaundry': showUnpaidLaundry,
       };
 }

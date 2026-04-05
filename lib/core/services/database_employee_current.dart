@@ -21,7 +21,13 @@ class DatabaseEmployeeCurrent {
             toFirestore: (eM, _) => eM.toJson());
   }
 
-  Stream<QuerySnapshot> get() {
+  Stream<QuerySnapshot> get({String? filterEmpId}) {
+    if (filterEmpId != null) {
+      return _employeeCurrRef
+          .where('EmpId', isEqualTo: filterEmpId)
+          .orderBy('LogDate', descending: true)
+          .snapshots();
+    }
     if (empIdGlobal == 'Ket' || empIdGlobal == 'DonF') {
       return _employeeCurrRef.orderBy('LogDate', descending: true).snapshots();
     } else {
