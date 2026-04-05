@@ -561,6 +561,7 @@ class _RiderLocationScreenState extends State<RiderLocationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
@@ -574,7 +575,7 @@ class _RiderLocationScreenState extends State<RiderLocationScreen> {
             children: [
               // ── Top bar ──────────────────────────────────────────────
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                 child: Row(
                   children: [
                     IconButton(
@@ -590,14 +591,24 @@ class _RiderLocationScreenState extends State<RiderLocationScreen> {
                       ),
                     ),
                     const Spacer(),
-                    AdminRiderPanel(),
+                    // Controls button — opens bottom sheet on mobile
+                    IconButton(
+                      icon: const Icon(Icons.tune, color: Colors.blueGrey),
+                      tooltip: 'GPS Controls',
+                      onPressed: () => showModalBottomSheet(
+                        context: context,
+                        isScrollControlled: true,
+                        backgroundColor: Colors.transparent,
+                        builder: (_) => _ControlsSheet(),
+                      ),
+                    ),
                   ],
                 ),
               ),
               // ── Route planner (full screen) ───────────────────────────
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
+                  padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
                   child: RiderRoutePlanner(
                     riderLat: _riderLat,
                     riderLng: _riderLng,
@@ -607,6 +618,46 @@ class _RiderLocationScreenState extends State<RiderLocationScreen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+// ===================== CONTROLS BOTTOM SHEET =====================
+
+class _ControlsSheet extends StatelessWidget {
+  const _ControlsSheet();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // drag handle
+          Container(
+            width: 40,
+            height: 4,
+            margin: const EdgeInsets.only(bottom: 16),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade300,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const Text('GPS Controls',
+              style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.blueGrey)),
+          const SizedBox(height: 20),
+          const AdminRiderPanel(),
+          const SizedBox(height: 8),
+        ],
       ),
     );
   }
@@ -851,106 +902,187 @@ class _AdminRiderPanelState extends State<AdminRiderPanel> {
   Widget build(BuildContext context) {
     return Column(
       mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.end,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // ── Row 1: GPS toggle + watchers ──────────────────────────
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.share_location, size: 14, color: Colors.blueGrey),
-            const SizedBox(width: 2),
-            const Text('GPS',
-                style: TextStyle(fontSize: 11, color: Colors.blueGrey)),
-            if (_locating)
-              const Padding(
-                padding: EdgeInsets.only(left: 3),
-                child: SizedBox(
-                  width: 10,
-                  height: 10,
-                  child: CircularProgressIndicator(strokeWidth: 1.5),
-                ),
-              ),
-            Checkbox(
-              value: _sharing,
-              onChanged: (v) => _toggleSharing(v ?? false),
-              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              visualDensity: VisualDensity.compact,
-            ),
-            if (_watcherCount > 0) ...[
-              const SizedBox(width: 4),
-              GestureDetector(
-                onTap: _staleCount > 0
-                    ? () async {
-                        final removed = await _cleanStaleWatchers();
-                        if (mounted && removed > 0) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content:
-                                  Text('Removed $removed stale watcher(s).'),
-                              duration: const Duration(seconds: 2),
-                            ),
-                          );
-                        }
-                      }
-                    : null,
-                child: Text(
-                  '$_watcherCount 👁${_staleCount > 0 ? ' ($_staleCount stale ✕)' : ''}',
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: _staleCount > 0 ? Colors.orange : Colors.blueGrey,
-                    decoration:
-                        _staleCount > 0 ? TextDecoration.underline : null,
+        // ── GPS sharing ───────────────────────────────────────────
+        _controlTile(
+          icon: _sharing ? Icons.share_location : Icons.location_off,
+          iconColor: _sharing ? Colors.green.shade700 : Colors.blueGrey,
+          label: 'GPS Sharing',
+          sublabel: _sharing
+              ? (_locating ? 'Locating...' : 'Active — sharing location')
+              : 'Off',
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (_locating)
+                const Padding(
+                  padding: EdgeInsets.only(right: 8),
+                  child: SizedBox(
+                    width: 14,
+                    height: 14,
+                    child: CircularProgressIndicator(strokeWidth: 2),
                   ),
                 ),
+              Switch(
+                value: _sharing,
+                onChanged: _toggleSharing,
+                activeColor: Colors.green.shade700,
               ),
             ],
-            if (_error != null)
-              const Padding(
-                padding: EdgeInsets.only(left: 4),
-                child: Icon(Icons.error_outline,
-                    size: 14, color: Colors.redAccent),
-              ),
-          ],
+          ),
+          color: _sharing ? Colors.green.shade50 : null,
         ),
-        // ── Row 2: Delivery status button ─────────────────────────
+
+        const SizedBox(height: 10),
+
+        // ── Delivery status ───────────────────────────────────────
         GestureDetector(
           onTap: () => _toggleDeliveryStatus(!_onDelivery),
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 200),
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             decoration: BoxDecoration(
-              color:
-                  _onDelivery ? Colors.orange.shade100 : Colors.green.shade100,
-              borderRadius: BorderRadius.circular(20),
+              color: _onDelivery ? Colors.orange.shade50 : Colors.green.shade50,
+              borderRadius: BorderRadius.circular(12),
               border: Border.all(
                 color: _onDelivery
-                    ? Colors.orange.shade400
-                    : Colors.green.shade400,
+                    ? Colors.orange.shade300
+                    : Colors.green.shade300,
               ),
             ),
             child: Row(
-              mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
                   _onDelivery ? '🚚' : '✅',
-                  style: const TextStyle(fontSize: 13),
+                  style: const TextStyle(fontSize: 22),
                 ),
-                const SizedBox(width: 5),
-                Text(
-                  _onDelivery ? 'On Delivery' : 'Done',
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                    color: _onDelivery
-                        ? Colors.orange.shade800
-                        : Colors.green.shade800,
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _onDelivery
+                            ? 'On Delivery / Pickup'
+                            : 'Done Delivery / Pickup',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: _onDelivery
+                              ? Colors.orange.shade800
+                              : Colors.green.shade800,
+                        ),
+                      ),
+                      Text(
+                        'Tap to change status',
+                        style: TextStyle(
+                            fontSize: 11, color: Colors.grey.shade500),
+                      ),
+                    ],
                   ),
+                ),
+                Icon(
+                  Icons.swap_horiz,
+                  color: _onDelivery
+                      ? Colors.orange.shade400
+                      : Colors.green.shade400,
                 ),
               ],
             ),
           ),
         ),
+
+        // ── Watchers ──────────────────────────────────────────────
+        if (_watcherCount > 0) ...[
+          const SizedBox(height: 10),
+          _controlTile(
+            icon: Icons.visibility,
+            iconColor: Colors.blueGrey,
+            label: '$_watcherCount Watcher${_watcherCount > 1 ? 's' : ''}',
+            sublabel: _staleCount > 0
+                ? '$_staleCount stale — tap to clear'
+                : 'All active',
+            trailing: _staleCount > 0
+                ? TextButton(
+                    onPressed: () async {
+                      final removed = await _cleanStaleWatchers();
+                      if (mounted && removed > 0) {
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                          content: Text('Removed $removed stale watcher(s).'),
+                          duration: const Duration(seconds: 2),
+                        ));
+                      }
+                    },
+                    child: const Text('Clear'),
+                  )
+                : null,
+            color: _staleCount > 0 ? Colors.orange.shade50 : null,
+          ),
+        ],
+
+        if (_error != null) ...[
+          const SizedBox(height: 10),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.red.shade50,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.red.shade200),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.error_outline,
+                    color: Colors.redAccent, size: 18),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(_error!,
+                      style: const TextStyle(
+                          fontSize: 12, color: Colors.redAccent)),
+                ),
+              ],
+            ),
+          ),
+        ],
       ],
+    );
+  }
+
+  Widget _controlTile({
+    required IconData icon,
+    required Color iconColor,
+    required String label,
+    required String sublabel,
+    required Widget? trailing,
+    Color? color,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: color ?? Colors.grey.shade50,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: iconColor, size: 22),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label,
+                    style: const TextStyle(
+                        fontSize: 14, fontWeight: FontWeight.w600)),
+                Text(sublabel,
+                    style:
+                        TextStyle(fontSize: 11, color: Colors.grey.shade500)),
+              ],
+            ),
+          ),
+          if (trailing != null) trailing,
+        ],
+      ),
     );
   }
 }

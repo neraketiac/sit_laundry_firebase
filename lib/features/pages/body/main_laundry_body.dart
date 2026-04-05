@@ -239,13 +239,13 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                           builder: (_) => const RiderLocationScreen())),
                   child: const Text('📍 Rider GPS'),
                 ),
-                MenuItemButton(
-                  onPressed: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (_) => const RiderRoutePlannerPage())),
-                  child: const Text('🗺️ Route Planner'),
-                ),
+                // MenuItemButton(
+                //   onPressed: () => Navigator.push(
+                //       context,
+                //       MaterialPageRoute(
+                //           builder: (_) => const RiderRoutePlannerPage())),
+                //   child: const Text('🗺️ Route Planner'),
+                // ),
               ],
               child: const Text('🚴 Rider'),
             ),
@@ -261,7 +261,10 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                   child: const Text('🔢 Edit Counter'),
                 ),
                 MenuItemButton(
-                  onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CustomerLocationPage())),
+                  onPressed: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => const CustomerLocationPage())),
                   child: const Text('📍 Edit Customer Location'),
                 ),
                 MenuItemButton(
@@ -523,7 +526,8 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                 child: const Text('💸 Unpaid Laundry'),
                 onPressed: () {
                   updateEmployeeSetup(
-                    empSetup.copyWith(showUnpaidLaundry: !empSetup.showUnpaidLaundry),
+                    empSetup.copyWith(
+                        showUnpaidLaundry: !empSetup.showUnpaidLaundry),
                   );
                 },
               ),

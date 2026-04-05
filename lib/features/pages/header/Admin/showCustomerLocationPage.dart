@@ -1,12 +1,11 @@
 import 'dart:js_interop';
 import 'dart:ui_web' as ui_web;
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
 import 'package:laundry_firebase/core/services/database_loyalty.dart';
-import 'package:laundry_firebase/features/jobs/repository/jobmodel_repository.dart';
-import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_alter_job/visCustomerName.dart';
+import 'package:laundry_firebase/features/customers/models/customermodel.dart';
+import 'package:laundry_firebase/features/customers/repository/customer_repository.dart';
 import 'package:web/web.dart' as web;
 
 class CustomerLocationPage extends StatefulWidget {
@@ -17,11 +16,11 @@ class CustomerLocationPage extends StatefulWidget {
 }
 
 class _CustomerLocationPageState extends State<CustomerLocationPage> {
-  final JobModelRepository _jobRepo = JobModelRepository();
   double? _lat;
   double? _lng;
   bool _mapVisible = true;
-  bool _mapReady = false;
+  final _searchController = TextEditingController();
+  String _searchQuery = '';
 
   final String _mapId =
       'customer-pin-map-${DateTime.now().millisecondsSinceEpoch}';
@@ -30,8 +29,13 @@ class _CustomerLocationPageState extends State<CustomerLocationPage> {
   @override
   void initState() {
     super.initState();
-    _jobRepo.reset();
     _initMap();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   void _initMap() {
@@ -51,22 +55,24 @@ class _CustomerLocationPageState extends State<CustomerLocationPage> {
       ..style.width = '100%'
       ..style.height = '100%';
 
-    web.window.addEventListener('message', (web.Event e) {
-      final msg = e as web.MessageEvent;
-      final data = msg.data.dartify();
-      if (data == 'map-ready') {
-        setState(() => _mapReady = true);
-      } else if (data is Map) {
-        final lat = (data['lat'] as num?)?.toDouble();
-        final lng = (data['lng'] as num?)?.toDouble();
-        if (lat != null && lng != null) {
-          setState(() {
-            _lat = lat;
-            _lng = lng;
-          });
-        }
-      }
-    }.toJS);
+    web.window.addEventListener(
+        'message',
+        (web.Event e) {
+          final msg = e as web.MessageEvent;
+          final data = msg.data.dartify();
+          if (data == 'map-ready') {
+            // map ready
+          } else if (data is Map) {
+            final lat = (data['lat'] as num?)?.toDouble();
+            final lng = (data['lng'] as num?)?.toDouble();
+            if (lat != null && lng != null) {
+              setState(() {
+                _lat = lat;
+                _lng = lng;
+              });
+            }
+          }
+        }.toJS);
 
     ui_web.platformViewRegistry.registerViewFactory(_mapId, (_) => _iframe);
   }
@@ -99,7 +105,8 @@ class _CustomerLocationPageState extends State<CustomerLocationPage> {
   }
 
   Future<void> _save() async {
-    debugPrint('_save: customerId=${autocompleteSelected.customerId} lat=$_lat lng=$_lng');
+    debugPrint(
+        '_save: customerId=${autocompleteSelected.customerId} lat=$_lat lng=$_lng');
     if (autocompleteSelected.customerId == 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please select a customer first.')),
@@ -237,15 +244,171 @@ class _CustomerLocationPageState extends State<CustomerLocationPage> {
           ),
           const SizedBox(height: 16),
 
-          // Customer selector
-          StatefulBuilder(
-            builder: (ctx, ss) => visCustomerName(ctx, () {
-              ss(() {});
-              if (autocompleteSelected.customerId != 0) {
-                _loadCustomerLocation(autocompleteSelected.customerId);
-              }
-            }, _jobRepo),
+          // Customer selector — inline search (keyboard-safe)
+          TextField(
+            controller: _searchController,
+            decoration: InputDecoration(
+              hintText: 'Search customer...',
+              prefixIcon: const Icon(Icons.search, size: 18),
+              suffixIcon: _searchQuery.isNotEmpty
+                  ? IconButton(
+                      icon: const Icon(Icons.clear, size: 16),
+                      onPressed: () {
+                        _searchController.clear();
+                        setState(() => _searchQuery = '');
+                      },
+                    )
+                  : null,
+              isDense: true,
+              border:
+                  OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+            ),
+            style: const TextStyle(fontSize: 13),
+            onChanged: (v) => setState(() => _searchQuery = v.trim()),
           ),
+
+          if (_searchQuery.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Builder(builder: (ctx) {
+              final q = _searchQuery.toLowerCase();
+              final results = CustomerRepository.instance.customers
+                  .where((c) =>
+                      c.name.toLowerCase().contains(q) ||
+                      c.customerId.toString().contains(q))
+                  .take(8)
+                  .toList();
+
+              if (results.isEmpty) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Text('No customers found.',
+                      style:
+                          TextStyle(fontSize: 12, color: Colors.grey.shade500)),
+                );
+              }
+
+              return Container(
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey.shade300),
+                  borderRadius: BorderRadius.circular(8),
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.06),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: results.asMap().entries.map((entry) {
+                    final i = entry.key;
+                    final c = entry.value;
+                    return Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        InkWell(
+                          onTap: () {
+                            _searchController.clear();
+                            setState(() {
+                              _searchQuery = '';
+                              autocompleteSelected = CustomerModel(
+                                customerId: c.customerId,
+                                name: c.name,
+                                address: c.address,
+                                contact: c.contact,
+                                remarks: c.remarks,
+                                loyaltyCount: c.loyaltyCount,
+                              );
+                            });
+                            FocusScope.of(ctx).unfocus();
+                            _loadCustomerLocation(c.customerId);
+                          },
+                          borderRadius: BorderRadius.circular(8),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 10),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(c.name,
+                                          style: const TextStyle(
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w600)),
+                                      if (c.address.isNotEmpty)
+                                        Text(c.address,
+                                            style: TextStyle(
+                                                fontSize: 11,
+                                                color: Colors.grey.shade500)),
+                                    ],
+                                  ),
+                                ),
+                                Icon(Icons.location_on,
+                                    size: 18, color: Colors.blue.shade400),
+                              ],
+                            ),
+                          ),
+                        ),
+                        if (i < results.length - 1)
+                          Divider(height: 1, color: Colors.grey.shade200),
+                      ],
+                    );
+                  }).toList(),
+                ),
+              );
+            }),
+          ],
+
+          // Selected customer display
+          if (autocompleteSelected.customerId != 0 && _searchQuery.isEmpty) ...[
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.blue.shade50,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.blue.shade200),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.person, size: 16, color: Colors.blue.shade700),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      autocompleteSelected.name,
+                      style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.blue.shade800),
+                    ),
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.close,
+                        size: 16, color: Colors.blue.shade400),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                    onPressed: () => setState(() {
+                      autocompleteSelected = CustomerModel(
+                        customerId: 0,
+                        name: '',
+                        address: '',
+                        contact: '',
+                        remarks: '',
+                        loyaltyCount: 0,
+                      );
+                    }),
+                  ),
+                ],
+              ),
+            ),
+          ],
 
           const SizedBox(height: 16),
 
@@ -390,6 +553,7 @@ class _CustomerLocationPageState extends State<CustomerLocationPage> {
     final isWide = MediaQuery.of(context).size.width >= 700;
 
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       backgroundColor: Colors.grey.shade100,
       appBar: AppBar(
         title: const Text('Edit Customer Location'),
@@ -414,12 +578,19 @@ class _CustomerLocationPageState extends State<CustomerLocationPage> {
             )
           : Column(
               children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
-                  child: _buildSidePanel(),
+                Expanded(
+                  child: SingleChildScrollView(
+                    keyboardDismissBehavior:
+                        ScrollViewKeyboardDismissBehavior.onDrag,
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
+                      child: _buildSidePanel(),
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 12),
-                Expanded(
+                SizedBox(
+                  height: 260,
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
                     child: _buildMap(),

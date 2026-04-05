@@ -41,6 +41,7 @@ class _RiderRoutePlannerState extends State<RiderRoutePlanner> {
   final List<RouteStop> _stops = [];
   final _searchController = TextEditingController();
   final _stopTimeController = TextEditingController(text: '5');
+  String _searchQuery = '';
   bool _searching = false;
   bool _savingEtas = false;
   bool _autoUpdate = false;
@@ -292,7 +293,6 @@ class _RiderRoutePlannerState extends State<RiderRoutePlanner> {
   @override
   Widget build(BuildContext context) {
     final isWide = MediaQuery.of(context).size.width >= 700;
-    final panel = _buildPanel();
     final map = ClipRRect(
       borderRadius: BorderRadius.circular(12),
       child: HtmlElementView(viewType: _mapId),
@@ -302,17 +302,25 @@ class _RiderRoutePlannerState extends State<RiderRoutePlanner> {
       return Row(children: [
         SizedBox(
           width: 320,
-          child: SingleChildScrollView(child: panel),
+          child: SingleChildScrollView(child: _buildPanel()),
         ),
         const SizedBox(width: 8),
         Expanded(child: map),
       ]);
     }
 
+    // Mobile: panel scrolls, map fills remaining space
     return Column(children: [
-      panel,
+      // Map takes top half
+      SizedBox(height: 260, child: map),
       const SizedBox(height: 8),
-      SizedBox(height: 320, child: map),
+      // Panel scrolls below
+      Expanded(
+        child: SingleChildScrollView(
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+          child: _buildPanel(),
+        ),
+      ),
     ]);
   }
 
@@ -429,72 +437,130 @@ class _RiderRoutePlannerState extends State<RiderRoutePlanner> {
 
                 const SizedBox(height: 8),
 
-                // ── Customer search ────────────────────────────────────
-                Autocomplete<CustomerModel>(
-                  displayStringForOption: (c) => c.name,
-                  fieldViewBuilder: (ctx, ctrl, focus, onSubmit) {
-                    return TextField(
-                      controller: ctrl,
-                      focusNode: focus,
-                      decoration: InputDecoration(
-                        hintText: 'Search customer...',
-                        hintStyle: const TextStyle(fontSize: 12),
-                        prefixIcon: _searching
-                            ? const Padding(
-                                padding: EdgeInsets.all(10),
-                                child: SizedBox(
-                                    width: 16,
-                                    height: 16,
-                                    child: CircularProgressIndicator(
-                                        strokeWidth: 1.5)),
-                              )
-                            : const Icon(Icons.search, size: 18),
-                        isDense: true,
-                        border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8)),
-                        contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 8),
-                      ),
-                      style: const TextStyle(fontSize: 12),
-                    );
-                  },
-                  optionsBuilder: (value) {
-                    if (value.text.trim().isEmpty) {
-                      return const Iterable<CustomerModel>.empty();
-                    }
-                    final q = value.text.toLowerCase();
-                    return customers.where((c) =>
-                        c.name.toLowerCase().contains(q) ||
-                        c.customerId.toString().contains(q));
-                  },
-                  optionsViewBuilder: (ctx, onSelected, options) {
-                    return Align(
-                      alignment: Alignment.topLeft,
-                      child: Material(
-                        elevation: 4,
-                        borderRadius: BorderRadius.circular(8),
-                        child: ConstrainedBox(
-                          constraints: const BoxConstraints(maxHeight: 200),
-                          child: ListView(
-                            padding: EdgeInsets.zero,
-                            shrinkWrap: true,
-                            children: options
-                                .map((c) => ListTile(
-                                      dense: true,
-                                      title: Text(c.name,
-                                          style: const TextStyle(fontSize: 12)),
-                                      subtitle: Text(c.address,
-                                          style: const TextStyle(fontSize: 10)),
-                                      onTap: () => onSelected(c),
-                                    ))
-                                .toList(),
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                  onSelected: _addCustomer,
+                // ── Customer search (inline — keyboard-safe) ──────────
+                TextField(
+                  controller: _searchController,
+                  decoration: InputDecoration(
+                    hintText: 'Search customer...',
+                    hintStyle: const TextStyle(fontSize: 12),
+                    prefixIcon: _searching
+                        ? const Padding(
+                            padding: EdgeInsets.all(10),
+                            child: SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                    strokeWidth: 1.5)),
+                          )
+                        : const Icon(Icons.search, size: 18),
+                    suffixIcon: _searchQuery.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(Icons.clear, size: 16),
+                            onPressed: () {
+                              _searchController.clear();
+                              setState(() => _searchQuery = '');
+                            },
+                          )
+                        : null,
+                    isDense: true,
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8)),
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 10, vertical: 10),
+                  ),
+                  style: const TextStyle(fontSize: 13),
+                  onChanged: (v) => setState(() => _searchQuery = v.trim()),
                 ),
+
+                // ── Inline results list ────────────────────────────────
+                if (_searchQuery.isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Builder(builder: (ctx) {
+                    final q = _searchQuery.toLowerCase();
+                    final results = customers
+                        .where((c) =>
+                            c.name.toLowerCase().contains(q) ||
+                            c.customerId.toString().contains(q))
+                        .take(8)
+                        .toList();
+
+                    if (results.isEmpty) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: Text('No customers found.',
+                            style: TextStyle(
+                                fontSize: 12, color: Colors.grey.shade500)),
+                      );
+                    }
+
+                    return Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey.shade300),
+                        borderRadius: BorderRadius.circular(8),
+                        color: Colors.white,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.06),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: results.asMap().entries.map((entry) {
+                          final i = entry.key;
+                          final c = entry.value;
+                          return Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              InkWell(
+                                onTap: () {
+                                  _searchController.clear();
+                                  setState(() => _searchQuery = '');
+                                  FocusScope.of(ctx).unfocus();
+                                  _addCustomer(c);
+                                },
+                                borderRadius: BorderRadius.circular(8),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 12, vertical: 10),
+                                  child: Row(
+                                    children: [
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(c.name,
+                                                style: const TextStyle(
+                                                    fontSize: 13,
+                                                    fontWeight:
+                                                        FontWeight.w600)),
+                                            if (c.address.isNotEmpty)
+                                              Text(c.address,
+                                                  style: TextStyle(
+                                                      fontSize: 11,
+                                                      color: Colors
+                                                          .grey.shade500)),
+                                          ],
+                                        ),
+                                      ),
+                                      const Icon(Icons.add_circle_outline,
+                                          size: 18, color: Colors.teal),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              if (i < results.length - 1)
+                                Divider(height: 1, color: Colors.grey.shade200),
+                            ],
+                          );
+                        }).toList(),
+                      ),
+                    );
+                  }),
+                ],
 
                 const SizedBox(height: 8),
 
