@@ -503,8 +503,10 @@ class _RiderLocationScreenState extends State<RiderLocationScreen> {
   Timer? _watcherTimer;
   JSObject? _screenWakeLock;
 
-  // Keep AdminRiderPanel alive across bottom sheet open/close
-  final _adminPanelKey = GlobalKey<_AdminRiderPanelState>();
+  // Persisted toggle states — survive bottom sheet open/close
+  bool _sharing = false;
+  bool _showEta = false;
+  bool _onDelivery = false;
 
   // Live rider position streamed from Firestore → passed to route planner
   double? _riderLat;
@@ -534,6 +536,18 @@ class _RiderLocationScreenState extends State<RiderLocationScreen> {
       _screenWakeLock?.callMethod('release'.toJS);
     } catch (_) {}
     _screenWakeLock = null;
+  }
+
+  /// Disable/enable pointer events on all iframes so Flutter overlays
+  /// (bottom sheets, dialogs) can receive clicks on web.
+  void _setIframePointerEvents(bool enabled) {
+    try {
+      final iframes = web.document.querySelectorAll('iframe');
+      for (int i = 0; i < iframes.length; i++) {
+        final el = iframes.item(i) as web.HTMLElement;
+        el.style.pointerEvents = enabled ? 'auto' : 'none';
+      }
+    } catch (_) {}
   }
 
   void _listenRiderPosition() {
@@ -614,13 +628,26 @@ class _RiderLocationScreenState extends State<RiderLocationScreen> {
                     IconButton(
                       icon: const Icon(Icons.tune, color: Colors.blueGrey),
                       tooltip: 'GPS Controls',
-                      onPressed: () => showModalBottomSheet(
-                        context: context,
-                        isScrollControlled: true,
-                        backgroundColor: Colors.transparent,
-                        builder: (_) =>
-                            _ControlsSheet(panelKey: _adminPanelKey),
-                      ),
+                      onPressed: () {
+                        // Block iframe pointer events while sheet is open
+                        _setIframePointerEvents(false);
+                        showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          backgroundColor: Colors.transparent,
+                          builder: (_) => _ControlsSheet(
+                            sharing: _sharing,
+                            showEta: _showEta,
+                            onDelivery: _onDelivery,
+                            onSharingChanged: (v) =>
+                                setState(() => _sharing = v),
+                            onShowEtaChanged: (v) =>
+                                setState(() => _showEta = v),
+                            onDeliveryChanged: (v) =>
+                                setState(() => _onDelivery = v),
+                          ),
+                        ).whenComplete(() => _setIframePointerEvents(true));
+                      },
                     ),
                   ],
                 ),
@@ -646,8 +673,21 @@ class _RiderLocationScreenState extends State<RiderLocationScreen> {
 // ===================== CONTROLS BOTTOM SHEET =====================
 
 class _ControlsSheet extends StatelessWidget {
-  final GlobalKey<_AdminRiderPanelState> panelKey;
-  const _ControlsSheet({required this.panelKey});
+  final bool sharing;
+  final bool showEta;
+  final bool onDelivery;
+  final ValueChanged<bool> onSharingChanged;
+  final ValueChanged<bool> onShowEtaChanged;
+  final ValueChanged<bool> onDeliveryChanged;
+
+  const _ControlsSheet({
+    required this.sharing,
+    required this.showEta,
+    required this.onDelivery,
+    required this.onSharingChanged,
+    required this.onShowEtaChanged,
+    required this.onDeliveryChanged,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -660,7 +700,6 @@ class _ControlsSheet extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // drag handle
           Container(
             width: 40,
             height: 4,
@@ -676,7 +715,14 @@ class _ControlsSheet extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                   color: Colors.blueGrey)),
           const SizedBox(height: 20),
-          AdminRiderPanel(key: panelKey),
+          AdminRiderPanel(
+            initialSharing: sharing,
+            initialShowEta: showEta,
+            initialOnDelivery: onDelivery,
+            onSharingChanged: onSharingChanged,
+            onShowEtaChanged: onShowEtaChanged,
+            onDeliveryChanged: onDeliveryChanged,
+          ),
           const SizedBox(height: 8),
         ],
       ),
@@ -687,18 +733,33 @@ class _ControlsSheet extends StatelessWidget {
 // ===================== ADMIN PANEL (floating overlay) =====================
 
 class AdminRiderPanel extends StatefulWidget {
-  const AdminRiderPanel({super.key});
+  final bool initialSharing;
+  final bool initialShowEta;
+  final bool initialOnDelivery;
+  final ValueChanged<bool>? onSharingChanged;
+  final ValueChanged<bool>? onShowEtaChanged;
+  final ValueChanged<bool>? onDeliveryChanged;
+
+  const AdminRiderPanel({
+    super.key,
+    this.initialSharing = false,
+    this.initialShowEta = false,
+    this.initialOnDelivery = false,
+    this.onSharingChanged,
+    this.onShowEtaChanged,
+    this.onDeliveryChanged,
+  });
 
   @override
   State<AdminRiderPanel> createState() => _AdminRiderPanelState();
 }
 
 class _AdminRiderPanelState extends State<AdminRiderPanel> {
-  bool _sharing = false;
+  late bool _sharing;
   bool _locating = false;
   bool _notified = false;
-  bool _onDelivery = false;
-  bool _showEta = false;
+  late bool _onDelivery;
+  late bool _showEta;
   String? _error;
   Timer? _timer;
   Timer? _cleanupTimer;
@@ -728,6 +789,9 @@ class _AdminRiderPanelState extends State<AdminRiderPanel> {
   @override
   void initState() {
     super.initState();
+    _sharing = widget.initialSharing;
+    _onDelivery = widget.initialOnDelivery;
+    _showEta = widget.initialShowEta;
     _startWatcherStream();
   }
 
@@ -831,6 +895,7 @@ class _AdminRiderPanelState extends State<AdminRiderPanel> {
 
   void _toggleDeliveryStatus(bool val) {
     setState(() => _onDelivery = val);
+    widget.onDeliveryChanged?.call(val);
     _db.collection(_kCollection).doc(_kDoc).set(
       {'status': val ? '🚚 On Delivery / Pickup' : '✅ Done Delivery / Pickup'},
       SetOptions(merge: true),
@@ -839,6 +904,7 @@ class _AdminRiderPanelState extends State<AdminRiderPanel> {
 
   void _toggleShowEta(bool val) {
     setState(() => _showEta = val);
+    widget.onShowEtaChanged?.call(val);
     if (val) {
       // Just flip the flag — routeStops already saved from last Save ETAs
       _db.collection(_kCollection).doc(_kDoc).set(
@@ -863,6 +929,7 @@ class _AdminRiderPanelState extends State<AdminRiderPanel> {
       _sharing = val;
       _notified = false;
     });
+    widget.onSharingChanged?.call(val);
     if (val) {
       _acquireWakeLock();
       _sessionStart = DateTime.now();
@@ -952,52 +1019,89 @@ class _AdminRiderPanelState extends State<AdminRiderPanel> {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // ── GPS sharing ───────────────────────────────────────────
-        _controlTile(
-          icon: _sharing ? Icons.share_location : Icons.location_off,
-          iconColor: _sharing ? Colors.green.shade700 : Colors.blueGrey,
-          label: 'GPS Sharing',
-          sublabel: _sharing
-              ? (_locating ? 'Locating...' : 'Active — sharing location')
-              : 'Off',
-          trailing: Row(
-            mainAxisSize: MainAxisSize.min,
+        // ── GPS + ETA (combined — they work together) ─────────────
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: _sharing ? Colors.green.shade50 : Colors.grey.shade50,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: _sharing ? Colors.green.shade300 : Colors.grey.shade200,
+            ),
+          ),
+          child: Column(
             children: [
-              if (_locating)
-                const Padding(
-                  padding: EdgeInsets.only(right: 8),
-                  child: SizedBox(
-                    width: 14,
-                    height: 14,
-                    child: CircularProgressIndicator(strokeWidth: 2),
+              Row(
+                children: [
+                  Icon(
+                    _sharing ? Icons.share_location : Icons.location_off,
+                    color: _sharing ? Colors.green.shade700 : Colors.blueGrey,
+                    size: 22,
                   ),
-                ),
-              Switch(
-                value: _sharing,
-                onChanged: _toggleSharing,
-                activeColor: Colors.green.shade700,
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('GPS Sharing',
+                            style: TextStyle(
+                                fontSize: 14, fontWeight: FontWeight.w600)),
+                        Text(
+                          _sharing
+                              ? (_locating ? 'Locating...' : 'Active')
+                              : 'Off — customers cannot see rider',
+                          style: TextStyle(
+                              fontSize: 11, color: Colors.grey.shade500),
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (_locating)
+                    const Padding(
+                      padding: EdgeInsets.only(right: 8),
+                      child: SizedBox(
+                          width: 14,
+                          height: 14,
+                          child: CircularProgressIndicator(strokeWidth: 2)),
+                    ),
+                  Switch(
+                    value: _sharing,
+                    onChanged: _toggleSharing,
+                    activeColor: Colors.green.shade700,
+                  ),
+                ],
               ),
+              if (_sharing) ...[
+                const Divider(height: 16),
+                Row(
+                  children: [
+                    Icon(Icons.access_time_filled,
+                        color:
+                            _showEta ? Colors.teal.shade700 : Colors.blueGrey,
+                        size: 20),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        _showEta
+                            ? 'ETA visible to customers'
+                            : 'ETA hidden from customers',
+                        style: TextStyle(
+                            fontSize: 13,
+                            color: _showEta
+                                ? Colors.teal.shade800
+                                : Colors.grey.shade600),
+                      ),
+                    ),
+                    Switch(
+                      value: _showEta,
+                      onChanged: _toggleShowEta,
+                      activeColor: Colors.teal.shade700,
+                    ),
+                  ],
+                ),
+              ],
             ],
           ),
-          color: _sharing ? Colors.green.shade50 : null,
-        ),
-
-        const SizedBox(height: 10),
-
-        // ── Show ETA to customers ─────────────────────────────────
-        _controlTile(
-          icon: _showEta ? Icons.access_time_filled : Icons.access_time,
-          iconColor: _showEta ? Colors.teal.shade700 : Colors.blueGrey,
-          label: 'Show ETA to Customers',
-          sublabel: _showEta
-              ? 'Customers can see estimated arrival time'
-              : 'ETA hidden from customers',
-          trailing: Switch(
-            value: _showEta,
-            onChanged: _toggleShowEta,
-            activeColor: Colors.teal.shade700,
-          ),
-          color: _showEta ? Colors.teal.shade50 : null,
         ),
 
         const SizedBox(height: 10),

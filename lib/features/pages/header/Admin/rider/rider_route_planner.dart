@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:js_interop';
+import 'dart:math' as math;
 import 'dart:ui_web' as ui_web;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -47,12 +48,11 @@ class _RiderRoutePlannerState extends State<RiderRoutePlanner> {
   String _searchQuery = '';
   bool _searching = false;
   bool _savingEtas = false;
-  bool _autoUpdate = false;
   Timer? _autoSaveDebounce;
 
   // Arrival detection
-  static const double _arrivalRadiusMeters = 50.0;
-  static const int _arrivalCountdownSecs = 10;
+  static const double _arrivalRadiusMeters = 100.0;
+  static const int _arrivalCountdownSecs = 20;
   bool _arrivalPending = false;
   int _arrivalCountdown = _arrivalCountdownSecs;
   Timer? _arrivalTimer;
@@ -100,10 +100,10 @@ class _RiderRoutePlannerState extends State<RiderRoutePlanner> {
         (web.Event e) {
           final msg = e as web.MessageEvent;
           final data = msg.data.dartify();
+          if (!mounted) return;
           if (data == 'route-map-ready') {
             _pushRouteToMap();
           } else if (data is Map && data['type'] == 'legs') {
-            // OSRM leg durations returned from map iframe
             final legs = (data['legs'] as List).cast<num>();
             _applyEtas(legs);
           }
@@ -138,6 +138,7 @@ class _RiderRoutePlannerState extends State<RiderRoutePlanner> {
 
   /// Called when the map iframe sends back OSRM leg durations (seconds)
   void _applyEtas(List<num> legDurationsSeconds) {
+    if (!mounted) return;
     final stopMins = int.tryParse(_stopTimeController.text.trim()) ?? 5;
     final now = DateTime.now();
     int cumulativeSecs = 0;
@@ -154,8 +155,8 @@ class _RiderRoutePlannerState extends State<RiderRoutePlanner> {
       }
     });
 
-    // Auto-save with debounce — waits 3s after last position update
-    if (_autoUpdate && _stops.isNotEmpty) {
+    // Auto-save with debounce — always active when stops exist
+    if (_stops.isNotEmpty) {
       _autoSaveDebounce?.cancel();
       _autoSaveDebounce = Timer(const Duration(seconds: 3), _saveEtas);
     }
@@ -228,11 +229,20 @@ class _RiderRoutePlannerState extends State<RiderRoutePlanner> {
   void _removeStop(int index) {
     setState(() => _stops.removeAt(index));
     _pushRouteToMap();
+    if (_stops.isEmpty) _clearRouteInFirestore();
   }
 
   void _clearAll() {
     setState(() => _stops.clear());
     _pushRouteToMap();
+    _clearRouteInFirestore();
+  }
+
+  void _clearRouteInFirestore() {
+    _secondaryDb.collection('rider_location').doc('current').set({
+      'routeStops': [],
+      'routeUpdatedAt': Timestamp.now(),
+    }, SetOptions(merge: true));
   }
 
   void _onReorder(int oldIndex, int newIndex) {
@@ -318,14 +328,14 @@ class _RiderRoutePlannerState extends State<RiderRoutePlanner> {
   // ── Haversine distance in metres ────────────────────────────────────────────
   double _distanceMeters(double lat1, double lng1, double lat2, double lng2) {
     const r = 6371000.0;
-    final dLat = (lat2 - lat1) * 3.141592653589793 / 180;
-    final dLng = (lng2 - lng1) * 3.141592653589793 / 180;
-    final a = (dLat / 2) * (dLat / 2) +
-        (lat1 * 3.141592653589793 / 180).abs() *
-            (lat2 * 3.141592653589793 / 180).abs() *
-            (dLng / 2) *
-            (dLng / 2);
-    return r * 2 * (a < 1 ? a : 1);
+    final dLat = (lat2 - lat1) * math.pi / 180;
+    final dLng = (lng2 - lng1) * math.pi / 180;
+    final a = math.sin(dLat / 2) * math.sin(dLat / 2) +
+        math.cos(lat1 * math.pi / 180) *
+            math.cos(lat2 * math.pi / 180) *
+            math.sin(dLng / 2) *
+            math.sin(dLng / 2);
+    return r * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a));
   }
 
   void _checkArrival() {
@@ -343,10 +353,69 @@ class _RiderRoutePlannerState extends State<RiderRoutePlanner> {
   }
 
   void _startArrivalCountdown(String stopName) {
+    if (_arrivalPending) return;
     setState(() {
       _arrivalPending = true;
       _arrivalCountdown = _arrivalCountdownSecs;
     });
+
+    // Show dialog
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) {
+          return AlertDialog(
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            title: const Row(
+              children: [
+                Text('📍', style: TextStyle(fontSize: 22)),
+                SizedBox(width: 8),
+                Text('Arrived?',
+                    style:
+                        TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              ],
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('You are near $stopName.',
+                    style: const TextStyle(fontSize: 14)),
+                const SizedBox(height: 8),
+                StatefulBuilder(builder: (_, ss) {
+                  // Update countdown display every second
+                  return Text(
+                    'Removing stop in $_arrivalCountdown seconds...',
+                    style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                  );
+                }),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  _cancelArrival();
+                },
+                child: const Text('Keep Stop'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  _autoRemoveFirstStop();
+                },
+                style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.teal.shade700,
+                    foregroundColor: Colors.white),
+                child: const Text('Remove Now'),
+              ),
+            ],
+          );
+        },
+      ),
+    );
 
     _arrivalTimer?.cancel();
     _arrivalTimer = Timer.periodic(const Duration(seconds: 1), (t) {
@@ -357,6 +426,8 @@ class _RiderRoutePlannerState extends State<RiderRoutePlanner> {
       setState(() => _arrivalCountdown--);
       if (_arrivalCountdown <= 0) {
         t.cancel();
+        // Close dialog if still open, then remove
+        if (Navigator.canPop(context)) Navigator.pop(context);
         _autoRemoveFirstStop();
       }
     });
@@ -378,6 +449,7 @@ class _RiderRoutePlannerState extends State<RiderRoutePlanner> {
       _arrivalCountdown = _arrivalCountdownSecs;
     });
     _pushRouteToMap();
+    if (_stops.isEmpty) _clearRouteInFirestore();
   }
 
   @override
@@ -474,56 +546,6 @@ class _RiderRoutePlannerState extends State<RiderRoutePlanner> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // ── Arrival banner ─────────────────────────────────────
-                if (_arrivalPending && _stops.isNotEmpty)
-                  AnimatedContainer(
-                    duration: const Duration(milliseconds: 300),
-                    margin: const EdgeInsets.only(bottom: 8),
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 10),
-                    decoration: BoxDecoration(
-                      color: Colors.teal.shade700,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Row(
-                      children: [
-                        const Text('📍', style: TextStyle(fontSize: 18)),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Arrived at ${_stops.first.name}',
-                                style: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 13),
-                              ),
-                              Text(
-                                'Removing in $_arrivalCountdown s...',
-                                style: const TextStyle(
-                                    color: Colors.white70, fontSize: 11),
-                              ),
-                            ],
-                          ),
-                        ),
-                        TextButton(
-                          onPressed: _cancelArrival,
-                          style: TextButton.styleFrom(
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 4),
-                            minimumSize: Size.zero,
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          ),
-                          child: const Text('Keep',
-                              style: TextStyle(fontSize: 12)),
-                        ),
-                      ],
-                    ),
-                  ),
-
                 // ── Rider start ────────────────────────────────────────
                 if (widget.riderLat != null)
                   _stopTile(
@@ -781,57 +803,6 @@ class _RiderRoutePlannerState extends State<RiderRoutePlanner> {
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8)),
                       ),
-                    ),
-                  ),
-                ],
-
-                // ── Auto-update toggle ─────────────────────────────────
-                if (_stops.isNotEmpty) ...[
-                  const SizedBox(height: 8),
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: _autoUpdate
-                          ? Colors.teal.shade50
-                          : Colors.grey.shade100,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: _autoUpdate
-                            ? Colors.teal.shade300
-                            : Colors.grey.shade300,
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          _autoUpdate ? Icons.sync : Icons.sync_disabled,
-                          size: 14,
-                          color:
-                              _autoUpdate ? Colors.teal.shade700 : Colors.grey,
-                        ),
-                        const SizedBox(width: 6),
-                        Expanded(
-                          child: Text(
-                            _autoUpdate
-                                ? 'Auto-updating ETAs as rider moves'
-                                : 'Auto-update ETAs when rider moves',
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: _autoUpdate
-                                  ? Colors.teal.shade800
-                                  : Colors.grey.shade600,
-                            ),
-                          ),
-                        ),
-                        Switch(
-                          value: _autoUpdate,
-                          onChanged: (v) => setState(() => _autoUpdate = v),
-                          materialTapTargetSize:
-                              MaterialTapTargetSize.shrinkWrap,
-                          activeColor: Colors.teal.shade700,
-                        ),
-                      ],
                     ),
                   ),
                 ],
