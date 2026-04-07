@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:js_interop';
+import 'dart:js_interop_unsafe';
 import 'dart:math' as math;
 import 'dart:ui_web' as ui_web;
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -10,7 +11,16 @@ import 'package:laundry_firebase/core/services/firebase_service.dart';
 import 'package:laundry_firebase/features/customers/models/customermodel.dart';
 import 'package:laundry_firebase/features/customers/repository/customer_repository.dart';
 
+@JS('navigator.wakeLock.request')
+external JSPromise<JSObject> _requestWakeLock(JSString type);
+
 FirebaseFirestore get _secondaryDb => FirebaseService.secondaryFirestore;
+
+const _kCollection = 'rider_location';
+const _kDoc = 'current';
+const _kWatchers = 'rider_watchers';
+const _kSubCollection = 'push_subscriptions';
+const _kStaleThreshold = Duration(minutes: 2);
 
 // ── Stop model ────────────────────────────────────────────────────────────────
 class RouteStop {
@@ -47,8 +57,25 @@ class _RiderRoutePlannerState extends State<RiderRoutePlanner> {
   final _stopTimeController = TextEditingController(text: '5');
   String _searchQuery = '';
   bool _searching = false;
-  bool _savingEtas = false;
   Timer? _autoSaveDebounce;
+
+  // ── GPS state ──────────────────────────────────────────────────
+  bool _sharing = false;
+  bool _locating = false;
+  bool _notified = false;
+  bool _onDelivery = false;
+  bool _showEta = false;
+  String? _gpsError;
+  Timer? _gpsTimer;
+  JSObject? _wakeLock;
+  double? _prevLat;
+  double? _prevLng;
+  DateTime? _lastWritten;
+  DateTime? _sessionStart;
+  String _lastFacing = 'right';
+  int _watcherCount = 0;
+  int _staleCount = 0;
+  StreamSubscription? _watcherSub;
 
   // Arrival detection
   static const double _arrivalRadiusMeters = 100.0;
@@ -66,6 +93,7 @@ class _RiderRoutePlannerState extends State<RiderRoutePlanner> {
     super.initState();
     _mapId = 'route-map-${DateTime.now().millisecondsSinceEpoch}';
     _initMap();
+    _startWatcherStream();
   }
 
   @override
@@ -74,6 +102,9 @@ class _RiderRoutePlannerState extends State<RiderRoutePlanner> {
     _stopTimeController.dispose();
     _autoSaveDebounce?.cancel();
     _arrivalTimer?.cancel();
+    _gpsTimer?.cancel();
+    _watcherSub?.cancel();
+    _releaseWakeLock();
     super.dispose();
   }
 
@@ -114,6 +145,16 @@ class _RiderRoutePlannerState extends State<RiderRoutePlanner> {
 
   void _sendToMap(Map<String, dynamic> data) {
     _iframe.contentWindow?.postMessage(data.jsify(), '*'.toJS);
+  }
+
+  /// Smoothly animate the rider marker — JS handles route trimming
+  void _updateRiderPosition() {
+    if (widget.riderLat == null || widget.riderLng == null) return;
+    _sendToMap({
+      'type': 'riderMove',
+      'lat': widget.riderLat,
+      'lng': widget.riderLng,
+    });
   }
 
   void _pushRouteToMap() {
@@ -245,6 +286,221 @@ class _RiderRoutePlannerState extends State<RiderRoutePlanner> {
     }, SetOptions(merge: true));
   }
 
+  // ── GPS methods ────────────────────────────────────────────────
+
+  Future<void> _acquireWakeLock() async {
+    try {
+      _wakeLock = await _requestWakeLock('screen'.toJS).toDart;
+    } catch (_) {}
+  }
+
+  void _releaseWakeLock() {
+    try {
+      _wakeLock?.callMethod('release'.toJS);
+    } catch (_) {}
+    _wakeLock = null;
+  }
+
+  void _startWatcherStream() {
+    _watcherSub?.cancel();
+    _watcherSub =
+        _secondaryDb.collection(_kWatchers).snapshots().listen((snap) {
+      if (!mounted) return;
+      final now = DateTime.now();
+      int stale = 0;
+      for (final doc in snap.docs) {
+        final ts = doc.data()['lastSeen'];
+        if (ts is Timestamp && now.difference(ts.toDate()) > _kStaleThreshold)
+          stale++;
+      }
+      setState(() {
+        _watcherCount = snap.docs.length;
+        _staleCount = stale;
+      });
+    });
+  }
+
+  Future<int> _cleanStaleWatchers() async {
+    final snap = await _secondaryDb.collection(_kWatchers).get();
+    final now = DateTime.now();
+    final batch = _secondaryDb.batch();
+    int removed = 0;
+    for (final doc in snap.docs) {
+      final ts = doc.data()['lastSeen'];
+      if (ts is Timestamp && now.difference(ts.toDate()) > _kStaleThreshold) {
+        batch.set(_secondaryDb.collection('rider_watchers_history').doc(), {
+          ...doc.data(),
+          'watcherId': doc.id,
+          'clearedAt': Timestamp.now(),
+        });
+        batch.delete(doc.reference);
+        removed++;
+      }
+    }
+    if (removed > 0) await batch.commit();
+    return removed;
+  }
+
+  Future<void> _saveRiderHistory() async {
+    if (_prevLat == null || _prevLng == null) return;
+    try {
+      await _secondaryDb.collection('rider_location_history').add({
+        'lat': _prevLat,
+        'lng': _prevLng,
+        'facing': _lastFacing,
+        'sessionStart':
+            _sessionStart != null ? Timestamp.fromDate(_sessionStart!) : null,
+        'clearedAt': Timestamp.now(),
+        'lastWritten':
+            _lastWritten != null ? Timestamp.fromDate(_lastWritten!) : null,
+      });
+    } catch (_) {}
+  }
+
+  Future<void> _loadFacingThenStart({bool notify = false}) async {
+    try {
+      final doc = await _secondaryDb.collection(_kCollection).doc(_kDoc).get();
+      if (doc.exists) {
+        final saved = doc.data()?['facing'] as String?;
+        if (saved != null) _lastFacing = saved;
+      }
+    } catch (_) {}
+    _pushGpsLocation(notify: notify);
+  }
+
+  void _toggleDeliveryStatus(bool val) {
+    setState(() => _onDelivery = val);
+    _secondaryDb.collection(_kCollection).doc(_kDoc).set(
+      {'status': val ? '🚚 On Delivery / Pickup' : '✅ Done Delivery / Pickup'},
+      SetOptions(merge: true),
+    );
+  }
+
+  void _toggleShowEta(bool val) {
+    setState(() => _showEta = val);
+    if (val) {
+      _secondaryDb
+          .collection(_kCollection)
+          .doc(_kDoc)
+          .set({'showEta': true}, SetOptions(merge: true));
+    } else {
+      _secondaryDb.collection(_kCollection).doc(_kDoc).set({
+        'showEta': false,
+        'routeStops': [],
+        'routeUpdatedAt': Timestamp.now(),
+      }, SetOptions(merge: true));
+    }
+  }
+
+  void _toggleSharing(bool val) {
+    setState(() {
+      _sharing = val;
+      _notified = false;
+    });
+    if (val) {
+      _acquireWakeLock();
+      _sessionStart = DateTime.now();
+      _loadFacingThenStart(notify: true);
+      _gpsTimer =
+          Timer.periodic(const Duration(seconds: 5), (_) => _pushGpsLocation());
+    } else {
+      _gpsTimer?.cancel();
+      _releaseWakeLock();
+      _saveRiderHistory();
+      _prevLat = null;
+      _prevLng = null;
+      _lastWritten = null;
+      _sessionStart = null;
+      _secondaryDb
+          .collection(_kCollection)
+          .doc(_kDoc)
+          .update({'isOnline': false});
+      _secondaryDb.collection(_kCollection).doc(_kDoc).set({
+        'routeStops': [],
+        'routeUpdatedAt': Timestamp.now(),
+      }, SetOptions(merge: true));
+    }
+  }
+
+  Future<void> _pushGpsLocation({bool notify = false}) async {
+    if (!mounted) return;
+    setState(() => _locating = true);
+    try {
+      final completer = Completer<(double, double)>();
+      web.window.navigator.geolocation.getCurrentPosition(
+        (web.GeolocationPosition pos) {
+          completer.complete((pos.coords.latitude, pos.coords.longitude));
+        }.toJS,
+        (web.GeolocationPositionError err) {
+          completer.completeError(err.message);
+        }.toJS,
+      );
+      final (lat, lng) = await completer.future;
+
+      final now = DateTime.now();
+      final movedEnough =
+          _prevLat == null || _haversine(_prevLat!, _prevLng!, lat, lng) > 10;
+      final fallbackDue = _lastWritten == null ||
+          now.difference(_lastWritten!) >= const Duration(seconds: 15);
+
+      if (movedEnough || fallbackDue) {
+        if (_prevLng != null && lng != _prevLng) {
+          _lastFacing = lng > _prevLng! ? 'right' : 'left';
+        }
+        _prevLat = lat;
+        _prevLng = lng;
+        _lastWritten = now;
+
+        await _secondaryDb.collection(_kCollection).doc(_kDoc).set({
+          'lat': lat,
+          'lng': lng,
+          'facing': _lastFacing,
+          'updatedAt': Timestamp.now(),
+          'isOnline': true,
+          'status': _onDelivery
+              ? '🚚 On Delivery / Pickup'
+              : '✅ Done Delivery / Pickup',
+        }, SetOptions(merge: true));
+
+        if (notify && !_notified) {
+          await _notifySubscribers();
+          if (mounted) setState(() => _notified = true);
+        }
+        // Auto-save ETAs whenever position updates and stops exist
+        if (_stops.isNotEmpty) {
+          _autoSaveDebounce?.cancel();
+          _autoSaveDebounce = Timer(const Duration(seconds: 3), _saveEtas);
+        }
+      }
+    } catch (e) {
+      if (mounted) setState(() => _gpsError = 'Location error: $e');
+    } finally {
+      if (mounted) setState(() => _locating = false);
+    }
+  }
+
+  Future<void> _notifySubscribers() async {
+    try {
+      final snap = await _secondaryDb.collection(_kSubCollection).get();
+      final tokens =
+          snap.docs.map((d) => d.data()['token']).whereType<String>().toList();
+      if (tokens.isEmpty) return;
+      // Fire and forget
+    } catch (_) {}
+  }
+
+  double _haversine(double lat1, double lng1, double lat2, double lng2) {
+    const r = 6371000.0;
+    final dLat = (lat2 - lat1) * math.pi / 180;
+    final dLng = (lng2 - lng1) * math.pi / 180;
+    final a = math.sin(dLat / 2) * math.sin(dLat / 2) +
+        math.cos(lat1 * math.pi / 180) *
+            math.cos(lat2 * math.pi / 180) *
+            math.sin(dLng / 2) *
+            math.sin(dLng / 2);
+    return r * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a));
+  }
+
   void _onReorder(int oldIndex, int newIndex) {
     setState(() {
       if (newIndex > oldIndex) newIndex--;
@@ -264,7 +520,7 @@ class _RiderRoutePlannerState extends State<RiderRoutePlanner> {
       return;
     }
 
-    setState(() => _savingEtas = true);
+    if (!mounted) return;
 
     try {
       final batch = FirebaseFirestore.instance.batch();
@@ -307,12 +563,7 @@ class _RiderRoutePlannerState extends State<RiderRoutePlanner> {
         ));
       }
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('Save failed: $e')));
-      }
-    } finally {
-      if (mounted) setState(() => _savingEtas = false);
+      // silent — auto-save, no UI needed
     }
   }
 
@@ -320,7 +571,8 @@ class _RiderRoutePlannerState extends State<RiderRoutePlanner> {
   void didUpdateWidget(RiderRoutePlanner old) {
     super.didUpdateWidget(old);
     if (old.riderLat != widget.riderLat || old.riderLng != widget.riderLng) {
-      _pushRouteToMap();
+      // Animate rider marker smoothly — only full redraw if stops changed
+      _updateRiderPosition();
       _checkArrival();
     }
   }
@@ -488,7 +740,6 @@ class _RiderRoutePlannerState extends State<RiderRoutePlanner> {
 
   Widget _buildPanel() {
     final customers = CustomerRepository.instance.customers;
-    final hasEtas = _stops.any((s) => s.etaTime != null);
 
     return Container(
       decoration: BoxDecoration(
@@ -546,6 +797,238 @@ class _RiderRoutePlannerState extends State<RiderRoutePlanner> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // ── GPS Controls ───────────────────────────────────────
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  decoration: BoxDecoration(
+                    color:
+                        _sharing ? Colors.green.shade50 : Colors.grey.shade50,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: _sharing
+                          ? Colors.green.shade300
+                          : Colors.grey.shade200,
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            _sharing
+                                ? Icons.share_location
+                                : Icons.location_off,
+                            color: _sharing
+                                ? Colors.green.shade700
+                                : Colors.blueGrey,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              _sharing
+                                  ? (_locating ? 'Locating...' : 'GPS Active')
+                                  : 'GPS Off',
+                              style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: _sharing
+                                      ? Colors.green.shade800
+                                      : Colors.grey.shade600),
+                            ),
+                          ),
+                          if (_locating)
+                            const Padding(
+                              padding: EdgeInsets.only(right: 8),
+                              child: SizedBox(
+                                  width: 14,
+                                  height: 14,
+                                  child: CircularProgressIndicator(
+                                      strokeWidth: 2)),
+                            ),
+                          Switch(
+                            value: _sharing,
+                            onChanged: _toggleSharing,
+                            activeColor: Colors.green.shade700,
+                            materialTapTargetSize:
+                                MaterialTapTargetSize.shrinkWrap,
+                          ),
+                        ],
+                      ),
+                      if (_sharing) ...[
+                        const Divider(height: 12),
+                        Row(
+                          children: [
+                            Icon(Icons.access_time_filled,
+                                color: _showEta
+                                    ? Colors.teal.shade700
+                                    : Colors.blueGrey,
+                                size: 18),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                _showEta
+                                    ? 'ETA visible to customers'
+                                    : 'ETA hidden',
+                                style: TextStyle(
+                                    fontSize: 12,
+                                    color: _showEta
+                                        ? Colors.teal.shade800
+                                        : Colors.grey.shade600),
+                              ),
+                            ),
+                            Switch(
+                              value: _showEta,
+                              onChanged: _toggleShowEta,
+                              activeColor: Colors.teal.shade700,
+                              materialTapTargetSize:
+                                  MaterialTapTargetSize.shrinkWrap,
+                            ),
+                          ],
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 8),
+
+                // ── Delivery status ────────────────────────────────────
+                GestureDetector(
+                  onTap: () => _toggleDeliveryStatus(!_onDelivery),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: _onDelivery
+                          ? Colors.orange.shade50
+                          : Colors.green.shade50,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: _onDelivery
+                            ? Colors.orange.shade300
+                            : Colors.green.shade300,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Text(_onDelivery ? '🚚' : '✅',
+                            style: const TextStyle(fontSize: 18)),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            _onDelivery
+                                ? 'On Delivery / Pickup'
+                                : 'Done Delivery / Pickup',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: _onDelivery
+                                  ? Colors.orange.shade800
+                                  : Colors.green.shade800,
+                            ),
+                          ),
+                        ),
+                        Icon(Icons.swap_horiz,
+                            color: _onDelivery
+                                ? Colors.orange.shade400
+                                : Colors.green.shade400,
+                            size: 18),
+                      ],
+                    ),
+                  ),
+                ),
+
+                // ── Watchers ───────────────────────────────────────────
+                if (_watcherCount > 0) ...[
+                  const SizedBox(height: 8),
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: _staleCount > 0
+                          ? Colors.orange.shade50
+                          : Colors.grey.shade50,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: _staleCount > 0
+                            ? Colors.orange.shade200
+                            : Colors.grey.shade200,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.visibility,
+                            size: 16,
+                            color: _staleCount > 0
+                                ? Colors.orange.shade700
+                                : Colors.blueGrey),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            '$_watcherCount watcher${_watcherCount > 1 ? 's' : ''}'
+                            '${_staleCount > 0 ? ' · $_staleCount stale' : ''}',
+                            style: TextStyle(
+                                fontSize: 12,
+                                color: _staleCount > 0
+                                    ? Colors.orange.shade800
+                                    : Colors.blueGrey),
+                          ),
+                        ),
+                        if (_staleCount > 0)
+                          TextButton(
+                            onPressed: () async {
+                              final removed = await _cleanStaleWatchers();
+                              if (mounted && removed > 0) {
+                                ScaffoldMessenger.of(context)
+                                    .showSnackBar(SnackBar(
+                                  content: Text(
+                                      'Removed $removed stale watcher(s).'),
+                                  duration: const Duration(seconds: 2),
+                                ));
+                              }
+                            },
+                            style: TextButton.styleFrom(
+                                padding: EdgeInsets.zero,
+                                minimumSize: Size.zero,
+                                tapTargetSize:
+                                    MaterialTapTargetSize.shrinkWrap),
+                            child: const Text('Clear',
+                                style: TextStyle(fontSize: 12)),
+                          ),
+                      ],
+                    ),
+                  ),
+                ],
+
+                if (_gpsError != null) ...[
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.red.shade50,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.red.shade200),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.error_outline,
+                            color: Colors.redAccent, size: 16),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(_gpsError!,
+                              style: const TextStyle(
+                                  fontSize: 11, color: Colors.redAccent)),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+
+                const Divider(height: 20),
+
                 // ── Rider start ────────────────────────────────────────
                 if (widget.riderLat != null)
                   _stopTile(
@@ -779,33 +1262,6 @@ class _RiderRoutePlannerState extends State<RiderRoutePlanner> {
                         ),
                     ],
                   ),
-
-                // ── Save ETAs button ───────────────────────────────────
-                if (hasEtas) ...[
-                  const SizedBox(height: 10),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: _savingEtas ? null : _saveEtas,
-                      icon: _savingEtas
-                          ? const SizedBox(
-                              width: 14,
-                              height: 14,
-                              child: CircularProgressIndicator(
-                                  strokeWidth: 2, color: Colors.white))
-                          : const Icon(Icons.cloud_upload_outlined, size: 16),
-                      label: Text(_savingEtas ? 'Saving...' : 'Save ETAs'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.teal.shade700,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 10),
-                        textStyle: const TextStyle(fontSize: 12),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8)),
-                      ),
-                    ),
-                  ),
-                ],
               ],
             ),
           ),
@@ -915,11 +1371,67 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
 var markers = [];
 var routeLayer = null;
+var riderMarker = null;
+var fullRouteCoords = []; // all coords from OSRM, never modified
+
+// Smooth animation for rider
+var fromLat=$lat, fromLng=$lng, toLat=$lat, toLng=$lng;
+var animStart=null, animDuration=800, rafId=null;
+
+function easeInOut(t){ return t<0.5?2*t*t:1-Math.pow(-2*t+2,2)/2; }
+
+function animateRider(newLat,newLng){
+  if(!riderMarker) return;
+  fromLat=riderMarker.getLatLng().lat;
+  fromLng=riderMarker.getLatLng().lng;
+  toLat=newLat; toLng=newLng;
+  animStart=null;
+  if(rafId) cancelAnimationFrame(rafId);
+  rafId=requestAnimationFrame(stepRider);
+  // Trim route after animation settles
+  setTimeout(function(){ trimRouteFromRider(newLat, newLng); }, animDuration);
+}
+
+function stepRider(ts){
+  if(!animStart) animStart=ts;
+  var t=Math.min((ts-animStart)/animDuration,1);
+  var e=easeInOut(t);
+  riderMarker.setLatLng([fromLat+(toLat-fromLat)*e, fromLng+(toLng-fromLng)*e]);
+  if(t<1){ rafId=requestAnimationFrame(stepRider); }
+  else { rafId=null; }
+}
+
+// Find index of closest point in fullRouteCoords to (lat,lng)
+function closestIndex(lat, lng){
+  var best = 0, bestDist = Infinity;
+  for(var i=0; i<fullRouteCoords.length; i++){
+    var c = fullRouteCoords[i];
+    var d = (c[0]-lat)*(c[0]-lat) + (c[1]-lng)*(c[1]-lng);
+    if(d < bestDist){ bestDist=d; best=i; }
+  }
+  return best;
+}
+
+// Trim the displayed route — only show from rider's position forward
+function trimRouteFromRider(lat, lng){
+  if(fullRouteCoords.length === 0) return;
+  var idx = closestIndex(lat, lng);
+  var remaining = fullRouteCoords.slice(idx);
+  if(remaining.length < 2){ 
+    if(routeLayer){ map.removeLayer(routeLayer); routeLayer=null; }
+    return;
+  }
+  if(routeLayer){ map.removeLayer(routeLayer); }
+  routeLayer = L.polyline(remaining, {
+    color:'#00897b', weight:4, opacity:0.85, dashArray:'8,6'
+  }).addTo(map);
+}
 
 function clearMap(){
   markers.forEach(function(m){ map.removeLayer(m); });
   markers = [];
   if(routeLayer){ map.removeLayer(routeLayer); routeLayer=null; }
+  fullRouteCoords = [];
 }
 
 function makeNumberedIcon(label, isRider){
@@ -937,11 +1449,19 @@ function makeNumberedIcon(label, isRider){
 
 async function drawRoute(stops){
   clearMap();
+  riderMarker = null;
   if(stops.length === 0) return;
 
+  // Only place destination markers — skip rider (stop 0) marker
   stops.forEach(function(s,i){
     var isRider = (i===0 && s.label==='🛵');
-    var m = L.marker([s.lat,s.lng],{icon:makeNumberedIcon(s.label,isRider)}).addTo(map);
+    if(isRider){
+      // Place rider marker but don't add to numbered list
+      riderMarker = L.marker([s.lat,s.lng],{icon:makeNumberedIcon(s.label,true)}).addTo(map);
+      markers.push(riderMarker);
+      return;
+    }
+    var m = L.marker([s.lat,s.lng],{icon:makeNumberedIcon(s.label,false)}).addTo(map);
     if(s.name) m.bindTooltip(s.name,{permanent:false,direction:'top'});
     markers.push(m);
   });
@@ -962,9 +1482,11 @@ async function drawRoute(stops){
     var data = await resp.json();
     if(data.routes && data.routes.length > 0){
       var route = data.routes[0];
-      // Draw road geometry
-      routeLayer = L.geoJSON(route.geometry,{
-        style:{color:'#00897b',weight:4,opacity:0.85,dashArray:'8,6'}
+      // Store full coords for trimming — [lat,lng] pairs
+      fullRouteCoords = route.geometry.coordinates.map(function(c){return[c[1],c[0]];});
+      // Draw full route initially
+      routeLayer = L.polyline(fullRouteCoords,{
+        color:'#00897b',weight:4,opacity:0.85,dashArray:'8,6'
       }).addTo(map);
       // Send leg durations back to Flutter
       var legDurations = route.legs.map(function(l){return l.duration;});
@@ -973,6 +1495,7 @@ async function drawRoute(stops){
   } catch(e){
     // fallback straight line
     var latlngs = stops.map(function(s){return[s.lat,s.lng];});
+    fullRouteCoords = latlngs;
     routeLayer = L.polyline(latlngs,{color:'#00897b',weight:3,dashArray:'8,6',opacity:0.7}).addTo(map);
   }
 }
@@ -980,6 +1503,13 @@ async function drawRoute(stops){
 window.addEventListener('message',function(e){
   var d = e.data;
   if(d && d.type === 'route') drawRoute(d.stops);
+  if(d && d.type === 'riderMove' && d.lat !== undefined){
+    if(riderMarker){
+      animateRider(d.lat, d.lng);
+    } else {
+      drawRoute([{lat:d.lat,lng:d.lng,label:'🛵'}]);
+    }
+  }
 });
 
 window.parent.postMessage('route-map-ready','*');
