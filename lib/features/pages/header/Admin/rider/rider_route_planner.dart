@@ -64,7 +64,6 @@ class _RiderRoutePlannerState extends State<RiderRoutePlanner> {
   bool _locating = false;
   bool _notified = false;
   bool _onDelivery = false;
-  bool _showEta = false;
   String? _gpsError;
   Timer? _gpsTimer;
   JSObject? _wakeLock;
@@ -137,6 +136,9 @@ class _RiderRoutePlannerState extends State<RiderRoutePlanner> {
           } else if (data is Map && data['type'] == 'legs') {
             final legs = (data['legs'] as List).cast<num>();
             _applyEtas(legs);
+          } else if (data is Map && data['type'] == 'reroute') {
+            // Rider deviated — fetch new route from current position
+            _pushRouteToMap();
           }
         }.toJS);
 
@@ -376,22 +378,6 @@ class _RiderRoutePlannerState extends State<RiderRoutePlanner> {
     );
   }
 
-  void _toggleShowEta(bool val) {
-    setState(() => _showEta = val);
-    if (val) {
-      _secondaryDb
-          .collection(_kCollection)
-          .doc(_kDoc)
-          .set({'showEta': true}, SetOptions(merge: true));
-    } else {
-      _secondaryDb.collection(_kCollection).doc(_kDoc).set({
-        'showEta': false,
-        'routeStops': [],
-        'routeUpdatedAt': Timestamp.now(),
-      }, SetOptions(merge: true));
-    }
-  }
-
   void _toggleSharing(bool val) {
     setState(() {
       _sharing = val;
@@ -400,6 +386,11 @@ class _RiderRoutePlannerState extends State<RiderRoutePlanner> {
     if (val) {
       _acquireWakeLock();
       _sessionStart = DateTime.now();
+      // Auto-enable ETA when GPS starts
+      _secondaryDb
+          .collection(_kCollection)
+          .doc(_kDoc)
+          .set({'showEta': true}, SetOptions(merge: true));
       _loadFacingThenStart(notify: true);
       _gpsTimer =
           Timer.periodic(const Duration(seconds: 5), (_) => _pushGpsLocation());
@@ -411,11 +402,13 @@ class _RiderRoutePlannerState extends State<RiderRoutePlanner> {
       _prevLng = null;
       _lastWritten = null;
       _sessionStart = null;
+      // Auto-disable ETA when GPS stops
       _secondaryDb
           .collection(_kCollection)
           .doc(_kDoc)
           .update({'isOnline': false});
       _secondaryDb.collection(_kCollection).doc(_kDoc).set({
+        'showEta': false,
         'routeStops': [],
         'routeUpdatedAt': Timestamp.now(),
       }, SetOptions(merge: true));
@@ -861,29 +854,12 @@ class _RiderRoutePlannerState extends State<RiderRoutePlanner> {
                         Row(
                           children: [
                             Icon(Icons.access_time_filled,
-                                color: _showEta
-                                    ? Colors.teal.shade700
-                                    : Colors.blueGrey,
-                                size: 18),
+                                color: Colors.teal.shade700, size: 18),
                             const SizedBox(width: 10),
-                            Expanded(
-                              child: Text(
-                                _showEta
-                                    ? 'ETA visible to customers'
-                                    : 'ETA hidden',
-                                style: TextStyle(
-                                    fontSize: 12,
-                                    color: _showEta
-                                        ? Colors.teal.shade800
-                                        : Colors.grey.shade600),
-                              ),
-                            ),
-                            Switch(
-                              value: _showEta,
-                              onChanged: _toggleShowEta,
-                              activeColor: Colors.teal.shade700,
-                              materialTapTargetSize:
-                                  MaterialTapTargetSize.shrinkWrap,
+                            Text(
+                              'ETA sharing active',
+                              style: TextStyle(
+                                  fontSize: 12, color: Colors.teal.shade800),
                             ),
                           ],
                         ),
@@ -1402,21 +1378,32 @@ function stepRider(ts){
 }
 
 // Find index of closest point in fullRouteCoords to (lat,lng)
-function closestIndex(lat, lng){
+// Returns {index, distSq}
+function closestPoint(lat, lng){
   var best = 0, bestDist = Infinity;
   for(var i=0; i<fullRouteCoords.length; i++){
     var c = fullRouteCoords[i];
     var d = (c[0]-lat)*(c[0]-lat) + (c[1]-lng)*(c[1]-lng);
     if(d < bestDist){ bestDist=d; best=i; }
   }
-  return best;
+  return {index: best, distSq: bestDist};
 }
+
+// ~100m in degrees squared (rough: 0.001 deg ≈ 111m)
+var REROUTE_THRESHOLD_SQ = 0.0009 * 0.0009;
 
 // Trim the displayed route — only show from rider's position forward
 function trimRouteFromRider(lat, lng){
   if(fullRouteCoords.length === 0) return;
-  var idx = closestIndex(lat, lng);
-  var remaining = fullRouteCoords.slice(idx);
+  var result = closestPoint(lat, lng);
+  
+  // If rider is too far from route — request re-route from Flutter
+  if(result.distSq > REROUTE_THRESHOLD_SQ){
+    window.parent.postMessage({type:'reroute'},'*');
+    return;
+  }
+  
+  var remaining = fullRouteCoords.slice(result.index);
   if(remaining.length < 2){ 
     if(routeLayer){ map.removeLayer(routeLayer); routeLayer=null; }
     return;
