@@ -20,10 +20,18 @@ Widget visAmountOthersOnly(
     switch (value) {
       case menuOth155:
         return "155";
+      case menuOthW8t9:
+        return "190";
+      case menuOthW9t10:
+        return "260";
       case menuOth125:
         return "125";
+      case menuOth150:
+        return "150";
       case menuOthXD:
-        return "+Dry";
+        return "XDry";
+      case menuOthXW:
+        return "XWash";
       case menuFabWKLDValAny8ml:
         return "+Fab";
       default:
@@ -34,9 +42,9 @@ Widget visAmountOthersOnly(
   String getOtherShortCutLabel(int value) {
     switch (value) {
       case menuOthNF155:
-        return "NF155";
+        return "155NF";
       case menuOthNF125:
-        return "NF125";
+        return "125NF";
       case menuOthWD98:
         return "WD98";
       default:
@@ -98,7 +106,7 @@ Widget visAmountOthersOnly(
           Column(
             children: [
               Text(
-                "ADD-ONS TOTAL",
+                "Total",
                 style: TextStyle(
                   fontSize: 11,
                   letterSpacing: 1.5,
@@ -131,49 +139,108 @@ Widget visAmountOthersOnly(
 
           // ================= SHORTCUTS =================
 
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: listOthersDropDownShortCuts.map((shortcut) {
-              return glassShortcutButton(
-                label: getShortcutLabel(shortcut),
-                onTap: () {
-                  if (shortcut == menuOth155) {
-                    addOtherItem(jobRepo, reg155ItemModel);
-                  } else if (shortcut == menuOth125) {
-                    addOtherItem(jobRepo, reg125ItemModel);
-                  } else if (shortcut == menuOthXD) {
-                    addOtherItem(jobRepo, xDItemModel);
-                  } else if (shortcut == menuFabWKLDValAny8ml) {
-                    addOtherItem(jobRepo, addFabAnyItemModel);
-                  }
-
-                  dialogSetState();
-                },
-              );
-            }).toList(),
+          _sectionRow(
+            label: 'Full Service',
+            accentColor: Colors.cyanAccent,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: listOthersDropDownShortCuts.map((shortcut) {
+                return glassShortcutButton(
+                  label: getShortcutLabel(shortcut),
+                  onTap: () {
+                    if (shortcut == menuOth155) {
+                      addOtherItem(jobRepo, reg155ItemModel);
+                    } else if (shortcut == menuOthW8t9) {
+                      addOtherItem(jobRepo, reg155ItemModel);
+                      addOtherItem(
+                          jobRepo,
+                          listOthItems
+                              .firstWhere((i) => i.itemId == menuOthW8t9));
+                    } else if (shortcut == menuOthW9t10) {
+                      addOtherItem(jobRepo, reg155ItemModel);
+                      addOtherItem(
+                          jobRepo,
+                          listOthItems
+                              .firstWhere((i) => i.itemId == menuOthW9t10));
+                    }
+                    dialogSetState();
+                  },
+                );
+              }).toList(),
+            ),
           ),
 
-          const SizedBox(height: 14),
+          const SizedBox(height: 8),
 
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: listOthersShort2DropDownShortCuts.map((shortcut) {
-              return glassShortcutButton(
-                label: getOtherShortCutLabel(shortcut),
-                onTap: () {
-                  if (shortcut == menuOthNF155) {
-                    addOtherItem(jobRepo, nf155ItemModel);
-                  } else if (shortcut == menuOthNF125) {
-                    addOtherItem(jobRepo, nf125ItemModel);
-                  } else if (shortcut == menuOthWD98) {
-                    addOtherItem(jobRepo, washDryOnlytemModel);
-                  } else if (shortcut == menuOthFree) {
-                    addOtherItem(jobRepo, promoFree);
-                  }
-                  dialogSetState();
-                },
-              );
-            }).toList(),
+          _sectionRow(
+            label: 'Sayo Sabon',
+            accentColor: Colors.purpleAccent,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: listOthersShortRow2.map((shortcut) {
+                return glassShortcutButton(
+                  label: getShortcutLabel(shortcut),
+                  onTap: () {
+                    if (shortcut == menuOth125) {
+                      addOtherItem(jobRepo, reg125ItemModel);
+                    } else if (shortcut == menuOth150) {
+                      addOtherItem(jobRepo, reg150ItemModel);
+                    }
+                    dialogSetState();
+                  },
+                );
+              }).toList(),
+            ),
+          ),
+
+          const SizedBox(height: 8),
+
+          _sectionRow(
+            label: 'Add-Ons',
+            accentColor: Colors.greenAccent,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: listOthersShortRow3.map((shortcut) {
+                return glassShortcutButton(
+                  label: getShortcutLabel(shortcut),
+                  onTap: () {
+                    if (shortcut == menuOthXD) {
+                      addOtherItem(jobRepo, xDItemModel);
+                    } else if (shortcut == menuOthXW) {
+                      addOtherItem(jobRepo, xWashItemModel);
+                    } else if (shortcut == menuFabWKLDValAny8ml) {
+                      addOtherItem(jobRepo, addFabAnyItemModel);
+                    }
+                    dialogSetState();
+                  },
+                );
+              }).toList(),
+            ),
+          ),
+
+          const SizedBox(height: 8),
+
+          _sectionRow(
+            label: 'No Fold',
+            accentColor: Colors.orangeAccent,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: listOthersShort2DropDownShortCuts.map((shortcut) {
+                return glassShortcutButton(
+                  label: getOtherShortCutLabel(shortcut),
+                  onTap: () {
+                    if (shortcut == menuOthNF155) {
+                      addOtherItem(jobRepo, nf155ItemModel);
+                    } else if (shortcut == menuOthNF125) {
+                      addOtherItem(jobRepo, nf125ItemModel);
+                    } else if (shortcut == menuOthWD98) {
+                      addOtherItem(jobRepo, washDryOnlytemModel);
+                    }
+                    dialogSetState();
+                  },
+                );
+              }).toList(),
+            ),
           ),
           if (autocompleteSelected.loyaltyCount >= 10)
             const SizedBox(height: 14),
@@ -188,133 +255,135 @@ Widget visAmountOthersOnly(
                 }),
 
           const SizedBox(height: 14),
-          // ================= ALL ITEMS CATEGORY =================
+          // ================= ALL ITEMS (collapsible) =================
 
-          Column(
-            children: [
-              Text(
+          Theme(
+            data: ThemeData(
+              dividerColor: Colors.transparent,
+              colorScheme: const ColorScheme.dark(),
+            ),
+            child: ExpansionTile(
+              tilePadding:
+                  const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
+              childrenPadding: const EdgeInsets.only(top: 8),
+              collapsedShape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: BorderSide(color: Colors.white.withValues(alpha: 0.2)),
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side:
+                    BorderSide(color: Colors.cyanAccent.withValues(alpha: 0.4)),
+              ),
+              backgroundColor: Colors.black.withValues(alpha: 0.15),
+              collapsedBackgroundColor: Colors.black.withValues(alpha: 0.1),
+              leading: const Icon(Icons.inventory_2_outlined,
+                  color: Colors.white54, size: 18),
+              title: const Text(
                 'ALL ITEMS',
                 style: TextStyle(
-                  fontSize: 10,
+                  fontSize: 11,
                   letterSpacing: 1.2,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white.withOpacity(0.7),
-                ),
-              ),
-              const SizedBox(height: 8),
-              Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(18),
-                  color: Colors.black.withOpacity(0.25),
-                  border: Border.all(
-                    color: Colors.white.withOpacity(0.25),
-                  ),
-                ),
-                child: ToggleButtons(
-                  isSelected: List.generate(
-                    listOthersDropDown.length,
-                    (i) => jobRepo.selectedOthers == listOthersDropDown[i],
-                  ),
-                  onPressed: (index) {
-                    jobRepo.selectedOthers = listOthersDropDown[index];
-
-                    final newItems = getCurrentDropdownItems();
-                    jobRepo.repoVarSelectedItem =
-                        (newItems.isNotEmpty ? newItems.first : null)!;
-
-                    dialogSetState();
-                  },
-                  borderRadius: BorderRadius.circular(14),
-                  selectedColor: Colors.black,
-                  fillColor: Colors.cyanAccent,
                   color: Colors.white70,
-                  borderColor: Colors.white24,
-                  selectedBorderColor: Colors.cyanAccent,
-                  constraints: const BoxConstraints(
-                    minWidth: 60,
-                    minHeight: 32,
-                  ),
-                  children: const [
-                    Text('Oth'),
-                    Text('Det'),
-                    Text('Fab'),
-                    Text('Ble'),
-                  ],
                 ),
               ),
-            ],
-          ),
-
-          const SizedBox(height: 24),
-
-          // ================= DROPDOWN + ADD =================
-
-          Row(
-            children: [
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
+              trailing: const Icon(Icons.expand_more,
+                  color: Colors.white54, size: 18),
+              children: [
+                // Category toggle
+                Container(
+                  padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(16),
-                    color: Colors.black.withOpacity(0.25),
-                    border: Border.all(
-                      color: Colors.white.withOpacity(0.2),
-                    ),
+                    borderRadius: BorderRadius.circular(18),
+                    color: Colors.black.withValues(alpha: 0.25),
+                    border:
+                        Border.all(color: Colors.white.withValues(alpha: 0.25)),
                   ),
-                  child: DropdownButton<OtherItemModel>(
-                    value: jobRepo.repoVarSelectedItem,
-                    isExpanded: true,
-                    dropdownColor: Colors.black87,
-                    underline: const SizedBox(),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 13,
+                  child: ToggleButtons(
+                    isSelected: List.generate(
+                      listOthersDropDown.length,
+                      (i) => jobRepo.selectedOthers == listOthersDropDown[i],
                     ),
-                    items: currentItems
-                        .map(
-                          (e) => DropdownMenuItem<OtherItemModel>(
-                            value: e,
-                            child: Text(
-                              "${e.itemName}  ₱${e.itemPrice}",
-                            ),
-                          ),
-                        )
-                        .toList(),
-                    onChanged: currentItems.isEmpty
-                        ? null
-                        : (val) {
-                            jobRepo.repoVarSelectedItem = val!;
-
-                            dialogSetState();
-                          },
+                    onPressed: (index) {
+                      jobRepo.selectedOthers = listOthersDropDown[index];
+                      final newItems = getCurrentDropdownItems();
+                      jobRepo.repoVarSelectedItem =
+                          (newItems.isNotEmpty ? newItems.first : null)!;
+                      dialogSetState();
+                    },
+                    borderRadius: BorderRadius.circular(14),
+                    selectedColor: Colors.black,
+                    fillColor: Colors.cyanAccent,
+                    color: Colors.white70,
+                    borderColor: Colors.white24,
+                    selectedBorderColor: Colors.cyanAccent,
+                    constraints:
+                        const BoxConstraints(minWidth: 60, minHeight: 32),
+                    children: const [
+                      Text('Oth'),
+                      Text('Det'),
+                      Text('Fab'),
+                      Text('Ble'),
+                    ],
                   ),
                 ),
-              ),
-              const SizedBox(width: 12),
-              GestureDetector(
-                onTap: jobRepo.repoVarSelectedItem == null
-                    ? null
-                    : () {
+                const SizedBox(height: 12),
+                // Dropdown + Add
+                Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(16),
+                          color: Colors.black.withValues(alpha: 0.25),
+                          border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.2)),
+                        ),
+                        child: DropdownButton<OtherItemModel>(
+                          value: jobRepo.repoVarSelectedItem,
+                          isExpanded: true,
+                          dropdownColor: Colors.black87,
+                          underline: const SizedBox(),
+                          style: const TextStyle(
+                              color: Colors.white, fontSize: 13),
+                          items: currentItems
+                              .map((e) => DropdownMenuItem<OtherItemModel>(
+                                    value: e,
+                                    child:
+                                        Text("${e.itemName}  ₱${e.itemPrice}"),
+                                  ))
+                              .toList(),
+                          onChanged: currentItems.isEmpty
+                              ? null
+                              : (val) {
+                                  jobRepo.repoVarSelectedItem = val!;
+                                  dialogSetState();
+                                },
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    GestureDetector(
+                      onTap: () {
                         addOtherItem(jobRepo, jobRepo.repoVarSelectedItem!);
-
                         dialogSetState();
                       },
-                child: Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: jobRepo.repoVarSelectedItem == null
-                        ? Colors.grey
-                        : Colors.cyanAccent,
-                  ),
-                  child: const Icon(
-                    Icons.add,
-                    color: Colors.black,
-                  ),
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.cyanAccent,
+                        ),
+                        child: const Icon(Icons.add, color: Colors.black),
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ],
+                const SizedBox(height: 8),
+              ],
+            ),
           ),
 
           const SizedBox(height: 24),
@@ -372,6 +441,37 @@ Widget visAmountOthersOnly(
           ),
         ],
       ),
+    ),
+  );
+}
+
+Widget _sectionRow({
+  required String label,
+  required Color accentColor,
+  required Widget child,
+}) {
+  return Container(
+    padding: const EdgeInsets.fromLTRB(10, 6, 10, 10),
+    decoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(14),
+      color: Colors.white.withValues(alpha: 0.05),
+      border: Border.all(color: accentColor.withValues(alpha: 0.35), width: 1),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 9,
+            letterSpacing: 1.2,
+            fontWeight: FontWeight.bold,
+            color: accentColor.withValues(alpha: 0.85),
+          ),
+        ),
+        const SizedBox(height: 6),
+        child,
+      ],
     ),
   );
 }

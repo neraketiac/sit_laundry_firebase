@@ -14,8 +14,6 @@ import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_alter_job/visA
 import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_alter_job/visAddSpin.dart';
 import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_alter_job/visAddWash.dart';
 import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_display_job/visAmountOthersOnly.dart';
-import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_display_job/visAmountRegSSPerKg.dart';
-import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_display_job/visAmountRegSSPerLoad.dart';
 import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_alter_job/visBasket.dart';
 import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_alter_job/visCustomerName.dart';
 import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_alter_job/visEcoBag.dart';
@@ -23,7 +21,6 @@ import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_alter_job/visF
 import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_alter_job/visMix.dart';
 import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_alter_job/visRiderPickup.dart';
 import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_alter_job/visSako.dart';
-import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_alter_job/visSelectPackage.dart';
 
 void showJobOnQueue(BuildContext context, JobModelRepository jobRepo) {
   //JobModelRepository jobRepo = JobModelRepository();
@@ -89,12 +86,6 @@ void showJobOnQueue(BuildContext context, JobModelRepository jobRepo) {
                       jobRepo,
                     ),
                     visRiderPickup(context, () => setState(() {}), jobRepo),
-                    visSelectPackage(context, () => setState(() {}), jobRepo),
-                    (jobRepo.selectedPerKilo
-                        ? visAmountRegSSPerKg(
-                            context, () => setState(() {}), jobRepo)
-                        : visAmountRegSSPerLoad(
-                            context, () => setState(() {}), jobRepo)),
                     visAmountOthersOnly(
                         context, () => setState(() {}), jobRepo),
                     visPaidUnPaid(context, () => setState(() {}), jobRepo),

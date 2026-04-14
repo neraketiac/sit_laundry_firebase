@@ -36,9 +36,10 @@ Visibility visAmountRegSSPerLoad(BuildContext context,
   }
 
   return Visibility(
-    visible: (jobRepo.selectedPackage == intOthersPackage
-        ? false
-        : !jobRepo.selectedPerKilo),
+    visible: false,
+    // visible: (jobRepo.selectedPackage == intOthersPackage
+    //     ? false
+    //     : !jobRepo.selectedPerKilo),
     child: Container(
       padding: const EdgeInsets.all(1),
       decoration: BoxDecoration(

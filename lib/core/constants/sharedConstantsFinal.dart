@@ -40,8 +40,16 @@ final List<int> listOthersDropDown = [
 ];
 final List<int> listOthersDropDownShortCuts = [
   menuOth155,
+  menuOthW8t9, // 190
+  menuOthW9t10, // 260
+];
+final List<int> listOthersShortRow2 = [
   menuOth125,
+  menuOth150,
+];
+final List<int> listOthersShortRow3 = [
   menuOthXD,
+  menuOthXW,
   menuFabWKLDValAny8ml,
 ];
 final List<int> listOthersItems = [

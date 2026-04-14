@@ -80,6 +80,18 @@ final reg125ItemModel = OtherItemModel(
   logDate: timestamp1900,
 );
 
+final reg150ItemModel = OtherItemModel(
+  docId: "",
+  itemId: menuOth150,
+  itemUniqueId: menuOth150,
+  itemGroup: groupOth,
+  itemName: "Reg150",
+  itemPrice: 150,
+  stocksAlert: 5,
+  stocksType: "pcs",
+  logDate: timestamp1900,
+);
+
 final xDItemModel = OtherItemModel(
   docId: "",
   itemId: menuOthXD,
@@ -120,6 +132,7 @@ void addListOthItems() {
   //oth items
   listOthItems.add(reg155ItemModel);
   listOthItems.add(reg125ItemModel);
+  listOthItems.add(reg150ItemModel);
   listOthItems.add(xDItemModel);
   listOthItems.add(xWashItemModel);
   listOthItems.add(xSpinItemModel);

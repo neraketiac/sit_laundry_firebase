@@ -72,12 +72,6 @@ void showJobOnQueueEdit(BuildContext context, JobModelRepository jobRepo) {
                   children: [
                     visCustomerNameNoAutoComplete(context, jobRepo, true),
                     visRiderPickup(context, () => setState(() {}), jobRepo),
-                    visSelectPackage(context, () => setState(() {}), jobRepo),
-                    (jobRepo.selectedPerKilo
-                        ? visAmountRegSSPerKg(
-                            context, () => setState(() {}), jobRepo)
-                        : visAmountRegSSPerLoad(
-                            context, () => setState(() {}), jobRepo)),
                     visAmountOthersOnly(
                         context, () => setState(() {}), jobRepo),
                     visPaidUnPaid(context, () => setState(() {}), jobRepo),

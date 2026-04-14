@@ -45,7 +45,7 @@ class JobselectedRepository {
   int _selectedPromoCounter = 0;
   //       pricingSetup: '',
   //       regular: false,
-  int _selectedPackage = intRegularPackage;
+  int _selectedPackage = intOthersPackage; // intRegularPackage;
   int _selectedPackagePrev = intRegularPackage;
   //       sayosabon: false,
   //       addOn: false,
@@ -249,8 +249,8 @@ class JobselectedRepository {
     selectedFinalLoad = 1;
     selectedFinalPrice = 0;
     selectedPromoCounter = 0;
-    selectedPackage = intRegularPackage;
-    selectedPackagePrev = intRegularPackage;
+    selectedPackage = intOthersPackage;
+    selectedPackagePrev = intOthersPackage;
     selectedOthers = menuOthDVal;
     selectedFold = true;
     selectedMix = true;
