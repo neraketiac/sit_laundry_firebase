@@ -19,15 +19,15 @@ Widget visAmountOthersOnly(
   String getShortcutLabel(int value) {
     switch (value) {
       case menuOth155:
-        return "155";
+        return "₱155";
       case menuOthW8t9:
-        return "190";
+        return "₱190";
       case menuOthW9t10:
-        return "260";
+        return "₱260";
       case menuOth125:
-        return "125";
+        return "₱125";
       case menuOth150:
-        return "150";
+        return "₱150";
       case menuOthXD:
         return "XDry";
       case menuOthXW:
@@ -414,7 +414,7 @@ Widget visAmountOthersOnly(
                       child: const Icon(
                         Icons.remove_circle,
                         color: Colors.redAccent,
-                        size: 18,
+                        size: 25,
                       ),
                     ),
                     const SizedBox(width: 12),

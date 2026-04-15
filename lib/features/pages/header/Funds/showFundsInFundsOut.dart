@@ -47,7 +47,7 @@ void showFundsInFundsOut(BuildContext context) {
       remarksSuppliesVar.text = category;
       autocompleteSelected = CustomerModel(
         customerId: 1313,
-        name: '1313# Ket',
+        name: 'Ket',
         address: '',
         contact: '',
         remarks: '',
