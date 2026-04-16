@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:laundry_firebase/core/global/variables.dart';
 import 'package:laundry_firebase/features/jobs/repository/jobmodel_repository.dart';
 import 'package:laundry_firebase/features/pages/body/JobsOnQueue/showPaidUnpaid.dart';
 
@@ -33,8 +34,71 @@ InkWell visPaidUnpaidArea(
 
   return InkWell(
       borderRadius: BorderRadius.circular(14),
-      onTap: () {
-        if (alterPaidUnpaid) showPaidUnpaid(context, jobRepo);
+      onTap: () async {
+        if (!alterPaidUnpaid) return;
+
+        // Only check when currently unpaid and trying to change to paid
+        if (jobRepo.selectedUnpaid) {
+          final doneDate = jobRepo.dateD;
+          // Skip check if dateD is the default epoch (not yet set)
+          final epoch = DateTime(1900);
+          final doneDt = doneDate.toDate();
+          if (doneDt.isAfter(epoch)) {
+            final now = DateTime.now();
+            final daysDiff = now.difference(doneDt).inDays;
+
+            if (daysDiff > 14) {
+              // More than 2 weeks — block for non-admin, confirm for admin
+              final confirm = await showDialog<bool>(
+                context: context,
+                builder: (_) => AlertDialog(
+                  title: const Text('Over Two Weeks Unpaid'),
+                  content: Text(isAdmin
+                      ? 'This item is more than two weeks unpaid. Admin override — are you sure?'
+                      : 'This item is more than two weeks unpaid. Cannot change payment status.'),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context, false),
+                      child: const Text('Cancel'),
+                    ),
+                    if (isAdmin)
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.orange),
+                        onPressed: () => Navigator.pop(context, true),
+                        child: const Text('Override',
+                            style: TextStyle(color: Colors.white)),
+                      ),
+                  ],
+                ),
+              );
+              if (confirm != true) return;
+            } else if (daysDiff >= 7) {
+              // Between 1–2 weeks — warn and confirm
+              final confirm = await showDialog<bool>(
+                context: context,
+                builder: (_) => AlertDialog(
+                  title: const Text('Warning'),
+                  content: const Text(
+                      'This item is already two weeks unpaid. Are you sure you want to change the payment status?'),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context, false),
+                      child: const Text('No'),
+                    ),
+                    ElevatedButton(
+                      onPressed: () => Navigator.pop(context, true),
+                      child: const Text('Yes'),
+                    ),
+                  ],
+                ),
+              );
+              if (confirm != true) return;
+            }
+          }
+        }
+
+        if (context.mounted) showPaidUnpaid(context, jobRepo);
       },
       child: Column(
           crossAxisAlignment: CrossAxisAlignment.end,
