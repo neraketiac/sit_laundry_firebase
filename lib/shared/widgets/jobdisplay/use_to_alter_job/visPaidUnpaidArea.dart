@@ -99,7 +99,17 @@ InkWell visPaidUnpaidArea(
           }
         }
 
-        if (context.mounted) showPaidUnpaid(context, jobRepo);
+        if (context.mounted) {
+          // Reset selected payment state from the actual job model
+          // before opening the dialog — prevents bleed from previous job
+          jobRepo.selectedUnpaid = jobRepo.unpaid;
+          jobRepo.selectedPaidCash = jobRepo.paidCash;
+          jobRepo.selectedPaidGCash = jobRepo.paidGCash;
+          jobRepo.selectedPaidGCashVerified = jobRepo.paidGCashVerified;
+          jobRepo.selectedPaidCashAmount = jobRepo.paidCashAmount;
+          jobRepo.selectedPaidGCashAmount = jobRepo.paidGCashAmount;
+          showPaidUnpaid(context, jobRepo);
+        }
       },
       child: Column(
           crossAxisAlignment: CrossAxisAlignment.end,
