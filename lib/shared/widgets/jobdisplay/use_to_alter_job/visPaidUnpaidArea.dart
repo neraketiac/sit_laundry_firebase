@@ -48,7 +48,7 @@ InkWell visPaidUnpaidArea(
             final daysDiff = now.difference(doneDt).inDays;
 
             if (daysDiff > 14) {
-              // More than 2 weeks — block for non-admin, confirm for admin
+              // > 14 days — admin override only
               final confirm = await showDialog<bool>(
                 context: context,
                 builder: (_) => AlertDialog(
@@ -73,8 +73,8 @@ InkWell visPaidUnpaidArea(
                 ),
               );
               if (confirm != true) return;
-            } else if (daysDiff >= 7) {
-              // Between 1–2 weeks — warn and confirm
+            } else if (daysDiff > 7) {
+              // 8–14 days — warn and confirm
               final confirm = await showDialog<bool>(
                 context: context,
                 builder: (_) => AlertDialog(
@@ -95,6 +95,7 @@ InkWell visPaidUnpaidArea(
               );
               if (confirm != true) return;
             }
+            // <= 7 days — no message, proceed directly
           }
         }
 
