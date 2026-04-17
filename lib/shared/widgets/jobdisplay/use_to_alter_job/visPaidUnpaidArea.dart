@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:laundry_firebase/core/utils/app_scale.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
 import 'package:laundry_firebase/features/jobs/repository/jobmodel_repository.dart';
 import 'package:laundry_firebase/features/pages/body/JobsOnQueue/showPaidUnpaid.dart';
@@ -153,59 +154,62 @@ InkWell visPaidUnpaidArea(
           showPaidUnpaid(context, jobRepo);
         }
       },
-      child: Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            SizedBox(
-              width: 100, // fixed width keeps star position stable
-              child: Stack(
-                clipBehavior: Clip.none,
-                alignment: Alignment.centerRight,
-                children: [
-                  if (jobRepo.thisJobHasPromo)
-                    Positioned(
-                      left: 60,
-                      top: -16,
-                      child: Icon(
-                        Icons.star,
-                        size: 50,
-                        color: Colors.amber.withOpacity(0.5),
+      child: Builder(builder: (ctx) {
+        final s = AppScale.of(ctx);
+        return Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              SizedBox(
+                width: s.isTablet ? 130 : 100,
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  alignment: Alignment.centerRight,
+                  children: [
+                    if (jobRepo.thisJobHasPromo)
+                      Positioned(
+                        left: s.isTablet ? 80 : 60,
+                        top: -16,
+                        child: Icon(
+                          Icons.star,
+                          size: s.iconLarge,
+                          color: Colors.amber.withOpacity(0.5),
+                        ),
+                      ),
+                    Text(
+                      "₱ ${jobRepo.selectedFinalPrice}",
+                      textAlign: TextAlign.right,
+                      style: TextStyle(
+                        fontSize: s.bodyLarge,
+                        fontWeight: FontWeight.w800,
+                        color: statusColor,
                       ),
                     ),
-                  Text(
-                    "₱ ${jobRepo.selectedFinalPrice}",
-                    textAlign: TextAlign.right,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w800,
-                      color: statusColor,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 2),
-            Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 8,
-                vertical: 3,
-              ),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10),
-                color: isPaid
-                    ? Colors.greenAccent.withOpacity(0.15)
-                    : Colors.redAccent.withOpacity(0.15),
-              ),
-              child: Text(
-                statusText,
-                style: TextStyle(
-                  fontSize: 9,
-                  fontWeight: FontWeight.w600,
-                  color: statusColor,
+                  ],
                 ),
-                textAlign: TextAlign.right,
               ),
-            ),
-          ]));
+              SizedBox(height: s.gapSmall / 2),
+              Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: s.gap,
+                  vertical: s.gapSmall / 2,
+                ),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(s.cardRadius - 2),
+                  color: isPaid
+                      ? Colors.greenAccent.withOpacity(0.15)
+                      : Colors.redAccent.withOpacity(0.15),
+                ),
+                child: Text(
+                  statusText,
+                  style: TextStyle(
+                    fontSize: s.tiny,
+                    fontWeight: FontWeight.w600,
+                    color: statusColor,
+                  ),
+                  textAlign: TextAlign.right,
+                ),
+              ),
+            ]);
+      }));
 }

@@ -31,7 +31,6 @@ import 'package:laundry_firebase/features/pages/header/Closing/showClosingCheck.
 // ── Rider ──────────────────────────────────────────────────────
 import 'package:laundry_firebase/features/pages/header/Admin/rider/rider_location.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/rider/show_rider_management.dart';
-import 'package:laundry_firebase/features/pages/header/Admin/rider/route_planner/rider_route_planner_page.dart';
 // ── Tools ──────────────────────────────────────────────────────
 import 'package:laundry_firebase/features/pages/header/Admin/showAdminMainPage.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/showCustomerLocationPage.dart';
@@ -517,20 +516,20 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                   );
                 },
               ),
-              MenuItemButton(
-                style: ButtonStyle(
-                  backgroundColor: WidgetStateProperty.all(
-                    empSetup.showUnpaidLaundry ? Colors.grey[300] : null,
-                  ),
-                ),
-                child: const Text('💸 Unpaid Laundry'),
-                onPressed: () {
-                  updateEmployeeSetup(
-                    empSetup.copyWith(
-                        showUnpaidLaundry: !empSetup.showUnpaidLaundry),
-                  );
-                },
-              ),
+              // MenuItemButton(
+              //   style: ButtonStyle(
+              //     backgroundColor: WidgetStateProperty.all(
+              //       empSetup.showUnpaidLaundry ? Colors.grey[300] : null,
+              //     ),
+              //   ),
+              //   child: const Text('💸 Unpaid Laundry'),
+              //   onPressed: () {
+              //     updateEmployeeSetup(
+              //       empSetup.copyWith(
+              //           showUnpaidLaundry: !empSetup.showUnpaidLaundry),
+              //     );
+              //   },
+              // ),
             ],
           ),
         ],
@@ -618,7 +617,7 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                     ),
                     color: cEmployeeMaintenance,
                   ),
-                  if (empSetup.showUnpaidLaundry)
+                  if (empSetup.showLaundry)
                     IntrinsicWidth(
                       child: Container(
                         color: Colors.red.shade100,
