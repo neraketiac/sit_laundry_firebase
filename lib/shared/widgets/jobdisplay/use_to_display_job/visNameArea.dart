@@ -82,7 +82,9 @@ Expanded visNameArea(JobModel job, bool isSelected) {
               style: TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.w500,
-                color: Colors.deepPurple.shade300,
+                color: (job.unpaid && job.paidCash)
+                    ? Colors.deepOrange
+                    : Colors.deepPurple.shade300,
               ),
             ),
           ),

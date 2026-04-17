@@ -13,7 +13,11 @@ InkWell visPaidUnpaidArea(
 
   final Color paidColor = isSelected ? Colors.deepPurple : Colors.black87;
 
-  final Color unpaidColor = Colors.redAccent;
+  // KULANG = unpaid but has partial CASH payment (not enough cash)
+  // GCash unverified is "GCash Pending", not KULANG
+  final bool isKulang = jobRepo.selectedUnpaid && jobRepo.selectedPaidCash;
+
+  final Color unpaidColor = isKulang ? Colors.purpleAccent : Colors.redAccent;
 
   final Color statusColor = isPaid ? paidColor : unpaidColor;
 

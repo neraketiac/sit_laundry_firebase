@@ -755,15 +755,29 @@ Future<void> setRepositoryLaundryPayment(
         .setItemUniqueId(menuOthLaundryPayment); //cash laundry payment
     SuppliesHistRepository.instance.setRemarks('auto via $viaJobs paid');
 
-    // if (jobRepo.partialPaidCash) {
-    //   SuppliesHistRepository.instance
-    //       .setCurrentCounter(jobRepo.partialPaidCashAmount);
-    // } else {
-    //   SuppliesHistRepository.instance.setCurrentCounter(jobRepo.finalPrice);
-    // }
-
     await setSuppliesRepository(context);
   }
+}
+
+/// Records a cash payment delta to Supplies (SuppliesHist + SuppliesCurr).
+/// [delta] = new paidCashAmount - previously recorded amount.
+/// Only call when delta > 0 and paidCash is true.
+Future<void> recordCashPaymentToSupplies(
+  BuildContext context,
+  JobModelRepository jobRepo,
+  int delta,
+) async {
+  if (!jobRepo.paidCash || delta <= 0) return;
+  SuppliesHistRepository.instance.setItemName(
+      getItemNameOnly(menuOthCashInOutFunds, menuOthLaundryPayment));
+  SuppliesHistRepository.instance.setItemId(menuOthCashInOutFunds);
+  SuppliesHistRepository.instance.setItemUniqueId(menuOthLaundryPayment);
+  SuppliesHistRepository.instance.setCurrentCounter(delta);
+  SuppliesHistRepository.instance.setCustomerName(jobRepo.customerName);
+  SuppliesHistRepository.instance.setCustomerId(jobRepo.customerId);
+  SuppliesHistRepository.instance
+      .setRemarks('auto via paid ${jobRepo.remarks}');
+  await setSuppliesRepository(context);
 }
 
 //revert laundry payment

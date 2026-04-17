@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:laundry_firebase/core/utils/sharedMethods.dart';
 import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_alter_job/conRemarks.dart';
-
 import 'package:laundry_firebase/core/utils/sharedmethodsdatabase.dart';
 import 'package:laundry_firebase/features/jobs/repository/jobmodel_repository.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
@@ -13,7 +12,9 @@ void showPaidUnpaid(BuildContext context, JobModelRepository jobRepo) {
   Future<void> saveButtonSetRepository() async {
     jobRepo.currentEmpId = empIdGlobal;
 
-    //syncSelectedToRepositorySmall(jobRepo);
+    // Capture old paidCashAmount BEFORE sync overwrites it
+    final previousPaidCash = jobRepo.paidCashAmount;
+
     jobRepo.syncSelectedToRepoMin(jobRepo);
 
     if (jobRepo.paidCash || (jobRepo.paidGCash && jobRepo.paidGCashVerified)) {
@@ -26,7 +27,13 @@ void showPaidUnpaid(BuildContext context, JobModelRepository jobRepo) {
     jobRepo.paymentReceivedBy = empIdGlobal;
 
     await callDatabaseUpdateJob(context, jobRepo.jobModelData);
-    //await setRepositoryLaundryPayment(context, 'Show Jobs OnQueue');
+
+    // Auto-record cash payment DELTA to Supplies
+    // Only for PaidCash — GCash does NOT generate Supplies records
+    if (jobRepo.paidCash) {
+      final delta = jobRepo.paidCashAmount - previousPaidCash;
+      await recordCashPaymentToSupplies(context, jobRepo, delta);
+    }
   }
 
   jobRepo.syncRepoToSelectedMin(jobRepo);

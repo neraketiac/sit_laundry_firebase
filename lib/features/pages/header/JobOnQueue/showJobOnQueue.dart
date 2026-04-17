@@ -42,7 +42,13 @@ void showJobOnQueue(BuildContext context, JobModelRepository jobRepo) {
     jobRepo.syncSelectedToRepoAll(jobRepo);
 
     await callDatabaseJobsQueueAdd(context, jobRepo);
-    //await setRepositoryLaundryPayment(context, 'Show Jobs OnQueue');
+
+    // Auto-record cash payment to Supplies when job is inserted as paid
+    // Only for PaidCash — GCash does NOT generate Supplies records
+    if (jobRepo.paidCash && jobRepo.paidCashAmount > 0) {
+      await recordCashPaymentToSupplies(
+          context, jobRepo, jobRepo.paidCashAmount);
+    }
   }
 
   //reset only when submit, so that when user opens the popup again, their previous selections are still there until they decide to save or cancel. This is more user-friendly as it prevents accidental loss of input if they open the popup multiple times.
