@@ -244,7 +244,6 @@ int getItemPrice(int itemId, int itemUniqueId) {
 }
 
 void allCardsVar(BuildContext context) {
-  Navigator.pop(context);
   Navigator.of(context)
       .push(MaterialPageRoute(builder: (context) => const LoyaltyAdmin()));
 }

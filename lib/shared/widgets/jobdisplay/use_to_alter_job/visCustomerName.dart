@@ -111,7 +111,6 @@ Widget visCustomerName(
                     ),
                   ),
                   onPressed: () {
-                    Navigator.pop(context);
                     allCardsVar(context);
                   },
                   child: const Text(

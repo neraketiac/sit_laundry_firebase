@@ -1,6 +1,8 @@
 import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:laundry_firebase/features/customers/models/customermodel.dart';
+import 'package:laundry_firebase/features/customers/repository/customer_repository.dart';
 import 'package:laundry_firebase/features/loyalty/models/loyaltymodel.dart';
 import 'package:laundry_firebase/core/services/database_loyalty.dart';
 
@@ -362,19 +364,34 @@ class _LoyaltyAdminState extends State<LoyaltyAdmin> {
 
   Future<void> _createCustomer() async {
     final id = _docIdController.text;
+    final cardNumber = int.tryParse(id) ?? 0;
+    final name = _nameController.text.trim();
+    final contact = _contactController.text.trim();
+    final address = _addressController.text.trim();
+    final remarks = _remarksController.text.trim();
 
     DatabaseLoyalty().addCustomerWithId(
       LoyaltyModel(
-        name: _nameController.text.trim(),
-        contact: _contactController.text.trim(),
-        address: _addressController.text.trim(),
-        remarks: _remarksController.text.trim(),
+        name: name,
+        contact: contact,
+        address: address,
+        remarks: remarks,
         count: 0,
-        cardNumber: int.tryParse(id) ?? 0,
+        cardNumber: cardNumber,
         logDate: Timestamp.now(),
       ),
       id,
     );
+
+    // Add to in-memory list immediately — no extra Firestore read needed
+    CustomerRepository.instance.customers.add(CustomerModel(
+      customerId: cardNumber,
+      name: name,
+      address: address,
+      contact: contact,
+      remarks: remarks,
+      loyaltyCount: 0,
+    ));
 
     _nameController.clear();
     _contactController.clear();
