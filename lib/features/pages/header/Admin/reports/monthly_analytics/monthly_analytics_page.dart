@@ -13,6 +13,8 @@ import 'widgets/weekly_revenue_chart.dart';
 import 'widgets/unpaid_customers_card.dart';
 import 'widgets/top_expense_card.dart';
 import 'widgets/expense_data.dart';
+import 'widgets/salary_data.dart';
+import 'widgets/salary_card.dart';
 import 'widgets/unpaid_data.dart';
 import 'widgets/weekly_data.dart';
 import 'widgets/supplies_data.dart';
@@ -32,6 +34,7 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
   final _unpaid = UnpaidData();
   final _expense = ExpenseData();
   final _supplies = SuppliesData();
+  final _salary = SalaryData();
 
   bool isLoading = true;
 
@@ -120,24 +123,41 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
           .where('LogDate', isLessThanOrEqualTo: Timestamp.fromDate(endDate))
           .get();
 
-      // EmployeeHist expense (ItemUniqueId=4406 filtered server-side)
-      final empHistSnap = await db
+      // EmployeeHist expense — two queries (4404 + 4401), merged
+      final empHist4404 = await db
           .collection('EmployeeHist')
-          .where('AutoSalaryDate',
+          .where('LogDate',
               isGreaterThanOrEqualTo: Timestamp.fromDate(startDate))
-          .where('AutoSalaryDate',
-              isLessThanOrEqualTo: Timestamp.fromDate(endDate))
-          //.where('ItemUniqueId', isEqualTo: 4406)  //automated laundry payment, value is positive
-          .where('ItemUniqueId',
-              isEqualTo: 4404) //found out, but value is negative
+          .where('LogDate', isLessThanOrEqualTo: Timestamp.fromDate(endDate))
+          .where('ItemUniqueId', isEqualTo: 4404) // funds out
           .get();
+
+      final empHist4401 = await db
+          .collection('EmployeeHist')
+          .where('LogDate',
+              isGreaterThanOrEqualTo: Timestamp.fromDate(startDate))
+          .where('LogDate', isLessThanOrEqualTo: Timestamp.fromDate(endDate))
+          .where('ItemUniqueId', isEqualTo: 4401) // cash in
+          .get();
+
+      final empHistDocs = [...empHist4404.docs, ...empHist4401.docs];
 
       // Process
       _supplies.process(suppliesSnap.docs);
-      _expense.process(itemsHistSnap.docs, empHistSnap.docs, _weekNumber);
+      _expense.process(itemsHistSnap.docs, empHistDocs, _weekNumber);
       _weekly.process(completedJobs, _weekNumber);
       _weekly.mergeExpense(_expense.byWeek);
       _unpaid.process(completedJobs, _weekNumber);
+
+      // Salary payments (ItemUniqueId = 4406)
+      final salarySnap = await db
+          .collection('EmployeeHist')
+          .where('LogDate',
+              isGreaterThanOrEqualTo: Timestamp.fromDate(startDate))
+          .where('LogDate', isLessThanOrEqualTo: Timestamp.fromDate(endDate))
+          .where('ItemUniqueId', isEqualTo: 4406)
+          .get();
+      _salary.process(salarySnap.docs, _weekNumber);
     } catch (e) {
       debugPrint('Error loading monthly data: $e');
     }
@@ -200,6 +220,15 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
                     expenseByEmployee: _expense.byEmployee,
                     expenseByWeek: _expense.byWeek,
                     employeeByWeek: _expense.employeeByWeek,
+                    currentMonth: currentMonth,
+                  ),
+                  const SizedBox(height: 20),
+                  SalaryCard(
+                    salaryByEmployee: _salary.byEmployee,
+                    salaryByWeek: _salary.byWeek,
+                    salaryEmployeeByWeek: _salary.employeeByWeek,
+                    expenseByEmployee: _expense.empOnlyByEmployee,
+                    expenseEmployeeByWeek: _expense.empOnlyByWeek,
                     currentMonth: currentMonth,
                   ),
                   const SizedBox(height: 20),

@@ -11,14 +11,24 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class ExpenseData {
   int totalExpense = 0;
 
-  /// Total expense per week (1–5)
+  /// Total expense per week (1–5) — all sources
   final Map<int, int> byWeek = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0};
 
-  /// Total expense per label (employee name or item name)
+  /// Total expense per label (employee name or item name) — all sources
   final Map<String, int> byEmployee = {};
 
-  /// Expense per label per week
+  /// Expense per label per week — all sources
   final Map<int, Map<String, int>> employeeByWeek = {
+    1: {},
+    2: {},
+    3: {},
+    4: {},
+    5: {},
+  };
+
+  /// Employee-only expense (EmployeeHist portion only — for SalaryCard comparison)
+  final Map<String, int> empOnlyByEmployee = {};
+  final Map<int, Map<String, int>> empOnlyByWeek = {
     1: {},
     2: {},
     3: {},
@@ -35,8 +45,10 @@ class ExpenseData {
     for (int w = 1; w <= 5; w++) {
       byWeek[w] = 0;
       employeeByWeek[w] = {};
+      empOnlyByWeek[w] = {};
     }
     byEmployee.clear();
+    empOnlyByEmployee.clear();
 
     // ── ItemsHist: docs with ExpenseAmount ────────────────────────────────
     for (final doc in itemsDocs) {
@@ -74,7 +86,20 @@ class ExpenseData {
               ?.toString() ??
           'Unknown';
 
-      _add(label, amount, data['AutoSalaryDate'] as Timestamp?, weekNumber);
+      _add(
+          label,
+          amount,
+          (data['AutoSalaryDate'] ?? data['LogDate']) as Timestamp?,
+          weekNumber);
+
+      // Also track employee-only for SalaryCard comparison
+      final ts2 = (data['AutoSalaryDate'] ?? data['LogDate']) as Timestamp?;
+      empOnlyByEmployee[label] = (empOnlyByEmployee[label] ?? 0) + amount;
+      if (ts2 != null) {
+        final w = weekNumber(ts2.toDate());
+        final wMap = empOnlyByWeek[w] ??= {};
+        wMap[label] = (wMap[label] ?? 0) + amount;
+      }
     }
   }
 

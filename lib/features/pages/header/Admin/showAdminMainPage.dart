@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/edit_auto_salary_date_page.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/AutoSalaryDateOneTimeBatch.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/other_item_admin/showBleItemsMaintenance.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/other_item_admin/showDetItemsMaintenance.dart';
@@ -447,6 +448,32 @@ class _ShowAdminMainPageState extends State<ShowAdminMainPage> {
                       context,
                       MaterialPageRoute(
                         builder: (_) => const AutoSalaryDateOneTimeBatch(),
+                      ),
+                    );
+                  },
+                ),
+              ),
+
+            const SizedBox(height: 40),
+
+            if (isAdmin)
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.teal.shade100,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: ListTile(
+                  leading: const Icon(Icons.edit_calendar, color: Colors.teal),
+                  title: const Text("Edit AutoSalaryDate"),
+                  subtitle: const Text(
+                      "Manually edit AutoSalaryDate per EmployeeHist record"),
+                  trailing: const Icon(Icons.arrow_forward_ios),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const EditAutoSalaryDatePage(),
                       ),
                     );
                   },

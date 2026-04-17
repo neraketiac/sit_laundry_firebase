@@ -46,14 +46,16 @@ class _LoyaltyAdminState extends State<LoyaltyAdmin> {
       extendBodyBehindAppBar: true,
       backgroundColor: Colors.transparent,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: Colors.black54,
         elevation: 0,
         centerTitle: true,
+        iconTheme: const IconThemeData(color: Colors.cyanAccent),
         title: const Text(
           "LOYALTY ADMIN",
           style: TextStyle(
             letterSpacing: 2,
             fontWeight: FontWeight.w600,
+            color: Colors.white,
           ),
         ),
       ),
@@ -295,38 +297,99 @@ class _LoyaltyAdminState extends State<LoyaltyAdmin> {
 
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
-        backgroundColor: const Color(0xFF1E2A38),
-        title: const Text("Create Loyalty Member",
-            style: TextStyle(color: Colors.white)),
-        content: SingleChildScrollView(
-          child: Column(
-            children: [
-              Text("Card #: $_nextId",
-                  style: const TextStyle(color: Colors.cyanAccent)),
-              const SizedBox(height: 10),
-              _buildTextField(_nameController, "Name"),
-              _buildTextField(_contactController, "Contact"),
-              _buildTextField(_addressController, "Address"),
-              _buildTextField(_remarksController, "Remarks"),
+      builder: (_) => StatefulBuilder(
+        builder: (ctx, setDialogState) {
+          // Live duplicate check
+          final query = _nameController.text.trim().toLowerCase();
+          final duplicates = query.isEmpty
+              ? <CustomerModel>[]
+              : CustomerRepository.instance.customers
+                  .where((c) => c.name.toLowerCase().contains(query))
+                  .take(5)
+                  .toList();
+          final hasDuplicate = duplicates.isNotEmpty;
+
+          return AlertDialog(
+            backgroundColor: const Color(0xFF1E2A38),
+            title: const Text("Create Loyalty Member",
+                style: TextStyle(color: Colors.white)),
+            content: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text("Card #: $_nextId",
+                      style: const TextStyle(color: Colors.cyanAccent)),
+                  const SizedBox(height: 10),
+                  // Name field with live duplicate check
+                  TextField(
+                    controller: _nameController,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: InputDecoration(
+                      labelText: 'Name',
+                      labelStyle: const TextStyle(color: Colors.white70),
+                      enabledBorder: const UnderlineInputBorder(
+                        borderSide: BorderSide(color: Colors.white30),
+                      ),
+                      suffixIcon: hasDuplicate
+                          ? const Icon(Icons.warning_amber,
+                              color: Colors.orange, size: 18)
+                          : null,
+                    ),
+                    onChanged: (_) => setDialogState(() {}),
+                  ),
+                  // Duplicate warning
+                  if (hasDuplicate) ...[
+                    const SizedBox(height: 6),
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.orange.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                            color: Colors.orange.withValues(alpha: 0.4)),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Similar names already exist:',
+                              style: TextStyle(
+                                  color: Colors.orange,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold)),
+                          const SizedBox(height: 4),
+                          ...duplicates.map((c) => Text(
+                                '• ${c.name} (#${c.customerId}) — ${c.address}',
+                                style: const TextStyle(
+                                    color: Colors.white70, fontSize: 11),
+                              )),
+                        ],
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 4),
+                  _buildTextField(_contactController, "Contact"),
+                  _buildTextField(_addressController, "Address"),
+                  _buildTextField(_remarksController, "Remarks"),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text("Cancel",
+                    style: TextStyle(color: Colors.white70)),
+              ),
+              TextButton(
+                onPressed: () async {
+                  await _createCustomer();
+                  if (ctx.mounted) Navigator.pop(ctx);
+                },
+                child: const Text("Save",
+                    style: TextStyle(color: Colors.cyanAccent)),
+              ),
             ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child:
-                const Text("Cancel", style: TextStyle(color: Colors.white70)),
-          ),
-          TextButton(
-            onPressed: () async {
-              await _createCustomer();
-              Navigator.pop(context);
-            },
-            child:
-                const Text("Save", style: TextStyle(color: Colors.cyanAccent)),
-          ),
-        ],
+          );
+        },
       ),
     );
   }

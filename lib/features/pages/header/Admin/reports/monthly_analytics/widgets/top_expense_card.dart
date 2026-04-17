@@ -21,6 +21,11 @@ class TopExpenseCard extends StatelessWidget {
     final totalExpense = expenseByEmployee.values.fold(0, (s, v) => s + v);
     final monthLabel = DateFormat('MMM yyyy').format(currentMonth);
 
+    // Sort by monthly total descending — all columns follow this order
+    final sortedEmployees = expenseByEmployee.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+    final orderedNames = sortedEmployees.map((e) => e.key).toList();
+
     final activeWeeks = List.generate(5, (i) => i + 1)
         .where((w) => (employeeByWeek[w] ?? {}).isNotEmpty)
         .toList();
@@ -55,23 +60,29 @@ class TopExpenseCard extends StatelessWidget {
                 scrollDirection: Axis.horizontal,
                 child: IntrinsicHeight(
                   child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // Month column
                       _ExpenseColumn(
                         title: monthLabel,
-                        employees: expenseByEmployee,
+                        orderedNames: orderedNames,
+                        dataMap: expenseByEmployee,
                         total: totalExpense,
                         accentColor: Colors.orange.shade100,
+                        footerColor: Colors.orange.shade50,
+                        valueColor: Colors.orange,
+                        prefix: '-₱',
                       ),
-                      // Week columns
                       ...activeWeeks.map((week) => Padding(
                             padding: const EdgeInsets.only(left: 8),
                             child: _ExpenseColumn(
                               title: 'Week $week',
-                              employees: employeeByWeek[week] ?? {},
+                              orderedNames: orderedNames,
+                              dataMap: employeeByWeek[week] ?? {},
                               total: expenseByWeek[week] ?? 0,
                               accentColor: Colors.orange.shade50,
+                              footerColor: Colors.orange.shade50,
+                              valueColor: Colors.orange,
+                              prefix: '-₱',
                             ),
                           )),
                     ],
@@ -87,22 +98,27 @@ class TopExpenseCard extends StatelessWidget {
 
 class _ExpenseColumn extends StatelessWidget {
   final String title;
-  final Map<String, int> employees;
+  final List<String> orderedNames;
+  final Map<String, int> dataMap;
   final int total;
   final Color accentColor;
+  final Color footerColor;
+  final Color valueColor;
+  final String prefix;
 
   const _ExpenseColumn({
     required this.title,
-    required this.employees,
+    required this.orderedNames,
+    required this.dataMap,
     required this.total,
     required this.accentColor,
+    required this.footerColor,
+    required this.valueColor,
+    required this.prefix,
   });
 
   @override
   Widget build(BuildContext context) {
-    final sorted = employees.entries.toList()
-      ..sort((a, b) => b.value.compareTo(a.value));
-
     return Container(
       width: 160,
       decoration: BoxDecoration(
@@ -126,47 +142,46 @@ class _ExpenseColumn extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
           ),
-          // Rows
-          ...sorted.take(10).map((e) => Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-                decoration: BoxDecoration(
-                  border:
-                      Border(bottom: BorderSide(color: Colors.grey.shade100)),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      e.key,
-                      style: const TextStyle(fontSize: 11),
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 1,
-                    ),
-                    Text(
-                      '-₱${formatCurrency(e.value)}',
-                      style: const TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.orange,
+          // Rows — same order as monthly, show 0 if missing
+          Expanded(
+            child: Column(
+              children: orderedNames.map((name) {
+                final value = dataMap[name] ?? 0;
+                return Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                  decoration: BoxDecoration(
+                    border:
+                        Border(bottom: BorderSide(color: Colors.grey.shade100)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        name,
+                        style: const TextStyle(fontSize: 11),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
                       ),
-                    ),
-                  ],
-                ),
-              )),
-          if (sorted.length > 10)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4),
-              child: Text(
-                '+${sorted.length - 10} more',
-                style: TextStyle(fontSize: 10, color: Colors.grey.shade500),
-                textAlign: TextAlign.center,
-              ),
+                      Text(
+                        value == 0 ? '—' : '$prefix${formatCurrency(value)}',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: value == 0 ? Colors.grey.shade400 : valueColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
             ),
-          // Footer
+          ),
+          // Footer — always at bottom
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 7),
             decoration: BoxDecoration(
-              color: Colors.orange.shade50,
+              color: footerColor,
               borderRadius:
                   const BorderRadius.vertical(bottom: Radius.circular(8)),
             ),
@@ -177,11 +192,11 @@ class _ExpenseColumn extends StatelessWidget {
                     style:
                         TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
                 Text(
-                  '-₱${formatCurrency(total)}',
-                  style: const TextStyle(
+                  '$prefix${formatCurrency(total)}',
+                  style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.bold,
-                    color: Colors.orange,
+                    color: valueColor,
                   ),
                 ),
               ],
