@@ -5,7 +5,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
 import 'package:laundry_firebase/core/global/variables_all_codes.dart';
-import 'package:laundry_firebase/core/global/variables_fab.dart';
 import 'package:laundry_firebase/features/items/models/otheritemmodel.dart';
 import 'package:laundry_firebase/features/customers/models/customermodel.dart';
 import 'package:laundry_firebase/features/jobs/models/jobmodel.dart';
@@ -13,7 +12,6 @@ import 'package:laundry_firebase/core/constants/sharedConstantsFinal.dart';
 import 'package:laundry_firebase/core/utils/sharedmethodsdatabase.dart';
 import 'package:laundry_firebase/features/jobs/repository/jobmodel_repository.dart';
 import 'package:laundry_firebase/features/items/repository/supplies_hist_repository.dart';
-import 'package:laundry_firebase/core/utils/snackbar_helper.dart';
 import 'package:laundry_firebase/core/utils/firestore_handler.dart';
 
 import 'package:flutter/foundation.dart';

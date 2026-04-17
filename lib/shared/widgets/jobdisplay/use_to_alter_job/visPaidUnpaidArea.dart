@@ -37,6 +37,44 @@ InkWell visPaidUnpaidArea(
       onTap: () async {
         if (!alterPaidUnpaid) return;
 
+        // If already paid — only admin can change it back
+        if (!jobRepo.selectedUnpaid) {
+          if (!isAdmin) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                    'Payment is already recorded. Only admin can change it.'),
+                backgroundColor: Colors.redAccent,
+                duration: Duration(seconds: 3),
+              ),
+            );
+            return;
+          }
+          // Admin — confirm before allowing change
+          final confirm = await showDialog<bool>(
+            context: context,
+            builder: (_) => AlertDialog(
+              title: const Text('Admin Override'),
+              content: const Text(
+                  'This job is already paid. Are you sure you want to change the payment?'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  child: const Text('Cancel'),
+                ),
+                ElevatedButton(
+                  style:
+                      ElevatedButton.styleFrom(backgroundColor: Colors.orange),
+                  onPressed: () => Navigator.pop(context, true),
+                  child: const Text('Override',
+                      style: TextStyle(color: Colors.white)),
+                ),
+              ],
+            ),
+          );
+          if (confirm != true) return;
+        }
+
         // Only check when currently unpaid and trying to change to paid
         if (jobRepo.selectedUnpaid) {
           final doneDate = jobRepo.dateD;
