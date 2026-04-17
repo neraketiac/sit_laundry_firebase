@@ -30,7 +30,8 @@ void showPaidUnpaid(BuildContext context, JobModelRepository jobRepo) {
 
     // Auto-record cash payment DELTA to Supplies
     // Only for PaidCash — GCash does NOT generate Supplies records
-    if (jobRepo.paidCash) {
+    // Skipped when skipSuppliesOnPaid is enabled
+    if (jobRepo.paidCash && !skipSuppliesOnPaid) {
       final delta = jobRepo.paidCashAmount - previousPaidCash;
       await recordCashPaymentToSupplies(context, jobRepo, delta);
     }

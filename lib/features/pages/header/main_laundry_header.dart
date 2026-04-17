@@ -134,19 +134,19 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader>
           clipBehavior: Clip.none,
           children: [
             /// Laundry Payment
-            if (_isOpen)
-              _fab(
-                hero: 'Laundry Payment',
-                icon: Icons.payments_outlined,
-                label: 'Laundry Payment',
-                bottom: base + step * 3,
-                right: base,
-                onTap: () {
-                  setState(() => _isOpen = false);
-                  showLaundryPayment(context, jobRepoNonJob);
-                },
-                backgroundColor: Colors.teal,
-              ),
+            // if (_isOpen)
+            //   _fab(
+            //     hero: 'Laundry Payment',
+            //     icon: Icons.payments_outlined,
+            //     label: 'Laundry Payment',
+            //     bottom: base + step * 3,
+            //     right: base,
+            //     onTap: () {
+            //       setState(() => _isOpen = false);
+            //       showLaundryPayment(context, jobRepoNonJob);
+            //     },
+            //     backgroundColor: Colors.teal,
+            //   ),
 
             /// Cash In/Out
             if (_isOpen)

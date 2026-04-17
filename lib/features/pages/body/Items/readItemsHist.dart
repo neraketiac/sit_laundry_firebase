@@ -53,23 +53,30 @@ class _ReadDataItemsHistoryWidgetState
 
   void _startNewDocListener() {
     _newDocSub?.cancel();
-    if (_newestLogDate == null) return;
     _newDocSub = FirebaseFirestore.instance
         .collection('ItemsHist')
         .orderBy('LogDate', descending: true)
-        .where('LogDate', isGreaterThan: _newestLogDate)
+        .limit(_pageSize)
         .snapshots()
         .listen((snap) {
-      if (!mounted || snap.docs.isEmpty) return;
-      final incoming =
-          snap.docs.where((d) => !_loadedIds.contains(d.id)).map((d) {
-        _loadedIds.add(d.id);
-        return SuppliesModelHist.fromJson(d.data());
-      }).toList();
-      if (incoming.isEmpty) return;
+      if (!mounted) return;
+      final liveDocs =
+          snap.docs.map((d) => SuppliesModelHist.fromJson(d.data())).toList();
+      final liveIds = snap.docs.map((d) => d.id).toSet();
       setState(() {
-        _items.insertAll(0, incoming);
-        _newestLogDate = snap.docs.first.data()['LogDate'] as Timestamp?;
+        final olderItems = _items.length > _pageSize
+            ? _items.sublist(_pageSize)
+            : <SuppliesModelHist>[];
+        _items
+          ..clear()
+          ..addAll(liveDocs)
+          ..addAll(olderItems);
+        _loadedIds
+          ..removeWhere((id) => !liveIds.contains(id))
+          ..addAll(liveIds);
+        if (snap.docs.isNotEmpty) {
+          _newestLogDate = snap.docs.first.data()['LogDate'] as Timestamp?;
+        }
       });
     });
   }

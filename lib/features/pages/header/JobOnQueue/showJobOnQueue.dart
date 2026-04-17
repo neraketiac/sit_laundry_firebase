@@ -45,7 +45,8 @@ void showJobOnQueue(BuildContext context, JobModelRepository jobRepo) {
 
     // Auto-record cash payment to Supplies when job is inserted as paid
     // Only for PaidCash — GCash does NOT generate Supplies records
-    if (jobRepo.paidCash && jobRepo.paidCashAmount > 0) {
+    // Skipped when skipSuppliesOnPaid is enabled
+    if (jobRepo.paidCash && jobRepo.paidCashAmount > 0 && !skipSuppliesOnPaid) {
       await recordCashPaymentToSupplies(
           context, jobRepo, jobRepo.paidCashAmount);
     }

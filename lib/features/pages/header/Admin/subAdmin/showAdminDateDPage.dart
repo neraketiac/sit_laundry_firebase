@@ -52,6 +52,30 @@ class _AdminDateDPageState extends State<AdminDateDPage> {
               });
             },
           ),
+          const SizedBox(height: 8),
+          CheckboxListTile(
+            contentPadding: EdgeInsets.zero,
+            value: skipSuppliesOnPaid,
+            title: const Text(
+              "Skip Supplies generation when marking as Paid Cash",
+            ),
+            subtitle: Text(
+              skipSuppliesOnPaid
+                  ? "⚠️ Supplies will NOT be recorded when saving PaidCash"
+                  : "Supplies will be recorded normally when saving PaidCash",
+              style: TextStyle(
+                fontSize: 12,
+                color: skipSuppliesOnPaid
+                    ? Colors.orange.shade700
+                    : Colors.green.shade700,
+              ),
+            ),
+            onChanged: (v) {
+              setState(() {
+                skipSuppliesOnPaid = v ?? false;
+              });
+            },
+          ),
           const SizedBox(height: 20),
           Row(
             children: [

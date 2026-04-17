@@ -27,6 +27,8 @@ const String storageKey = 'customer_code';
 const int intSortByDateC = 1, intSortByDateD = 3;
 Timestamp adminTimestampDateD = Timestamp.now();
 bool useAdminTimestampDateD = false;
+bool skipSuppliesOnPaid =
+    false; // when true, PaidCash does NOT generate SuppliesHist/Curr
 int selectedIndexCompleted = intSortByDateC;
 //done
 List<JobModel> originalJobsDone = [];
