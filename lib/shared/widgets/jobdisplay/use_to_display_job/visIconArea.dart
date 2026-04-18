@@ -12,45 +12,53 @@ InkWell visIconArea(BuildContext context, JobModelRepository jobRepo,
 
   return InkWell(
     onTap: onTap,
-    child: Stack(
-      alignment: Alignment.center,
-      children: [
-        SizedBox(
-          width: size,
-          height: size,
-          child: CircularProgressIndicator(
-            value: jobRepo.allStatus,
-            strokeWidth: strokeWidth,
-            color: jobRepo.riderPickup ? Colors.green : Colors.deepPurple,
-          ),
-        ),
-        AnimatedRotation(
-          turns: 0.05,
-          duration: const Duration(seconds: 2),
-          curve: Curves.linear,
-          child: Text(
-            jobRepo.processStep.isNotEmpty
-                ? '#${jobRepo.jobId}'
-                : jobRepo.forSorting
-                    ? '🔃'
-                    : jobRepo.riderPickup
-                        ? '🚲'
-                        : '',
-            style: TextStyle(
-              color: Colors.deepPurple,
-              fontSize: fontSize,
-              fontWeight: FontWeight.w600,
-              shadows: const [
-                Shadow(
-                  offset: Offset(1, 1),
-                  blurRadius: 0,
-                  color: Colors.blueGrey,
-                ),
-              ],
+    borderRadius: BorderRadius.circular(size / 2),
+    child: Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: Colors.grey.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(size / 2),
+      ),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          SizedBox(
+            width: size,
+            height: size,
+            child: CircularProgressIndicator(
+              value: jobRepo.allStatus,
+              strokeWidth: strokeWidth,
+              color: jobRepo.riderPickup ? Colors.green : Colors.deepPurple,
             ),
           ),
-        ),
-      ],
+          AnimatedRotation(
+            turns: 0.05,
+            duration: const Duration(seconds: 2),
+            curve: Curves.linear,
+            child: Text(
+              jobRepo.processStep.isNotEmpty
+                  ? '#${jobRepo.jobId}'
+                  : jobRepo.forSorting
+                      ? '🔃'
+                      : jobRepo.riderPickup
+                          ? '🚲'
+                          : '',
+              style: TextStyle(
+                color: Colors.deepPurple,
+                fontSize: fontSize,
+                fontWeight: FontWeight.w600,
+                shadows: const [
+                  Shadow(
+                    offset: Offset(1, 1),
+                    blurRadius: 0,
+                    color: Colors.blueGrey,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
     ),
   );
 }

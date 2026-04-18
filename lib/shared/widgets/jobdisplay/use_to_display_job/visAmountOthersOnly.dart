@@ -6,6 +6,7 @@ import 'package:laundry_firebase/core/global/variables_ble.dart';
 import 'package:laundry_firebase/core/global/variables_det.dart';
 import 'package:laundry_firebase/core/global/variables_fab.dart';
 import 'package:laundry_firebase/core/global/variables_oth.dart';
+import 'package:laundry_firebase/core/utils/app_scale.dart';
 import 'package:laundry_firebase/core/utils/sharedMethods.dart';
 import 'package:laundry_firebase/features/items/models/otheritemmodel.dart';
 import 'package:laundry_firebase/features/jobs/repository/jobmodel_repository.dart';
@@ -33,7 +34,7 @@ Widget visAmountOthersOnly(
       case menuOthXW:
         return "XWash";
       case menuFabWKLDValAny8ml:
-        return "+Fab";
+        return "+Fab8";
       default:
         return value.toString();
     }
@@ -42,9 +43,9 @@ Widget visAmountOthersOnly(
   String getOtherShortCutLabel(int value) {
     switch (value) {
       case menuOthNF155:
-        return "155NF";
+        return "₱155";
       case menuOthNF125:
-        return "125NF";
+        return "₱125";
       case menuOthWD98:
         return "WD98";
       default:
@@ -139,109 +140,146 @@ Widget visAmountOthersOnly(
 
           // ================= SHORTCUTS =================
 
-          _sectionRow(
-            label: 'Full Service',
-            accentColor: Colors.cyanAccent,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: listOthersDropDownShortCuts.map((shortcut) {
-                return glassShortcutButton(
-                  label: getShortcutLabel(shortcut),
-                  onTap: () {
-                    if (shortcut == menuOth155) {
-                      addOtherItem(jobRepo, reg155ItemModel);
-                    } else if (shortcut == menuOthW8t9) {
-                      addOtherItem(jobRepo, reg155ItemModel);
-                      addOtherItem(
-                          jobRepo,
-                          listOthItems
-                              .firstWhere((i) => i.itemId == menuOthW8t9));
-                    } else if (shortcut == menuOthW9t10) {
-                      addOtherItem(jobRepo, reg155ItemModel);
-                      addOtherItem(
-                          jobRepo,
-                          listOthItems
-                              .firstWhere((i) => i.itemId == menuOthW9t10));
-                    }
-                    dialogSetState();
-                  },
+          Builder(builder: (ctx) {
+            final isTablet = AppScale.of(ctx).isTablet;
+
+            // Shared button builders
+            Widget fullServiceRow() => _sectionRow(
+                  label: 'Full Service',
+                  accentColor: Colors.cyanAccent,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: listOthersDropDownShortCuts.map((shortcut) {
+                      return glassShortcutButton(
+                        label: getShortcutLabel(shortcut),
+                        onTap: () {
+                          if (shortcut == menuOth155) {
+                            addOtherItem(jobRepo, reg155ItemModel);
+                          } else if (shortcut == menuOthW8t9) {
+                            addOtherItem(jobRepo, reg155ItemModel);
+                            addOtherItem(
+                                jobRepo,
+                                listOthItems.firstWhere(
+                                    (i) => i.itemId == menuOthW8t9));
+                          } else if (shortcut == menuOthW9t10) {
+                            addOtherItem(jobRepo, reg155ItemModel);
+                            addOtherItem(
+                                jobRepo,
+                                listOthItems.firstWhere(
+                                    (i) => i.itemId == menuOthW9t10));
+                          }
+                          dialogSetState();
+                        },
+                      );
+                    }).toList(),
+                  ),
                 );
-              }).toList(),
-            ),
-          ),
 
-          const SizedBox(height: 8),
-
-          _sectionRow(
-            label: 'Sayo Sabon',
-            accentColor: Colors.purpleAccent,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: listOthersShortRow2.map((shortcut) {
-                return glassShortcutButton(
-                  label: getShortcutLabel(shortcut),
-                  onTap: () {
-                    if (shortcut == menuOth125) {
-                      addOtherItem(jobRepo, reg125ItemModel);
-                    } else if (shortcut == menuOth150) {
-                      addOtherItem(jobRepo, reg150ItemModel);
-                    }
-                    dialogSetState();
-                  },
+            Widget sayoSabonRow() => _sectionRow(
+                  label: 'Sayo Sabon',
+                  accentColor: Colors.amberAccent,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: listOthersShortRow2.map((shortcut) {
+                      return glassShortcutButton(
+                        label: getShortcutLabel(shortcut),
+                        onTap: () {
+                          if (shortcut == menuOth125) {
+                            addOtherItem(jobRepo, reg125ItemModel);
+                          } else if (shortcut == menuOth150) {
+                            addOtherItem(jobRepo, reg150ItemModel);
+                          }
+                          dialogSetState();
+                        },
+                      );
+                    }).toList(),
+                  ),
                 );
-              }).toList(),
-            ),
-          ),
 
-          const SizedBox(height: 8),
-
-          _sectionRow(
-            label: 'Add-Ons',
-            accentColor: Colors.greenAccent,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: listOthersShortRow3.map((shortcut) {
-                return glassShortcutButton(
-                  label: getShortcutLabel(shortcut),
-                  onTap: () {
-                    if (shortcut == menuOthXD) {
-                      addOtherItem(jobRepo, xDItemModel);
-                    } else if (shortcut == menuOthXW) {
-                      addOtherItem(jobRepo, xWashItemModel);
-                    } else if (shortcut == menuFabWKLDValAny8ml) {
-                      addOtherItem(jobRepo, addFabAnyItemModel);
-                    }
-                    dialogSetState();
-                  },
+            Widget addOnsRow() => _sectionRow(
+                  label: 'Add-Ons',
+                  accentColor: Colors.greenAccent,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: listOthersShortRow3.map((shortcut) {
+                      return glassShortcutButton(
+                        label: getShortcutLabel(shortcut),
+                        onTap: () {
+                          if (shortcut == menuOthXD) {
+                            addOtherItem(jobRepo, xDItemModel);
+                          } else if (shortcut == menuOthXW) {
+                            addOtherItem(jobRepo, xWashItemModel);
+                          } else if (shortcut == menuFabWKLDValAny8ml) {
+                            addOtherItem(jobRepo, addFabAnyItemModel);
+                          }
+                          dialogSetState();
+                        },
+                      );
+                    }).toList(),
+                  ),
                 );
-              }).toList(),
-            ),
-          ),
 
-          const SizedBox(height: 8),
-
-          _sectionRow(
-            label: 'No Fold',
-            accentColor: Colors.orangeAccent,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: listOthersShort2DropDownShortCuts.map((shortcut) {
-                return glassShortcutButton(
-                  label: getOtherShortCutLabel(shortcut),
-                  onTap: () {
-                    if (shortcut == menuOthNF155) {
-                      addOtherItem(jobRepo, nf155ItemModel);
-                    } else if (shortcut == menuOthNF125) {
-                      addOtherItem(jobRepo, nf125ItemModel);
-                    } else if (shortcut == menuOthWD98) {
-                      addOtherItem(jobRepo, washDryOnlytemModel);
-                    }
-                    dialogSetState();
-                  },
+            Widget noFoldRow() => _sectionRow(
+                  label: 'No Fold',
+                  accentColor: Colors.orangeAccent.shade700,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: listOthersShort2DropDownShortCuts.map((shortcut) {
+                      return glassShortcutButton(
+                        label: getOtherShortCutLabel(shortcut),
+                        onTap: () {
+                          if (shortcut == menuOthNF155) {
+                            addOtherItem(jobRepo, nf155ItemModel);
+                          } else if (shortcut == menuOthNF125) {
+                            addOtherItem(jobRepo, nf125ItemModel);
+                          } else if (shortcut == menuOthWD98) {
+                            addOtherItem(jobRepo, washDryOnlytemModel);
+                          }
+                          dialogSetState();
+                        },
+                      );
+                    }).toList(),
+                  ),
                 );
-              }).toList(),
-            ),
-          ),
+
+            if (isTablet) {
+              // iPad: 2-column grid
+              return Column(
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(child: fullServiceRow()),
+                      const SizedBox(width: 8),
+                      Expanded(child: sayoSabonRow()),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(child: addOnsRow()),
+                      const SizedBox(width: 8),
+                      Expanded(child: noFoldRow()),
+                    ],
+                  ),
+                ],
+              );
+            }
+
+            // iPhone: original stacked layout
+            return Column(
+              children: [
+                fullServiceRow(),
+                const SizedBox(height: 8),
+                sayoSabonRow(),
+                const SizedBox(height: 8),
+                addOnsRow(),
+                const SizedBox(height: 8),
+                noFoldRow(),
+              ],
+            );
+          }),
           if (autocompleteSelected.loyaltyCount >= 10)
             const SizedBox(height: 14),
           if (autocompleteSelected.loyaltyCount >= 10)
@@ -463,7 +501,7 @@ Widget _sectionRow({
         Text(
           label,
           style: TextStyle(
-            fontSize: 9,
+            fontSize: 10,
             letterSpacing: 1.2,
             fontWeight: FontWeight.bold,
             color: accentColor.withValues(alpha: 0.85),

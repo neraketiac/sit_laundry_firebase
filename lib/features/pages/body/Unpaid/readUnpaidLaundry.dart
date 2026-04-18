@@ -31,11 +31,25 @@ class _UnpaidLaundryPanelState extends State<_UnpaidLaundryPanel> {
   }
 
   int _weekNumber(DateTime date) {
-    if (date.day <= 7) return 1;
-    if (date.day <= 14) return 2;
-    if (date.day <= 21) return 3;
-    if (date.day <= 28) return 4;
-    return 5;
+    final firstDay = DateTime(_month.year, _month.month, 1);
+    final firstDow = firstDay.weekday % 7; // Sun=0 … Sat=6
+    final week1End = firstDow == 0 ? 1 : 7 - firstDow + 1;
+    if (date.day <= week1End) return 1;
+    final remaining = date.day - week1End - 1;
+    return 2 + (remaining ~/ 7);
+  }
+
+  String _weekDateRange(int week) {
+    final firstDay = DateTime(_month.year, _month.month, 1);
+    final firstDow = firstDay.weekday % 7; // Sun=0 … Sat=6
+    final week1End = firstDow == 0 ? 1 : 7 - firstDow + 1;
+    final lastDay = DateTime(_month.year, _month.month + 1, 0).day;
+    final mon = DateFormat('MMM').format(_month);
+
+    if (week == 1) return '$mon 1-$week1End';
+    final start = week1End + (week - 2) * 7 + 1;
+    final end = (start + 6).clamp(start, lastDay);
+    return '$mon $start-$end';
   }
 
   Future<void> _load() async {
@@ -101,18 +115,23 @@ class _UnpaidLaundryPanelState extends State<_UnpaidLaundryPanel> {
               IconButton(
                 icon: const Icon(Icons.chevron_left, color: Colors.white),
                 onPressed: () {
-                  setState(() => _month = DateTime(_month.year, _month.month - 1));
+                  setState(
+                      () => _month = DateTime(_month.year, _month.month - 1));
                   _load();
                 },
               ),
               Text(
                 DateFormat('MMMM yyyy').format(_month),
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white),
               ),
               IconButton(
                 icon: const Icon(Icons.chevron_right, color: Colors.white),
                 onPressed: () {
-                  setState(() => _month = DateTime(_month.year, _month.month + 1));
+                  setState(
+                      () => _month = DateTime(_month.year, _month.month + 1));
                   _load();
                 },
               ),
@@ -131,6 +150,7 @@ class _UnpaidLaundryPanelState extends State<_UnpaidLaundryPanel> {
               unpaidCustomersByWeek: _unpaid.customersByWeek,
               currentMonth: _month,
               hasJobs: _jobs.isNotEmpty,
+              getWeekDateRange: _weekDateRange,
             ),
         ],
       ),

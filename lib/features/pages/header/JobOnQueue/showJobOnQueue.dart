@@ -23,13 +23,8 @@ import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_alter_job/visR
 import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_alter_job/visSako.dart';
 
 void showJobOnQueue(BuildContext context, JobModelRepository jobRepo) {
-  //JobModelRepository jobRepo = JobModelRepository();
   Future<void> saveButtonSetRepository() async {
-//dates
-    /// 🟣 Dates
     jobRepo.dateQ = Timestamp.now();
-
-    //admin
     jobRepo.createdBy = empIdGlobal;
     jobRepo.currentEmpId = empIdGlobal;
     if (jobRepo.repoVarSelectedIntRiderPickup == intRiderPickup) {
@@ -37,120 +32,117 @@ void showJobOnQueue(BuildContext context, JobModelRepository jobRepo) {
     } else {
       jobRepo.selectedAllStatus = 0.20;
     }
-
-    //syncSelectedToRepositoryALL(jobRepo);
     jobRepo.syncSelectedToRepoAll(jobRepo);
-
     await callDatabaseJobsQueueAdd(context, jobRepo);
-
-    // Auto-record cash payment to Supplies when job is inserted as paid
-    // Only for PaidCash — GCash does NOT generate Supplies records
-    // Skipped when skipSuppliesOnPaid is enabled
     if (jobRepo.paidCash && jobRepo.paidCashAmount > 0 && !skipSuppliesOnPaid) {
       await recordCashPaymentToSupplies(
           context, jobRepo, jobRepo.paidCashAmount);
     }
   }
 
-  //reset only when submit, so that when user opens the popup again, their previous selections are still there until they decide to save or cancel. This is more user-friendly as it prevents accidental loss of input if they open the popup multiple times.
-  //resetSelected();
-
   showDialog(
     context: context,
+    barrierDismissible: false,
     builder: (BuildContext context) {
       return StatefulBuilder(builder: (context, setState) {
-        return AlertDialog(
+        final isTablet = MediaQuery.of(context).size.width >= 600;
+        return Dialog(
           backgroundColor: Colors.lightBlue,
-          contentPadding: const EdgeInsets.all(0),
-          titlePadding: const EdgeInsets.only(
-            top: 0,
-            left: 5,
-            right: 5,
-            bottom: 0,
+          insetPadding: EdgeInsets.symmetric(
+            horizontal: isTablet ? 16 : 40,
+            vertical: 24,
           ),
-          actionsPadding: const EdgeInsets.symmetric(
-            horizontal: 5,
-            vertical: 5,
-          ),
-          title: Text(
-            "Laundry Request",
-            textAlign: TextAlign.center,
-          ),
-          content: SingleChildScrollView(
-            scrollDirection: Axis.vertical,
-            child: Container(
-              padding: EdgeInsets.all(1.0),
-              decoration: BoxDecoration(
-                  border: Border.all(color: Colors.blueAccent, width: 2.0)),
-              child: Form(
-                //key: _formKey,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    visCustomerName(
-                      context,
-                      () => setState(() {}),
-                      jobRepo,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: isTablet ? 680 : double.infinity,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Text(
+                    "Laundry Request",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: isTablet ? 18 : 15,
+                      fontWeight: FontWeight.bold,
                     ),
-                    visRiderPickup(context, () => setState(() {}), jobRepo),
-                    visAmountOthersOnly(
-                        context, () => setState(() {}), jobRepo),
-                    visPaidUnPaid(context, () => setState(() {}), jobRepo),
-                    Text(
-                      'Other Options',
-                      style: TextStyle(fontSize: 11),
-                    ),
-                    visFold(context, () => setState(() {}), jobRepo),
-                    visMix(context, () => setState(() {}), jobRepo),
-                    visBasket(context, () => setState(() {}), jobRepo),
-                    visEcoBag(context, () => setState(() {}), jobRepo),
-                    visSako(context, () => setState(() {}), jobRepo),
-                    Text(
-                      'Add Ons',
-                      style: TextStyle(fontSize: 11),
-                    ),
-                    visAddDry(context, () => setState(() {}), jobRepo),
-                    visAddFab(context, () => setState(() {}), jobRepo),
-                    visAddBle(context, () => setState(() {}), jobRepo),
-                    visAddWash(context, () => setState(() {}), jobRepo),
-                    visAddSpin(context, () => setState(() {}), jobRepo),
-                    conRemarks(context, () => setState(() {}),
-                        jobRepo.selectedRemarksVar),
-                  ],
+                  ),
                 ),
-              ),
+                Flexible(
+                  child: SingleChildScrollView(
+                    child: Container(
+                      padding: const EdgeInsets.all(1.0),
+                      decoration: BoxDecoration(
+                          border:
+                              Border.all(color: Colors.blueAccent, width: 2.0)),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          visCustomerName(
+                              context, () => setState(() {}), jobRepo),
+                          visRiderPickup(
+                              context, () => setState(() {}), jobRepo),
+                          visAmountOthersOnly(
+                              context, () => setState(() {}), jobRepo),
+                          visPaidUnPaid(
+                              context, () => setState(() {}), jobRepo),
+                          const Text('Other Options',
+                              style: TextStyle(fontSize: 11)),
+                          visFold(context, () => setState(() {}), jobRepo),
+                          visMix(context, () => setState(() {}), jobRepo),
+                          visBasket(context, () => setState(() {}), jobRepo),
+                          visEcoBag(context, () => setState(() {}), jobRepo),
+                          visSako(context, () => setState(() {}), jobRepo),
+                          const Text('Add Ons', style: TextStyle(fontSize: 11)),
+                          visAddDry(context, () => setState(() {}), jobRepo),
+                          visAddFab(context, () => setState(() {}), jobRepo),
+                          visAddBle(context, () => setState(() {}), jobRepo),
+                          visAddWash(context, () => setState(() {}), jobRepo),
+                          visAddSpin(context, () => setState(() {}), jobRepo),
+                          conRemarks(context, () => setState(() {}),
+                              jobRepo.selectedRemarksVar),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('Cancel',
+                            style: TextStyle(color: Colors.black)),
+                      ),
+                      boxButtonElevated(
+                        context: context,
+                        label: 'Save',
+                        onPressed: () async {
+                          if (jobRepo.selectedCustomerId == 0) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content:
+                                      Text('Please select customer name.')),
+                            );
+                            return false;
+                          } else {
+                            await saveButtonSetRepository();
+                            if (successInsertFB) jobRepo.reset();
+                            return true;
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
-          // 👇 Bottom buttons
-          actionsAlignment: MainAxisAlignment.end,
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context); // close popup
-              },
-              child: const Text(
-                'Cancel',
-                style: TextStyle(color: Colors.black),
-              ),
-            ),
-            boxButtonElevated(
-              context: context,
-              label: 'Save',
-              onPressed: () async {
-                if (jobRepo.selectedCustomerId == 0) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                        content: Text('Please select customer name.')),
-                  );
-                  return false;
-                } else {
-                  await saveButtonSetRepository();
-                  if (successInsertFB) jobRepo.reset();
-                  return true;
-                }
-              },
-            ),
-          ],
         );
       });
     },

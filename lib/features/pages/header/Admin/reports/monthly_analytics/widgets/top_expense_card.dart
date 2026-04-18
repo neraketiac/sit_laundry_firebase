@@ -7,6 +7,7 @@ class TopExpenseCard extends StatelessWidget {
   final Map<int, int> expenseByWeek;
   final Map<int, Map<String, int>> employeeByWeek;
   final DateTime currentMonth;
+  final String Function(int week) getWeekDateRange;
 
   const TopExpenseCard({
     super.key,
@@ -14,6 +15,7 @@ class TopExpenseCard extends StatelessWidget {
     required this.expenseByWeek,
     required this.employeeByWeek,
     required this.currentMonth,
+    required this.getWeekDateRange,
   });
 
   @override
@@ -75,7 +77,7 @@ class TopExpenseCard extends StatelessWidget {
                       ...activeWeeks.map((week) => Padding(
                             padding: const EdgeInsets.only(left: 8),
                             child: _ExpenseColumn(
-                              title: 'Week $week',
+                              title: 'Week $week\n${getWeekDateRange(week)}',
                               orderedNames: orderedNames,
                               dataMap: employeeByWeek[week] ?? {},
                               total: expenseByWeek[week] ?? 0,

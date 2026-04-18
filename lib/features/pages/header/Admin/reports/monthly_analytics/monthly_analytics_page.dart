@@ -45,20 +45,33 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
     _loadMonthlyData();
   }
 
+  /// Returns the calendar week number (1-based) for a date within the month.
+  /// Week 1 starts on the 1st of the month and ends on the first Saturday.
+  /// Subsequent weeks run Sunday–Saturday.
   int _weekNumber(DateTime date) {
-    if (date.day <= 7) return 1;
-    if (date.day <= 14) return 2;
-    if (date.day <= 21) return 3;
-    if (date.day <= 28) return 4;
-    return 5;
+    final firstDay = DateTime(currentMonth.year, currentMonth.month, 1);
+    // weekday: Mon=1 … Sun=7. We want Sun=0 … Sat=6.
+    final firstDow = firstDay.weekday % 7; // Sun=0, Mon=1, … Sat=6
+    // Days remaining in week 1 (from day 1 to first Saturday)
+    final week1End = firstDow == 0 ? 1 : 7 - firstDow + 1;
+    if (date.day <= week1End) return 1;
+    // Remaining days after week 1
+    final remaining = date.day - week1End - 1;
+    return 2 + (remaining ~/ 7);
   }
 
+  /// Returns the date range label for a given week number.
   String _weekDateRange(int week) {
-    final startDay = (week - 1) * 7 + 1;
-    final endDay = week == 5
-        ? DateTime(currentMonth.year, currentMonth.month + 1, 0).day
-        : week * 7;
-    return '${DateFormat('MMM').format(currentMonth)}$startDay-$endDay';
+    final firstDay = DateTime(currentMonth.year, currentMonth.month, 1);
+    final firstDow = firstDay.weekday % 7; // Sun=0 … Sat=6
+    final week1End = firstDow == 0 ? 1 : 7 - firstDow + 1;
+    final lastDay = DateTime(currentMonth.year, currentMonth.month + 1, 0).day;
+    final mon = DateFormat('MMM').format(currentMonth);
+
+    if (week == 1) return '$mon 1-$week1End';
+    final start = week1End + (week - 2) * 7 + 1;
+    final end = (start + 6).clamp(start, lastDay);
+    return '$mon $start-$end';
   }
 
   Future<void> _loadMonthlyData() async {
@@ -216,6 +229,7 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
                     unpaidCustomersByWeek: _unpaid.customersByWeek,
                     currentMonth: currentMonth,
                     hasJobs: completedJobs.isNotEmpty,
+                    getWeekDateRange: _weekDateRange,
                   ),
                   const SizedBox(height: 20),
                   TopExpenseCard(
@@ -223,6 +237,7 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
                     expenseByWeek: _expense.byWeek,
                     employeeByWeek: _expense.employeeByWeek,
                     currentMonth: currentMonth,
+                    getWeekDateRange: _weekDateRange,
                   ),
                   const SizedBox(height: 20),
                   SalaryCard(
@@ -232,6 +247,7 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
                     expenseByEmployee: _expense.empOnlyByEmployee,
                     expenseEmployeeByWeek: _expense.empOnlyByWeek,
                     currentMonth: currentMonth,
+                    getWeekDateRange: _weekDateRange,
                   ),
                   const SizedBox(height: 20),
                 ],

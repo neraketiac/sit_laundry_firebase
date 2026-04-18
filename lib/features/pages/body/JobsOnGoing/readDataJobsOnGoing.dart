@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:laundry_firebase/core/utils/app_scale.dart';
 import 'package:laundry_firebase/core/utils/sharedMethods.dart';
 import 'package:laundry_firebase/features/jobs/models/jobmodel.dart';
 import 'package:laundry_firebase/features/pages/body/JobsOnGoing/showOnGoingStatus.dart';
@@ -36,7 +37,7 @@ Widget readDataJobsOnGoing(bool visible, Color color) {
 
       return animatedPanel(
         visible: visible,
-        width: 320,
+        width: AppScale.of(context).isTablet ? 400 : 320,
         color: color,
         child: _buildQueueList(context, jobs),
       );

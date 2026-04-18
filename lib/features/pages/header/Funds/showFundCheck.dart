@@ -2,12 +2,34 @@
 import 'package:flutter/material.dart';
 import 'package:laundry_firebase/core/constants/sharedConstantsFinal.dart';
 import 'package:laundry_firebase/core/global/variables_all_codes.dart';
+import 'package:laundry_firebase/core/utils/app_scale.dart';
 import 'package:laundry_firebase/core/utils/sharedMethods.dart';
 import 'package:laundry_firebase/features/items/repository/supplies_hist_repository.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
 import 'package:laundry_firebase/core/global/variables_supplies.dart';
 
 void showFundCheck(BuildContext context) {
+  final s = AppScale.of(context);
+
+  // Controllers created once — persist across rebuilds
+  final controllers = {
+    for (final d in denominations)
+      d: TextEditingController(text: qtyMap[d]!.toString())
+  };
+
+  void syncControllers() {
+    for (final d in denominations) {
+      final newText = qtyMap[d]!.toString();
+      final c = controllers[d]!;
+      if (c.text != newText) {
+        c.value = c.value.copyWith(
+          text: newText,
+          selection: TextSelection.collapsed(offset: newText.length),
+        );
+      }
+    }
+  }
+
   void resetAllQty() {
     qtyMap.updateAll((key, value) => 0);
   }
@@ -17,12 +39,11 @@ void showFundCheck(BuildContext context) {
   ) {
     Widget denominationRow(int denom) {
       final qty = qtyMap[denom]!;
-      final TextEditingController controller =
-          TextEditingController(text: qty.toString());
+      final controller = controllers[denom]!;
 
       return Container(
         margin: const EdgeInsets.symmetric(vertical: 0),
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
+        padding: EdgeInsets.symmetric(horizontal: s.gap + 2, vertical: 0),
         decoration: BoxDecoration(
           color: Colors.blue.shade50,
           borderRadius: BorderRadius.circular(8),
@@ -34,7 +55,8 @@ void showFundCheck(BuildContext context) {
           children: [
             Text(
               '   ₱$denom',
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              style:
+                  TextStyle(fontWeight: FontWeight.bold, fontSize: s.bodyLarge),
             ),
 
             // Group for buttons + qty
@@ -44,29 +66,35 @@ void showFundCheck(BuildContext context) {
                 children: [
                   IconButton(
                     padding: const EdgeInsets.all(2),
-                    constraints:
-                        const BoxConstraints(minWidth: 32, minHeight: 32),
-                    icon: const Icon(Icons.remove_circle,
-                        color: Colors.blue, size: 24),
+                    constraints: BoxConstraints(
+                        minWidth: s.iconLarge, minHeight: s.iconLarge),
+                    icon: Icon(Icons.remove_circle,
+                        color: Colors.blue, size: s.iconLarge),
                     onPressed: qty > 0
                         ? () {
                             qtyMap[denom] = qty - 1;
+                            syncControllers();
                             dialogSetState();
                           }
                         : null,
                   ),
                   SizedBox(
-                    width: 48,
-                    height: 36,
+                    width: s.isTablet ? 64 : 48,
+                    height: s.isTablet ? 44 : 36,
                     child: TextField(
                       controller: controller,
                       textAlign: TextAlign.center,
-                      style: const TextStyle(fontSize: 14),
+                      style: TextStyle(fontSize: s.body),
                       keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         isDense: true,
-                        contentPadding: EdgeInsets.symmetric(vertical: 8),
-                        border: OutlineInputBorder(),
+                        contentPadding:
+                            EdgeInsets.symmetric(vertical: s.gapSmall + 4),
+                        border: const OutlineInputBorder(),
+                      ),
+                      onTap: () => controller.selection = TextSelection(
+                        baseOffset: 0,
+                        extentOffset: controller.text.length,
                       ),
                       onChanged: (val) {
                         final intVal = int.tryParse(val) ?? 0;
@@ -77,12 +105,13 @@ void showFundCheck(BuildContext context) {
                   ),
                   IconButton(
                     padding: const EdgeInsets.all(4),
-                    constraints:
-                        const BoxConstraints(minWidth: 32, minHeight: 32),
-                    icon: const Icon(Icons.add_circle,
-                        color: Colors.blue, size: 24),
+                    constraints: BoxConstraints(
+                        minWidth: s.iconLarge, minHeight: s.iconLarge),
+                    icon: Icon(Icons.add_circle,
+                        color: Colors.blue, size: s.iconLarge),
                     onPressed: () {
                       qtyMap[denom] = qty + 1;
+                      syncControllers();
                       dialogSetState();
                     },
                   ),
@@ -118,18 +147,18 @@ void showFundCheck(BuildContext context) {
               children: [
                 Text(
                     'Current Funds:\n₱ ${pesoFormat.format(alwaysTheLatestFunds)}',
-                    style: TextStyle(fontSize: 8)),
-                const Text(
+                    style: TextStyle(fontSize: s.tiny + 1)),
+                Text(
                   'TOTAL: ',
                   style: TextStyle(
-                    fontSize: 14,
+                    fontSize: s.body,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
                 Text(
                   '₱ ${pesoFormat.format(grandTotal)}',
-                  style: const TextStyle(
-                    fontSize: 16,
+                  style: TextStyle(
+                    fontSize: s.bodyLarge,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -144,11 +173,8 @@ void showFundCheck(BuildContext context) {
                         : ((alwaysTheLatestFunds - grandTotal) < 0)
                             ? ('sobra: ₱ ${pesoFormat.format((alwaysTheLatestFunds - grandTotal) * -1)}')
                             : ('kulang: ₱ ${pesoFormat.format((alwaysTheLatestFunds - grandTotal) * -1)}')),
-                    // ((alwaysTheLatestFunds - grandTotal) <= 0
-                    //     ? ('sakto:\n₱ ${pesoFormat.format(alwaysTheLatestFunds - grandTotal)}')
-                    //     : 'kulang:\n₱ ${pesoFormat.format(alwaysTheLatestFunds - grandTotal)}'),
                     style: TextStyle(
-                        fontSize: 8,
+                        fontSize: s.tiny + 1,
                         color: ((alwaysTheLatestFunds - grandTotal) == 0
                             ? Colors.green
                             : ((alwaysTheLatestFunds - grandTotal) < 0)
@@ -213,27 +239,26 @@ void showFundCheck(BuildContext context) {
             vertical: 8,
           ),
           backgroundColor: cFundsEOD,
+          insetPadding: s.isTablet
+              ? const EdgeInsets.symmetric(horizontal: 80, vertical: 40)
+              : const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
           title: Text.rich(
             TextSpan(
               children: [
                 TextSpan(
                   text: "Funds Maintenance\n",
                   style: TextStyle(
-                    fontSize: 18,
+                    fontSize: s.headline,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 TextSpan(
                   text: "Bilangain ang kasalukuyang funds\n",
-                  style: TextStyle(
-                    fontSize: 10, // 👈 smaller
-                  ),
+                  style: TextStyle(fontSize: s.small),
                 ),
                 TextSpan(
                   text: "tuwing 9am / 12nn / 7pm",
-                  style: TextStyle(
-                    fontSize: 10, // 👈 smaller
-                  ),
+                  style: TextStyle(fontSize: s.small),
                 ),
               ],
             ),
@@ -263,8 +288,8 @@ void showFundCheck(BuildContext context) {
               onPressed: () {
                 setState(() {
                   resetAllQty();
+                  syncControllers();
                 });
-                //Navigator.pop(context); // close popup
               },
               child: const Text('Reset'),
             ),
@@ -275,6 +300,7 @@ void showFundCheck(BuildContext context) {
                   saveButtonSetRepository();
                   setState(() {
                     resetAllQty();
+                    syncControllers();
                   });
                   return true;
                 }),

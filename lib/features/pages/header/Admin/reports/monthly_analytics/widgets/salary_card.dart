@@ -9,6 +9,7 @@ class SalaryCard extends StatelessWidget {
   final Map<String, int> expenseByEmployee;
   final Map<int, Map<String, int>> expenseEmployeeByWeek;
   final DateTime currentMonth;
+  final String Function(int week) getWeekDateRange;
 
   const SalaryCard({
     super.key,
@@ -18,6 +19,7 @@ class SalaryCard extends StatelessWidget {
     required this.expenseByEmployee,
     required this.expenseEmployeeByWeek,
     required this.currentMonth,
+    required this.getWeekDateRange,
   });
 
   @override
@@ -78,7 +80,7 @@ class SalaryCard extends StatelessWidget {
                       return Padding(
                         padding: const EdgeInsets.only(left: 8),
                         child: _SalaryColumn(
-                          title: 'Week $w',
+                          title: 'Week $w\n${getWeekDateRange(w)}',
                           orderedNames: orderedNames,
                           salaryMap: salaryEmployeeByWeek[w] ?? {},
                           expenseMap: expenseEmployeeByWeek[w] ?? {},

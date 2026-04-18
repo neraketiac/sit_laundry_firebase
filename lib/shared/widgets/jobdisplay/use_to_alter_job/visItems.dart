@@ -20,13 +20,13 @@ Widget visItemsOnly(
   String getShortcutLabel(int value) {
     switch (value) {
       case menuFabWKLDValAny8ml:
-        return "-1 SOF";
+        return "SOF";
       case menuDetWKL15:
-        return "-1 DET";
+        return "DET";
       case menuDetArielDVal:
-        return "-1 Ariel(15)";
+        return "Ariel";
       case menuFabDowny36mlDVal:
-        return "-1 Downy";
+        return "Downy";
       default:
         return value.toString();
     }

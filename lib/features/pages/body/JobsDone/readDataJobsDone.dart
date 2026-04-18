@@ -7,6 +7,7 @@ import 'package:laundry_firebase/features/pages/body/JobsDone/showReceipt.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/showAdminJob.dart';
 import 'package:laundry_firebase/shared/widgets/jobdisplay/autocompletecustomer.dart';
 
+import 'package:laundry_firebase/core/utils/app_scale.dart';
 import 'package:laundry_firebase/core/services/database_jobs.dart';
 import 'package:laundry_firebase/features/jobs/repository/jobmodel_repository.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
@@ -479,13 +480,18 @@ class IconBadgeButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppScale.of(context);
+    final btnSize = s.isTablet ? 54.0 : 40.0;
+    final iconSize = s.isTablet ? 28.0 : 22.0;
+    final badgeSize = s.isTablet ? 11.0 : 9.0;
+
     return Tooltip(
       message: tooltip,
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color.fromARGB(255, 22, 198, 84),
           padding: EdgeInsets.zero,
-          minimumSize: const Size(40, 40),
+          minimumSize: Size(btnSize, btnSize),
           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
         ),
         onPressed: onPressed,
@@ -495,9 +501,9 @@ class IconBadgeButton extends StatelessWidget {
           children: [
             Text(
               icon,
-              style: const TextStyle(
+              style: TextStyle(
                 color: Colors.white,
-                fontSize: 22,
+                fontSize: iconSize,
               ),
             ),
             if (badgeCount != null && badgeCount! > 0)
@@ -515,9 +521,9 @@ class IconBadgeButton extends StatelessWidget {
                   ),
                   child: Text(
                     '$badgeCount',
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: Colors.white,
-                      fontSize: 9,
+                      fontSize: badgeSize,
                       fontWeight: FontWeight.bold,
                     ),
                   ),

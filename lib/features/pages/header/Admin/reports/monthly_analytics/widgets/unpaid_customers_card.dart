@@ -8,6 +8,7 @@ class UnpaidCustomersCard extends StatelessWidget {
   final Map<int, Map<String, int>> unpaidCustomersByWeek;
   final DateTime currentMonth;
   final bool hasJobs;
+  final String Function(int week) getWeekDateRange;
 
   const UnpaidCustomersCard({
     super.key,
@@ -16,6 +17,7 @@ class UnpaidCustomersCard extends StatelessWidget {
     required this.unpaidCustomersByWeek,
     required this.currentMonth,
     required this.hasJobs,
+    required this.getWeekDateRange,
   });
 
   @override
@@ -50,7 +52,7 @@ class UnpaidCustomersCard extends StatelessWidget {
                 scrollDirection: Axis.horizontal,
                 child: IntrinsicHeight(
                   child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       // Month column
                       _UnpaidColumn(
@@ -63,7 +65,7 @@ class UnpaidCustomersCard extends StatelessWidget {
                       ...activeWeeks.map((week) => Padding(
                             padding: const EdgeInsets.only(left: 8),
                             child: _UnpaidColumn(
-                              title: 'Week $week',
+                              title: 'Week $week\n${getWeekDateRange(week)}',
                               customers: unpaidCustomersByWeek[week] ?? {},
                               total: unpaidByWeek[week] ?? 0,
                               accentColor: Colors.orange.shade50,
@@ -135,43 +137,51 @@ class _UnpaidColumn extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
           ),
-          // Rows
-          ...sorted.take(10).map((e) => Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-                decoration: BoxDecoration(
-                  border:
-                      Border(bottom: BorderSide(color: Colors.grey.shade100)),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      e.key,
-                      style: const TextStyle(fontSize: 11),
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 1,
-                    ),
-                    Text(
-                      '₱${formatCurrency(e.value)}',
-                      style: const TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.red,
+          // Rows — Expanded so footer always aligns to bottom
+          Expanded(
+            child: Column(
+              children: [
+                ...sorted.take(10).map((e) => Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 5),
+                      decoration: BoxDecoration(
+                        border: Border(
+                            bottom: BorderSide(color: Colors.grey.shade100)),
                       ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            e.key,
+                            style: const TextStyle(fontSize: 11),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          ),
+                          Text(
+                            '₱${formatCurrency(e.value)}',
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.red,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )),
+                if (sorted.length > 10)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child: Text(
+                      '+${sorted.length - 10} more',
+                      style:
+                          TextStyle(fontSize: 10, color: Colors.grey.shade500),
+                      textAlign: TextAlign.center,
                     ),
-                  ],
-                ),
-              )),
-          if (sorted.length > 10)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4),
-              child: Text(
-                '+${sorted.length - 10} more',
-                style: TextStyle(fontSize: 10, color: Colors.grey.shade500),
-                textAlign: TextAlign.center,
-              ),
+                  ),
+              ],
             ),
-          // Footer total
+          ),
+          // Footer total — always at bottom
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 7),
             decoration: BoxDecoration(

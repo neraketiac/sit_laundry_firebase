@@ -156,60 +156,66 @@ InkWell visPaidUnpaidArea(
       },
       child: Builder(builder: (ctx) {
         final s = AppScale.of(ctx);
-        return Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              SizedBox(
-                width: s.isTablet ? 130 : 100,
-                child: Stack(
-                  clipBehavior: Clip.none,
-                  alignment: Alignment.centerRight,
-                  children: [
-                    if (jobRepo.thisJobHasPromo)
-                      Positioned(
-                        left: s.isTablet ? 80 : 60,
-                        top: -16,
-                        child: Icon(
-                          Icons.star,
-                          size: s.iconLarge,
-                          color: Colors.amber.withOpacity(0.5),
+        return IntrinsicWidth(
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+            decoration: BoxDecoration(
+              color: Colors.grey.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Stack(
+                    clipBehavior: Clip.none,
+                    alignment: Alignment.centerRight,
+                    children: [
+                      if (jobRepo.thisJobHasPromo)
+                        Positioned(
+                          right: 0,
+                          top: -16,
+                          child: Icon(
+                            Icons.star,
+                            size: s.iconLarge,
+                            color: Colors.amber.withOpacity(0.5),
+                          ),
+                        ),
+                      Text(
+                        "₱ ${jobRepo.selectedFinalPrice}",
+                        textAlign: TextAlign.right,
+                        style: TextStyle(
+                          fontSize: s.bodyLarge,
+                          fontWeight: FontWeight.w800,
+                          color: statusColor,
                         ),
                       ),
-                    Text(
-                      "₱ ${jobRepo.selectedFinalPrice}",
-                      textAlign: TextAlign.right,
+                    ],
+                  ),
+                  SizedBox(height: s.gapSmall / 2),
+                  Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: s.gap,
+                      vertical: s.gapSmall / 2,
+                    ),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(s.cardRadius - 2),
+                      color: isPaid
+                          ? Colors.greenAccent.withOpacity(0.15)
+                          : Colors.redAccent.withOpacity(0.15),
+                    ),
+                    child: Text(
+                      statusText,
                       style: TextStyle(
-                        fontSize: s.bodyLarge,
-                        fontWeight: FontWeight.w800,
+                        fontSize: s.tiny,
+                        fontWeight: FontWeight.w600,
                         color: statusColor,
                       ),
+                      textAlign: TextAlign.right,
                     ),
-                  ],
-                ),
-              ),
-              SizedBox(height: s.gapSmall / 2),
-              Container(
-                padding: EdgeInsets.symmetric(
-                  horizontal: s.gap,
-                  vertical: s.gapSmall / 2,
-                ),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(s.cardRadius - 2),
-                  color: isPaid
-                      ? Colors.greenAccent.withOpacity(0.15)
-                      : Colors.redAccent.withOpacity(0.15),
-                ),
-                child: Text(
-                  statusText,
-                  style: TextStyle(
-                    fontSize: s.tiny,
-                    fontWeight: FontWeight.w600,
-                    color: statusColor,
                   ),
-                  textAlign: TextAlign.right,
-                ),
-              ),
-            ]);
+                ]),
+          ),
+        );
       }));
 }
