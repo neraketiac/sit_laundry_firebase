@@ -32,8 +32,9 @@ class _UnpaidLaundryPanelState extends State<_UnpaidLaundryPanel> {
 
   int _weekNumber(DateTime date) {
     final firstDay = DateTime(_month.year, _month.month, 1);
-    final firstDow = firstDay.weekday % 7; // Sun=0 … Sat=6
-    final week1End = firstDow == 0 ? 1 : 7 - firstDow + 1;
+    final firstDow = firstDay.weekday % 7; // Mon=1..Sun=7 -> Sun=0..Sat=6
+    final daysToSat = (6 - firstDow) % 7;
+    final week1End = 1 + daysToSat;
     if (date.day <= week1End) return 1;
     final remaining = date.day - week1End - 1;
     return 2 + (remaining ~/ 7);
@@ -41,8 +42,9 @@ class _UnpaidLaundryPanelState extends State<_UnpaidLaundryPanel> {
 
   String _weekDateRange(int week) {
     final firstDay = DateTime(_month.year, _month.month, 1);
-    final firstDow = firstDay.weekday % 7; // Sun=0 … Sat=6
-    final week1End = firstDow == 0 ? 1 : 7 - firstDow + 1;
+    final firstDow = firstDay.weekday % 7;
+    final daysToSat = (6 - firstDow) % 7;
+    final week1End = 1 + daysToSat;
     final lastDay = DateTime(_month.year, _month.month + 1, 0).day;
     final mon = DateFormat('MMM').format(_month);
 

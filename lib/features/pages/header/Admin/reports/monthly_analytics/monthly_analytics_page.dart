@@ -45,26 +45,25 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
     _loadMonthlyData();
   }
 
-  /// Returns the calendar week number (1-based) for a date within the month.
-  /// Week 1 starts on the 1st of the month and ends on the first Saturday.
-  /// Subsequent weeks run Sunday–Saturday.
+  /// Calendar weeks: Week 1 = day 1 to first Saturday, then Sun–Sat blocks.
   int _weekNumber(DateTime date) {
     final firstDay = DateTime(currentMonth.year, currentMonth.month, 1);
-    // weekday: Mon=1 … Sun=7. We want Sun=0 … Sat=6.
-    final firstDow = firstDay.weekday % 7; // Sun=0, Mon=1, … Sat=6
-    // Days remaining in week 1 (from day 1 to first Saturday)
-    final week1End = firstDow == 0 ? 1 : 7 - firstDow + 1;
+    // Mon=1..Sun=7 → convert to Sun=0..Sat=6
+    final firstDow = firstDay.weekday % 7;
+    // days until (and including) first Saturday
+    final daysToSat = (6 - firstDow) % 7;
+    final week1End =
+        1 + daysToSat; // e.g. Apr 2026: Wed→firstDow=3, daysToSat=3, week1End=4
     if (date.day <= week1End) return 1;
-    // Remaining days after week 1
     final remaining = date.day - week1End - 1;
     return 2 + (remaining ~/ 7);
   }
 
-  /// Returns the date range label for a given week number.
   String _weekDateRange(int week) {
     final firstDay = DateTime(currentMonth.year, currentMonth.month, 1);
-    final firstDow = firstDay.weekday % 7; // Sun=0 … Sat=6
-    final week1End = firstDow == 0 ? 1 : 7 - firstDow + 1;
+    final firstDow = firstDay.weekday % 7;
+    final daysToSat = (6 - firstDow) % 7;
+    final week1End = 1 + daysToSat;
     final lastDay = DateTime(currentMonth.year, currentMonth.month + 1, 0).day;
     final mon = DateFormat('MMM').format(currentMonth);
 
