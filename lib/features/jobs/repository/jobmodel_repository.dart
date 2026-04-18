@@ -470,14 +470,14 @@ class JobModelRepository {
   set thisJobHasPromo(bool value) =>
       jobselectedRepository.thisJobHasPromo = value;
 
-  Map<int, TextEditingController> get itemQtyControllers =>
+  Map<String, TextEditingController> get itemQtyControllers =>
       jobselectedRepository.itemQtyControllers;
-  set itemQtyControllers(Map<int, TextEditingController> value) =>
+  set itemQtyControllers(Map<String, TextEditingController> value) =>
       jobselectedRepository.itemQtyControllers = value;
 
-  Map<int, TextEditingController> get itemExpenseControllers =>
+  Map<String, TextEditingController> get itemExpenseControllers =>
       jobselectedRepository.itemExpenseControllers;
-  set itemExpenseControllers(Map<int, TextEditingController> value) =>
+  set itemExpenseControllers(Map<String, TextEditingController> value) =>
       jobselectedRepository.itemExpenseControllers = value;
 
   /////////////////////////////////////////////////////////////

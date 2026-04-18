@@ -22,7 +22,7 @@ class AppScale {
     final width = MediaQuery.of(context).size.width;
     // iPad mini 5 portrait = 768, landscape = 1024
     final isTablet = width >= 600;
-    return AppScale._(isTablet ? 1.35 : 1.0);
+    return AppScale._(isTablet ? 1.2 : 1.0);
   }
 
   bool get isTablet => factor > 1.0;

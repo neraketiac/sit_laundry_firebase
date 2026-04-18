@@ -71,30 +71,34 @@ void showItemsInOut(BuildContext context) {
       remarks: '',
     );
 
-    for (var item in jobRepo.selectedItems) {
+    for (var entry in jobRepo.selectedItems.asMap().entries) {
+      final idx = entry.key;
+      final item = entry.value;
+      final key = '${item.itemId}_$idx';
+
       debugPrint('start');
       debugPrint("item ${item.itemName} type ${item.stocksType}");
-      //only items, php should be in funds in/out
       if (item.stocksType == 'php') continue;
-      //other items to exclude
       if (excludedSupplyItems.contains(item.itemUniqueId)) continue;
 
-      /// get qty from textbox
       int qty = int.tryParse(
-            jobRepo.itemQtyControllers[item.itemId]?.text ?? "1",
+            jobRepo.itemQtyControllers[key]?.text ?? "1",
           ) ??
           1;
 
       int expense = int.tryParse(
-            jobRepo.itemExpenseControllers[item.itemId]?.text ?? "0",
+            jobRepo.itemExpenseControllers[key]?.text ?? "0",
           ) ??
           0;
 
       sMH.itemName = item.itemName;
       sMH.itemId = item.itemId;
       sMH.itemUniqueId = item.itemUniqueId;
-      sMH.currentCounter = qty; //add qty here
+      sMH.currentCounter = qty;
       sMH.expenseAmount = expense;
+      sMH.docId = ''; // reset so each item gets its own SuppliesCurr lookup
+      sMH.countId = 0;
+      sMH.currentStocks = 0;
 
       sMH.customerId = 123; //dummy
       sMH.logDate = (Timestamp.fromDate(DateTime.now()));

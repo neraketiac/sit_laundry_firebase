@@ -4,6 +4,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 /// where ItemUniqueId = 4406 (menuOthSalaryPayment)
 class SalaryData {
   int totalSalary = 0;
+  DateTime? _startDate;
+  DateTime? _endDate;
 
   final Map<int, int> byWeek = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0};
   final Map<String, int> byEmployee = {};
@@ -17,8 +19,12 @@ class SalaryData {
 
   void process(
     List<QueryDocumentSnapshot> empDocs,
-    int Function(DateTime) weekNumber,
-  ) {
+    int Function(DateTime) weekNumber, {
+    DateTime? startDate,
+    DateTime? endDate,
+  }) {
+    _startDate = startDate;
+    _endDate = endDate;
     totalSalary = 0;
     for (int w = 1; w <= 5; w++) {
       byWeek[w] = 0;
@@ -31,7 +37,6 @@ class SalaryData {
 
       final raw = data['CurrentCounter'];
       if (raw == null) continue;
-      // Salary payments are negative (funds out) — take abs
       final amount =
           (raw is num ? raw.toInt() : int.tryParse(raw.toString()) ?? 0).abs();
       if (amount == 0) continue;
@@ -42,8 +47,17 @@ class SalaryData {
               ?.toString() ??
           'Unknown';
 
-      // Use AutoSalaryDate if available, fall back to LogDate
-      final ts = (data['AutoSalaryDate'] ?? data['LogDate']) as Timestamp?;
+      // Use AutoSalaryDate if it falls within the queried month,
+      // otherwise fall back to LogDate
+      final autoTs = data['AutoSalaryDate'] as Timestamp?;
+      final logTs = data['LogDate'] as Timestamp?;
+
+      Timestamp? ts;
+      if (autoTs != null && _isInMonth(autoTs.toDate())) {
+        ts = autoTs;
+      } else {
+        ts = logTs;
+      }
 
       totalSalary += amount;
       byEmployee[label] = (byEmployee[label] ?? 0) + amount;
@@ -55,5 +69,10 @@ class SalaryData {
         wMap[label] = (wMap[label] ?? 0) + amount;
       }
     }
+  }
+
+  bool _isInMonth(DateTime date) {
+    if (_startDate == null || _endDate == null) return true;
+    return !date.isBefore(_startDate!) && !date.isAfter(_endDate!);
   }
 }

@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:laundry_firebase/core/utils/app_scale.dart';
 import 'package:laundry_firebase/features/pages/body/main_laundry_body.dart';
 import 'package:laundry_firebase/features/pages/header/GCash/showGCashOnly.dart';
 import 'package:laundry_firebase/features/pages/header/GCash/showGCashPending.dart';
@@ -49,6 +50,9 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader>
     required double right,
     required VoidCallback onTap,
     required Color backgroundColor,
+    double iconSize = 20,
+    double labelFontSize = 13,
+    bool mini = true,
   }) {
     return AnimatedPositioned(
       duration: const Duration(milliseconds: 280),
@@ -65,17 +69,16 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader>
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Label (only show if label is provided)
               if (_isOpen && label != null)
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding: EdgeInsets.symmetric(
+                      horizontal: labelFontSize, vertical: labelFontSize * 0.6),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(8),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
+                        color: Colors.black.withValues(alpha: 0.1),
                         blurRadius: 8,
                         offset: const Offset(0, 2),
                       ),
@@ -83,20 +86,19 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader>
                   ),
                   child: Text(
                     label,
-                    style: const TextStyle(
-                      fontSize: 13,
+                    style: TextStyle(
+                      fontSize: labelFontSize,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
                 ),
               if (label != null) const SizedBox(width: 12),
-              // Button
               Container(
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: backgroundColor.withOpacity(0.4),
+                      color: backgroundColor.withValues(alpha: 0.4),
                       blurRadius: 12,
                       offset: const Offset(0, 4),
                     ),
@@ -104,10 +106,10 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader>
                 ),
                 child: FloatingActionButton(
                   heroTag: hero,
-                  mini: true,
+                  mini: mini,
                   backgroundColor: backgroundColor,
                   onPressed: onTap,
-                  child: Icon(icon, size: 20),
+                  child: Icon(icon, size: iconSize),
                 ),
               ),
             ],
@@ -119,16 +121,20 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader>
 
   @override
   Widget build(BuildContext context) {
-    const double base = 16;
-    const double step = 70;
-    const double horizontalStep = 70; // Horizontal spacing between buttons
+    final s = AppScale.of(context);
+    final double base = 16;
+    final double step = s.isTablet ? 90.0 : 70.0;
+    final double horizontalStep = s.isTablet ? 90.0 : 70.0;
+    final double iconSize = s.isTablet ? 26.0 : 20.0;
+    final double labelSize = s.isTablet ? 15.0 : 13.0;
+    final bool mini = !s.isTablet; // full-size FAB on iPad
 
     return Scaffold(
       body: MyMainLaundryBody(_sEmpId),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       floatingActionButton: SizedBox(
-        width: 400,
-        height: 450,
+        width: s.isTablet ? 520 : 400,
+        height: s.isTablet ? 580 : 450,
         child: Stack(
           clipBehavior: Clip.none,
           children: [
@@ -160,6 +166,9 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader>
                   showGCashOnly(context, jobRepoNonJob);
                 },
                 backgroundColor: Colors.green,
+                iconSize: iconSize,
+                labelFontSize: labelSize,
+                mini: mini,
               ),
 
             /// Funds In/Out
@@ -175,22 +184,10 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader>
                   showFundsInFundsOut(context);
                 },
                 backgroundColor: Colors.deepPurple,
+                iconSize: iconSize,
+                labelFontSize: labelSize,
+                mini: mini,
               ),
-
-            // /// Inventory
-            // if (_isOpen)
-            //   _fab(
-            //     hero: 'Supplies',
-            //     icon: Icons.inventory,
-            //     label: 'Inventory',
-            //     bottom: base + step,
-            //     right: base,
-            //     onTap: () {
-            //       setState(() => _isOpen = false);
-            //       showItemsInOut(context);
-            //     },
-            //     backgroundColor: Colors.orange,
-            //   ),
 
             /// Enter GCash (Bottom Middle - No Label)
             if (_isOpen)
@@ -205,6 +202,8 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader>
                   showGCashPending(context);
                 },
                 backgroundColor: cShowGCash,
+                iconSize: iconSize,
+                mini: mini,
               ),
 
             /// Enter Laundry (Bottom Left)
@@ -220,6 +219,9 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader>
                   showJobOnQueue(context, jobRepoOnQueue);
                 },
                 backgroundColor: Colors.blueAccent,
+                iconSize: iconSize,
+                labelFontSize: labelSize,
+                mini: mini,
               ),
 
             /// MAIN FAB (Always visible)
@@ -232,7 +234,7 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader>
                   filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
                   child: FloatingActionButton(
                     heroTag: 'main',
-                    mini: true,
+                    mini: mini,
                     backgroundColor: _isOpen ? Colors.red : Colors.deepPurple,
                     elevation: 12,
                     onPressed: () {
@@ -247,7 +249,7 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader>
                       turns: _isOpen ? 0.125 : 0,
                       child: Icon(
                         _isOpen ? Icons.close : Icons.add,
-                        size: 20,
+                        size: iconSize,
                       ),
                     ),
                   ),

@@ -65,7 +65,8 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
     setState(() => isLoading = true);
 
     final startDate = DateTime(currentMonth.year, currentMonth.month, 1);
-    final endDate = DateTime(currentMonth.year, currentMonth.month + 1, 0);
+    final endDate = DateTime(currentMonth.year, currentMonth.month + 1, 1)
+        .subtract(const Duration(seconds: 1)); // last second of the month
 
     try {
       FirebaseApp thirdApp;
@@ -157,7 +158,8 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
           .where('LogDate', isLessThanOrEqualTo: Timestamp.fromDate(endDate))
           .where('ItemUniqueId', isEqualTo: 4406)
           .get();
-      _salary.process(salarySnap.docs, _weekNumber);
+      _salary.process(salarySnap.docs, _weekNumber,
+          startDate: startDate, endDate: endDate);
     } catch (e) {
       debugPrint('Error loading monthly data: $e');
     }

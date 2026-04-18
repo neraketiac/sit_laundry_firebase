@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:laundry_firebase/core/utils/app_scale.dart';
 import 'package:intl/intl.dart';
 import 'package:laundry_firebase/core/global/app_version.dart';
 import 'package:laundry_firebase/core/global/variables_ble.dart';
@@ -540,94 +541,100 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
         children: [
           AbsorbPointer(
             absorbing: isProcessing,
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              clipBehavior: Clip.hardEdge,
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  animatedPanel(
-                    visible: empSetup.showFundsHistory,
-                    width: 350,
-                    child: Column(
-                      children: [
-                        const SizedBox(height: 1),
-                        readDataGCashPending(),
-                        readDataGCashDone(),
-                      ],
-                    ),
-                    color: Colors.blue,
-                  ),
-                  readDataJobsOnQueue(
-                    empSetup.showLaundry,
-                    LaundryColors.onQueue,
-                  ),
-                  readDataJobsOnGoing(
-                    empSetup.showLaundry,
-                    LaundryColors.ongoing,
-                  ),
-                  animatedPanel(
-                    visible: empSetup.showLaundry,
-                    width: 320,
-                    child: readDataJobsDone(() => setState(() {})),
-                    color: LaundryColors.done,
-                  ),
-                  animatedPanel(
-                    visible: empSetup.showLaundry,
-                    width: 320,
-                    child: readDataJobsCompleted(
-                      context,
-                      () => setState(() {}),
-                    ),
-                    color: LaundryColors.completed,
-                  ),
-                  animatedPanel(
-                    visible: empSetup.showLaundry,
-                    width: 400,
-                    child: const ShowRiderOrders(),
-                    color: Colors.teal.shade100,
-                  ),
-                  animatedPanel(
-                    visible: empSetup.showFunds,
-                    width: 400,
-                    child: readDataSuppliesCurrent(),
-                    color: cFundsInFundsOut,
-                  ),
-                  animatedPanel(
-                    visible: empSetup.showFunds,
-                    width: 550,
-                    child: readDataSuppliesHistory(),
-                    color: cFundsInFundsOut,
-                  ),
-                  animatedPanel(
-                    visible: empSetup.showFunds,
-                    width: 400,
-                    child: readDataItemsHistory(),
-                    color: cFundsInFundsOut,
-                  ),
-                  animatedPanel(
-                    visible: empSetup.showEmployee,
-                    width: 600,
-                    child: Column(
-                      children: [
-                        const SizedBox(height: 1),
-                        readDataEmployeeCurr(),
-                        readDataEmployeeHist(),
-                      ],
-                    ),
-                    color: cEmployeeMaintenance,
-                  ),
-                  if (empSetup.showLaundry)
-                    IntrinsicWidth(
-                      child: Container(
-                        color: Colors.red.shade100,
-                        padding: const EdgeInsets.all(8),
-                        child: readUnpaidLaundry(),
+            child: Builder(builder: (context) {
+              final isTablet = AppScale.of(context).isTablet;
+              // iPad gets ~25% wider panels
+              double pw(double base) => isTablet ? base * 1.25 : base;
+
+              return SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                clipBehavior: Clip.hardEdge,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    animatedPanel(
+                      visible: empSetup.showFundsHistory,
+                      width: pw(350),
+                      child: Column(
+                        children: [
+                          const SizedBox(height: 1),
+                          readDataGCashPending(),
+                          readDataGCashDone(),
+                        ],
                       ),
+                      color: Colors.blue,
                     ),
-                ],
-              ),
-            ),
+                    readDataJobsOnQueue(
+                      empSetup.showLaundry,
+                      LaundryColors.onQueue,
+                    ),
+                    readDataJobsOnGoing(
+                      empSetup.showLaundry,
+                      LaundryColors.ongoing,
+                    ),
+                    animatedPanel(
+                      visible: empSetup.showLaundry,
+                      width: pw(320),
+                      child: readDataJobsDone(() => setState(() {})),
+                      color: LaundryColors.done,
+                    ),
+                    animatedPanel(
+                      visible: empSetup.showLaundry,
+                      width: pw(320),
+                      child: readDataJobsCompleted(
+                        context,
+                        () => setState(() {}),
+                      ),
+                      color: LaundryColors.completed,
+                    ),
+                    animatedPanel(
+                      visible: empSetup.showLaundry,
+                      width: pw(400),
+                      child: const ShowRiderOrders(),
+                      color: Colors.teal.shade100,
+                    ),
+                    animatedPanel(
+                      visible: empSetup.showFunds,
+                      width: pw(400),
+                      child: readDataSuppliesCurrent(),
+                      color: cFundsInFundsOut,
+                    ),
+                    animatedPanel(
+                      visible: empSetup.showFunds,
+                      width: pw(550),
+                      child: readDataSuppliesHistory(),
+                      color: cFundsInFundsOut,
+                    ),
+                    animatedPanel(
+                      visible: empSetup.showFunds,
+                      width: pw(400),
+                      child: readDataItemsHistory(),
+                      color: cFundsInFundsOut,
+                    ),
+                    animatedPanel(
+                      visible: empSetup.showEmployee,
+                      width: pw(600),
+                      child: Column(
+                        children: [
+                          const SizedBox(height: 1),
+                          readDataEmployeeCurr(),
+                          readDataEmployeeHist(),
+                        ],
+                      ),
+                      color: cEmployeeMaintenance,
+                    ),
+                    if (empSetup.showLaundry)
+                      IntrinsicWidth(
+                        child: Container(
+                          color: Colors.red.shade100,
+                          padding: const EdgeInsets.all(8),
+                          child: readUnpaidLaundry(),
+                        ),
+                      ),
+                  ],
+                ),
+              );
+            }),
           ),
         ],
       ),

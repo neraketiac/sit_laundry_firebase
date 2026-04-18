@@ -148,8 +148,10 @@ Widget visItemsOnly(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blueGrey.shade600,
                   foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 ),
                 onPressed: () {
                   addOtherItem(jobRepo, jobRepo.repoVarSelectedItem!);
@@ -164,22 +166,27 @@ Widget visItemsOnly(
 
           /// SELECTED ITEMS
           Column(
-            children: jobRepo.selectedItems.map((e) {
+            children: jobRepo.selectedItems.asMap().entries.map((entry) {
+              final idx = entry.key;
+              final e = entry.value;
+              final key = '${e.itemId}_$idx';
+
               jobRepo.itemQtyControllers.putIfAbsent(
-                e.itemId,
+                key,
                 () => TextEditingController(text: "-1"),
               );
               jobRepo.itemExpenseControllers.putIfAbsent(
-                e.itemId,
+                key,
                 () => TextEditingController(text: "0"),
               );
 
-              final controller = jobRepo.itemQtyControllers[e.itemId]!;
-              final expenseController = jobRepo.itemExpenseControllers[e.itemId]!;
+              final controller = jobRepo.itemQtyControllers[key]!;
+              final expenseController = jobRepo.itemExpenseControllers[key]!;
 
               return Container(
                 margin: const EdgeInsets.only(bottom: 8),
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(12),
                   color: Colors.white,
@@ -197,8 +204,8 @@ Widget visItemsOnly(
                     GestureDetector(
                       onTap: () {
                         removeOtherItem(jobRepo, e);
-                        jobRepo.itemQtyControllers.remove(e.itemId);
-                        jobRepo.itemExpenseControllers.remove(e.itemId);
+                        jobRepo.itemQtyControllers.remove(key);
+                        jobRepo.itemExpenseControllers.remove(key);
                         dialogSetState();
                       },
                       child: const Icon(Icons.remove_circle_outline,
@@ -227,18 +234,24 @@ Widget visItemsOnly(
                                   keyboardType: TextInputType.number,
                                   textAlign: TextAlign.center,
                                   inputFormatters: [
-                                    FilteringTextInputFormatter.allow(RegExp(r'^-?\d*'))
+                                    FilteringTextInputFormatter.allow(
+                                        RegExp(r'^-?\d*'))
                                   ],
                                   style: const TextStyle(fontSize: 13),
                                   decoration: InputDecoration(
                                     labelText: e.stocksType,
-                                    labelStyle: TextStyle(fontSize: 11, color: Colors.blueGrey.shade500),
+                                    labelStyle: TextStyle(
+                                        fontSize: 11,
+                                        color: Colors.blueGrey.shade500),
                                     isDense: true,
-                                    contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
-                                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                        vertical: 8, horizontal: 8),
+                                    border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8)),
                                     focusedBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(8),
-                                      borderSide: BorderSide(color: Colors.blueGrey.shade400),
+                                      borderSide: BorderSide(
+                                          color: Colors.blueGrey.shade400),
                                     ),
                                   ),
                                 ),
@@ -249,17 +262,24 @@ Widget visItemsOnly(
                                   controller: expenseController,
                                   keyboardType: TextInputType.number,
                                   textAlign: TextAlign.right,
-                                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter.digitsOnly
+                                  ],
                                   style: const TextStyle(fontSize: 13),
                                   decoration: InputDecoration(
                                     labelText: 'Expense ₱',
-                                    labelStyle: TextStyle(fontSize: 11, color: Colors.blueGrey.shade500),
+                                    labelStyle: TextStyle(
+                                        fontSize: 11,
+                                        color: Colors.blueGrey.shade500),
                                     isDense: true,
-                                    contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
-                                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                        vertical: 8, horizontal: 8),
+                                    border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8)),
                                     focusedBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(8),
-                                      borderSide: BorderSide(color: Colors.blueGrey.shade400),
+                                      borderSide: BorderSide(
+                                          color: Colors.blueGrey.shade400),
                                     ),
                                   ),
                                 ),

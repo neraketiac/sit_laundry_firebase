@@ -114,8 +114,8 @@ class JobselectedRepository {
   int _maxPartial = 0; //use for maximum kill allowed for partial 190, 260
   int _selectedOthersShortCut = menuOth155; //use for selected add shortcuts
   bool _thisJobHasPromo = false;
-  Map<int, TextEditingController> _itemQtyControllers = {};
-  Map<int, TextEditingController> _itemExpenseControllers = {};
+  Map<String, TextEditingController> _itemQtyControllers = {};
+  Map<String, TextEditingController> _itemExpenseControllers = {};
 
   //================= GETTERS =================
 
@@ -168,8 +168,9 @@ class JobselectedRepository {
   int get maxPartial => _maxPartial;
   int get selectedOthersShortCut => _selectedOthersShortCut;
   bool get thisJobHasPromo => _thisJobHasPromo;
-  Map<int, TextEditingController> get itemQtyControllers => _itemQtyControllers;
-  Map<int, TextEditingController> get itemExpenseControllers =>
+  Map<String, TextEditingController> get itemQtyControllers =>
+      _itemQtyControllers;
+  Map<String, TextEditingController> get itemExpenseControllers =>
       _itemExpenseControllers;
 
   //================= SETTERS =================
@@ -229,11 +230,11 @@ class JobselectedRepository {
   set maxPartial(int v) => _maxPartial = v;
   set selectedOthersShortCut(int v) => _selectedOthersShortCut = v;
   set thisJobHasPromo(bool v) => _thisJobHasPromo = v;
-  set itemQtyControllers(Map<int, TextEditingController> value) {
+  set itemQtyControllers(Map<String, TextEditingController> value) {
     _itemQtyControllers = value;
   }
 
-  set itemExpenseControllers(Map<int, TextEditingController> value) {
+  set itemExpenseControllers(Map<String, TextEditingController> value) {
     _itemExpenseControllers = value;
   }
 

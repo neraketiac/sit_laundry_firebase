@@ -138,50 +138,50 @@ void addListSuppItems() {
     logDate: timestamp1900,
   ));
   //plastic
-  listSuppItems.add(OtherItemModel(
-    docId: "",
-    itemId: menuOthPlasticSmall,
-    itemUniqueId: menuOthPlasticSmall,
-    itemGroup: groupOth,
-    itemName: "Plastic(S)",
-    itemPrice: 0,
-    stocksAlert: 3,
-    stocksType: "roll",
-    logDate: timestamp1900,
-  ));
-  listSuppItems.add(OtherItemModel(
-    docId: "",
-    itemId: menuOthPlasticMedium,
-    itemUniqueId: menuOthPlasticMedium,
-    itemGroup: groupOth,
-    itemName: "Plastic(M)",
-    itemPrice: 0,
-    stocksAlert: 3,
-    stocksType: "roll",
-    logDate: timestamp1900,
-  ));
-  listSuppItems.add(OtherItemModel(
-    docId: "",
-    itemId: menuOthPlasticLarge,
-    itemUniqueId: menuOthPlasticLarge,
-    itemGroup: groupOth,
-    itemName: "Plastic(L)",
-    itemPrice: 0,
-    stocksAlert: 3,
-    stocksType: "roll",
-    logDate: timestamp1900,
-  ));
-  listSuppItems.add(OtherItemModel(
-    docId: "",
-    itemId: menuOthPlasticXLarge,
-    itemUniqueId: menuOthPlasticXLarge,
-    itemGroup: groupOth,
-    itemName: "Plastic(XL)",
-    itemPrice: 0,
-    stocksAlert: 3,
-    stocksType: "roll",
-    logDate: timestamp1900,
-  ));
+  // listSuppItems.add(OtherItemModel(
+  //   docId: "",
+  //   itemId: menuOthPlasticSmall,
+  //   itemUniqueId: menuOthPlasticSmall,
+  //   itemGroup: groupOth,
+  //   itemName: "Plastic(S)",
+  //   itemPrice: 0,
+  //   stocksAlert: 3,
+  //   stocksType: "roll",
+  //   logDate: timestamp1900,
+  // ));
+  // listSuppItems.add(OtherItemModel(
+  //   docId: "",
+  //   itemId: menuOthPlasticMedium,
+  //   itemUniqueId: menuOthPlasticMedium,
+  //   itemGroup: groupOth,
+  //   itemName: "Plastic(M)",
+  //   itemPrice: 0,
+  //   stocksAlert: 3,
+  //   stocksType: "roll",
+  //   logDate: timestamp1900,
+  // ));
+  // listSuppItems.add(OtherItemModel(
+  //   docId: "",
+  //   itemId: menuOthPlasticLarge,
+  //   itemUniqueId: menuOthPlasticLarge,
+  //   itemGroup: groupOth,
+  //   itemName: "Plastic(L)",
+  //   itemPrice: 0,
+  //   stocksAlert: 3,
+  //   stocksType: "roll",
+  //   logDate: timestamp1900,
+  // ));
+  // listSuppItems.add(OtherItemModel(
+  //   docId: "",
+  //   itemId: menuOthPlasticXLarge,
+  //   itemUniqueId: menuOthPlasticXLarge,
+  //   itemGroup: groupOth,
+  //   itemName: "Plastic(XL)",
+  //   itemPrice: 0,
+  //   stocksAlert: 3,
+  //   stocksType: "roll",
+  //   logDate: timestamp1900,
+  // ));
   //gas
   // listSuppItems.add(OtherItemModel(
   //   docId: "",
