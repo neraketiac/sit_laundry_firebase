@@ -166,6 +166,44 @@ Future<void> callPickImageUniversal(
   await databaseGCashPending.saveImageUrl(gM, bytes);
 }
 
+/// Upload a GCash receipt image for a job and save the URL to Firestore.
+/// Works for any job collection (queue, ongoing, done, completed).
+Future<void> callPickGCashReceiptForJob(BuildContext context,
+    JobModelRepository jobRepo, VoidCallback onDone) async {
+  final bytes = await pickImageUniversal();
+  if (bytes == null) return;
+
+  try {
+    final compressed = await compressImage(bytes);
+    final url = await uploadToCloudinaryBytes(compressed);
+    if (url == null) throw Exception('Upload failed');
+
+    // Save to Firestore job doc
+    await FirebaseFirestore.instance
+        .collection(jobRepo.processStep == 'completed'
+            ? JOBS_COMPLETED_REF
+            : jobRepo.processStep == 'done'
+                ? JOBS_DONE_REF
+                : jobRepo.processStep == 'waiting' ||
+                        jobRepo.processStep == 'washing' ||
+                        jobRepo.processStep == 'drying' ||
+                        jobRepo.processStep == 'folding'
+                    ? JOBS_ONGOING_REF
+                    : JOBS_QUEUE_REF)
+        .doc(jobRepo.docId)
+        .update({'P09_GCashReceiptUrl': url});
+
+    jobRepo.gcashReceiptUrl = url;
+    onDone();
+  } catch (e) {
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Image upload failed: $e')),
+      );
+    }
+  }
+}
+
 Future<String?> uploadToCloudinaryBytes(Uint8List bytes) async {
   const cloudName = 'dxdskr55w';
   const uploadPreset = 'gcash_unsigned';

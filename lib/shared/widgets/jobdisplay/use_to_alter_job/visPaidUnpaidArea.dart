@@ -143,14 +143,16 @@ InkWell visPaidUnpaidArea(
         }
 
         if (context.mounted) {
-          // Reset selected payment state from the actual job model
-          // before opening the dialog — prevents bleed from previous job
-          jobRepo.selectedUnpaid = jobRepo.unpaid;
-          jobRepo.selectedPaidCash = jobRepo.paidCash;
-          jobRepo.selectedPaidGCash = jobRepo.paidGCash;
-          jobRepo.selectedPaidGCashVerified = jobRepo.paidGCashVerified;
-          jobRepo.selectedPaidCashAmount = jobRepo.paidCashAmount;
-          jobRepo.selectedPaidGCashAmount = jobRepo.paidGCashAmount;
+          // For admin override on already-paid job: keep current selected state
+          // so admin can freely change it. Only reset for unpaid→paid flow.
+          if (jobRepo.selectedUnpaid) {
+            jobRepo.selectedUnpaid = jobRepo.unpaid;
+            jobRepo.selectedPaidCash = jobRepo.paidCash;
+            jobRepo.selectedPaidGCash = jobRepo.paidGCash;
+            jobRepo.selectedPaidGCashVerified = jobRepo.paidGCashVerified;
+            jobRepo.selectedPaidCashAmount = jobRepo.paidCashAmount;
+            jobRepo.selectedPaidGCashAmount = jobRepo.paidGCashAmount;
+          }
           showPaidUnpaid(context, jobRepo);
         }
       },

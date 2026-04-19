@@ -11,8 +11,6 @@ import 'package:laundry_firebase/shared/widgets/actions/fundTypeToggle.dart';
 import 'package:laundry_firebase/core/utils/sharedmethodsdatabase.dart';
 import 'package:laundry_firebase/features/payments/repository/gcash_repository.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
-import 'package:laundry_firebase/core/global/variables_oth.dart';
-import 'package:laundry_firebase/core/global/variables_supplies.dart';
 
 void showGCashPending(BuildContext context) {
   GCashRepository gRepo = GCashRepository();
@@ -25,21 +23,6 @@ void showGCashPending(BuildContext context) {
   if (fundTypeCodes1stLayer.contains(gRepo.selectedFundCode)) {
   } else {
     gRepo.selectedFundCode = menuOthUniqIdCashIn;
-  }
-
-  String captionHere(int value) {
-    switch (value) {
-      case menuOthLaundryPayment:
-        return 'Bayad sa pina-laundry.\nadd funds';
-      case menuOthUniqIdCashIn:
-        return 'Bayad sa pa-cash-in.\nadd funds\nuse funds-in for employee';
-      case menuOthUniqIdLoad:
-        return 'Bayad sa pina-load.\nadd funds\n';
-      case menuOthUniqIdCashOut:
-        return 'Pa-cash-out si customer.\nbawas funds\nuse funds-out for employee';
-      default:
-        return '';
-    }
   }
 
   Future<void> saveButtonSetRepository() async {

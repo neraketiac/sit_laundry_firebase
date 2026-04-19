@@ -20,14 +20,68 @@ Widget showUploadedImage(
   return Visibility(
     visible: true,
     child: GestureDetector(
-      onTap: () {
+      onTap: () async {
         debugPrint(
             'itemUniqueId: ${gRepo.itemUniqueId} / ${gRepo.cashInImageUrl} / ${gRepo.cashOutImageUrl}');
 
         if (imageUrl.isEmpty) {
+          // No image — pick directly
           callPickImageUniversal(context, gRepo.getModel()!, !isCashOut);
         } else {
-          showImagePreview(context, imageUrl);
+          // Image exists — show options
+          final action = await showDialog<String>(
+            context: context,
+            builder: (_) => AlertDialog(
+              title: const Text('GCash Receipt'),
+              content:
+                  const Text('What would you like to do with the receipt?'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context, 'view'),
+                  child: const Text('View'),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.pop(context, 'replace'),
+                  child: const Text('Replace',
+                      style: TextStyle(color: Colors.orange)),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.pop(context, null),
+                  child: const Text('Cancel'),
+                ),
+              ],
+            ),
+          );
+
+          if (action == 'view') {
+            showImagePreview(context, imageUrl);
+          } else if (action == 'replace') {
+            if (!context.mounted) return;
+            final confirm = await showDialog<bool>(
+              context: context,
+              builder: (_) => AlertDialog(
+                title: const Text('Replace Receipt?'),
+                content: const Text(
+                    'This will replace the existing receipt image. Continue?'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context, false),
+                    child: const Text('Cancel'),
+                  ),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.orange),
+                    onPressed: () => Navigator.pop(context, true),
+                    child: const Text('Replace',
+                        style: TextStyle(color: Colors.white)),
+                  ),
+                ],
+              ),
+            );
+            if (confirm == true && context.mounted) {
+              callPickImageUniversal(context, gRepo.getModel()!, !isCashOut);
+            }
+          }
         }
       },
       child: Container(

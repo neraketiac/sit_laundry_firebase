@@ -24,6 +24,7 @@ import 'package:laundry_firebase/features/pages/body/rider/show_rider_orders.dar
 import 'package:laundry_firebase/features/pages/body/Supplies/readSuppliesCurrent.dart';
 import 'package:laundry_firebase/features/pages/body/Supplies/readSuppliesHist.dart';
 import 'package:laundry_firebase/features/pages/body/Unpaid/readUnpaidLaundry.dart';
+import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/show_enable_promo.dart';
 // ── Daily Routine ──────────────────────────────────────────────
 import 'package:laundry_firebase/features/pages/header/Funds/showFundCheck.dart';
 import 'package:laundry_firebase/features/pages/header/Items/showItemsInOut.dart';
@@ -259,6 +260,13 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                       MaterialPageRoute(
                           builder: (_) => const ShowAdminMainPage())),
                   child: const Text('🔢 Edit Counter'),
+                ),
+                MenuItemButton(
+                  onPressed: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => const ShowEnablePromo())),
+                  child: const Text('🔢 Edit Promo Days'),
                 ),
                 MenuItemButton(
                   onPressed: () => Navigator.push(

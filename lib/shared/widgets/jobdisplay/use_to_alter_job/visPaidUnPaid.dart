@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:laundry_firebase/core/constants/sharedConstantsFinal.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
 import 'package:laundry_firebase/core/global/variables_all_codes.dart';
+import 'package:laundry_firebase/core/utils/sharedMethods.dart';
+import 'package:laundry_firebase/core/utils/sharedmethodsdatabase.dart';
 import 'package:laundry_firebase/features/jobs/repository/jobmodel_repository.dart';
 import 'package:laundry_firebase/shared/widgets/actions/glassAmountField.dart';
 import 'package:laundry_firebase/shared/widgets/actions/glassPaymentToggle.dart';
@@ -137,7 +139,8 @@ Visibility visPaidUnPaid(BuildContext context, VoidCallback dialogSetState,
                   label: "Cash",
                   selected: jobRepo.selectedPaidCash,
                   onTap: () {
-                    if (!jobRepo.unpaid && jobRepo.paidCash) {
+                    // Block non-admin from removing already-saved cash payment
+                    if (!isAdmin && !jobRepo.unpaid && jobRepo.paidCash) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                             content: Text(
@@ -157,8 +160,9 @@ Visibility visPaidUnPaid(BuildContext context, VoidCallback dialogSetState,
                   label: "GCash",
                   selected: jobRepo.selectedPaidGCash,
                   onTap: () {
-                    // prevent reverting to unpaid if already saved as paid
-                    if (jobRepo.selectedPaidGCash &&
+                    // Block non-admin from reverting paid GCash to unpaid
+                    if (!isAdmin &&
+                        jobRepo.selectedPaidGCash &&
                         !jobRepo.selectedPaidCash &&
                         !jobRepo.unpaid) {
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -202,6 +206,113 @@ Visibility visPaidUnPaid(BuildContext context, VoidCallback dialogSetState,
           ),
 
           const SizedBox(height: 16),
+
+          /// 📷 GCASH RECEIPT IMAGE
+          if (jobRepo.selectedPaidGCash)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text(
+                    'GCash Receipt',
+                    style: TextStyle(fontSize: 12, color: Colors.white70),
+                  ),
+                  const SizedBox(width: 8),
+                  GestureDetector(
+                    onTap: () async {
+                      if (jobRepo.gcashReceiptUrl.isEmpty) {
+                        // No image yet — pick directly
+                        callPickGCashReceiptForJob(
+                            context, jobRepo, dialogSetState);
+                      } else {
+                        // Image exists — show options
+                        final action = await showDialog<String>(
+                          context: context,
+                          builder: (_) => AlertDialog(
+                            title: const Text('GCash Receipt'),
+                            content: const Text(
+                                'What would you like to do with the receipt?'),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context, 'view'),
+                                child: const Text('View'),
+                              ),
+                              TextButton(
+                                onPressed: () =>
+                                    Navigator.pop(context, 'replace'),
+                                child: const Text('Replace',
+                                    style: TextStyle(color: Colors.orange)),
+                              ),
+                              TextButton(
+                                onPressed: () => Navigator.pop(context, null),
+                                child: const Text('Cancel'),
+                              ),
+                            ],
+                          ),
+                        );
+                        if (action == 'view') {
+                          showImagePreview(context, jobRepo.gcashReceiptUrl);
+                        } else if (action == 'replace') {
+                          final confirm = await showDialog<bool>(
+                            context: context,
+                            builder: (_) => AlertDialog(
+                              title: const Text('Replace Receipt?'),
+                              content: const Text(
+                                  'This will replace the existing receipt image. Continue?'),
+                              actions: [
+                                TextButton(
+                                  onPressed: () =>
+                                      Navigator.pop(context, false),
+                                  child: const Text('Cancel'),
+                                ),
+                                ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.orange),
+                                  onPressed: () => Navigator.pop(context, true),
+                                  child: const Text('Replace',
+                                      style: TextStyle(color: Colors.white)),
+                                ),
+                              ],
+                            ),
+                          );
+                          if (confirm == true && context.mounted) {
+                            callPickGCashReceiptForJob(
+                                context, jobRepo, dialogSetState);
+                          }
+                        }
+                      }
+                    },
+                    child: Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                        color: Colors.white.withOpacity(0.12),
+                        border:
+                            Border.all(color: Colors.white.withOpacity(0.25)),
+                      ),
+                      child: jobRepo.gcashReceiptUrl.isNotEmpty
+                          ? ClipRRect(
+                              borderRadius: BorderRadius.circular(9),
+                              child: Image.network(
+                                jobRepo.gcashReceiptUrl,
+                                width: 44,
+                                height: 44,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, __, ___) => const Icon(
+                                    Icons.broken_image,
+                                    size: 20,
+                                    color: Colors.white54),
+                              ),
+                            )
+                          : const Icon(Icons.camera_alt,
+                              size: 22, color: Colors.white70),
+                    ),
+                  ),
+                ],
+              ),
+            ),
 
           /// ✅ GCASH VERIFIED
           if (jobRepo.selectedPaidGCash)

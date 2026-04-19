@@ -97,6 +97,7 @@ class JobModel {
   int paidGCashAmount; //portion paid by gcash
   //if combine, can be tag paidCash & paidGCash
   String paymentReceivedBy;
+  String gcashReceiptUrl; // GCash receipt image URL
 
   /// 🟣 Remarks
   String remarks;
@@ -253,6 +254,7 @@ class JobModel {
     required this.paidCashAmount,
     required this.paidGCashAmount,
     required this.paymentReceivedBy,
+    required this.gcashReceiptUrl,
     required this.remarks,
     required this.items,
     required this.processStep,
@@ -306,6 +308,7 @@ class JobModel {
       paidCashAmount: 0,
       paidGCashAmount: 0,
       paymentReceivedBy: '',
+      gcashReceiptUrl: '',
       remarks: '',
       items: [],
       processStep: '',
@@ -360,6 +363,7 @@ class JobModel {
     int? paidCashAmount,
     int? paidGCashAmount,
     String? paymentReceivedBy,
+    String? gcashReceiptUrl,
     String? remarks,
     List<OtherItemModel>? items,
     String? processStep,
@@ -412,6 +416,7 @@ class JobModel {
       paidCashAmount: paidCashAmount ?? this.paidCashAmount,
       paidGCashAmount: paidGCashAmount ?? this.paidGCashAmount,
       paymentReceivedBy: paymentReceivedBy ?? this.paymentReceivedBy,
+      gcashReceiptUrl: gcashReceiptUrl ?? this.gcashReceiptUrl,
       remarks: remarks ?? this.remarks,
       items: items ?? this.items,
       processStep: processStep ?? this.processStep,
@@ -461,6 +466,7 @@ class JobModel {
         paidCashAmount: json['P04_PaidCashAmount'],
         paidGCashAmount: json['P05_PaidGCashAmount'],
         paymentReceivedBy: json['P08_PaymentReceivedBy'],
+        gcashReceiptUrl: json['P09_GCashReceiptUrl'] ?? '',
         paidD: json['A03_PaidD'],
         dateO: json['A04_DateO'],
         dateD: json['A05_DateD'],
@@ -524,6 +530,7 @@ class JobModel {
         'P04_PaidCashAmount': paidCashAmount,
         'P05_PaidGCashAmount': paidGCashAmount,
         'P08_PaymentReceivedBy': paymentReceivedBy,
+        'P09_GCashReceiptUrl': gcashReceiptUrl,
         'A03_PaidD': paidD,
         'A04_DateO': dateO,
         'A05_DateD': dateD,

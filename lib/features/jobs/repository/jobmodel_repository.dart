@@ -61,6 +61,7 @@ class JobModelRepository {
       paidCashAmount: 0,
       paidGCashAmount: 0,
       paymentReceivedBy: '',
+      gcashReceiptUrl: '',
       remarks: '',
       items: [],
       processStep: '',
@@ -156,6 +157,7 @@ class JobModelRepository {
   int get paidCashAmount => jobModel.paidCashAmount;
   int get paidGCashAmount => jobModel.paidGCashAmount;
   String get paymentReceivedBy => jobModel.paymentReceivedBy;
+  String get gcashReceiptUrl => jobModel.gcashReceiptUrl;
   String get remarks => jobModel.remarks;
   List<OtherItemModel> get items => jobModel.items;
   String get processStep => jobModel.processStep;
@@ -218,6 +220,7 @@ class JobModelRepository {
   set paidCashAmount(int value) => jobModel.paidCashAmount = value;
   set paidGCashAmount(int value) => jobModel.paidGCashAmount = value;
   set paymentReceivedBy(String value) => jobModel.paymentReceivedBy = value;
+  set gcashReceiptUrl(String value) => jobModel.gcashReceiptUrl = value;
   set remarks(String value) => jobModel.remarks = value;
   set items(List<OtherItemModel> value) => jobModel.items = value;
   set processStep(String value) => jobModel.processStep = value;
