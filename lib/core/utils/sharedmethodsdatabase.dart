@@ -173,32 +173,81 @@ Future<void> callPickGCashReceiptForJob(BuildContext context,
   final bytes = await pickImageUniversal();
   if (bytes == null) return;
 
+  // Show loading indicator
+  if (context.mounted) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const PopScope(
+        canPop: false,
+        child: Center(
+          child: Card(
+            child: Padding(
+              padding: EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CircularProgressIndicator(),
+                  SizedBox(height: 12),
+                  Text('Uploading receipt...'),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   try {
     final compressed = await compressImage(bytes);
     final url = await uploadToCloudinaryBytes(compressed);
     if (url == null) throw Exception('Upload failed');
 
-    // Save to Firestore job doc
+    // Determine collection from the actual saved processStep
+    final step = jobRepo.jobModel.processStep;
+    final collection = step == 'completed'
+        ? JOBS_COMPLETED_REF
+        : step == 'done'
+            ? JOBS_DONE_REF
+            : (step == 'waiting' ||
+                    step == 'washing' ||
+                    step == 'drying' ||
+                    step == 'folding')
+                ? JOBS_ONGOING_REF
+                : JOBS_QUEUE_REF;
+
     await FirebaseFirestore.instance
-        .collection(jobRepo.processStep == 'completed'
-            ? JOBS_COMPLETED_REF
-            : jobRepo.processStep == 'done'
-                ? JOBS_DONE_REF
-                : jobRepo.processStep == 'waiting' ||
-                        jobRepo.processStep == 'washing' ||
-                        jobRepo.processStep == 'drying' ||
-                        jobRepo.processStep == 'folding'
-                    ? JOBS_ONGOING_REF
-                    : JOBS_QUEUE_REF)
+        .collection(collection)
         .doc(jobRepo.docId)
         .update({'P09_GCashReceiptUrl': url});
 
     jobRepo.gcashReceiptUrl = url;
+
+    // Dismiss loading
+    if (context.mounted) Navigator.of(context, rootNavigator: true).pop();
+
     onDone();
-  } catch (e) {
+
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Image upload failed: $e')),
+        const SnackBar(
+          content: Text('Receipt uploaded successfully'),
+          backgroundColor: Colors.green,
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
+  } catch (e) {
+    // Dismiss loading
+    if (context.mounted) Navigator.of(context, rootNavigator: true).pop();
+
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Image upload failed: $e'),
+          backgroundColor: Colors.red,
+        ),
       );
     }
   }

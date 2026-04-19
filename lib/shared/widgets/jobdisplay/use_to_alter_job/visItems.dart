@@ -179,9 +179,14 @@ Widget visItemsOnly(
                 key,
                 () => TextEditingController(text: "0"),
               );
+              jobRepo.itemRemarksControllers.putIfAbsent(
+                key,
+                () => TextEditingController(text: ""),
+              );
 
               final controller = jobRepo.itemQtyControllers[key]!;
               final expenseController = jobRepo.itemExpenseControllers[key]!;
+              final remarksController = jobRepo.itemRemarksControllers[key]!;
 
               return Container(
                 margin: const EdgeInsets.only(bottom: 8),
@@ -206,6 +211,7 @@ Widget visItemsOnly(
                         removeOtherItem(jobRepo, e);
                         jobRepo.itemQtyControllers.remove(key);
                         jobRepo.itemExpenseControllers.remove(key);
+                        jobRepo.itemRemarksControllers.remove(key);
                         dialogSetState();
                       },
                       child: const Icon(Icons.remove_circle_outline,
@@ -225,67 +231,115 @@ Widget visItemsOnly(
                             ),
                           ),
                           const SizedBox(height: 8),
-                          Row(
-                            children: [
-                              SizedBox(
-                                width: 70,
-                                child: TextField(
-                                  controller: controller,
-                                  keyboardType: TextInputType.number,
-                                  textAlign: TextAlign.center,
-                                  inputFormatters: [
-                                    FilteringTextInputFormatter.allow(
-                                        RegExp(r'^-?\d*'))
-                                  ],
-                                  style: const TextStyle(fontSize: 13),
-                                  decoration: InputDecoration(
-                                    labelText: e.stocksType,
-                                    labelStyle: TextStyle(
-                                        fontSize: 11,
-                                        color: Colors.blueGrey.shade500),
-                                    isDense: true,
-                                    contentPadding: const EdgeInsets.symmetric(
-                                        vertical: 8, horizontal: 8),
-                                    border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8)),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                      borderSide: BorderSide(
-                                          color: Colors.blueGrey.shade400),
-                                    ),
+                          Builder(builder: (context) {
+                            final isTablet =
+                                MediaQuery.of(context).size.width >= 600;
+                            final qtyField = SizedBox(
+                              width: 70,
+                              child: TextField(
+                                controller: controller,
+                                keyboardType: TextInputType.number,
+                                textAlign: TextAlign.center,
+                                inputFormatters: [
+                                  FilteringTextInputFormatter.allow(
+                                      RegExp(r'^-?\d*'))
+                                ],
+                                style: const TextStyle(fontSize: 13),
+                                decoration: InputDecoration(
+                                  labelText: e.stocksType,
+                                  labelStyle: TextStyle(
+                                      fontSize: 11,
+                                      color: Colors.blueGrey.shade500),
+                                  isDense: true,
+                                  contentPadding: const EdgeInsets.symmetric(
+                                      vertical: 8, horizontal: 8),
+                                  border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8)),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                    borderSide: BorderSide(
+                                        color: Colors.blueGrey.shade400),
                                   ),
                                 ),
                               ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: TextField(
-                                  controller: expenseController,
-                                  keyboardType: TextInputType.number,
-                                  textAlign: TextAlign.right,
-                                  inputFormatters: [
-                                    FilteringTextInputFormatter.digitsOnly
-                                  ],
-                                  style: const TextStyle(fontSize: 13),
-                                  decoration: InputDecoration(
-                                    labelText: 'Expense ₱',
-                                    labelStyle: TextStyle(
-                                        fontSize: 11,
-                                        color: Colors.blueGrey.shade500),
-                                    isDense: true,
-                                    contentPadding: const EdgeInsets.symmetric(
-                                        vertical: 8, horizontal: 8),
-                                    border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8)),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                      borderSide: BorderSide(
-                                          color: Colors.blueGrey.shade400),
-                                    ),
+                            );
+                            final expenseField = Expanded(
+                              child: TextField(
+                                controller: expenseController,
+                                keyboardType: TextInputType.number,
+                                textAlign: TextAlign.right,
+                                inputFormatters: [
+                                  FilteringTextInputFormatter.digitsOnly
+                                ],
+                                style: const TextStyle(fontSize: 13),
+                                decoration: InputDecoration(
+                                  labelText: 'Expense ₱',
+                                  labelStyle: TextStyle(
+                                      fontSize: 11,
+                                      color: Colors.blueGrey.shade500),
+                                  isDense: true,
+                                  contentPadding: const EdgeInsets.symmetric(
+                                      vertical: 8, horizontal: 8),
+                                  border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8)),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                    borderSide: BorderSide(
+                                        color: Colors.blueGrey.shade400),
                                   ),
                                 ),
                               ),
-                            ],
-                          ),
+                            );
+                            final remarksField = Expanded(
+                              flex: 2,
+                              child: TextField(
+                                controller: remarksController,
+                                style: const TextStyle(fontSize: 12),
+                                decoration: InputDecoration(
+                                  labelText: 'Remarks',
+                                  labelStyle: TextStyle(
+                                      fontSize: 11,
+                                      color: Colors.blueGrey.shade500),
+                                  isDense: true,
+                                  contentPadding: const EdgeInsets.symmetric(
+                                      vertical: 8, horizontal: 8),
+                                  border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8)),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                    borderSide: BorderSide(
+                                        color: Colors.blueGrey.shade400),
+                                  ),
+                                ),
+                                maxLines: 1,
+                              ),
+                            );
+
+                            if (isTablet) {
+                              // iPad: all three in one row
+                              return Row(children: [
+                                qtyField,
+                                const SizedBox(width: 8),
+                                expenseField,
+                                const SizedBox(width: 8),
+                                remarksField,
+                              ]);
+                            } else {
+                              // iPhone: qty+expense row, remarks below
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(children: [
+                                    qtyField,
+                                    const SizedBox(width: 10),
+                                    expenseField,
+                                  ]),
+                                  const SizedBox(height: 8),
+                                  remarksField,
+                                ],
+                              );
+                            }
+                          }),
                         ],
                       ),
                     ),

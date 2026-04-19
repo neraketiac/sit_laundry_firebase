@@ -116,6 +116,7 @@ class JobselectedRepository {
   bool _thisJobHasPromo = false;
   Map<String, TextEditingController> _itemQtyControllers = {};
   Map<String, TextEditingController> _itemExpenseControllers = {};
+  Map<String, TextEditingController> _itemRemarksControllers = {};
 
   //================= GETTERS =================
 
@@ -172,6 +173,8 @@ class JobselectedRepository {
       _itemQtyControllers;
   Map<String, TextEditingController> get itemExpenseControllers =>
       _itemExpenseControllers;
+  Map<String, TextEditingController> get itemRemarksControllers =>
+      _itemRemarksControllers;
 
   //================= SETTERS =================
 
@@ -238,6 +241,10 @@ class JobselectedRepository {
     _itemExpenseControllers = value;
   }
 
+  set itemRemarksControllers(Map<String, TextEditingController> value) {
+    _itemRemarksControllers = value;
+  }
+
   void reset() {
     selectedJobId = 0;
     selectedCustomerId = 0;
@@ -289,5 +296,6 @@ class JobselectedRepository {
     thisJobHasPromo = false;
     itemQtyControllers.clear();
     itemExpenseControllers.clear();
+    itemRemarksControllers.clear();
   }
 }

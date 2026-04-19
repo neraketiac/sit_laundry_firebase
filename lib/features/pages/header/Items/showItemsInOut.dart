@@ -96,6 +96,7 @@ void showItemsInOut(BuildContext context) {
       sMH.itemUniqueId = item.itemUniqueId;
       sMH.currentCounter = qty;
       sMH.expenseAmount = expense;
+      sMH.remarks = jobRepo.itemRemarksControllers[key]?.text.trim() ?? '';
       sMH.docId = ''; // reset so each item gets its own SuppliesCurr lookup
       sMH.countId = 0;
       sMH.currentStocks = 0;
