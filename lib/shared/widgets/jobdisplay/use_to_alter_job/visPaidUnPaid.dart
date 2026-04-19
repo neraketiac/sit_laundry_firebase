@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:laundry_firebase/core/constants/sharedConstantsFinal.dart';
+import 'package:laundry_firebase/core/global/variables.dart';
 import 'package:laundry_firebase/core/global/variables_all_codes.dart';
 import 'package:laundry_firebase/features/jobs/repository/jobmodel_repository.dart';
 import 'package:laundry_firebase/shared/widgets/actions/glassAmountField.dart';
@@ -138,7 +139,9 @@ Visibility visPaidUnPaid(BuildContext context, VoidCallback dialogSetState,
                   onTap: () {
                     if (!jobRepo.unpaid && jobRepo.paidCash) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Cash payment is already saved and cannot be removed.')),
+                        const SnackBar(
+                            content: Text(
+                                'Cash payment is already saved and cannot be removed.')),
                       );
                       return;
                     }
@@ -155,9 +158,13 @@ Visibility visPaidUnPaid(BuildContext context, VoidCallback dialogSetState,
                   selected: jobRepo.selectedPaidGCash,
                   onTap: () {
                     // prevent reverting to unpaid if already saved as paid
-                    if (jobRepo.selectedPaidGCash && !jobRepo.selectedPaidCash && !jobRepo.unpaid) {
+                    if (jobRepo.selectedPaidGCash &&
+                        !jobRepo.selectedPaidCash &&
+                        !jobRepo.unpaid) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Cannot revert to unpaid once payment is saved.')),
+                        const SnackBar(
+                            content: Text(
+                                'Cannot revert to unpaid once payment is saved.')),
                       );
                       return;
                     }
@@ -212,12 +219,18 @@ Visibility visPaidUnPaid(BuildContext context, VoidCallback dialogSetState,
                 Switch(
                   value: jobRepo.selectedPaidGCashVerified,
                   activeThumbColor: Colors.greenAccent,
-                  onChanged: (value) {
-                    jobRepo.selectedPaidGCashVerified = value;
-
-                    dialogSetState();
-                  },
+                  onChanged: isAdmin
+                      ? (value) {
+                          jobRepo.selectedPaidGCashVerified = value;
+                          dialogSetState();
+                        }
+                      : null,
                 ),
+                if (!isAdmin)
+                  const Padding(
+                    padding: EdgeInsets.only(left: 4),
+                    child: Icon(Icons.lock, size: 14, color: Colors.white38),
+                  ),
               ],
             ),
         ],

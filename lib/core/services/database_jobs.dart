@@ -3,6 +3,7 @@ import 'package:laundry_firebase/core/utils/firestore_timeout.dart';
 import 'package:laundry_firebase/features/jobs/models/jobmodel.dart';
 import 'package:laundry_firebase/core/services/database_loyalty.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
+import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/promo_day_checker.dart';
 
 /// 🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦
 /// 🔹 COLLECTION REFERENCES
@@ -338,6 +339,14 @@ Future<void> moveOngoingToDone(
     String docId, bool forDelivery, int customerId, int promoCounter) async {
   final firestore = FirebaseFirestore.instance;
 
+  // Resolve the actual DateD that will be written.
+  // When not using admin override, DateD will be Timestamp.now() set inside
+  // the transaction — so we use DateTime.now() here too (never timestamp1900).
+  final resolvedDateD =
+      useAdminTimestampDateD ? adminTimestampDateD.toDate() : DateTime.now();
+  final promoEnabled = await isPromoEnabled(resolvedDateD);
+  final effectivePromoCounter = promoEnabled ? promoCounter : 0;
+
   await firestore.runTransaction((tx) async {
     final ongoingRef = firestore.collection(JOBS_ONGOING_REF).doc(docId);
     final doneRef = firestore.collection(JOBS_DONE_REF).doc(docId);
@@ -370,8 +379,7 @@ Future<void> moveOngoingToDone(
     tx.delete(ongoingRef);
 
     DatabaseLoyalty loyalty = DatabaseLoyalty();
-
-    loyalty.addCountByCardNumber(customerId, promoCounter);
+    loyalty.addCountByCardNumber(customerId, effectivePromoCounter);
   });
 }
 

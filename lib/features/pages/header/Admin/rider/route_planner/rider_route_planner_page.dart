@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:laundry_firebase/features/customers/models/customermodel.dart';
 import 'package:laundry_firebase/features/customers/repository/customer_repository.dart';
 import 'package:web/web.dart' as web;
-import 'package:web/web.dart' as web;
 
 // ── Model ──────────────────────────────────────────────────────────────────
 
@@ -38,8 +37,7 @@ class _RiderRoutePlannerPageState extends State<RiderRoutePlannerPage> {
   bool _mapVisible = true;
   bool _mapReady = false;
 
-  final String _mapId =
-      'route-map-${DateTime.now().millisecondsSinceEpoch}';
+  final String _mapId = 'route-map-${DateTime.now().millisecondsSinceEpoch}';
   late web.HTMLIFrameElement _iframe;
 
   @override
@@ -65,12 +63,14 @@ class _RiderRoutePlannerPageState extends State<RiderRoutePlannerPage> {
       ..style.width = '100%'
       ..style.height = '100%';
 
-    web.window.addEventListener('message', (web.Event e) {
-      final msg = e as web.MessageEvent;
-      if (msg.data.dartify() == 'map-ready') {
-        setState(() => _mapReady = true);
-      }
-    }.toJS);
+    web.window.addEventListener(
+        'message',
+        (web.Event e) {
+          final msg = e as web.MessageEvent;
+          if (msg.data.dartify() == 'map-ready') {
+            setState(() => _mapReady = true);
+          }
+        }.toJS);
 
     ui_web.platformViewRegistry.registerViewFactory(_mapId, (_) => _iframe);
   }
@@ -177,7 +177,8 @@ class _RiderRoutePlannerPageState extends State<RiderRoutePlannerPage> {
               padding: const EdgeInsets.only(right: 8),
               child: TextButton.icon(
                 icon: const Icon(Icons.delete_sweep, color: Colors.white),
-                label: const Text('Clear', style: TextStyle(color: Colors.white)),
+                label:
+                    const Text('Clear', style: TextStyle(color: Colors.white)),
                 onPressed: () {
                   setState(() => _stops.clear());
                   _refreshMap();
@@ -283,8 +284,8 @@ class _RiderRoutePlannerPageState extends State<RiderRoutePlannerPage> {
                     size: 14, color: Colors.grey.shade500),
                 const SizedBox(width: 4),
                 Text('Drag to reorder route',
-                    style: TextStyle(
-                        fontSize: 11, color: Colors.grey.shade500)),
+                    style:
+                        TextStyle(fontSize: 11, color: Colors.grey.shade500)),
               ],
             ),
             const SizedBox(height: 8),
@@ -322,8 +323,8 @@ class _RiderRoutePlannerPageState extends State<RiderRoutePlannerPage> {
                   Expanded(
                     child: Text(
                       'Search a customer and tap "Add to Route" to build the delivery route.',
-                      style: TextStyle(
-                          fontSize: 12, color: Colors.teal.shade700),
+                      style:
+                          TextStyle(fontSize: 12, color: Colors.teal.shade700),
                     ),
                   ),
                 ],
@@ -466,8 +467,8 @@ class _StopTile extends StatelessWidget {
                         fontSize: 13, fontWeight: FontWeight.w600)),
                 if (stop.address.isNotEmpty)
                   Text(stop.address,
-                      style: TextStyle(
-                          fontSize: 11, color: Colors.grey.shade600),
+                      style:
+                          TextStyle(fontSize: 11, color: Colors.grey.shade600),
                       overflow: TextOverflow.ellipsis),
               ],
             ),
@@ -533,14 +534,12 @@ class _CustomerSearchFieldState extends State<_CustomerSearchField> {
             hintText: 'Search customer...',
             prefixIcon: const Icon(Icons.search, size: 18),
             suffixIcon: widget.selected != null
-                ? const Icon(Icons.check_circle,
-                    color: Colors.teal, size: 18)
+                ? const Icon(Icons.check_circle, color: Colors.teal, size: 18)
                 : null,
             isDense: true,
             contentPadding:
                 const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
-            border:
-                OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
               borderSide: BorderSide(color: Colors.teal.shade400),
@@ -565,8 +564,7 @@ class _CustomerSearchFieldState extends State<_CustomerSearchField> {
                   return ListTile(
                     dense: true,
                     leading: const Icon(Icons.person_outline, size: 16),
-                    title: Text(c.name,
-                        style: const TextStyle(fontSize: 13)),
+                    title: Text(c.name, style: const TextStyle(fontSize: 13)),
                     subtitle: Text(c.address,
                         style: const TextStyle(fontSize: 11),
                         overflow: TextOverflow.ellipsis),
