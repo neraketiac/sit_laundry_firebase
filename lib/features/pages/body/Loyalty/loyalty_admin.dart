@@ -116,6 +116,7 @@ class _LoyaltyAdminState extends State<LoyaltyAdmin> {
               address: data['Address'] ?? '',
               remarks: data['C5_Remarks'] ?? '',
               count: data['Count'] ?? 0,
+              cardNumber: data['cardNumber'] ?? 0,
             );
           }).toList(),
         );
@@ -154,6 +155,7 @@ class _LoyaltyAdminState extends State<LoyaltyAdmin> {
     required String address,
     required String remarks,
     required int count,
+    required int cardNumber,
   }) {
     return Container(
       margin: const EdgeInsets.only(bottom: 20),
@@ -177,10 +179,11 @@ class _LoyaltyAdminState extends State<LoyaltyAdmin> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildHeader(name, docId),
+                _buildHeader(name, cardNumber),
                 const SizedBox(height: 12),
                 _buildInfoRow(Icons.phone, contact),
                 _buildInfoRow(Icons.location_on, address),
+                if (remarks.isNotEmpty) _buildInfoRow(Icons.notes, remarks),
                 const SizedBox(height: 20),
                 _buildStarButtons(
                     docId, name, contact, address, remarks, count),
@@ -192,19 +195,22 @@ class _LoyaltyAdminState extends State<LoyaltyAdmin> {
     );
   }
 
-  Widget _buildHeader(String name, String docId) {
+  Widget _buildHeader(String name, int cardNumber) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          name,
-          style: const TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-            letterSpacing: 1,
+        Expanded(
+          child: Text(
+            name,
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+              letterSpacing: 1,
+            ),
           ),
         ),
+        const SizedBox(width: 8),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
@@ -212,13 +218,13 @@ class _LoyaltyAdminState extends State<LoyaltyAdmin> {
             borderRadius: BorderRadius.circular(30),
           ),
           child: Text(
-            "#$docId",
+            '#$cardNumber',
             style: const TextStyle(
               color: Colors.cyanAccent,
               fontWeight: FontWeight.w500,
             ),
           ),
-        )
+        ),
       ],
     );
   }
@@ -294,33 +300,110 @@ class _LoyaltyAdminState extends State<LoyaltyAdmin> {
   Future<void> _openCreateDialog() async {
     await _generateNextId();
     _docIdController.text = _nextId.toString();
+    _nameController.clear();
+    _contactController.clear();
+    _addressController.clear();
+    _remarksController.clear();
+
+    // Edit mode state — null = creating new, non-null = editing existing
+    String? editDocId;
+    int? editCardNumber;
 
     showDialog(
       context: context,
       builder: (_) => StatefulBuilder(
         builder: (ctx, setDialogState) {
-          // Live duplicate check
+          final isEditMode = editDocId != null;
           final query = _nameController.text.trim().toLowerCase();
-          final duplicates = query.isEmpty
-              ? <CustomerModel>[]
-              : CustomerRepository.instance.customers
+          final duplicates = (!isEditMode && query.isNotEmpty)
+              ? CustomerRepository.instance.customers
                   .where((c) => c.name.toLowerCase().contains(query))
                   .take(5)
-                  .toList();
+                  .toList()
+              : <CustomerModel>[];
           final hasDuplicate = duplicates.isNotEmpty;
+
+          Future<void> loadExisting(CustomerModel c) async {
+            // Fetch full loyalty doc to get all fields
+            final snap = await _firestore
+                .collection('loyalty')
+                .where('cardNumber', isEqualTo: c.customerId)
+                .limit(1)
+                .get();
+            if (snap.docs.isEmpty) return;
+            final doc = snap.docs.first;
+            final data = doc.data();
+            setDialogState(() {
+              editDocId = doc.id;
+              editCardNumber = c.customerId;
+              _nameController.text = data['Name'] ?? c.name;
+              _contactController.text = data['Contact'] ?? c.contact;
+              _addressController.text = data['Address'] ?? c.address;
+              _remarksController.text = data['C5_Remarks'] ?? c.remarks;
+            });
+          }
 
           return AlertDialog(
             backgroundColor: const Color(0xFF1E2A38),
-            title: const Text("Create Loyalty Member",
-                style: TextStyle(color: Colors.white)),
+            title: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    isEditMode
+                        ? 'Edit Loyalty Member'
+                        : 'Create Loyalty Member',
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                ),
+                if (isEditMode)
+                  // Show card number badge + clear button
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.cyanAccent.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                              color: Colors.cyanAccent.withOpacity(0.3)),
+                        ),
+                        child: Text(
+                          '#$editCardNumber',
+                          style: const TextStyle(
+                              color: Colors.cyanAccent,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      GestureDetector(
+                        onTap: () => setDialogState(() {
+                          editDocId = null;
+                          editCardNumber = null;
+                          _nameController.clear();
+                          _contactController.clear();
+                          _addressController.clear();
+                          _remarksController.clear();
+                        }),
+                        child: const Icon(Icons.close,
+                            size: 16, color: Colors.white38),
+                      ),
+                    ],
+                  )
+                else
+                  Text(
+                    'Card #: $_nextId',
+                    style:
+                        const TextStyle(color: Colors.cyanAccent, fontSize: 12),
+                  ),
+              ],
+            ),
             content: SingleChildScrollView(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("Card #: $_nextId",
-                      style: const TextStyle(color: Colors.cyanAccent)),
-                  const SizedBox(height: 10),
-                  // Name field with live duplicate check
+                  // Name field
                   TextField(
                     controller: _nameController,
                     style: const TextStyle(color: Colors.white),
@@ -337,7 +420,7 @@ class _LoyaltyAdminState extends State<LoyaltyAdmin> {
                     ),
                     onChanged: (_) => setDialogState(() {}),
                   ),
-                  // Duplicate warning
+                  // Tappable duplicate suggestions
                   if (hasDuplicate) ...[
                     const SizedBox(height: 6),
                     Container(
@@ -351,41 +434,80 @@ class _LoyaltyAdminState extends State<LoyaltyAdmin> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('Similar names already exist:',
-                              style: TextStyle(
-                                  color: Colors.orange,
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.bold)),
+                          const Text(
+                            'Tap to edit existing:',
+                            style: TextStyle(
+                                color: Colors.orange,
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold),
+                          ),
                           const SizedBox(height: 4),
-                          ...duplicates.map((c) => Text(
-                                '• ${c.name} (#${c.customerId}) — ${c.address}',
-                                style: const TextStyle(
-                                    color: Colors.white70, fontSize: 11),
+                          ...duplicates.map((c) => InkWell(
+                                onTap: () => loadExisting(c),
+                                child: Padding(
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 4),
+                                  child: Row(
+                                    children: [
+                                      const Icon(Icons.edit,
+                                          size: 12, color: Colors.cyanAccent),
+                                      const SizedBox(width: 6),
+                                      Expanded(
+                                        child: Text(
+                                          '${c.name} (#${c.customerId}) — ${c.address}',
+                                          style: const TextStyle(
+                                              color: Colors.white70,
+                                              fontSize: 11),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
                               )),
                         ],
                       ),
                     ),
                   ],
                   const SizedBox(height: 4),
-                  _buildTextField(_contactController, "Contact"),
-                  _buildTextField(_addressController, "Address"),
-                  _buildTextField(_remarksController, "Remarks"),
+                  _buildTextField(_contactController, 'Contact'),
+                  _buildTextField(_addressController, 'Address'),
+                  _buildTextField(_remarksController, 'Remarks'),
                 ],
               ),
             ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(ctx),
-                child: const Text("Cancel",
+                child: const Text('Cancel',
                     style: TextStyle(color: Colors.white70)),
               ),
               TextButton(
                 onPressed: () async {
-                  await _createCustomer();
+                  if (isEditMode) {
+                    await _updateCustomer(
+                      docId: editDocId!,
+                      cardNumber: editCardNumber!,
+                      name: _nameController.text.trim(),
+                      contact: _contactController.text.trim(),
+                      address: _addressController.text.trim(),
+                      remarks: _remarksController.text.trim(),
+                      // count unchanged — only editable via stars
+                      count: (await _firestore
+                                  .collection('loyalty')
+                                  .doc(editDocId)
+                                  .get())
+                              .data()?['Count'] ??
+                          0,
+                    );
+                  } else {
+                    await _createCustomer();
+                  }
                   if (ctx.mounted) Navigator.pop(ctx);
                 },
-                child: const Text("Save",
-                    style: TextStyle(color: Colors.cyanAccent)),
+                child: Text(
+                  isEditMode ? 'Update' : 'Save',
+                  style: const TextStyle(color: Colors.cyanAccent),
+                ),
               ),
             ],
           );
@@ -460,6 +582,54 @@ class _LoyaltyAdminState extends State<LoyaltyAdmin> {
     _contactController.clear();
     _addressController.clear();
     _remarksController.clear();
+  }
+
+  Future<void> _updateCustomer({
+    required String docId,
+    required int cardNumber,
+    required String name,
+    required String contact,
+    required String address,
+    required String remarks,
+    required int count,
+  }) async {
+    // 1. Update loyalty record
+    await _firestore.collection('loyalty').doc(docId).update({
+      'Name': name,
+      'Contact': contact,
+      'Address': address,
+      'C5_Remarks': remarks,
+      'Count': count,
+      // cardNumber is intentionally NOT updated — it's the key identifier
+    });
+
+    // 2. Sync customer name in Jobs_queue and Jobs_ongoing
+    for (final collection in ['Jobs_queue', 'Jobs_ongoing']) {
+      final snap = await _firestore
+          .collection(collection)
+          .where('C00_CustomerId', isEqualTo: cardNumber)
+          .get();
+      if (snap.docs.isEmpty) continue;
+      final batch = _firestore.batch();
+      for (final doc in snap.docs) {
+        batch.update(doc.reference, {'C01_CustomerName': name});
+      }
+      await batch.commit();
+    }
+
+    // 3. Sync in-memory customer list
+    final repo = CustomerRepository.instance;
+    final idx = repo.customers.indexWhere((c) => c.customerId == cardNumber);
+    if (idx != -1) {
+      repo.customers[idx] = CustomerModel(
+        customerId: cardNumber,
+        name: name,
+        address: address,
+        contact: contact,
+        remarks: remarks,
+        loyaltyCount: count,
+      );
+    }
   }
 
   // ================= UPDATE =================
