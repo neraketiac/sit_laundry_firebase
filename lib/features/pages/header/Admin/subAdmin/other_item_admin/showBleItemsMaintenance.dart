@@ -165,8 +165,13 @@ class _BleItemsPageState extends State<BleItemsPage> {
       final item = items[i];
 
       final updated = item.coyWith(
-        itemId: int.tryParse(itemIdCtrls[i]?.text ?? "0") ?? 0,
-        itemUniqueId: int.tryParse(uniqueCtrls[i]?.text ?? "0") ?? 0,
+        // itemId and itemUniqueId are locked for existing records
+        itemId: item.docId.isEmpty
+            ? (int.tryParse(itemIdCtrls[i]?.text ?? "0") ?? 0)
+            : item.itemId,
+        itemUniqueId: item.docId.isEmpty
+            ? (int.tryParse(uniqueCtrls[i]?.text ?? "0") ?? 0)
+            : item.itemUniqueId,
         itemName: nameCtrls[i]?.text ?? "",
         itemPrice: int.tryParse(priceCtrls[i]?.text ?? "0") ?? 0,
         stocksAlert: int.tryParse(alertCtrls[i]?.text ?? "0") ?? 0,
@@ -203,6 +208,24 @@ class _BleItemsPageState extends State<BleItemsPage> {
         decoration: const InputDecoration(
           border: OutlineInputBorder(),
           isDense: true,
+        ),
+      ),
+    );
+  }
+
+  Widget readOnlyCell(String value, {double width = 120}) {
+    return SizedBox(
+      width: width,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+        decoration: BoxDecoration(
+          color: Colors.grey.shade100,
+          border: Border.all(color: Colors.grey.shade400),
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: Text(
+          value,
+          style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
         ),
       ),
     );
@@ -279,8 +302,16 @@ class _BleItemsPageState extends State<BleItemsPage> {
                                   )
                                 : const SizedBox(),
                           ),
-                          cell(itemIdCtrls[index]!, width: 90, numeric: true),
-                          cell(uniqueCtrls[index]!, width: 120, numeric: true),
+                          items[index].docId.isEmpty
+                              ? cell(itemIdCtrls[index]!,
+                                  width: 90, numeric: true)
+                              : readOnlyCell(itemIdCtrls[index]!.text,
+                                  width: 90),
+                          items[index].docId.isEmpty
+                              ? cell(uniqueCtrls[index]!,
+                                  width: 120, numeric: true)
+                              : readOnlyCell(uniqueCtrls[index]!.text,
+                                  width: 120),
                           cell(nameCtrls[index]!, width: 220),
                           cell(priceCtrls[index]!, width: 100, numeric: true),
                           cell(alertCtrls[index]!, width: 120, numeric: true),
