@@ -92,6 +92,18 @@ final reg150ItemModel = OtherItemModel(
   logDate: timestamp1900,
 );
 
+final reg225ItemModel = OtherItemModel(
+  docId: "",
+  itemId: menuOth150,
+  itemUniqueId: menuOth150,
+  itemGroup: groupOth,
+  itemName: "Reg225",
+  itemPrice: 225,
+  stocksAlert: 5,
+  stocksType: "pcs",
+  logDate: timestamp1900,
+);
+
 final xDItemModel = OtherItemModel(
   docId: "",
   itemId: menuOthXD,

@@ -180,19 +180,28 @@ Widget visAmountOthersOnly(
                   accentColor: Colors.amberAccent,
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: listOthersShortRow2.map((shortcut) {
-                      return glassShortcutButton(
-                        label: getShortcutLabel(shortcut),
+                    children: [
+                      ...listOthersShortRow2.map((shortcut) {
+                        return glassShortcutButton(
+                          label: getShortcutLabel(shortcut),
+                          onTap: () {
+                            if (shortcut == menuOth125) {
+                              addOtherItem(jobRepo, reg125ItemModel);
+                            } else if (shortcut == menuOth150) {
+                              addOtherItem(jobRepo, reg150ItemModel);
+                            }
+                            dialogSetState();
+                          },
+                        );
+                      }),
+                      glassShortcutButton(
+                        label: '₱225',
                         onTap: () {
-                          if (shortcut == menuOth125) {
-                            addOtherItem(jobRepo, reg125ItemModel);
-                          } else if (shortcut == menuOth150) {
-                            addOtherItem(jobRepo, reg150ItemModel);
-                          }
+                          addOtherItem(jobRepo, reg225ItemModel);
                           dialogSetState();
                         },
-                      );
-                    }).toList(),
+                      ),
+                    ],
                   ),
                 );
 
