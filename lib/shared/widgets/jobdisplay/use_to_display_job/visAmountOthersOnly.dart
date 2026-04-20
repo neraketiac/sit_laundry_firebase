@@ -29,6 +29,8 @@ Widget visAmountOthersOnly(
         return "₱125";
       case menuOth150:
         return "₱150";
+      case menuOth225:
+        return "₱225";
       case menuOthXD:
         return "XDry";
       case menuOthXW:

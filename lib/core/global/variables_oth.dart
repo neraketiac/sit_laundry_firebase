@@ -94,8 +94,8 @@ final reg150ItemModel = OtherItemModel(
 
 final reg225ItemModel = OtherItemModel(
   docId: "",
-  itemId: menuOth150,
-  itemUniqueId: menuOth150,
+  itemId: menuOth225,
+  itemUniqueId: menuOth225,
   itemGroup: groupOth,
   itemName: "Reg225",
   itemPrice: 225,

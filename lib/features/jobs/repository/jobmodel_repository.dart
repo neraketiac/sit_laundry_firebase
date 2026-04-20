@@ -778,13 +778,21 @@ class JobModelRepository {
       }
     }
     if (selectedPackage == intOthersPackage) {
-      final onlyPromo =
-          (selectedItems.where((v) => v.itemId == menuOth155).length) +
-              (selectedFinalLoad =
-                  selectedItems.where((v) => v.itemId == menuOth195).length);
+      final count155 =
+          selectedItems.where((v) => v.itemId == menuOth155).length;
+      final count195 =
+          selectedItems.where((v) => v.itemId == menuOth195).length;
+      final onlyPromo = count155 + count195;
 
       jobRepo.finalLoad = onlyPromo +
-          (selectedItems.where((v) => v.itemId == menuOth125).length);
+          count195 + // ₱260 = 2 loads (1 from onlyPromo + 1 extra)
+          (selectedItems.where((v) => v.itemId == menuOth165).length) *
+              2 + // ₱165 = 2 loads
+          (selectedItems.where((v) => v.itemId == menuOth125).length) +
+          (selectedItems.where((v) => v.itemId == menuOth225).length) *
+              2 + // ₱225 = 2 loads
+          (selectedItems.where((v) => v.itemId == menuOthWD98).length) +
+          (selectedItems.where((v) => v.itemId == menuOthNF125).length);
       jobRepo.promoCounter = onlyPromo;
     }
 
