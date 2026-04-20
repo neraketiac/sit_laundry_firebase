@@ -78,8 +78,40 @@ void showJobOnQueueEdit(BuildContext context, JobModelRepository jobRepo) {
                               context, () => setState(() {}), jobRepo),
                           visAmountOthersOnly(
                               context, () => setState(() {}), jobRepo),
-                          visPaidUnPaid(
-                              context, () => setState(() {}), jobRepo),
+                          // Payment — locked if already paid (non-admin)
+                          if (!jobRepo.unpaid && !isAdmin)
+                            Container(
+                              margin: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 4),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 12),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(12),
+                                color: Colors.green.shade700.withOpacity(0.85),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Icon(Icons.lock,
+                                      color: Colors.white, size: 16),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    jobRepo.paidCash && jobRepo.paidGCash
+                                        ? 'Split Payment — Locked'
+                                        : jobRepo.paidCash
+                                            ? 'Paid Cash — Locked'
+                                            : 'Paid GCash — Locked',
+                                    style: const TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 13),
+                                  ),
+                                ],
+                              ),
+                            )
+                          else
+                            visPaidUnPaid(
+                                context, () => setState(() {}), jobRepo),
                           const Text('Other Options',
                               style: TextStyle(fontSize: 11)),
                           visFold(context, () => setState(() {}), jobRepo),
