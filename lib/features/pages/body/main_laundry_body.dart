@@ -51,6 +51,7 @@ import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/other_item
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/other_item_admin/showFabItemsMaintenance.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/other_item_admin/showBleItemsMaintenance.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/AutoSalaryDateOneTimeBatch.dart';
+import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/batch_remove_promo_disabled_days.dart';
 // ── Core ───────────────────────────────────────────────────────
 import 'package:laundry_firebase/core/utils/sharedMethods.dart';
 import 'package:laundry_firebase/core/utils/sharedmethodsdatabase.dart';
@@ -337,6 +338,14 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                                 builder: (_) =>
                                     const BatchFixPromoCounterPage())),
                         child: const Text('🔧 Fix PromoCounter'),
+                      ),
+                      MenuItemButton(
+                        onPressed: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) =>
+                                    const BatchRemovePromoDisabledDays())),
+                        child: const Text('🚫 Remove Promo on Disabled Days'),
                       ),
                       MenuItemButton(
                         onPressed: () => Navigator.push(

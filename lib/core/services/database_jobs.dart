@@ -363,16 +363,18 @@ Future<void> moveOngoingToDone(
         ...snapshot.data()!,
         'Q00_ForSorting': false,
         'Q01_RiderPickup': true,
-        'O00_ProcessStep': 'done', // 👈 initial step
+        'O00_ProcessStep': 'done',
         'O01_AllStatus': 0.7,
         'A05_DateD': adminTimestampDateD,
+        'Q06_PromoCounter': effectivePromoCounter,
       });
     } else {
       tx.set(doneRef, {
         ...snapshot.data()!,
         'O01_AllStatus': 0.7,
-        'O00_ProcessStep': 'done', // 👈 initial step
+        'O00_ProcessStep': 'done',
         'A05_DateD': adminTimestampDateD,
+        'Q06_PromoCounter': effectivePromoCounter,
       });
     }
 

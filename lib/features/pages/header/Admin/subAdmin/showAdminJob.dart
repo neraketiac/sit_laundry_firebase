@@ -54,6 +54,7 @@ class _AdminJobRepoViewerState extends State<AdminJobRepoViewer> {
     jobRepo.promoErrorCode = jobRepo.selectedPromoErrorCode;
     jobRepo.isCustomerPickedUp = jobRepo.selectedIsCustomerPickedUp;
     jobRepo.isDeliveredToCustomer = jobRepo.selectedIsDeliveredToCustomer;
+    // Dates are updated directly on jobRepo via _updateField — no selected mirror needed
     await callDatabaseUpdateJob(context, jobRepo.getJobsModel()!);
   }
 
@@ -109,6 +110,52 @@ class _AdminJobRepoViewerState extends State<AdminJobRepoViewer> {
   }
 
   Widget _buildEditWidget(String label, dynamic repo, dynamic selected) {
+    // Date fields — show date picker button
+    const dateFields = {
+      'dateQ',
+      'needOn',
+      'dateO',
+      'paidD',
+      'dateD',
+      'dateC',
+      'customerPickupDate',
+      'riderDeliveryDate'
+    };
+    if (dateFields.contains(label) && selected is Timestamp) {
+      final dt = selected.toDate();
+      return Row(
+        children: [
+          Expanded(
+            child: Text(
+              DateFormat('MMM dd yyyy HH:mm').format(dt),
+              style: const TextStyle(fontSize: 13),
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.calendar_today, size: 18),
+            onPressed: () async {
+              final picked = await showDatePicker(
+                context: context,
+                initialDate: dt,
+                firstDate: DateTime(2000),
+                lastDate: DateTime(2100),
+              );
+              if (picked == null) return;
+              // Keep original time, only change date
+              final updated = DateTime(
+                picked.year,
+                picked.month,
+                picked.day,
+                dt.hour,
+                dt.minute,
+                dt.second,
+              );
+              setState(() => _updateField(label, Timestamp.fromDate(updated)));
+            },
+          ),
+        ],
+      );
+    }
     if (selected is bool) {
       return DropdownButton<bool>(
         isExpanded: true,
@@ -226,6 +273,23 @@ class _AdminJobRepoViewerState extends State<AdminJobRepoViewer> {
         jobRepo.selectedAllStatus = double.tryParse(value.toString()) ?? 0;
       case "PromoErrorCode":
         jobRepo.selectedPromoErrorCode = int.tryParse(value.toString()) ?? 0;
+      // Date fields
+      case "dateQ":
+        if (value is Timestamp) jobRepo.dateQ = value;
+      case "needOn":
+        if (value is Timestamp) jobRepo.needOn = value;
+      case "dateO":
+        if (value is Timestamp) jobRepo.dateO = value;
+      case "paidD":
+        if (value is Timestamp) jobRepo.paidD = value;
+      case "dateD":
+        if (value is Timestamp) jobRepo.dateD = value;
+      case "dateC":
+        if (value is Timestamp) jobRepo.dateC = value;
+      case "customerPickupDate":
+        if (value is Timestamp) jobRepo.customerPickupDate = value;
+      case "riderDeliveryDate":
+        if (value is Timestamp) jobRepo.riderDeliveryDate = value;
     }
   }
 
