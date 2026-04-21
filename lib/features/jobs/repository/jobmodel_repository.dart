@@ -70,6 +70,7 @@ class JobModelRepository {
       disposed: false,
       isSyncToDB2: false,
       promoErrorCode: 99,
+      requestForAdmin: false,
     );
 
     jobselectedRepository.reset();
@@ -221,6 +222,8 @@ class JobModelRepository {
   set paidGCashAmount(int value) => jobModel.paidGCashAmount = value;
   set paymentReceivedBy(String value) => jobModel.paymentReceivedBy = value;
   set gcashReceiptUrl(String value) => jobModel.gcashReceiptUrl = value;
+  bool get requestForAdmin => jobModel.requestForAdmin;
+  set requestForAdmin(bool value) => jobModel.requestForAdmin = value;
   set remarks(String value) => jobModel.remarks = value;
   set items(List<OtherItemModel> value) => jobModel.items = value;
   set processStep(String value) => jobModel.processStep = value;

@@ -1,6 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:laundry_firebase/core/utils/app_scale.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
+import 'package:laundry_firebase/core/services/database_jobs.dart';
 import 'package:laundry_firebase/features/jobs/repository/jobmodel_repository.dart';
 import 'package:laundry_firebase/features/pages/body/JobsOnQueue/showPaidUnpaid.dart';
 
@@ -23,7 +25,11 @@ InkWell visPaidUnpaidArea(
   final Color statusColor = isPaid ? paidColor : unpaidColor;
 
   final String statusText = jobRepo.selectedUnpaid
-      ? (jobRepo.selectedPaidGCash ? "GCash Pending" : "Unpaid")
+      ? (jobRepo.requestForAdmin
+          ? "Requested"
+          : jobRepo.selectedPaidGCash
+              ? "GCash Pending"
+              : "Unpaid")
       : jobRepo.selectedPaidCash
           ? "Paid • Cash"
           : jobRepo.selectedPaidGCash
@@ -91,27 +97,117 @@ InkWell visPaidUnpaidArea(
             final daysDiff = now.difference(doneDt).inDays;
 
             if (daysDiff > 14) {
-              // > 14 days — admin override only
+              if (!isAdmin) {
+                // Non-admin > 14 days: show "Request to Paid" dialog
+                final remarksCtrl = TextEditingController();
+                final confirmed = await showDialog<bool>(
+                  context: context,
+                  builder: (_) => AlertDialog(
+                    title: const Text('Request to Paid'),
+                    content: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'This job is over 2 weeks unpaid. You can request admin approval to mark it as paid.',
+                          style: TextStyle(fontSize: 13),
+                        ),
+                        const SizedBox(height: 12),
+                        TextField(
+                          controller: remarksCtrl,
+                          autofocus: true,
+                          maxLines: 3,
+                          decoration: const InputDecoration(
+                            labelText: 'Remarks (required)',
+                            hintText: 'Reason for payment request...',
+                            border: OutlineInputBorder(),
+                          ),
+                        ),
+                      ],
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, false),
+                        child: const Text('Cancel'),
+                      ),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.orange),
+                        onPressed: () {
+                          if (remarksCtrl.text.trim().isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content: Text('Please enter remarks.')),
+                            );
+                            return;
+                          }
+                          Navigator.pop(context, true);
+                        },
+                        child: const Text('Send Request',
+                            style: TextStyle(color: Colors.white)),
+                      ),
+                    ],
+                  ),
+                );
+                if (confirmed != true || !context.mounted) return;
+
+                // Append remarks + set requestForAdmin = true
+                final appendedRemarks = jobRepo.remarks.isEmpty
+                    ? '[Request] ${remarksCtrl.text.trim()}'
+                    : '${jobRepo.remarks} | [Request] ${remarksCtrl.text.trim()}';
+
+                final collection = jobRepo.processStep == 'completed'
+                    ? JOBS_COMPLETED_REF
+                    : jobRepo.processStep == 'done'
+                        ? JOBS_DONE_REF
+                        : (jobRepo.processStep == 'waiting' ||
+                                jobRepo.processStep == 'washing' ||
+                                jobRepo.processStep == 'drying' ||
+                                jobRepo.processStep == 'folding')
+                            ? JOBS_ONGOING_REF
+                            : JOBS_QUEUE_REF;
+
+                await FirebaseFirestore.instance
+                    .collection(collection)
+                    .doc(jobRepo.docId)
+                    .update({
+                  'Z02_RequestForAdmin': true,
+                  'R00_Remarks': appendedRemarks,
+                });
+
+                jobRepo.requestForAdmin = true;
+                jobRepo.remarks = appendedRemarks;
+
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Request sent. Admin will review.'),
+                      backgroundColor: Colors.orange,
+                    ),
+                  );
+                }
+                return;
+              }
+
+              // Admin > 14 days: override confirm
               final confirm = await showDialog<bool>(
                 context: context,
                 builder: (_) => AlertDialog(
                   title: const Text('Over Two Weeks Unpaid'),
-                  content: Text(isAdmin
-                      ? 'This item is more than two weeks unpaid. Admin override — are you sure?'
-                      : 'This item is more than two weeks unpaid. Cannot change payment status.'),
+                  content: const Text(
+                      'This item is more than two weeks unpaid. Admin override — are you sure?'),
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.pop(context, false),
                       child: const Text('Cancel'),
                     ),
-                    if (isAdmin)
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.orange),
-                        onPressed: () => Navigator.pop(context, true),
-                        child: const Text('Override',
-                            style: TextStyle(color: Colors.white)),
-                      ),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.orange),
+                      onPressed: () => Navigator.pop(context, true),
+                      child: const Text('Override',
+                          style: TextStyle(color: Colors.white)),
+                    ),
                   ],
                 ),
               );

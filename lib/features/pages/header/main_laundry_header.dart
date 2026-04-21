@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:laundry_firebase/core/utils/app_scale.dart';
 import 'package:laundry_firebase/features/pages/body/main_laundry_body.dart';
+import 'package:laundry_firebase/features/pages/header/Funds/showLaundryPayment.dart';
 import 'package:laundry_firebase/features/pages/header/GCash/showGCashOnly.dart';
 import 'package:laundry_firebase/features/pages/header/GCash/showGCashPending.dart';
 import 'package:laundry_firebase/features/pages/header/Funds/showFundsInFundsOut.dart';
@@ -139,19 +140,19 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader>
           clipBehavior: Clip.none,
           children: [
             /// Laundry Payment
-            // if (_isOpen)
-            //   _fab(
-            //     hero: 'Laundry Payment',
-            //     icon: Icons.payments_outlined,
-            //     label: 'Laundry Payment',
-            //     bottom: base + step * 3,
-            //     right: base,
-            //     onTap: () {
-            //       setState(() => _isOpen = false);
-            //       showLaundryPayment(context, jobRepoNonJob);
-            //     },
-            //     backgroundColor: Colors.teal,
-            //   ),
+            if (_isOpen || isAdmin)
+              _fab(
+                hero: 'Laundry Payment',
+                icon: Icons.payments_outlined,
+                label: 'Laundry Payment',
+                bottom: base + step * 3,
+                right: base,
+                onTap: () {
+                  setState(() => _isOpen = false);
+                  showLaundryPayment(context, jobRepoNonJob);
+                },
+                backgroundColor: Colors.teal,
+              ),
 
             /// Cash In/Out
             if (_isOpen)

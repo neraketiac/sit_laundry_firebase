@@ -122,6 +122,7 @@ class JobModel {
   bool disposed;
   bool isSyncToDB2; //tels if sync to db2
   int promoErrorCode;
+  bool requestForAdmin; // non-admin payment request flag
   //               batch promo will check the each job
   //               if current date is < 14 days, then error code = 0
   //               the dates to be checked are dateD and paidD
@@ -263,6 +264,7 @@ class JobModel {
     required this.disposed,
     required this.isSyncToDB2,
     required this.promoErrorCode,
+    required this.requestForAdmin,
   });
 
   factory JobModel.makeEmpty() {
@@ -317,6 +319,7 @@ class JobModel {
       disposed: false,
       isSyncToDB2: false,
       promoErrorCode: 99,
+      requestForAdmin: false,
     );
   }
 
@@ -372,6 +375,7 @@ class JobModel {
     bool? disposed,
     bool? isSyncToDB2,
     int? promoErrorCode,
+    bool? requestForAdmin,
   }) {
     return JobModel(
       docId: docId ?? this.docId,
@@ -425,6 +429,7 @@ class JobModel {
       disposed: disposed ?? this.disposed,
       isSyncToDB2: isSyncToDB2 ?? this.isSyncToDB2,
       promoErrorCode: promoErrorCode ?? this.promoErrorCode,
+      requestForAdmin: requestForAdmin ?? this.requestForAdmin,
     );
   }
 
@@ -482,6 +487,7 @@ class JobModel {
         disposed: json['R02_Disposed'],
         isSyncToDB2: json['Z00_IsSyncToDB2'] ?? false,
         promoErrorCode: json['Z01_PromoErrorCode'] ?? 0,
+        requestForAdmin: json['Z02_RequestForAdmin'] ?? false,
       );
 
   factory JobModel.fromFirestore(
@@ -544,5 +550,6 @@ class JobModel {
         'R02_Disposed': disposed,
         'Z00_IsSyncToDB2': isSyncToDB2,
         'Z01_PromoErrorCode': promoErrorCode,
+        'Z02_RequestForAdmin': requestForAdmin,
       };
 }
