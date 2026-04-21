@@ -40,15 +40,20 @@ class DatabaseEmployeeHist {
   }
 
   Future<QuerySnapshot> getEmployeeHistoryPaginated(
-      {DocumentSnapshot? lastDoc}) async {
+      {DocumentSnapshot? lastDoc, String? filterEmpId}) async {
     Query query;
-    if (empIdGlobal == 'Ket' || empIdGlobal == 'DonF') {
-      query = _employeeHistRef.orderBy('LogDate', descending: true).limit(50);
+    if (filterEmpId != null) {
+      query = _employeeHistRef
+          .where('EmpId', isEqualTo: filterEmpId)
+          .orderBy('LogDate', descending: true)
+          .limit(20);
+    } else if (empIdGlobal == 'Ket' || empIdGlobal == 'DonF') {
+      query = _employeeHistRef.orderBy('LogDate', descending: true).limit(20);
     } else {
       query = _employeeHistRef
           .where('EmpId', isEqualTo: empNameToId[empIdGlobal])
           .orderBy('LogDate', descending: true)
-          .limit(50);
+          .limit(20);
     }
     if (lastDoc != null) query = query.startAfterDocument(lastDoc);
     return query.get().withFsTimeout();

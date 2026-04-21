@@ -7,6 +7,7 @@ import 'package:laundry_firebase/core/global/variables_supplies.dart';
 import 'package:laundry_firebase/core/services/database_items_history.dart';
 import 'package:laundry_firebase/features/items/models/suppliesmodelhist.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
+import 'package:laundry_firebase/core/utils/fs_usage_tracker.dart';
 
 class ReadDataItemsHistoryWidget extends StatefulWidget {
   const ReadDataItemsHistoryWidget({super.key});
@@ -28,7 +29,7 @@ class _ReadDataItemsHistoryWidgetState
   StreamSubscription? _newDocSub;
   Timestamp? _newestLogDate;
 
-  static const int _pageSize = 50;
+  static const int _pageSize = 30;
 
   @override
   void initState() {
@@ -116,6 +117,7 @@ class _ReadDataItemsHistoryWidgetState
         _newestLogDate = firstData.logDate;
         _startNewDocListener();
       }
+      FsUsageTracker.instance.track('readItemsHist', snap.docs.length);
     });
   }
 

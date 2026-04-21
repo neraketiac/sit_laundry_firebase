@@ -8,6 +8,7 @@ import 'package:laundry_firebase/features/items/models/suppliesmodelhist.dart';
 import 'package:laundry_firebase/core/services/database_funds_history.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
 import 'package:laundry_firebase/core/global/variables_supplies.dart';
+import 'package:laundry_firebase/core/utils/fs_usage_tracker.dart';
 
 final DatabaseFundsHist dbFundsHist = DatabaseFundsHist();
 
@@ -162,7 +163,7 @@ class _SuppliesHistoryListState extends State<_SuppliesHistoryList> {
   StreamSubscription? _newDocSub;
   Timestamp? _newestLogDate;
 
-  static const int _pageSize = 50;
+  static const int _pageSize = 30;
 
   @override
   void initState() {
@@ -259,6 +260,7 @@ class _SuppliesHistoryListState extends State<_SuppliesHistoryList> {
         _newestLogDate = firstData.logDate;
         _startNewDocListener();
       }
+      FsUsageTracker.instance.track('readSuppliesHist', snap.docs.length);
     });
   }
 
