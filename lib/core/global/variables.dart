@@ -36,12 +36,14 @@ List<JobModel> sortedJobsDone = [];
 List<JobModel> sortedJobsDoneClothesHere = [];
 List<JobModel> sortedJobsDoneClothesGoneCash = [];
 List<JobModel> sortedJobsDoneClothesGoneGCash = [];
+List<JobModel> sortedJobsDoneAdminRequest = [];
 int selectedIndexDone = intSortByDateD;
 
 int intJobsDoneDefault = 0,
     intJobsDoneClothesHere = 0,
     intJobsDoneClothesGoneCash = 0,
-    intJobsDoneClothesGoneGCash = 0;
+    intJobsDoneClothesGoneGCash = 0,
+    intJobsDoneAdminRequest = 0;
 
 bool isLoading = true;
 String? cachedToken;

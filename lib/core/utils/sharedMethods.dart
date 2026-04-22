@@ -353,33 +353,35 @@ ElevatedButton boxButtonElevated({
 
 String textJobStatus(JobModel jM) {
   if (jM.processStep == '') {
-    if (jM.forSorting) {
-      return 'For Sorting\n${DateFormat('MMM dd').format(jM.dateQ.toDate())}';
-    }
-    if (jM.riderPickup) {
-      return 'Rider Pickup\n${DateFormat('MMM dd').format(jM.dateQ.toDate())}';
-    }
+    if (jM.forSorting) return 'For Sorting';
+    if (jM.riderPickup) return 'Rider Pickup';
   } else {
     if (jM.processStep == 'done' || jM.processStep == 'completed') {
       if (jM.riderPickup) {
-        if (jM.isDeliveredToCustomer) {
-          return '${jM.processStep} 🚲 delivered\n${DateFormat('MMM dd').format(jM.riderDeliveryDate.toDate())}/${DateFormat('MMM dd').format(jM.dateD.toDate())}';
-        } else {
-          return '${jM.processStep} 🚲 for delivery\n${DateFormat('MMM dd').format(jM.dateD.toDate())}';
-        }
+        return jM.isDeliveredToCustomer ? '🚲 delivered' : '🚲 for delivery';
       } else {
-        if (jM.isCustomerPickedUp) {
-          return '${jM.processStep} 🛒 pickedup\n${DateFormat('MMM dd').format(jM.customerPickupDate.toDate())}/${DateFormat('MMM dd').format(jM.dateD.toDate())}';
-        } else {
-          return '${jM.processStep} 🛒 wait customer\n${DateFormat('MMM dd').format(jM.dateD.toDate())}';
-        }
+        return jM.isCustomerPickedUp ? '🛒 pickedup' : '🛒 wait customer';
       }
     } else {
       return jM.processStep;
     }
   }
-
   return 'no status';
+}
+
+/// Returns the relevant date string for the done/completed step.
+/// Returns null if not applicable (queue/ongoing).
+String? textDateDone(JobModel jM) {
+  if (jM.processStep == '') {
+    if (jM.forSorting || jM.riderPickup) {
+      return DateFormat('MMM dd').format(jM.dateQ.toDate());
+    }
+    return null;
+  }
+  if (jM.processStep == 'done' || jM.processStep == 'completed') {
+    return DateFormat('MMM dd').format(jM.dateD.toDate());
+  }
+  return null;
 }
 
 String textPricingSetupRemarksUnpaidRemakrs(JobModel jM) {
@@ -396,12 +398,18 @@ String textPricingSetupRemarksUnpaidRemakrs(JobModel jM) {
     } else if (jM.paidGCash) {
       if (jM.paidGCashverified) {
         unpaidDetails = 'KULANG GCash';
-      } else {
-        unpaidDetails = 'GCash PENDING';
       }
+      // else {
+      //   unpaidDetails = 'GCash PENDING';
+      // }
     }
   }
   //return '${jM.pricingSetup} ${jM.remarks} $unpaidDetails';
+  // if (jM.pricingSetup.trim().isEmpty &&
+  //     jM.remarks.trim().isEmpty &&
+  //     unpaidDetails.trim().isEmpty) {
+  //   return '';
+  // }
 
   return [
     jM.pricingSetup,

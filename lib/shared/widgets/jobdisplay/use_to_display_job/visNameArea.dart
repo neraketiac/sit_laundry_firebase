@@ -10,17 +10,29 @@ Expanded visNameArea(JobModel job, bool isSelected) {
       final primaryColor = isSelected ? Colors.deepPurple : Colors.black87;
       final secondaryColor =
           isSelected ? Colors.deepPurple.shade300 : Colors.grey.shade700;
+      final statusColor = job.forSorting
+          ? Colors.black
+          : (job.isDeliveredToCustomer || job.isCustomerPickedUp)
+              ? Colors.black
+              : job.riderPickup
+                  ? Colors.green.shade600
+                  : Colors.redAccent.shade200;
+
+      final dateStr = textDateDone(job);
+      final daysDiff = _daysSince(job);
+      final dateBg = _dateBgColor(daysDiff);
+      final dateTextColor = _dateTextColor(daysDiff);
 
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          // Name + load + bag details
           Row(
             children: [
               Flexible(
                 child: Text(
-                  '${displayCustomerName(job.customerName)} '
-                  '(${job.finalLoad})',
+                  '${displayCustomerName(job.customerName)} (${job.finalLoad})',
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     fontSize: s.body,
@@ -41,9 +53,12 @@ Expanded visNameArea(JobModel job, bool isSelected) {
             ],
           ),
           SizedBox(height: s.gapSmall / 2),
-          if (job.items.isNotEmpty)
+
+          // Items
+          if (textDetFabBleExtras(job.items).isNotEmpty ||
+              job.address.isNotEmpty)
             Text(
-              textDetFabBleExtras(job.items),
+              '${job.address} ${textDetFabBleExtras(job.items)}',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
@@ -53,19 +68,44 @@ Expanded visNameArea(JobModel job, bool isSelected) {
               ),
             ),
           SizedBox(height: s.gapSmall / 2),
+
+          // Status label
           Text(
             textJobStatus(job),
             style: TextStyle(
               fontSize: s.small,
               fontWeight: FontWeight.w600,
-              color: job.forSorting
-                  ? Colors.deepPurple.shade400
-                  : Colors.redAccent.shade200,
+              color: statusColor,
             ),
           ),
-          if (job.pricingSetup.isNotEmpty ||
-              job.remarks.isNotEmpty ||
-              (job.unpaid && job.paidCash || job.unpaid && job.paidGCash))
+
+          // Date badge (separate line)
+          if (dateStr != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 2),
+              child: Container(
+                padding: dateBg != null
+                    ? const EdgeInsets.symmetric(horizontal: 4, vertical: 1)
+                    : EdgeInsets.zero,
+                decoration: dateBg != null
+                    ? BoxDecoration(
+                        color: dateBg,
+                        borderRadius: BorderRadius.circular(4),
+                      )
+                    : null,
+                child: Text(
+                  dateStr,
+                  style: TextStyle(
+                    fontSize: s.small,
+                    fontWeight: FontWeight.w600,
+                    color: dateTextColor ?? statusColor,
+                  ),
+                ),
+              ),
+            ),
+
+          // Pricing / remarks / unpaid details
+          if (job.remarks.trim().isNotEmpty)
             Padding(
               padding: EdgeInsets.only(top: s.gapSmall / 2),
               child: Text(
@@ -85,4 +125,22 @@ Expanded visNameArea(JobModel job, bool isSelected) {
       );
     }),
   );
+}
+
+int _daysSince(JobModel job) {
+  final d = job.dateD.toDate();
+  if (d.year <= 1900) return 0;
+  return DateTime.now().difference(d).inDays;
+}
+
+Color? _dateBgColor(int days) {
+  if (days > 30) return Colors.black;
+  if (days > 14) return Colors.red.shade600;
+  if (days > 7) return Colors.amber.shade700;
+  return null;
+}
+
+Color? _dateTextColor(int days) {
+  if (days > 7) return Colors.white;
+  return null; // use statusColor fallback
 }

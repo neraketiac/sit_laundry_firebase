@@ -25,11 +25,7 @@ InkWell visPaidUnpaidArea(
   final Color statusColor = isPaid ? paidColor : unpaidColor;
 
   final String statusText = jobRepo.selectedUnpaid
-      ? (jobRepo.requestForAdmin
-          ? "Requested"
-          : jobRepo.selectedPaidGCash
-              ? "GCash Pending"
-              : "Unpaid")
+      ? (jobRepo.selectedPaidGCash ? "GCash Pending" : "Unpaid")
       : jobRepo.selectedPaidCash
           ? "Paid • Cash"
           : jobRepo.selectedPaidGCash
@@ -153,8 +149,8 @@ InkWell visPaidUnpaidArea(
 
                 // Append remarks + set requestForAdmin = true
                 final appendedRemarks = jobRepo.remarks.isEmpty
-                    ? '[Request] ${remarksCtrl.text.trim()}'
-                    : '${jobRepo.remarks} | [Request] ${remarksCtrl.text.trim()}';
+                    ? '[Rt] ${remarksCtrl.text.trim()}'
+                    : '${jobRepo.remarks} | [R] ${remarksCtrl.text.trim()}';
 
                 final collection = jobRepo.processStep == 'completed'
                     ? JOBS_COMPLETED_REF

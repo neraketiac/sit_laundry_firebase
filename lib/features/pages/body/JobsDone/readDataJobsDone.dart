@@ -130,6 +130,14 @@ Widget readDataJobsDone(VoidCallback dialogSetState) {
     dialogSetState();
   }
 
+  Future<void> sortAdminRequest(BuildContext context) async {
+    sortedJobsDone
+      ..clear()
+      ..addAll(sortedJobsDoneAdminRequest);
+
+    dialogSetState();
+  }
+
   Future<void> sortNoticeGCash(BuildContext context) async {
     sortedJobsDone
       ..clear()
@@ -289,6 +297,13 @@ Widget readDataJobsDone(VoidCallback dialogSetState) {
         intJobsDoneClothesHere = sortedJobsDoneClothesHere.length;
         intJobsDoneClothesGoneCash = sortedJobsDoneClothesGoneCash.length;
         intJobsDoneClothesGoneGCash = sortedJobsDoneClothesGoneGCash.length;
+
+        sortedJobsDoneAdminRequest
+          ..clear()
+          ..addAll(
+            originalJobsDone.where((job) => job.requestForAdmin),
+          );
+        intJobsDoneAdminRequest = sortedJobsDoneAdminRequest.length;
       }
 
       //sortJobs(sortedJobsDone);
@@ -323,6 +338,12 @@ Widget readDataJobsDone(VoidCallback dialogSetState) {
                     tooltip: "Clothes gone Unpaid",
                     badgeCount: intJobsDoneClothesGoneCash,
                     onPressed: () => sortNoticeCash(context),
+                  ),
+                  IconBadgeButton(
+                    icon: '🙋',
+                    tooltip: "Admin request",
+                    badgeCount: intJobsDoneAdminRequest,
+                    onPressed: () => sortAdminRequest(context),
                   ),
                   IconBadgeButton(
                     icon: '🗓️',
