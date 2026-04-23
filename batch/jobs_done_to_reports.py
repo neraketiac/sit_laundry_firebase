@@ -8,8 +8,10 @@ from firebase_admin import credentials, firestore
 SOURCE_SECRET = "FIREBASE_SOURCE_SERVICE_ACCOUNT"
 REPORTS_SECRET = "FIREBASE_REPORTS_SERVICE_ACCOUNT"
 
-SOURCE_COLLECTION = "Jobs_done"
-TARGET_COLLECTION = "jobs_done_reports_raw"
+JOBS_DONE = "Jobs_done"
+JOBS_COMPLETED = "Jobs_completed"
+SYNC_DELETE_QUEUE = "sync_delete_queue"
+SYNC_TO_DB2_FIELD = "Z00_IsSyncToDB2"
 
 
 def init_db(secret_name: str, app_name: str):
@@ -23,23 +25,62 @@ def init_db(secret_name: str, app_name: str):
     return firestore.client(app)
 
 
+def normalize_payload(data, source_collection, doc_id):
+    payload = dict(data or {})
+    payload["_source_doc_id"] = doc_id
+    payload["_source_collection"] = source_collection
+    payload[SYNC_TO_DB2_FIELD] = True
+    return payload
+
+
+def sync_pending_collection(source_db, reports_db, collection_name):
+    updated = 0
+
+    docs = source_db.collection(collection_name).where(
+        SYNC_TO_DB2_FIELD, "==", False
+    ).stream()
+
+    for doc in docs:
+        payload = normalize_payload(doc.to_dict(), collection_name, doc.id)
+        reports_db.collection(collection_name).document(doc.id).set(payload)
+        doc.reference.update({SYNC_TO_DB2_FIELD: True})
+        updated += 1
+        print(f"Synced {collection_name}: {doc.id}")
+
+    print(f"{collection_name}: synced {updated}")
+    return updated
+
+
+def process_delete_queue(source_db, reports_db):
+    processed = 0
+
+    for doc in source_db.collection(SYNC_DELETE_QUEUE).stream():
+        payload = doc.to_dict() or {}
+        source_collection = payload.get("sourceCollection")
+        source_doc_id = payload.get("docId")
+
+        if not source_collection or not source_doc_id:
+            print(f"Skipping invalid delete queue doc: {doc.id}")
+            continue
+
+        reports_db.collection(source_collection).document(source_doc_id).delete()
+        doc.reference.delete()
+        processed += 1
+        print(f"Deleted from reports {source_collection}: {source_doc_id}")
+
+    print(f"{SYNC_DELETE_QUEUE}: processed {processed}")
+    return processed
+
+
 def main():
     source_db = init_db(SOURCE_SECRET, "source")
     reports_db = init_db(REPORTS_SECRET, "reports")
 
-    docs = source_db.collection(SOURCE_COLLECTION).stream()
+    sync_pending_collection(source_db, reports_db, JOBS_DONE)
+    sync_pending_collection(source_db, reports_db, JOBS_COMPLETED)
+    process_delete_queue(source_db, reports_db)
 
-    copied = 0
-    for doc in docs:
-        data = doc.to_dict() or {}
-        data["_source_doc_id"] = doc.id
-        data["_source_collection"] = SOURCE_COLLECTION
-
-        reports_db.collection(TARGET_COLLECTION).document(doc.id).set(data)
-        copied += 1
-        print(f"Copied {doc.id}")
-
-    print(f"Done. Total copied: {copied}")
+    print("Done.")
 
 
 if __name__ == "__main__":

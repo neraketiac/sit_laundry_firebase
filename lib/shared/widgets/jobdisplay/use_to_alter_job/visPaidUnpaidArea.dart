@@ -169,6 +169,9 @@ InkWell visPaidUnpaidArea(
                     .update({
                   'Z02_RequestForAdmin': true,
                   'R00_Remarks': appendedRemarks,
+                  if (collection == JOBS_DONE_REF ||
+                      collection == JOBS_COMPLETED_REF)
+                    SYNC_TO_DB2_FIELD: false,
                 });
 
                 jobRepo.requestForAdmin = true;
