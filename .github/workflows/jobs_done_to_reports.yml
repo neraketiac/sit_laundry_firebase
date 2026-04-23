@@ -1,0 +1,26 @@
+name: Jobs Done To Reports
+
+on:
+  workflow_dispatch:
+
+jobs:
+  run-batch:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r batch/requirements.txt
+
+      - name: Run batch job
+        env:
+          FIREBASE_SOURCE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SOURCE_SERVICE_ACCOUNT }}
+          FIREBASE_REPORTS_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_REPORTS_SERVICE_ACCOUNT }}
+        run: python batch/jobs_done_to_reports.py
