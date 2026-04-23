@@ -719,6 +719,16 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                               ? const Color(0xFF35235E)
                               : LaundryColors.completed,
                         ),
+                        if (empSetup.showLaundry)
+                          IntrinsicWidth(
+                            child: Container(
+                              color: _isDarkMode
+                                  ? const Color(0xFF4A1F1F)
+                                  : Colors.red.shade100,
+                              padding: const EdgeInsets.all(8),
+                              child: readUnpaidLaundry(),
+                            ),
+                          ),
                         animatedPanel(
                           visible: empSetup.showLaundry,
                           width: pw(400),
@@ -765,16 +775,6 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                               ? const Color(0xFF4A2517)
                               : cEmployeeMaintenance,
                         ),
-                        if (empSetup.showLaundry)
-                          IntrinsicWidth(
-                            child: Container(
-                              color: _isDarkMode
-                                  ? const Color(0xFF4A1F1F)
-                                  : Colors.red.shade100,
-                              padding: const EdgeInsets.all(8),
-                              child: readUnpaidLaundry(),
-                            ),
-                          ),
                       ],
                     ),
                   );

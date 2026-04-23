@@ -10,6 +10,7 @@ import 'package:laundry_firebase/core/global/variables_supplies.dart';
 
 void showFundCheck(BuildContext context) {
   final s = AppScale.of(context);
+  final bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
   // Controllers created once — persist across rebuilds
   final controllers = {
@@ -36,6 +37,9 @@ void showFundCheck(BuildContext context) {
 
   Visibility countBills(
     VoidCallback dialogSetState,
+    Color rowBg,
+    Color rowBorder,
+    Color textColor,
   ) {
     Widget denominationRow(int denom) {
       final qty = qtyMap[denom]!;
@@ -45,9 +49,9 @@ void showFundCheck(BuildContext context) {
         margin: const EdgeInsets.symmetric(vertical: 0),
         padding: EdgeInsets.symmetric(horizontal: s.gap + 2, vertical: 0),
         decoration: BoxDecoration(
-          color: Colors.blue.shade50,
+          color: rowBg,
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.blue.shade200),
+          border: Border.all(color: rowBorder),
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -55,8 +59,10 @@ void showFundCheck(BuildContext context) {
           children: [
             Text(
               '   ₱$denom',
-              style:
-                  TextStyle(fontWeight: FontWeight.bold, fontSize: s.bodyLarge),
+              style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: s.bodyLarge,
+                  color: textColor),
             ),
 
             // Group for buttons + qty
@@ -127,7 +133,11 @@ void showFundCheck(BuildContext context) {
       visible: true,
       child: Container(
         padding: const EdgeInsets.all(8.0),
-        decoration: decoLightBlue(),
+        decoration: isDarkMode
+            ? BoxDecoration(
+                color: const Color(0xFF0F1923),
+                border: Border.all(color: const Color(0xFF1C2D3F), width: 2.0))
+            : decoLightBlue(),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -147,12 +157,13 @@ void showFundCheck(BuildContext context) {
               children: [
                 Text(
                     'Current Funds:\n₱ ${pesoFormat.format(alwaysTheLatestFunds)}',
-                    style: TextStyle(fontSize: s.tiny + 1)),
+                    style: TextStyle(fontSize: s.tiny + 1, color: textColor)),
                 Text(
                   'TOTAL: ',
                   style: TextStyle(
                     fontSize: s.body,
                     fontWeight: FontWeight.w600,
+                    color: textColor,
                   ),
                 ),
                 Text(
@@ -160,6 +171,7 @@ void showFundCheck(BuildContext context) {
                   style: TextStyle(
                     fontSize: s.bodyLarge,
                     fontWeight: FontWeight.bold,
+                    color: textColor,
                   ),
                 ),
               ],
@@ -178,7 +190,7 @@ void showFundCheck(BuildContext context) {
                         color: ((alwaysTheLatestFunds - grandTotal) == 0
                             ? Colors.green
                             : ((alwaysTheLatestFunds - grandTotal) < 0)
-                                ? Colors.black
+                                ? (isDarkMode ? Colors.white70 : Colors.black)
                                 : Colors.red))),
               ],
             ),
@@ -226,6 +238,15 @@ void showFundCheck(BuildContext context) {
     context: context,
     builder: (BuildContext context) {
       return StatefulBuilder(builder: (context, setState) {
+        final dialogBg = isDarkMode ? const Color(0xFF0D1117) : cFundsEOD;
+        final borderColor =
+            isDarkMode ? const Color(0xFF1C2D3F) : Colors.blueAccent;
+        final textColor = isDarkMode ? Colors.white : Colors.black87;
+        final rowBg =
+            isDarkMode ? const Color(0xFF1A2535) : Colors.blue.shade50;
+        final rowBorder =
+            isDarkMode ? const Color(0xFF2A3F5F) : Colors.blue.shade200;
+
         return AlertDialog(
           contentPadding: const EdgeInsets.all(2),
           titlePadding: const EdgeInsets.only(
@@ -238,7 +259,7 @@ void showFundCheck(BuildContext context) {
             horizontal: 8,
             vertical: 8,
           ),
-          backgroundColor: cFundsEOD,
+          backgroundColor: dialogBg,
           insetPadding: s.isTablet
               ? const EdgeInsets.symmetric(horizontal: 80, vertical: 40)
               : const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
@@ -250,15 +271,16 @@ void showFundCheck(BuildContext context) {
                   style: TextStyle(
                     fontSize: s.headline,
                     fontWeight: FontWeight.bold,
+                    color: textColor,
                   ),
                 ),
                 TextSpan(
                   text: "Bilangain ang kasalukuyang funds\n",
-                  style: TextStyle(fontSize: s.small),
+                  style: TextStyle(fontSize: s.small, color: textColor),
                 ),
                 TextSpan(
                   text: "tuwing 9am / 12nn / 7pm",
-                  style: TextStyle(fontSize: s.small),
+                  style: TextStyle(fontSize: s.small, color: textColor),
                 ),
               ],
             ),
@@ -267,21 +289,20 @@ void showFundCheck(BuildContext context) {
           content: SingleChildScrollView(
             scrollDirection: Axis.vertical,
             child: Container(
-              padding: EdgeInsets.all(8.0),
+              padding: const EdgeInsets.all(8.0),
               decoration: BoxDecoration(
-                  border: Border.all(color: Colors.blueAccent, width: 2.0)),
+                  border: Border.all(color: borderColor, width: 2.0)),
               child: Form(
-                //key: _formKey,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    countBills(() => setState(() {})),
+                    countBills(
+                        () => setState(() {}), rowBg, rowBorder, textColor),
                   ],
                 ),
               ),
             ),
           ),
-          // 👇 Bottom buttons
           actionsAlignment: MainAxisAlignment.end,
           actions: [
             TextButton(
@@ -291,7 +312,7 @@ void showFundCheck(BuildContext context) {
                   syncControllers();
                 });
               },
-              child: const Text('Reset'),
+              child: Text('Reset', style: TextStyle(color: textColor)),
             ),
             boxButtonElevated(
                 context: context,

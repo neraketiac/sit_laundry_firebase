@@ -33,14 +33,27 @@ void showJobOnQueueEdit(BuildContext context, JobModelRepository jobRepo) {
   }
 
   jobRepo.syncRepoToSelectedAll(jobRepo);
+
+  // Capture dark mode from the calling context BEFORE showDialog opens
+  final bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
   showDialog(
     context: context,
     barrierDismissible: false,
     builder: (BuildContext context) {
       return StatefulBuilder(builder: (context, setState) {
         final isTablet = MediaQuery.of(context).size.width >= 600;
+
+        final dialogBg =
+            isDarkMode ? const Color(0xFF0D1117) : Colors.lightBlue.shade600;
+        final borderColor =
+            isDarkMode ? const Color(0xFF1C2D3F) : Colors.blueAccent;
+        final titleColor = isDarkMode ? Colors.white : Colors.black87;
+        final labelColor = isDarkMode ? Colors.white60 : Colors.black54;
+        final cancelColor = isDarkMode ? Colors.white70 : Colors.black;
+
         return Dialog(
-          backgroundColor: Colors.lightBlue.shade600,
+          backgroundColor: dialogBg,
           insetPadding: EdgeInsets.symmetric(
             horizontal: isTablet ? 16 : 40,
             vertical: 24,
@@ -60,6 +73,7 @@ void showJobOnQueueEdit(BuildContext context, JobModelRepository jobRepo) {
                     style: TextStyle(
                       fontSize: isTablet ? 18 : 15,
                       fontWeight: FontWeight.bold,
+                      color: titleColor,
                     ),
                   ),
                 ),
@@ -68,8 +82,7 @@ void showJobOnQueueEdit(BuildContext context, JobModelRepository jobRepo) {
                     child: Container(
                       padding: const EdgeInsets.all(1.0),
                       decoration: BoxDecoration(
-                          border:
-                              Border.all(color: Colors.blueAccent, width: 2.0)),
+                          border: Border.all(color: borderColor, width: 2.0)),
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -87,7 +100,8 @@ void showJobOnQueueEdit(BuildContext context, JobModelRepository jobRepo) {
                                   horizontal: 16, vertical: 12),
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(12),
-                                color: Colors.green.shade700.withOpacity(0.85),
+                                color: Colors.green.shade700
+                                    .withValues(alpha: 0.85),
                               ),
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
@@ -112,14 +126,17 @@ void showJobOnQueueEdit(BuildContext context, JobModelRepository jobRepo) {
                           else
                             visPaidUnPaid(
                                 context, () => setState(() {}), jobRepo),
-                          const Text('Other Options',
-                              style: TextStyle(fontSize: 11)),
+                          Text('Other Options',
+                              style:
+                                  TextStyle(fontSize: 11, color: labelColor)),
                           visFold(context, () => setState(() {}), jobRepo),
                           visMix(context, () => setState(() {}), jobRepo),
                           visBasket(context, () => setState(() {}), jobRepo),
                           visEcoBag(context, () => setState(() {}), jobRepo),
                           visSako(context, () => setState(() {}), jobRepo),
-                          const Text('Add Ons', style: TextStyle(fontSize: 11)),
+                          Text('Add Ons',
+                              style:
+                                  TextStyle(fontSize: 11, color: labelColor)),
                           visAddDry(context, () => setState(() {}), jobRepo),
                           visAddFab(context, () => setState(() {}), jobRepo),
                           visAddBle(context, () => setState(() {}), jobRepo),
@@ -143,8 +160,8 @@ void showJobOnQueueEdit(BuildContext context, JobModelRepository jobRepo) {
                           jobRepo.syncRepoToSelectedAll(jobRepo);
                           Navigator.pop(context);
                         },
-                        child: const Text('Cancel',
-                            style: TextStyle(color: Colors.black)),
+                        child: Text('Cancel',
+                            style: TextStyle(color: cancelColor)),
                       ),
                       boxButtonElevated(
                         context: context,

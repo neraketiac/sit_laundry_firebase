@@ -79,10 +79,30 @@ class _ReadDataSuppliesCurrentState extends State<ReadDataSuppliesCurrent> {
                   final isAlert = sMH.currentStocks <=
                       getItemNameStocksAlert(sMH.itemId, sMH.itemUniqueId);
 
+                  final isDark =
+                      Theme.of(context).brightness == Brightness.dark;
+
+                  final rowBg = isAlert
+                      ? cRiderPickup
+                      : isDark
+                          ? const Color(0xFF2A2A2A)
+                          : cWaiting;
+
+                  final primaryTextColor = isAlert
+                      ? Colors.black
+                      : isDark
+                          ? Colors.white
+                          : Colors.black87;
+                  final accentTextColor = isAlert
+                      ? Colors.black87
+                      : isDark
+                          ? Colors.lightBlue.shade200
+                          : const Color(0xFF0D47A1);
+
                   return SizedBox(
                     height: 24,
                     child: Container(
-                      color: isAlert ? cRiderPickup : cWaiting,
+                      color: rowBg,
                       margin: const EdgeInsets.symmetric(
                           vertical: 1, horizontal: 2),
                       child: Padding(
@@ -94,9 +114,10 @@ class _ReadDataSuppliesCurrentState extends State<ReadDataSuppliesCurrent> {
                               child: Text(
                                 nameForSuppliesCurrent(
                                     sMH.itemId, sMH.itemUniqueId),
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.bold,
+                                  color: primaryTextColor,
                                 ),
                                 overflow: TextOverflow.ellipsis,
                               ),
@@ -108,9 +129,9 @@ class _ReadDataSuppliesCurrentState extends State<ReadDataSuppliesCurrent> {
                                 flex: 1,
                                 child: Text(
                                   "₱${getItemPrice(sMH.itemId, sMH.itemUniqueId)}",
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 10,
-                                    color: Color(0xFF0D47A1),
+                                    color: accentTextColor,
                                     fontWeight: FontWeight.w600,
                                   ),
                                   textAlign: TextAlign.center,
@@ -120,9 +141,9 @@ class _ReadDataSuppliesCurrentState extends State<ReadDataSuppliesCurrent> {
                               flex: 1,
                               child: Text(
                                 DateFormat('M/dd').format(sMH.logDate.toDate()),
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 10,
-                                  color: Color(0xFF0D47A1),
+                                  color: accentTextColor,
                                   fontWeight: FontWeight.w600,
                                 ),
                                 textAlign: TextAlign.center,
@@ -136,9 +157,9 @@ class _ReadDataSuppliesCurrentState extends State<ReadDataSuppliesCurrent> {
                                 child: Text(
                                   getItemNameStocksType(
                                       sMH.itemId, sMH.itemUniqueId),
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 10,
-                                    color: Color(0xFF0D47A1),
+                                    color: accentTextColor,
                                     fontWeight: FontWeight.w600,
                                   ),
                                   textAlign: TextAlign.center,
@@ -152,9 +173,10 @@ class _ReadDataSuppliesCurrentState extends State<ReadDataSuppliesCurrent> {
                                         "php"
                                     ? "₱${value.format(sMH.currentStocks)}"
                                     : value.format(sMH.currentStocks),
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.bold,
+                                  color: primaryTextColor,
                                 ),
                                 textAlign: TextAlign.right,
                               ),

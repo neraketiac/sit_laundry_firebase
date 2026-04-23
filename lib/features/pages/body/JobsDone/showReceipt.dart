@@ -23,181 +23,136 @@ void showReceipt(BuildContext context, JobModelRepository jobRepo) {
   int paidTotal = jobRepo.paidCashAmount + jobRepo.paidGCashAmount;
   int remaining = jobRepo.finalPrice - paidTotal;
 
-  /// RECEIPT ROW
-  Widget receiptRow(String left, String right,
-      {bool bold = false, Color? color}) {
-    return Row(
-      children: [
-        Expanded(
-          child: Text(
-            left,
-            style: TextStyle(
-              fontFamily: "Courier",
-              fontWeight: bold ? FontWeight.bold : FontWeight.normal,
-              color: color,
-            ),
-          ),
-        ),
-        Text(
-          right,
-          textAlign: TextAlign.right,
-          style: TextStyle(
-            fontFamily: "Courier",
-            fontWeight: bold ? FontWeight.bold : FontWeight.normal,
-            color: color,
-          ),
-        ),
-      ],
-    );
-  }
-
-  /// CENTER TEXT
-  Widget receiptCenter(String text, {bool bold = false}) {
-    return Center(
-      child: Text(
-        text,
-        style: TextStyle(
-          fontFamily: "Courier",
-          fontWeight: bold ? FontWeight.bold : FontWeight.normal,
-        ),
-      ),
-    );
-  }
-
-  /// DIVIDER
-  Widget receiptDivider() {
-    return const Text(
-      "--------------------------------",
-      style: TextStyle(fontFamily: "Courier"),
-    );
-  }
-
   showDialog(
     context: context,
     builder: (BuildContext context) {
+      final isDark = Theme.of(context).brightness == Brightness.dark;
+      final bgColor = isDark ? const Color(0xFF1E1E1E) : Colors.white;
+      final textColor = isDark ? Colors.white : Colors.black87;
+
+      Widget receiptRowDark(String left, String right,
+          {bool bold = false, Color? color}) {
+        return Row(
+          children: [
+            Expanded(
+              child: Text(
+                left,
+                style: TextStyle(
+                  fontFamily: "Courier",
+                  fontWeight: bold ? FontWeight.bold : FontWeight.normal,
+                  color: color ?? textColor,
+                ),
+              ),
+            ),
+            Text(
+              right,
+              textAlign: TextAlign.right,
+              style: TextStyle(
+                fontFamily: "Courier",
+                fontWeight: bold ? FontWeight.bold : FontWeight.normal,
+                color: color ?? textColor,
+              ),
+            ),
+          ],
+        );
+      }
+
+      Widget receiptCenterDark(String text, {bool bold = false}) {
+        return Center(
+          child: Text(
+            text,
+            style: TextStyle(
+              fontFamily: "Courier",
+              fontWeight: bold ? FontWeight.bold : FontWeight.normal,
+              color: textColor,
+            ),
+          ),
+        );
+      }
+
+      Widget receiptDividerDark() {
+        return Text(
+          "--------------------------------",
+          style: TextStyle(
+              fontFamily: "Courier",
+              color: isDark ? Colors.grey.shade600 : Colors.black87),
+        );
+      }
+
       return Dialog(
         child: Container(
           width: 320,
           padding: const EdgeInsets.all(16),
-          color: Colors.white,
+          color: bgColor,
           child: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                /// HEADER
-                receiptCenter("W A S H * K O * L A N G", bold: true),
-                receiptCenter("Laundry Service"),
-
+                receiptCenterDark("W A S H * K O * L A N G", bold: true),
+                receiptCenterDark("Laundry Service"),
                 const SizedBox(height: 6),
-
-                receiptDivider(),
-
-                /// JOB ID
-                receiptRow("Queue No.", "#${jobRepo.jobId}"),
-
-                /// DATE
-                receiptRow("Date", formatDate(jobRepo.dateD)),
-
-                /// CUSTOMER
-                receiptRow("Customer", jobRepo.customerName),
-
-                /// CUSTOMER Address
-                receiptRow("Address", jobRepo.address),
-
-                /// ID
-                receiptRow("Customer ID", jobRepo.customerId.toString()),
-
-                receiptDivider(),
-
-                /// PRICING SETUP for REGULAR and SS only
+                receiptDividerDark(),
+                receiptRowDark("Queue No.", "#${jobRepo.jobId}"),
+                receiptRowDark("Date", formatDate(jobRepo.dateD)),
+                receiptRowDark("Customer", jobRepo.customerName),
+                receiptRowDark("Address", jobRepo.address),
+                receiptRowDark("Customer ID", jobRepo.customerId.toString()),
+                receiptDividerDark(),
                 if (jobRepo.regular || jobRepo.sayosabon) ...[
-                  receiptCenter("DETAILS"),
-                  receiptDivider(),
-                  if (jobRepo.regular) receiptRow('Full Service 155', ''),
-                  if (jobRepo.sayosabon) receiptRow('Sayo Sabon 125', ''),
-                  receiptRow(jobRepo.pricingSetup, "₱${jobRepo.finalPrice}"),
+                  receiptCenterDark("DETAILS"),
+                  receiptDividerDark(),
+                  if (jobRepo.regular) receiptRowDark('Full Service 155', ''),
+                  if (jobRepo.sayosabon) receiptRowDark('Sayo Sabon 125', ''),
+                  receiptRowDark(
+                      jobRepo.pricingSetup, "₱${jobRepo.finalPrice}"),
                 ],
-
-                receiptDivider(),
-
-                /// ITEMS
+                receiptDividerDark(),
                 if (jobRepo.items.isNotEmpty) ...[
-                  receiptCenter("ITEMS"),
-                  receiptDivider(),
+                  receiptCenterDark("ITEMS"),
+                  receiptDividerDark(),
                   for (var item in jobRepo.items)
-                    receiptRow(item.itemName, "₱${item.itemPrice}"),
-                  receiptDivider(),
-                  receiptRow(
-                    "Item Subtotal",
-                    "₱$itemSubtotal",
-                    bold: true,
-                  ),
+                    receiptRowDark(item.itemName, "₱${item.itemPrice}"),
+                  receiptDividerDark(),
+                  receiptRowDark("Item Subtotal", "₱$itemSubtotal", bold: true),
                 ],
-
-                /// CONTAINERS
                 if (jobRepo.basket > 0 ||
                     jobRepo.ebag > 0 ||
                     jobRepo.sako > 0) ...[
-                  receiptDivider(),
-                  receiptCenter("CONTAINERS"),
+                  receiptDividerDark(),
+                  receiptCenterDark("CONTAINERS"),
                   if (jobRepo.basket > 0)
-                    receiptRow("Basket", "${jobRepo.basket}"),
+                    receiptRowDark("Basket", "${jobRepo.basket}"),
                   if (jobRepo.ebag > 0)
-                    receiptRow("Eco Bag", "${jobRepo.ebag}"),
-                  if (jobRepo.sako > 0) receiptRow("Sako", "${jobRepo.sako}"),
+                    receiptRowDark("Eco Bag", "${jobRepo.ebag}"),
+                  if (jobRepo.sako > 0)
+                    receiptRowDark("Sako", "${jobRepo.sako}"),
                 ],
-
-                receiptDivider(),
-
-                /// TOTAL
-                receiptRow(
-                  "TOTAL",
-                  "₱${jobRepo.finalPrice}",
-                  bold: true,
-                ),
-
-                /// PAID
+                receiptDividerDark(),
+                receiptRowDark("TOTAL", "₱${jobRepo.finalPrice}", bold: true),
                 if (paidTotal > 0 && jobRepo.paidCash)
-                  receiptRow(
-                    "PAID",
-                    "₱$paidTotal",
-                  ),
-
+                  receiptRowDark("PAID", "₱$paidTotal"),
                 if (paidTotal > 0 &&
                     jobRepo.paidGCash &&
                     !jobRepo.paidGCashVerified)
-                  receiptRow(
-                    "GCash Pending",
-                    "₱$paidTotal",
-                  ),
-
-                /// BALANCE / UNPAID
+                  receiptRowDark("GCash Pending", "₱$paidTotal"),
                 if (jobRepo.unpaid)
                   if (remaining > 0)
-                    receiptRow(
+                    receiptRowDark(
                       jobRepo.unpaid ? "UNPAID" : "BALANCE",
                       "₱$remaining",
                       bold: true,
-                      color: jobRepo.unpaid ? Colors.red : null,
+                      color: Colors.red.shade400,
                     ),
-
-                receiptDivider(),
-
-                /// REMARKS
+                receiptDividerDark(),
                 if (jobRepo.remarks.isNotEmpty)
                   Text(
                     "Remarks: ${jobRepo.remarks}",
-                    style: const TextStyle(fontFamily: "Courier"),
+                    style: TextStyle(fontFamily: "Courier", color: textColor),
                   ),
-
                 const SizedBox(height: 8),
-
-                receiptCenter("Thank you for choosing"),
-                receiptCenter("WASH KO LANG"),
-
+                receiptCenterDark("Thank you for choosing"),
+                receiptCenterDark("WASH KO LANG"),
                 const SizedBox(height: 12),
-
-                /// CLOSE BUTTON
                 Row(
                   children: [
                     Expanded(

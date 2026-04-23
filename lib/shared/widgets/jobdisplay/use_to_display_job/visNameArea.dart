@@ -10,12 +10,12 @@ Expanded visNameArea(JobModel job, bool isSelected) {
       final isDark = Theme.of(context).brightness == Brightness.dark;
 
       final primaryColor = isSelected
-          ? Colors.deepPurple.shade200
+          ? (isDark ? Colors.deepPurple.shade200 : Colors.deepPurple.shade800)
           : isDark
               ? Colors.white
               : Colors.black87;
       final secondaryColor = isSelected
-          ? Colors.deepPurple.shade200
+          ? (isDark ? Colors.deepPurple.shade200 : Colors.deepPurple.shade700)
           : isDark
               ? Colors.white70
               : Colors.grey.shade700;
