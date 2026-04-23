@@ -18,10 +18,15 @@ InkWell visPaidUnpaidArea(
       jobRepo.paidCashAmount > 0 ||
       jobRepo.paidGCashAmount > 0;
 
-  final Color paidColor = isSelected ? Colors.deepPurple : Colors.black87;
+  final isDark = Theme.of(context).brightness == Brightness.dark;
+
+  final Color paidColor = isSelected
+      ? Colors.deepPurple.shade200
+      : isDark
+          ? Colors.white70
+          : Colors.black87;
 
   // KULANG = unpaid but has partial CASH payment (not enough cash)
-  // GCash unverified is "GCash Pending", not KULANG
   final bool isKulang = jobRepo.selectedUnpaid && jobRepo.selectedPaidCash;
 
   final Color unpaidColor = isKulang ? Colors.purpleAccent : Colors.redAccent;
@@ -307,8 +312,10 @@ InkWell visPaidUnpaidArea(
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(s.cardRadius - 2),
                       color: isPaid
-                          ? Colors.greenAccent.withOpacity(0.15)
-                          : Colors.redAccent.withOpacity(0.15),
+                          ? Colors.greenAccent
+                              .withValues(alpha: isDark ? 0.25 : 0.15)
+                          : Colors.redAccent
+                              .withValues(alpha: isDark ? 0.25 : 0.15),
                     ),
                     child: Text(
                       statusText,

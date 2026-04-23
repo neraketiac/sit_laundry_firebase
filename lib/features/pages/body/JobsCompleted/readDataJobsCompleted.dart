@@ -78,10 +78,15 @@ Widget readDataJobsCompleted(
 
   return Column(
     children: [
-      const Row(
+      Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text("🏁💯 COMPLETED"),
+          Text("🏁💯 COMPLETED",
+              style: TextStyle(
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white70
+                    : null,
+              )),
         ],
       ),
       SizedBox(

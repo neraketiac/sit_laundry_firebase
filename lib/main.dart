@@ -28,5 +28,5 @@ Future<void> main() async {
   // Initialize notifications in background without blocking app startup
   NotificationService.initialize();
 
-  runApp(const MyApp());
+  runApp(MyApp(key: myAppKey));
 }

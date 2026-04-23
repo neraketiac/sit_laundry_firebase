@@ -57,7 +57,14 @@ Widget _buildQueueList(BuildContext context, List<JobModel> jobs) {
     children: [
       Row(
         mainAxisAlignment: MainAxisAlignment.center,
-        children: [Text("🔄 ON-GOING")],
+        children: [
+          Text("🔄 ON-GOING",
+              style: TextStyle(
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white70
+                    : null,
+              ))
+        ],
       ),
       StatefulBuilder(
         builder: (context, setState) {

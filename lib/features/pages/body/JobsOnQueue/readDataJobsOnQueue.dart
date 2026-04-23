@@ -48,9 +48,16 @@ Widget _buildQueueList(BuildContext context, List<JobModel> jobs) {
     builder: (context, setState) {
       return Column(
         children: [
-          const Row(
+          Row(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: [Text("⏳ QUEUE")],
+            children: [
+              Text("⏳ QUEUE",
+                  style: TextStyle(
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.white70
+                        : null,
+                  ))
+            ],
           ),
           ReorderableListView(
             shrinkWrap: true,

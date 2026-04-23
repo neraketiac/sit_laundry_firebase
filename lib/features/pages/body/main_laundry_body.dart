@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:laundry_firebase/app.dart';
 import 'package:laundry_firebase/core/utils/app_scale.dart';
 import 'package:intl/intl.dart';
 import 'package:laundry_firebase/core/global/app_version.dart';
@@ -143,10 +144,15 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
       await databaseEmployeeSetup.add(newSetup);
       empSetup = newSetup;
     }
+    // Apply dark mode at MaterialApp level on load
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      myAppKey.currentState?.setDarkMode(empSetup.darkMode);
+    });
   }
 
   void updateEmployeeSetup(EmployeeSetupModel updated) {
     databaseEmployeeSetup.update(updated);
+    myAppKey.currentState?.setDarkMode(updated.darkMode);
     setState(() {
       empSetup = updated;
     });
