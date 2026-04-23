@@ -2,6 +2,9 @@ name: Jobs Done To Reports
 
 on:
   workflow_dispatch:
+  schedule:
+    # Runs hourly from 8:00 AM to 6:00 PM Asia/Manila (UTC+8).
+    - cron: "0 0-10 * * *"
 
 jobs:
   run-batch:

@@ -220,7 +220,11 @@ Future<void> callPickGCashReceiptForJob(BuildContext context,
     await FirebaseFirestore.instance
         .collection(collection)
         .doc(jobRepo.docId)
-        .update({'P09_GCashReceiptUrl': url});
+        .update({
+      'P09_GCashReceiptUrl': url,
+      if (collection == JOBS_DONE_REF || collection == JOBS_COMPLETED_REF)
+        SYNC_TO_DB2_FIELD: false,
+    });
 
     jobRepo.gcashReceiptUrl = url;
 

@@ -13,6 +13,32 @@ const String JOBS_ONGOING_REF = "Jobs_ongoing";
 const String JOBS_DONE_REF = "Jobs_done";
 const String JOBS_COMPLETED_REF =
     "Jobs_completed"; //paidcash or paidgcash + verified , clothes delivered or pickedup done.
+const String SYNC_DELETE_QUEUE_REF = "sync_delete_queue";
+const String SYNC_TO_DB2_FIELD = "Z00_IsSyncToDB2";
+
+Map<String, dynamic> withPendingDb2Sync(Map<String, dynamic> data) {
+  return {
+    ...data,
+    SYNC_TO_DB2_FIELD: false,
+  };
+}
+
+String syncDeleteQueueDocId(String sourceCollection, String docId) {
+  return "${sourceCollection}__$docId";
+}
+
+Map<String, dynamic> buildSyncDeleteQueuePayload({
+  required String sourceCollection,
+  required String docId,
+  required String reason,
+}) {
+  return {
+    'sourceCollection': sourceCollection,
+    'docId': docId,
+    'reason': reason,
+    'createdAt': Timestamp.now(),
+  };
+}
 
 /// 🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦
 /// 🔹 DATABASE : JOBS QUEUE
@@ -202,7 +228,11 @@ class DatabaseJobsDone {
   }
 
   Future<void> update(JobModel jM) async {
-    await _ref.doc(jM.docId).update(jM.toJson()).withFsTimeout();
+    jM.isSyncToDB2 = false;
+    await _ref
+        .doc(jM.docId)
+        .update(withPendingDb2Sync(jM.toJson()))
+        .withFsTimeout();
   }
 }
 
@@ -224,7 +254,11 @@ class DatabaseJobsCompleted {
 
   //admin only
   Future<void> update(JobModel jM) async {
-    await _ref.doc(jM.docId).update(jM.toJson()).withFsTimeout();
+    jM.isSyncToDB2 = false;
+    await _ref
+        .doc(jM.docId)
+        .update(withPendingDb2Sync(jM.toJson()))
+        .withFsTimeout();
   }
 
   Future<QuerySnapshot> fetchCompletedJobs({
@@ -358,25 +392,20 @@ Future<void> moveOngoingToDone(
       adminTimestampDateD = Timestamp.now();
     }
 
-    if (forDelivery) {
-      tx.set(doneRef, {
+    tx.set(
+      doneRef,
+      withPendingDb2Sync({
         ...snapshot.data()!,
-        'Q00_ForSorting': false,
-        'Q01_RiderPickup': true,
+        if (forDelivery) ...{
+          'Q00_ForSorting': false,
+          'Q01_RiderPickup': true,
+        },
         'O00_ProcessStep': 'done',
         'O01_AllStatus': 0.7,
         'A05_DateD': adminTimestampDateD,
         'Q06_PromoCounter': effectivePromoCounter,
-      });
-    } else {
-      tx.set(doneRef, {
-        ...snapshot.data()!,
-        'O01_AllStatus': 0.7,
-        'O00_ProcessStep': 'done',
-        'A05_DateD': adminTimestampDateD,
-        'Q06_PromoCounter': effectivePromoCounter,
-      });
-    }
+      }),
+    );
 
     tx.delete(ongoingRef);
 
@@ -404,15 +433,29 @@ Future<void> moveAllDoneToCompleted() async {
   }
 
   final batch = firestore.batch();
+  final deleteQueue = firestore.collection(SYNC_DELETE_QUEUE_REF);
 
   for (final doc in snapshot.docs) {
     final completedRef = completedCollection.doc(doc.id);
+    final deleteQueueRef =
+        deleteQueue.doc(syncDeleteQueueDocId(JOBS_DONE_REF, doc.id));
 
-    batch.set(completedRef, {
-      ...doc.data(),
-      'O00_ProcessStep': 'completed',
-      'A06_DateC': Timestamp.now(),
-    });
+    batch.set(
+      completedRef,
+      withPendingDb2Sync({
+        ...doc.data(),
+        'O00_ProcessStep': 'completed',
+        'A06_DateC': Timestamp.now(),
+      }),
+    );
+    batch.set(
+      deleteQueueRef,
+      buildSyncDeleteQueuePayload(
+        sourceCollection: JOBS_DONE_REF,
+        docId: doc.id,
+        reason: 'moved_to_jobs_completed',
+      ),
+    );
 
     batch.delete(doc.reference);
   }
