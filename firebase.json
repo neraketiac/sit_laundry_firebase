@@ -12,5 +12,28 @@
         "destination": "/index.html"
       }
     ]
+  },
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "wash-ko-lang-sit",
+          "appId": "1:248306194923:android:246830746ad13f22b7a1ae",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "wash-ko-lang-sit",
+          "configurations": {
+            "android": "1:248306194923:android:246830746ad13f22b7a1ae",
+            "ios": "1:248306194923:ios:7bfae8b2120eabebb7a1ae",
+            "macos": "1:248306194923:ios:7bfae8b2120eabebb7a1ae",
+            "web": "1:248306194923:web:4484ca74bbc01546b7a1ae",
+            "windows": "1:248306194923:web:fae09490ecba4a31b7a1ae"
+          }
+        }
+      }
+    }
   }
 }

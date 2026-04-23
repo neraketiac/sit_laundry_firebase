@@ -1,3 +1,5 @@
+push-server/
+
 # Miscellaneous
 *.class
 *.log
@@ -9,6 +11,7 @@
 .history
 .svn/
 migrate_working_dir/
+
 
 # IntelliJ related
 *.iml
@@ -41,3 +44,11 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Sensitive / API key files
+lib/firebase_options.dart
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
+.firebaserc
+firebase.json
+

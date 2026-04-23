@@ -1,0 +1,93 @@
+const int menuBleOriginalDVal = 302, menuBleColorSafeDVal = 301;
+const int menuDetWKL15 = 109;
+const int menuDetArielDVal = 101;
+const int menuDetWKL = 106;
+// const int menuDetBreezeDVal = 103,
+//     menuDetTideDVal = 104,
+//     menuDetWingsBlueDVal = 105,
+//     menuDetWingsRedDVal = 107,
+
+//     menuDetSurfDVal = 102,
+//     menuDetKlinDVal = 108,
+//     menuDetAriel3P = 110;
+
+const int menuOthCashInOutFunds = 422,
+    // menuOthPlasticSmall = 423,
+    // menuOthPlasticMedium = 424,
+    // menuOthPlasticLarge = 425,
+    // menuOthPlasticXLarge = 426,
+    // menuOthLPG11Kilos = 427,
+    // menuOthLPG50Kilos = 428,
+    menuOthUniqIdFundsEOD = 429,
+    menuOthUniqIdFee = 430,
+    menuOthUniqIdLoad = 431,
+    menuOthExpense = 432,
+    //specialaccess
+    menuOth977GCash = 10001,
+    menuOth977GCashIn = 10002,
+    menuOth977GCashOut = 10003,
+    menuOth152GCash = 10011,
+    menuOth152GCashIn = 10012,
+    menuOth152GCashOut = 10013,
+    menuOthLPDonP = 10014,
+    menuOthLPDonPCash = 10015,
+    menuOthLaundryPaymentGCash = 10016;
+
+const int intForSorting = 501,
+    intRiderPickup = 502,
+    intRegularPackage = 503,
+    intSayoSabonPackage = 504,
+    intOthersPackage = 505,
+    intWaitingStat = 601,
+    intWashingStat = 602,
+    intDryingStat = 603,
+    intFoldingStat = 604,
+    intWaitCustomerPickup = 701,
+    intWaitRiderDelivery = 702,
+    intNasaCustomerNa = 703;
+
+const int processWaiting = 650,
+    processWashing = 651,
+    processDrying = 652,
+    processFolding = 653,
+    processDone = 654;
+
+const int unpaid = 801,
+    paidCash = 802,
+    paidGCash = 803,
+    partialPaidCash = 804,
+    partialPaidGCash = 805;
+
+const int menuOthWash = 401,
+    menuOth2W1DR = 402,
+    menuOth2W1DSS = 403,
+    menuOthDry = 404,
+    menuOth195 = 405,
+    menuOth165 = 406,
+    menuOthXD = 407,
+    menuOthXW = 408,
+    menuOthXR = 409,
+    menuOth155 = 410,
+    menuOth125 = 411,
+    menuOthDO = 412,
+    menuOthDOF = 413,
+    menuOthNF155 = 414,
+    menuOthNF195 = 415,
+    menuOthNF125 = 416,
+    menuOthNF165 = 417,
+    menuOthW8t9 = 418,
+    menuOthW9t10 = 419,
+    menuOthW10t11 = 420,
+    menuOthW11t12 = 421,
+    menuOthXS = 422,
+    menuOthFree = 423,
+    menuOthWD98 = 424,
+    menuOth150 = 425,
+    menuOthRush50 = 426,
+    menuOth225 = 427;
+const int menuOthUniqIdCashIn = 4401,
+    menuOthUniqIdCashOut = 4402,
+    menuOthUniqIdFundsIn = 4403,
+    menuOthUniqIdFundsOut = 4404,
+    menuOthLaundryPayment = 4405,
+    menuOthSalaryPayment = 4406;

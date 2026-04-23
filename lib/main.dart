@@ -1,36 +1,32 @@
-import 'package:firebase_core/firebase_core.dart';
+import 'dart:async';
+import 'dart:ui';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:laundry_firebase/pages/enterloyaltycode.dart';
+import 'core/services/firebase_service.dart';
+import 'core/services/notification_service.dart';
+import 'app.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // Initialize Firebase
 
-  await Firebase.initializeApp(
-    // Replace with your actual values
-    options: const FirebaseOptions(
-        apiKey: "AIzaSyASvVM-bX6W7-r1-O_u8fbrn5CaFnxVzWQ",
-        authDomain: "wash-ko-lang-sit.firebaseapp.com",
-        projectId: "wash-ko-lang-sit",
-        storageBucket: "wash-ko-lang-sit.appspot.com",
-        messagingSenderId: "248306194923",
-        appId: "1:248306194923:web:4484ca74bbc01546b7a1ae"),
-  );
+  // Catch unhandled async errors (e.g. Firestore timeouts thrown outside FsHandler)
+  FlutterError.onError = (details) {
+    // Suppress timeout errors — they're already handled by FsHandler where possible
+    final exception = details.exception;
+    if (exception is FirebaseException && exception.code == 'timeout') return;
+    FlutterError.presentError(details);
+  };
+
+  // Catch errors from async zones (Futures not wrapped in try/catch)
+  PlatformDispatcher.instance.onError = (error, stack) {
+    if (error is FirebaseException && error.code == 'timeout') return true;
+    return false; // let other errors propagate normally
+  };
+
+  await FirebaseService.initialize();
+
+  // Initialize notifications in background without blocking app startup
+  NotificationService.initialize();
 
   runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const MaterialApp(
-      debugShowCheckedModeBanner: false,
-      //home: MyHome(),
-      //home: MyLoyalty(),
-      home: EnterLoyaltyCode(),
-      //home: MyMenuMain(),
-    );
-  }
 }
