@@ -26,4 +26,5 @@ jobs:
         env:
           FIREBASE_SOURCE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SOURCE_SERVICE_ACCOUNT }}
           FIREBASE_REPORTS_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_REPORTS_SERVICE_ACCOUNT }}
+          FIREBASE_LOYALTY_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_LOYALTY_SERVICE_ACCOUNT }}
         run: python batch/jobs_done_to_reports.py
