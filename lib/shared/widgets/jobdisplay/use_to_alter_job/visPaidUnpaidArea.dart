@@ -13,6 +13,10 @@ InkWell visPaidUnpaidArea(
   bool alterPaidUnpaid,
 ) {
   final bool isPaid = !jobRepo.selectedUnpaid;
+  final bool hasRecordedPayment = jobRepo.paidCash ||
+      jobRepo.paidGCash ||
+      jobRepo.paidCashAmount > 0 ||
+      jobRepo.paidGCashAmount > 0;
 
   final Color paidColor = isSelected ? Colors.deepPurple : Colors.black87;
 
@@ -39,31 +43,122 @@ InkWell visPaidUnpaidArea(
   // unpaid = gcash not verified
   // unpaid = cash + gcash + not verified
 
+  Future<bool> requestAdminApproval({
+    required String title,
+    required String description,
+  }) async {
+    final remarksCtrl = TextEditingController();
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text(title),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              description,
+              style: const TextStyle(fontSize: 13),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: remarksCtrl,
+              autofocus: true,
+              maxLines: 3,
+              decoration: const InputDecoration(
+                labelText: 'Remarks (required)',
+                hintText: 'Reason for admin request...',
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
+            onPressed: () {
+              if (remarksCtrl.text.trim().isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Please enter remarks.')),
+                );
+                return;
+              }
+              Navigator.pop(context, true);
+            },
+            child: const Text('Send Request',
+                style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) return false;
+
+    final appendedRemarks = jobRepo.remarks.isEmpty
+        ? '[Rt] ${remarksCtrl.text.trim()}'
+        : '${jobRepo.remarks} | [R] ${remarksCtrl.text.trim()}';
+
+    final collection = jobRepo.processStep == 'completed'
+        ? JOBS_COMPLETED_REF
+        : jobRepo.processStep == 'done'
+            ? JOBS_DONE_REF
+            : (jobRepo.processStep == 'waiting' ||
+                    jobRepo.processStep == 'washing' ||
+                    jobRepo.processStep == 'drying' ||
+                    jobRepo.processStep == 'folding')
+                ? JOBS_ONGOING_REF
+                : JOBS_QUEUE_REF;
+
+    await FirebaseFirestore.instance
+        .collection(collection)
+        .doc(jobRepo.docId)
+        .update({
+      'Z02_RequestForAdmin': true,
+      'R00_Remarks': appendedRemarks,
+      if (collection == JOBS_DONE_REF || collection == JOBS_COMPLETED_REF)
+        SYNC_TO_DB2_FIELD: false,
+    });
+
+    jobRepo.requestForAdmin = true;
+    jobRepo.remarks = appendedRemarks;
+
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Request sent. Admin will review.'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+    }
+
+    return true;
+  }
+
   return InkWell(
       borderRadius: BorderRadius.circular(14),
       onTap: () async {
         if (!alterPaidUnpaid) return;
 
-        // If already paid — only admin can change it back
-        if (!jobRepo.selectedUnpaid) {
+        // Once any payment is recorded, only admin can change it.
+        if (hasRecordedPayment) {
           if (!isAdmin) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text(
-                    'Payment is already recorded. Only admin can change it.'),
-                backgroundColor: Colors.redAccent,
-                duration: Duration(seconds: 3),
-              ),
+            await requestAdminApproval(
+              title: 'Request Payment Change',
+              description:
+                  'Payment details are already recorded for this job. Only admin can change them now.',
             );
             return;
           }
-          // Admin — confirm before allowing change
+
           final confirm = await showDialog<bool>(
             context: context,
             builder: (_) => AlertDialog(
               title: const Text('Admin Override'),
               content: const Text(
-                  'This job is already paid. Are you sure you want to change the payment?'),
+                  'Payment details are already recorded. Are you sure you want to change them?'),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context, false),
@@ -94,97 +189,11 @@ InkWell visPaidUnpaidArea(
 
             if (daysDiff > 14) {
               if (!isAdmin) {
-                // Non-admin > 14 days: show "Request to Paid" dialog
-                final remarksCtrl = TextEditingController();
-                final confirmed = await showDialog<bool>(
-                  context: context,
-                  builder: (_) => AlertDialog(
-                    title: const Text('Request to Paid'),
-                    content: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'This job is over 2 weeks unpaid. You can request admin approval to mark it as paid.',
-                          style: TextStyle(fontSize: 13),
-                        ),
-                        const SizedBox(height: 12),
-                        TextField(
-                          controller: remarksCtrl,
-                          autofocus: true,
-                          maxLines: 3,
-                          decoration: const InputDecoration(
-                            labelText: 'Remarks (required)',
-                            hintText: 'Reason for payment request...',
-                            border: OutlineInputBorder(),
-                          ),
-                        ),
-                      ],
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context, false),
-                        child: const Text('Cancel'),
-                      ),
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.orange),
-                        onPressed: () {
-                          if (remarksCtrl.text.trim().isEmpty) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                  content: Text('Please enter remarks.')),
-                            );
-                            return;
-                          }
-                          Navigator.pop(context, true);
-                        },
-                        child: const Text('Send Request',
-                            style: TextStyle(color: Colors.white)),
-                      ),
-                    ],
-                  ),
+                await requestAdminApproval(
+                  title: 'Request to Paid',
+                  description:
+                      'This job is over 2 weeks unpaid. You can request admin approval to mark it as paid.',
                 );
-                if (confirmed != true || !context.mounted) return;
-
-                // Append remarks + set requestForAdmin = true
-                final appendedRemarks = jobRepo.remarks.isEmpty
-                    ? '[Rt] ${remarksCtrl.text.trim()}'
-                    : '${jobRepo.remarks} | [R] ${remarksCtrl.text.trim()}';
-
-                final collection = jobRepo.processStep == 'completed'
-                    ? JOBS_COMPLETED_REF
-                    : jobRepo.processStep == 'done'
-                        ? JOBS_DONE_REF
-                        : (jobRepo.processStep == 'waiting' ||
-                                jobRepo.processStep == 'washing' ||
-                                jobRepo.processStep == 'drying' ||
-                                jobRepo.processStep == 'folding')
-                            ? JOBS_ONGOING_REF
-                            : JOBS_QUEUE_REF;
-
-                await FirebaseFirestore.instance
-                    .collection(collection)
-                    .doc(jobRepo.docId)
-                    .update({
-                  'Z02_RequestForAdmin': true,
-                  'R00_Remarks': appendedRemarks,
-                  if (collection == JOBS_DONE_REF ||
-                      collection == JOBS_COMPLETED_REF)
-                    SYNC_TO_DB2_FIELD: false,
-                });
-
-                jobRepo.requestForAdmin = true;
-                jobRepo.remarks = appendedRemarks;
-
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Request sent. Admin will review.'),
-                      backgroundColor: Colors.orange,
-                    ),
-                  );
-                }
                 return;
               }
 

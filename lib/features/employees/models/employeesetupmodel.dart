@@ -13,6 +13,7 @@ class EmployeeSetupModel {
   bool showEmployee;
   bool showIncome;
   bool showUnpaidLaundry;
+  bool darkMode;
 
   EmployeeSetupModel({
     required this.docId,
@@ -27,6 +28,7 @@ class EmployeeSetupModel {
     required this.showEmployee,
     required this.showIncome,
     required this.showUnpaidLaundry,
+    required this.darkMode,
   });
 
   EmployeeSetupModel.fromJson(Map<String, dynamic> json)
@@ -43,6 +45,7 @@ class EmployeeSetupModel {
           showEmployee: json['ShowEmployee'] ?? false,
           showIncome: json['ShowIncome'] ?? false,
           showUnpaidLaundry: json['ShowUnpaidLaundry'] ?? false,
+          darkMode: json['DarkMode'] ?? false,
         );
 
   EmployeeSetupModel copyWith({
@@ -58,6 +61,7 @@ class EmployeeSetupModel {
     bool? showEmployee,
     bool? showIncome,
     bool? showUnpaidLaundry,
+    bool? darkMode,
   }) {
     return EmployeeSetupModel(
       docId: docId ?? this.docId,
@@ -72,6 +76,7 @@ class EmployeeSetupModel {
       showEmployee: showEmployee ?? this.showEmployee,
       showIncome: showIncome ?? this.showIncome,
       showUnpaidLaundry: showUnpaidLaundry ?? this.showUnpaidLaundry,
+      darkMode: darkMode ?? this.darkMode,
     );
   }
 
@@ -88,5 +93,6 @@ class EmployeeSetupModel {
         'ShowEmployee': showEmployee,
         'ShowIncome': showIncome,
         'ShowUnpaidLaundry': showUnpaidLaundry,
+        'DarkMode': darkMode,
       };
 }

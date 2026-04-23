@@ -89,6 +89,7 @@ Widget _buildQueueList(BuildContext context, List<JobModel> jobs) {
                 );
 
               final isSelected = _selectedIndex == index;
+              final isDark = Theme.of(context).brightness == Brightness.dark;
 
               return ReorderableDelayedDragStartListener(
                 key: ValueKey(job.docId),
@@ -120,25 +121,38 @@ Widget _buildQueueList(BuildContext context, List<JobModel> jobs) {
                         borderRadius: BorderRadius.circular(18),
                         gradient: LinearGradient(
                           colors: isSelected
-                              ? [
-                                  Colors.deepPurple.shade200,
-                                  Colors.deepPurple.shade100,
-                                ]
-                              : [
-                                  Colors.deepPurple.shade50,
-                                  Colors.deepPurple.shade50,
-                                ],
+                              ? isDark
+                                  ? [
+                                      const Color(0xFF4A3F6B),
+                                      const Color(0xFF3D3357),
+                                    ]
+                                  : [
+                                      Colors.deepPurple.shade200,
+                                      Colors.deepPurple.shade100,
+                                    ]
+                              : isDark
+                                  ? [
+                                      const Color(0xFF2A2535),
+                                      const Color(0xFF2A2535),
+                                    ]
+                                  : [
+                                      Colors.deepPurple.shade50,
+                                      Colors.deepPurple.shade50,
+                                    ],
                         ),
                         border: Border.all(
                           color: isSelected
                               ? Colors.deepPurple
-                              : Colors.deepPurple.withOpacity(0.1),
+                              : isDark
+                                  ? Colors.deepPurple.withValues(alpha: 0.3)
+                                  : Colors.deepPurple.withValues(alpha: 0.1),
                           width: isSelected ? 1.5 : 1,
                         ),
                         boxShadow: [
                           if (isSelected)
                             BoxShadow(
-                              color: Colors.deepPurple.withOpacity(0.4),
+                              color: Colors.deepPurple
+                                  .withValues(alpha: isDark ? 0.6 : 0.4),
                               blurRadius: 14,
                               offset: const Offset(0, 6),
                             ),
