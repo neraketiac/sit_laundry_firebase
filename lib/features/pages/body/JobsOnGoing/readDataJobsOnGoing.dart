@@ -9,6 +9,7 @@ import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/showAdminJ
 import 'package:laundry_firebase/core/services/database_jobs.dart';
 import 'package:laundry_firebase/features/jobs/repository/jobmodel_repository.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
+import 'package:laundry_firebase/core/utils/fs_usage_tracker.dart';
 import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_display_job/visIconArea.dart';
 import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_display_job/visNameArea.dart';
 import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_alter_job/visPaidUnpaidArea.dart';
@@ -34,6 +35,7 @@ Widget readDataJobsOnGoing(bool visible, Color color) {
       }
 
       final jobs = snapshot.data!;
+      FsUsageTracker.instance.track('readDataJobsOnGoing', jobs.length);
 
       return animatedPanel(
         visible: visible,

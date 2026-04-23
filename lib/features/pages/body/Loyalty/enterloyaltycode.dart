@@ -289,9 +289,8 @@ class _EnterLoyaltyCodeState extends State<EnterLoyaltyCode> {
   }
 
   void _queuePage(BuildContext context, String empid) {
-    Navigator.of(context)
-        .push(MaterialPageRoute(
-            builder: (context) => MyMainLaundryHeader(empid)));
+    Navigator.of(context).push(
+        MaterialPageRoute(builder: (context) => MyMainLaundryHeader(empid)));
   }
 
   void _singleCard(BuildContext context) {
@@ -314,16 +313,17 @@ class _EnterLoyaltyCodeState extends State<EnterLoyaltyCode> {
         .push(MaterialPageRoute(builder: (context) => const MySaveText()));
   }
 
+  bool _navigated = false;
+
   Row _rowSingleRead() {
-    final savedCode = web.window.localStorage.getItem(storageKey);
-    // if (loggedIn) {
-    _singleReadData(savedCode.toString());
-    // } else {
-    //   return _loginWKL();
-    // }
-    return Row(
-      children: [],
-    );
+    if (!_navigated) {
+      _navigated = true;
+      final savedCode = web.window.localStorage.getItem(storageKey);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _singleReadData(savedCode.toString());
+      });
+    }
+    return Row(children: const []);
   }
 
   Future<void> _singleReadData(String s) async {

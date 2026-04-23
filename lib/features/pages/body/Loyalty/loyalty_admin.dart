@@ -602,6 +602,7 @@ class _LoyaltyAdminState extends State<LoyaltyAdmin> {
       'Count': count,
       // cardNumber is intentionally NOT updated — it's the key identifier
     });
+    await bumpLoyaltyVersion();
 
     // 2. Sync customer name in Jobs_queue and Jobs_ongoing
     for (final collection in ['Jobs_queue', 'Jobs_ongoing']) {

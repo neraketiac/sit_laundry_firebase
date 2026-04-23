@@ -4,6 +4,7 @@ import 'package:laundry_firebase/features/employees/models/employeemodel.dart';
 import 'package:laundry_firebase/core/services/database_employee_current.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
 import 'package:laundry_firebase/core/global/variables_supplies.dart';
+import 'package:laundry_firebase/core/utils/fs_usage_tracker.dart';
 
 Widget readDataEmployeeCurr() => const _EmployeeCurrWidget();
 
@@ -59,6 +60,8 @@ class _EmployeeCurrWidgetState extends State<_EmployeeCurrWidget> {
           builder: (context, snapshot) {
             final listEM = snapshot.data?.docs ?? [];
             if (listEM.isEmpty) return const SizedBox();
+            FsUsageTracker.instance
+                .track('readDataEmployeeCurr', listEM.length);
 
             final rows = <TableRow>[
               const TableRow(

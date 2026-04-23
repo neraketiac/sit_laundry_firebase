@@ -5,6 +5,7 @@ import 'package:laundry_firebase/features/payments/models/gcashmodel.dart';
 import 'package:laundry_firebase/core/services/database_gcash.dart';
 import 'package:laundry_firebase/features/payments/repository/gcash_repository.dart';
 import 'package:laundry_firebase/shared/widgets/actions/showUploadedImage.dart';
+import 'package:laundry_firebase/core/utils/fs_usage_tracker.dart';
 
 Widget readDataGCashDone() {
   DatabaseGCashDone dbGCashDone = DatabaseGCashDone();
@@ -22,6 +23,7 @@ Widget readDataGCashDone() {
       }
 
       final snapshotDatas = snapshot.data!;
+      FsUsageTracker.instance.track('readDataGCashDone', snapshotDatas.length);
 
       return StatefulBuilder(
         builder: (context, setState) {
@@ -49,11 +51,10 @@ Widget readDataGCashDone() {
                   },
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 250),
-                    margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+                    margin:
+                        const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
                     decoration: BoxDecoration(
-                      color: isSelected
-                          ? Colors.green.shade50
-                          : Colors.white,
+                      color: isSelected ? Colors.green.shade50 : Colors.white,
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
                         color: isSelected
@@ -132,7 +133,8 @@ Widget readDataGCashDone() {
                                       Material(
                                         color: Colors.transparent,
                                         child: InkWell(
-                                          borderRadius: BorderRadius.circular(20),
+                                          borderRadius:
+                                              BorderRadius.circular(20),
                                           onTap: () async {
                                             await Clipboard.setData(
                                               ClipboardData(
@@ -146,9 +148,10 @@ Widget readDataGCashDone() {
                                             ScaffoldMessenger.of(context)
                                                 .showSnackBar(
                                               const SnackBar(
-                                                content:
-                                                    Text('Customer number copied'),
-                                                duration: Duration(milliseconds: 800),
+                                                content: Text(
+                                                    'Customer number copied'),
+                                                duration:
+                                                    Duration(milliseconds: 800),
                                               ),
                                             );
                                           },

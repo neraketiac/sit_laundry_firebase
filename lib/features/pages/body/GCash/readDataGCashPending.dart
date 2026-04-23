@@ -9,6 +9,7 @@ import 'package:laundry_firebase/core/services/database_gcash.dart';
 import 'package:laundry_firebase/features/payments/repository/gcash_repository.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
 import 'package:laundry_firebase/shared/widgets/actions/showUploadedImage.dart';
+import 'package:laundry_firebase/core/utils/fs_usage_tracker.dart';
 
 Widget readDataGCashPending() {
   DatabaseGCashPending dbGCashPending = DatabaseGCashPending();
@@ -26,6 +27,8 @@ Widget readDataGCashPending() {
       }
 
       final snapshotDatas = snapshot.data!;
+      FsUsageTracker.instance
+          .track('readDataGCashPending', snapshotDatas.length);
 
       return StatefulBuilder(
         builder: (context, setState) {
@@ -48,7 +51,8 @@ Widget readDataGCashPending() {
                 child: InkWell(
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 250),
-                    margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+                    margin:
+                        const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
                     decoration: BoxDecoration(
                       color: isSelected
                           ? Colors.deepPurple.shade100
@@ -205,9 +209,10 @@ Widget readDataGCashPending() {
                                           ScaffoldMessenger.of(context)
                                               .showSnackBar(
                                             const SnackBar(
-                                              content:
-                                                  Text('Customer number copied'),
-                                              duration: Duration(milliseconds: 800),
+                                              content: Text(
+                                                  'Customer number copied'),
+                                              duration:
+                                                  Duration(milliseconds: 800),
                                             ),
                                           );
                                         },

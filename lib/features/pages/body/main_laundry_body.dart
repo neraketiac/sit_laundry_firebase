@@ -128,19 +128,23 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
   Future<void> _mainLoad() async {
     setState(() => isLoading = true);
 
-    await Future.wait([
-      _loadItemsFB(),
-      _loadEmployeeSetup(),
-    ]);
+    try {
+      await Future.wait([
+        _loadItemsFB(),
+        _loadEmployeeSetup(),
+      ]);
 
-    putEntries();
+      putEntries();
 
-    for (var item in listSuppItemsAll) {
-      stocksTypeLookup[(item.itemId, item.itemUniqueId)] = item.stocksType;
-    }
-
-    if (mounted) {
-      setState(() => isLoading = false);
+      for (var item in listSuppItemsAll) {
+        stocksTypeLookup[(item.itemId, item.itemUniqueId)] = item.stocksType;
+      }
+    } catch (e) {
+      debugPrint('_mainLoad error: $e');
+    } finally {
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
     }
   }
 

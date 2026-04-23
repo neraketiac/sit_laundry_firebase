@@ -26,6 +26,11 @@ void showPaidUnpaid(BuildContext context, JobModelRepository jobRepo) {
 
     jobRepo.paymentReceivedBy = empIdGlobal;
 
+    // Clear request flag when admin saves and it was previously requested
+    if (isAdmin && jobRepo.requestForAdmin) {
+      jobRepo.requestForAdmin = false;
+    }
+
     await callDatabaseUpdateJob(context, jobRepo.jobModelData);
 
     // Auto-record cash payment DELTA to Supplies

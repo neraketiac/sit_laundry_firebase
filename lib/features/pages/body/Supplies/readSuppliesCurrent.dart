@@ -6,6 +6,7 @@ import 'package:laundry_firebase/core/global/variables.dart';
 import 'package:laundry_firebase/core/utils/sharedMethods.dart';
 import 'package:laundry_firebase/features/items/models/suppliesmodelhist.dart';
 import 'package:laundry_firebase/core/services/database_supplies_current.dart';
+import 'package:laundry_firebase/core/utils/fs_usage_tracker.dart';
 
 class ReadDataSuppliesCurrent extends StatefulWidget {
   const ReadDataSuppliesCurrent({super.key});
@@ -57,6 +58,7 @@ class _ReadDataSuppliesCurrentState extends State<ReadDataSuppliesCurrent> {
               }
 
               final docs = snapshot.data!.docs;
+              FsUsageTracker.instance.track('readSuppliesCurrent', docs.length);
               final supplies =
                   docs.map((doc) => doc.data() as SuppliesModelHist).toList();
 

@@ -140,7 +140,7 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader>
           clipBehavior: Clip.none,
           children: [
             /// Laundry Payment
-            if (_isOpen || isAdmin)
+            if (_isOpen && isAdmin)
               _fab(
                 hero: 'Laundry Payment',
                 icon: Icons.payments_outlined,

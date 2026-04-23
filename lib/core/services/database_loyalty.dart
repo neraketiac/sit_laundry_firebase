@@ -5,6 +5,18 @@ import 'package:laundry_firebase/features/loyalty/models/loyaltymodel.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
 
 const String LOYALTY_REF = "loyalty";
+const String LOYALTY_VERSION_DOC = "loyalty_updated";
+const String LOYALTY_VERSION_COUNTER = "counter";
+
+/// Increments the loyalty version counter so clients know to re-fetch.
+Future<void> bumpLoyaltyVersion() async {
+  try {
+    await FirebaseFirestore.instance
+        .collection(LOYALTY_VERSION_DOC)
+        .doc(LOYALTY_VERSION_COUNTER)
+        .set({'version': FieldValue.increment(1)}, SetOptions(merge: true));
+  } catch (_) {}
+}
 
 class DatabaseLoyalty {
   final _firestore = FirebaseFirestore.instance;
@@ -42,6 +54,7 @@ class DatabaseLoyalty {
         .set(loyaltyModel)
         .then((value) => {
               print("Insert Done.${loyaltyModel.name}"),
+              bumpLoyaltyVersion(),
             })
         .catchError(
           (error) => print("Failed : $error ${loyaltyModel.name}"),
@@ -50,6 +63,7 @@ class DatabaseLoyalty {
 
   void updateCustomer(String customerId, LoyaltyModel loyaltyModel) {
     _customerRef.doc(customerId).update(loyaltyModel.toJson());
+    bumpLoyaltyVersion();
   }
 
   /// Add count
@@ -68,6 +82,7 @@ class DatabaseLoyalty {
       }).withFsTimeout();
 
       autocompleteSelected.loyaltyCount += i;
+      bumpLoyaltyVersion();
 
       print("Count updated +$i for cardNumber: $cardNumber");
     } catch (e) {
@@ -98,12 +113,16 @@ class DatabaseLoyalty {
       }
 
       if (snapshot.docs.isEmpty) {
-        debugPrint('saveLocation: no loyalty doc found for cardNumber=$cardNumber');
+        debugPrint(
+            'saveLocation: no loyalty doc found for cardNumber=$cardNumber');
         return false;
       }
 
       final docId = snapshot.docs.first.id;
-      await FirebaseFirestore.instance.collection(LOYALTY_REF).doc(docId).update({
+      await FirebaseFirestore.instance
+          .collection(LOYALTY_REF)
+          .doc(docId)
+          .update({
         'lat': lat,
         'lng': lng,
         'locationUpdatedAt': FieldValue.serverTimestamp(),
@@ -129,6 +148,7 @@ class DatabaseLoyalty {
       await _customerRef.doc(docId).update({
         'Count': newCount,
       }).withFsTimeout();
+      bumpLoyaltyVersion();
 
       print("Count set to $newCount for cardNumber: $cardNumber");
     } catch (e) {
