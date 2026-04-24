@@ -8,7 +8,6 @@ import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_alter_job/cust
 import 'package:laundry_firebase/features/jobs/repository/jobmodel_repository.dart';
 import 'package:laundry_firebase/features/items/repository/supplies_hist_repository.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
-import 'package:laundry_firebase/core/global/variables_oth.dart';
 import 'package:laundry_firebase/core/global/variables_supplies.dart';
 
 void showSalaryMaintenance(BuildContext context) {

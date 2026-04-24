@@ -4,6 +4,9 @@ import 'routes/app_router.dart';
 /// Global key to allow rebuilding MyApp from anywhere (e.g. dark mode toggle)
 final GlobalKey<MyAppState> myAppKey = GlobalKey<MyAppState>();
 
+/// Navigator key — preserves navigation stack when MyApp rebuilds (e.g. dark mode)
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
@@ -22,6 +25,7 @@ class MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: navigatorKey,
       debugShowCheckedModeBanner: false,
       themeMode: _isDark ? ThemeMode.dark : ThemeMode.light,
       theme: ThemeData(
