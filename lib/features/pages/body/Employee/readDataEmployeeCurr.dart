@@ -18,29 +18,45 @@ class _EmployeeCurrWidget extends StatefulWidget {
 class _EmployeeCurrWidgetState extends State<_EmployeeCurrWidget> {
   Widget _buildRow(BuildContext context, EmployeeModel eM) {
     final bNegative = eM.currentStocks < 0;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    // Theme-aware colors
+    final rowBg = isDark ? const Color(0xFF2A2A3E) : cSalaryCurrent;
+    final textColor = isDark ? Colors.white : Colors.black87;
+    final amountColorPositive =
+        isDark ? Colors.green.shade300 : const Color(0xFF0D47A1);
+    final amountColorNegative =
+        isDark ? Colors.red.shade300 : const Color.fromARGB(255, 185, 57, 48);
+
     return Container(
       height: 22,
-      color: cSalaryCurrent,
+      color: rowBg,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
             ' ${eM.empName}',
-            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              color: textColor,
+            ),
           ),
           if (isAdmin)
             Text(
               eM.empId,
-              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: textColor,
+              ),
             ),
           Text(
             '₱ ${value.format(eM.currentStocks)}  ',
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.bold,
-              color: bNegative
-                  ? const Color.fromARGB(255, 185, 57, 48)
-                  : const Color(0xFF0D47A1),
+              color: bNegative ? amountColorNegative : amountColorPositive,
             ),
           ),
         ],
@@ -51,6 +67,13 @@ class _EmployeeCurrWidgetState extends State<_EmployeeCurrWidget> {
   @override
   Widget build(BuildContext context) {
     final db = DatabaseEmployeeCurrent();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    // Theme-aware colors
+    final headerBg =
+        isDark ? Colors.deepPurple.shade900 : Colors.lightBlueAccent;
+    final headerText = isDark ? Colors.white : Colors.black87;
+    final rowBg = isDark ? const Color(0xFF1E1E2E) : Colors.black;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -64,16 +87,23 @@ class _EmployeeCurrWidgetState extends State<_EmployeeCurrWidget> {
                 .track('readDataEmployeeCurr', listEM.length);
 
             final rows = <TableRow>[
-              const TableRow(
-                decoration: BoxDecoration(color: Colors.lightBlueAccent),
+              TableRow(
+                decoration: BoxDecoration(color: headerBg),
                 children: [
-                  Text('Current Balance', style: TextStyle(fontSize: 10)),
+                  Text(
+                    'Current Balance',
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
+                      color: headerText,
+                    ),
+                  ),
                 ],
               ),
               ...listEM.map((doc) {
                 final eM = doc.data() as EmployeeModel;
                 return TableRow(
-                  decoration: const BoxDecoration(color: Colors.black),
+                  decoration: BoxDecoration(color: rowBg),
                   children: [
                     Padding(
                       padding: const EdgeInsets.all(2),
