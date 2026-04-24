@@ -15,85 +15,102 @@ class CustomerRepository {
   static const String _storageKey = 'loyalty_cache';
   static const String _versionKey = 'loyalty_cache_version';
 
-  /// Loads loyalty customers with two-level caching:
-  /// 1. Check Firestore version counter (1 read)
-  /// 2. If version matches localStorage → load from localStorage (0 reads)
-  /// 3. If version changed → fetch all from Firestore → save to localStorage
+  /// Loads loyalty customers with three-level caching:
+  /// 1. If in-memory already loaded → done (0 reads)
+  /// 2. If localStorage exists → load from it, then async-check version in background
+  /// 3. If localStorage missing/stale → fetch from Firestore → save to localStorage
   Future<void> loadOnce() async {
-    // 1. Fetch version counter (always 1 read)
-    int remoteVersion = -1;
-    try {
-      final versionDoc = await FirebaseFirestore.instance
-          .collection('loyalty_updated')
-          .doc('counter')
-          .get();
-      remoteVersion = (versionDoc.data()?['version'] as num?)?.toInt() ?? 0;
-      FsUsageTracker.instance.track('loyaltyVersionCheck', 1);
-    } catch (_) {
-      remoteVersion = -1;
-    }
+    // 1. Already in memory — done
+    if (_loaded && customers.isNotEmpty) return;
 
-    // 2. Check localStorage version
+    // 2. Try localStorage first — no Firestore read needed
     final localVersionStr = web.window.localStorage.getItem(_versionKey);
     final localVersion =
         localVersionStr != null ? int.tryParse(localVersionStr) ?? -1 : -1;
+    final cached = web.window.localStorage.getItem(_storageKey);
 
-    // 3. If in-memory already matches → done
-    if (_loaded && remoteVersion != -1 && remoteVersion == _cachedVersion) {
-      return;
-    }
+    if (localVersion != -1 && cached != null && cached.isNotEmpty) {
+      try {
+        final list = jsonDecode(cached) as List<dynamic>;
+        customers
+          ..clear()
+          ..addAll(list.map((e) => _fromCache(e as Map<String, dynamic>)));
+        _cachedVersion = localVersion;
+        _loaded = true;
+        FsUsageTracker.instance.track('loyaltyFromLocalStorage', 0);
 
-    // 4. If localStorage version matches remote → load from localStorage
-    if (remoteVersion != -1 && remoteVersion == localVersion) {
-      final cached = web.window.localStorage.getItem(_storageKey);
-      if (cached != null && cached.isNotEmpty) {
-        try {
-          final list = jsonDecode(cached) as List<dynamic>;
-          customers
-            ..clear()
-            ..addAll(list.map((e) => _fromCache(e as Map<String, dynamic>)));
-          _cachedVersion = remoteVersion;
-          _loaded = true;
-          FsUsageTracker.instance.track('loyaltyFromLocalStorage', 0);
-          return;
-        } catch (_) {
-          // Corrupted cache — fall through to full fetch
-        }
+        // Background version check — refresh if stale, no await
+        _checkVersionInBackground(localVersion);
+        return;
+      } catch (_) {
+        // Corrupted cache — fall through to full fetch
       }
     }
 
-    // 5. Full Firestore fetch needed
-    final snapshot =
-        await FirebaseFirestore.instance.collection('loyalty').get();
+    // 3. No localStorage — full Firestore fetch
+    await _fetchFromFirestore();
+  }
 
-    final loaded = snapshot.docs
-        .map((doc) => CustomerModel(
-              customerId: int.parse(doc.id),
-              name: doc['Name'],
-              address: doc['Address'],
-              contact: doc['Name'],
-              remarks: doc['Name'],
-              loyaltyCount: doc['Count'],
-            ))
-        .toList();
+  /// Checks version in background and refreshes cache if stale.
+  void _checkVersionInBackground(int localVersion) {
+    FirebaseFirestore.instance
+        .collection('loyalty_updated')
+        .doc('counter')
+        .get()
+        .then((doc) async {
+      final remoteVersion = (doc.data()?['version'] as num?)?.toInt() ?? 0;
+      FsUsageTracker.instance.track('loyaltyVersionCheck', 1);
+      if (remoteVersion != localVersion) {
+        // Stale — refresh silently
+        await _fetchFromFirestore();
+      }
+    }).catchError((_) {});
+  }
 
-    customers
-      ..clear()
-      ..addAll(loaded);
-
-    FsUsageTracker.instance.track('loyaltyAutocomplete', snapshot.docs.length);
-
-    // 6. Save to localStorage
+  Future<void> _fetchFromFirestore() async {
     try {
-      final encoded = jsonEncode(loaded.map(_toCache).toList());
-      web.window.localStorage.setItem(_storageKey, encoded);
-      web.window.localStorage.setItem(_versionKey, remoteVersion.toString());
-    } catch (_) {
-      // localStorage full or unavailable — ignore
-    }
+      // Fetch version
+      int remoteVersion = 0;
+      try {
+        final versionDoc = await FirebaseFirestore.instance
+            .collection('loyalty_updated')
+            .doc('counter')
+            .get();
+        remoteVersion = (versionDoc.data()?['version'] as num?)?.toInt() ?? 0;
+        FsUsageTracker.instance.track('loyaltyVersionCheck', 1);
+      } catch (_) {}
 
-    _cachedVersion = remoteVersion;
-    _loaded = true;
+      final snapshot =
+          await FirebaseFirestore.instance.collection('loyalty').get();
+
+      final loaded = snapshot.docs
+          .map((doc) => CustomerModel(
+                customerId: int.parse(doc.id),
+                name: doc['Name'],
+                address: doc['Address'],
+                contact: doc['Name'],
+                remarks: doc['Name'],
+                loyaltyCount: doc['Count'],
+              ))
+          .toList();
+
+      customers
+        ..clear()
+        ..addAll(loaded);
+
+      FsUsageTracker.instance
+          .track('loyaltyAutocomplete', snapshot.docs.length);
+
+      // Save to localStorage
+      try {
+        final encoded = jsonEncode(loaded.map(_toCache).toList());
+        web.window.localStorage.setItem(_storageKey, encoded);
+        web.window.localStorage.setItem(_versionKey, remoteVersion.toString());
+      } catch (_) {}
+
+      _cachedVersion = remoteVersion;
+      _loaded = true;
+    } catch (_) {}
   }
 
   /// Force a reload on next call (e.g. after local add)
