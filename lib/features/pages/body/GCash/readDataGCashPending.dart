@@ -45,6 +45,32 @@ Widget readDataGCashPending() {
               final progress = 0;
               final isRunning = progress > 0 && progress < 1;
               final isSelected = selectedIndex == index;
+              final isDark = Theme.of(context).brightness == Brightness.dark;
+
+              final cardBg = isSelected
+                  ? (isDark
+                      ? Colors.deepPurple.shade900
+                      : Colors.deepPurple.shade100)
+                  : (isDark ? const Color(0xFF1E1E2E) : Colors.white);
+              final borderCol = isSelected
+                  ? Colors.deepPurple
+                  : (isDark
+                      ? Colors.deepPurple.shade800
+                      : Colors.grey.shade300);
+              final primaryText = isSelected
+                  ? (isDark ? Colors.deepPurple.shade200 : Colors.deepPurple)
+                  : (isDark ? Colors.white : Colors.black87);
+              final secondaryText =
+                  isDark ? Colors.white60 : Colors.grey.shade600;
+              final remarksText =
+                  isDark ? Colors.white70 : Colors.grey.shade700;
+              final badgeBg = isDark
+                  ? Colors.deepPurple.shade900
+                  : Colors.deepPurple.shade50;
+              final badgeText =
+                  isDark ? Colors.deepPurple.shade200 : Colors.deepPurple;
+              final amountText =
+                  isDark ? Colors.green.shade300 : Colors.green.shade700;
 
               return MouseRegion(
                 cursor: SystemMouseCursors.click,
@@ -52,23 +78,17 @@ Widget readDataGCashPending() {
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 250),
                     margin:
-                        const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+                        const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
                     decoration: BoxDecoration(
-                      color: isSelected
-                          ? Colors.deepPurple.shade100
-                          : Colors.white,
+                      color: cardBg,
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
-                        color: isSelected
-                            ? Colors.deepPurple
-                            : Colors.grey.shade300,
-                        width: isSelected ? 2 : 1,
-                      ),
+                          color: borderCol, width: isSelected ? 2 : 1),
                       boxShadow: [
                         BoxShadow(
                           color: isSelected
-                              ? Colors.deepPurple.withOpacity(0.3)
-                              : Colors.black.withOpacity(0.05),
+                              ? Colors.deepPurple.withValues(alpha: 0.3)
+                              : Colors.black.withValues(alpha: 0.05),
                           blurRadius: isSelected ? 12 : 4,
                           offset: Offset(0, isSelected ? 4 : 2),
                         ),
@@ -186,9 +206,7 @@ Widget readDataGCashPending() {
                                         style: TextStyle(
                                           fontWeight: FontWeight.bold,
                                           fontSize: 16,
-                                          color: isSelected
-                                              ? Colors.deepPurple
-                                              : Colors.black87,
+                                          color: primaryText,
                                         ),
                                       ),
                                     ),
@@ -200,10 +218,8 @@ Widget readDataGCashPending() {
                                           await Clipboard.setData(
                                             ClipboardData(
                                                 text: gRepo.customerNumber
-                                                        .replaceAll(
-                                                            RegExp(r'[^0-9]'),
-                                                            '') ??
-                                                    ''),
+                                                    .replaceAll(
+                                                        RegExp(r'[^0-9]'), '')),
                                           );
 
                                           ScaffoldMessenger.of(context)
@@ -232,39 +248,27 @@ Widget readDataGCashPending() {
                                 ),
                                 const SizedBox(height: 8),
                                 // Item Name Badge
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 8, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: Colors.deepPurple.shade50,
-                                    borderRadius: BorderRadius.circular(6),
-                                  ),
-                                  child: Text(
-                                    gRepo.itemName,
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                      color: Colors.deepPurple,
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                ),
-                                // Customer Name & Remarks
-                                if (gRepo.customerName.isNotEmpty ||
-                                    gRepo.remarks.isNotEmpty) ...[
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    '${gRepo.customerName}${gRepo.customerName.isNotEmpty && gRepo.remarks.isNotEmpty ? ": " : ""}${gRepo.remarks}',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w500,
-                                      color: Colors.grey.shade700,
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                ],
-                                const SizedBox(height: 8),
-                                // Date and Time
                                 Row(
                                   children: [
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 8, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: badgeBg,
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                      child: Text(
+                                        gRepo.itemName,
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                          color: badgeText,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      width: 5,
+                                    ),
                                     Icon(
                                       Icons.access_time,
                                       size: 14,
@@ -276,11 +280,29 @@ Widget readDataGCashPending() {
                                           .format(gRepo.logDate.toDate()),
                                       style: TextStyle(
                                         fontWeight: FontWeight.w500,
-                                        color: Colors.grey.shade600,
+                                        color: secondaryText,
                                         fontSize: 11,
                                       ),
                                     ),
                                   ],
+                                ),
+                                // Customer Name & Remarks
+                                if (gRepo.customerName.isNotEmpty ||
+                                    gRepo.remarks.isNotEmpty) ...[
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    '${gRepo.customerName}${gRepo.customerName.isNotEmpty && gRepo.remarks.isNotEmpty ? ": " : ""}${gRepo.remarks}',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                      color: remarksText,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ],
+                                const SizedBox(height: 8),
+                                // Date and Time
+                                Row(
+                                  children: [],
                                 ),
                               ],
                             ),
@@ -295,7 +317,7 @@ Widget readDataGCashPending() {
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 18,
-                                  color: Colors.green.shade700,
+                                  color: amountText,
                                 ),
                               ),
                               const SizedBox(height: 8),

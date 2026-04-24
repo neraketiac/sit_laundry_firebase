@@ -39,4 +39,5 @@ if errorlevel 1 ( echo ERROR: firebase deploy failed & exit /b 1 )
 
 echo.
 echo [6/6] Done. Version: !NEW_VERSION!
+echo       Finished at: %TIME%
 endlocal

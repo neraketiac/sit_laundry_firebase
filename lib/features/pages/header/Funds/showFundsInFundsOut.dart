@@ -218,9 +218,9 @@ void showFundsInFundsOut(BuildContext context) {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
+                    fundTypeToggle(() => setState(() {})),
                     customerName(() => setState(() {})),
                     customerAmount(context, customerAmountVar),
-                    fundTypeToggle(() => setState(() {})),
                     conRemarks(
                         context, () => setState(() {}), remarksSuppliesVar),
                   ],
