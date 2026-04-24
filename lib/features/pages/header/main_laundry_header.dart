@@ -160,7 +160,7 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader>
               ),
 
             /// Cash In/Out
-            if (_isOpen)
+            if (_isOpen && isAdmin)
               _fab(
                 hero: 'Gcash Funds',
                 icon: Icons.attach_money_sharp,

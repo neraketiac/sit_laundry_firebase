@@ -13,10 +13,6 @@ InkWell visPaidUnpaidArea(
   bool alterPaidUnpaid,
 ) {
   final bool isPaid = !jobRepo.selectedUnpaid;
-  final bool hasRecordedPayment = jobRepo.paidCash ||
-      jobRepo.paidGCash ||
-      jobRepo.paidCashAmount > 0 ||
-      jobRepo.paidGCashAmount > 0;
 
   final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -147,43 +143,79 @@ InkWell visPaidUnpaidArea(
       onTap: () async {
         if (!alterPaidUnpaid) return;
 
-        // Once any payment is recorded, only admin can change it.
-        if (hasRecordedPayment) {
+        // Check if job is fully paid (unpaid = false means fully paid)
+        final isFullyPaid = !jobRepo.unpaid;
+
+        if (isFullyPaid) {
+          // Scenario 2: Job is fully paid (unpaid = false)
+          // Regular users always need admin approval to update
           if (!isAdmin) {
             await requestAdminApproval(
-              title: 'Request Payment Change',
+              title: 'Request Payment Update',
               description:
-                  'Payment details are already recorded for this job. Only admin can change them now.',
+                  'This job is fully paid. You need admin approval to update the payment.',
             );
             return;
           }
 
-          final confirm = await showDialog<bool>(
-            context: context,
-            builder: (_) => AlertDialog(
-              title: const Text('Admin Override'),
-              content: const Text(
-                  'Payment details are already recorded. Are you sure you want to change them?'),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context, false),
-                  child: const Text('Cancel'),
-                ),
-                ElevatedButton(
-                  style:
-                      ElevatedButton.styleFrom(backgroundColor: Colors.orange),
-                  onPressed: () => Navigator.pop(context, true),
-                  child: const Text('Override',
-                      style: TextStyle(color: Colors.white)),
-                ),
-              ],
-            ),
-          );
-          if (confirm != true) return;
-        }
+          // Admin updating fully paid job: apply dateD-based checks
+          final doneDate = jobRepo.dateD;
+          final epoch = DateTime(1900);
+          final doneDt = doneDate.toDate();
+          if (doneDt.isAfter(epoch)) {
+            final now = DateTime.now();
+            final daysDiff = now.difference(doneDt).inDays;
 
-        // Only check when currently unpaid and trying to change to paid
-        if (jobRepo.selectedUnpaid) {
+            if (daysDiff > 14) {
+              // > 14 days: override confirm
+              final confirm = await showDialog<bool>(
+                context: context,
+                builder: (_) => AlertDialog(
+                  title: const Text('Over Two Weeks'),
+                  content: const Text(
+                      'This payment is over 2 weeks old. Admin override — are you sure?'),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context, false),
+                      child: const Text('Cancel'),
+                    ),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.orange),
+                      onPressed: () => Navigator.pop(context, true),
+                      child: const Text('Override',
+                          style: TextStyle(color: Colors.white)),
+                    ),
+                  ],
+                ),
+              );
+              if (confirm != true) return;
+            } else if (daysDiff > 7) {
+              // 7-14 days: warn and confirm
+              final confirm = await showDialog<bool>(
+                context: context,
+                builder: (_) => AlertDialog(
+                  title: const Text('Warning'),
+                  content: const Text(
+                      'This payment is over a week old. Are you sure you want to update it?'),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context, false),
+                      child: const Text('No'),
+                    ),
+                    ElevatedButton(
+                      onPressed: () => Navigator.pop(context, true),
+                      child: const Text('Yes'),
+                    ),
+                  ],
+                ),
+              );
+              if (confirm != true) return;
+            }
+            // <= 7 days — no message, proceed directly
+          }
+        } else if (jobRepo.selectedUnpaid) {
+          // Scenario 1: Unpaid or Kulang (unpaid = true) trying to change to paid
           final doneDate = jobRepo.dateD;
           // Skip check if dateD is the default epoch (not yet set)
           final epoch = DateTime(1900);
@@ -193,11 +225,12 @@ InkWell visPaidUnpaidArea(
             final daysDiff = now.difference(doneDt).inDays;
 
             if (daysDiff > 14) {
+              // > 14 days: request admin approval
               if (!isAdmin) {
                 await requestAdminApproval(
-                  title: 'Request to Paid',
+                  title: 'Request Payment Update',
                   description:
-                      'This job is over 2 weeks unpaid. You can request admin approval to mark it as paid.',
+                      'This job is over 2 weeks unpaid. You can request admin approval to update the payment.',
                 );
                 return;
               }
@@ -226,13 +259,13 @@ InkWell visPaidUnpaidArea(
               );
               if (confirm != true) return;
             } else if (daysDiff > 7) {
-              // 8–14 days — warn and confirm
+              // 7-14 days: warn and confirm
               final confirm = await showDialog<bool>(
                 context: context,
                 builder: (_) => AlertDialog(
                   title: const Text('Warning'),
                   content: const Text(
-                      'This item is already two weeks unpaid. Are you sure you want to change the payment status?'),
+                      'This item is already over a week unpaid. Are you sure you want to update the payment?'),
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.pop(context, false),
