@@ -57,7 +57,14 @@ Widget _buildQueueList(BuildContext context, List<JobModel> jobs) {
     children: [
       Row(
         mainAxisAlignment: MainAxisAlignment.center,
-        children: [Text("🔄 ON-GOING")],
+        children: [
+          Text("🔄 ON-GOING",
+              style: TextStyle(
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white70
+                    : null,
+              ))
+        ],
       ),
       StatefulBuilder(
         builder: (context, setState) {
@@ -780,16 +787,23 @@ Widget _buildQueueList(BuildContext context, List<JobModel> jobs) {
                                 ? Colors.red.shade200
                                 : (isLocked(jobRepo.selectedProcessStep))
                                     ? cDontMove
-                                    : isSelected
-                                        ? Colors.deepPurple.shade50
+                                    : Theme.of(context).brightness ==
+                                            Brightness.dark
+                                        ? (isSelected
+                                            ? const Color(0xFF4A3F6B)
+                                            : const Color(0xFF2A2535))
                                         : Colors.deepPurple.shade50,
                             borderRadius: BorderRadius.circular(14),
                             boxShadow: [
                               if (isSelected)
-                                const BoxShadow(
-                                  color: Colors.deepPurple,
+                                BoxShadow(
+                                  color: Colors.deepPurple.withValues(
+                                      alpha: Theme.of(context).brightness ==
+                                              Brightness.dark
+                                          ? 0.6
+                                          : 0.4),
                                   blurRadius: 12,
-                                  offset: Offset(0, 6),
+                                  offset: const Offset(0, 6),
                                 ),
                             ],
                           ),

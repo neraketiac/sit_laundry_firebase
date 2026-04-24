@@ -155,11 +155,22 @@ class DatabaseGCashDone {
   late final CollectionReference<Map<String, dynamic>> _ref =
       _firestore.collection(GCASH_DONE_REF);
 
-  /// 🔄 Stream all ongoing modelValues
+  /// 🔄 Stream all — kept for compatibility
   Stream<List<GCashModel>> streamAll() {
     return _ref.orderBy('CompleteDate', descending: true).snapshots().map(
           (s) => s.docs.map((d) => GCashModel.fromJson(d.data())).toList(),
         );
+  }
+
+  /// Paginated fetch — 20 per page
+  Future<QuerySnapshot<Map<String, dynamic>>> fetchPaginated({
+    DocumentSnapshot? lastDoc,
+    int limit = 20,
+  }) async {
+    Query<Map<String, dynamic>> query =
+        _ref.orderBy('CompleteDate', descending: true).limit(limit);
+    if (lastDoc != null) query = query.startAfterDocument(lastDoc);
+    return query.get().withFsTimeout();
   }
 }
 

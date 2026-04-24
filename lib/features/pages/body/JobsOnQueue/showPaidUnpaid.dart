@@ -9,6 +9,9 @@ import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_display_job/vi
 import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_alter_job/visPaidUnPaid.dart';
 
 void showPaidUnpaid(BuildContext context, JobModelRepository jobRepo) {
+  // Per-job skip toggle — local only, resets every time dialog opens
+  bool skipSuppliesThisJob = false;
+
   Future<void> saveButtonSetRepository() async {
     jobRepo.currentEmpId = empIdGlobal;
 
@@ -34,16 +37,14 @@ void showPaidUnpaid(BuildContext context, JobModelRepository jobRepo) {
     await callDatabaseUpdateJob(context, jobRepo.jobModelData);
 
     // Auto-record cash payment DELTA to Supplies
-    // Only for PaidCash — GCash does NOT generate Supplies records
-    // Skipped when skipSuppliesOnPaid is enabled
-    if (jobRepo.paidCash && !skipSuppliesOnPaid) {
+    // Skipped when global skipSuppliesOnPaid OR per-job skipSuppliesThisJob is enabled
+    if (jobRepo.paidCash && !skipSuppliesOnPaid && !skipSuppliesThisJob) {
       final delta = jobRepo.paidCashAmount - previousPaidCash;
       await recordCashPaymentToSupplies(context, jobRepo, delta);
     }
   }
 
   jobRepo.syncRepoToSelectedMin(jobRepo);
-  // syncRepoToSelectedSmall(jobRepo);
   showDialog(
     context: context,
     builder: (BuildContext context) {
@@ -61,18 +62,17 @@ void showPaidUnpaid(BuildContext context, JobModelRepository jobRepo) {
             horizontal: 5,
             vertical: 5,
           ),
-          title: Text(
+          title: const Text(
             "Payment",
             textAlign: TextAlign.center,
           ),
           content: SingleChildScrollView(
             scrollDirection: Axis.vertical,
             child: Container(
-              padding: EdgeInsets.all(1.0),
+              padding: const EdgeInsets.all(1.0),
               decoration: BoxDecoration(
                   border: Border.all(color: Colors.blueAccent, width: 2.0)),
               child: Form(
-                //key: _formKey,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -80,23 +80,37 @@ void showPaidUnpaid(BuildContext context, JobModelRepository jobRepo) {
                     visPaidUnPaid(context, () => setState(() {}), jobRepo),
                     conRemarks(context, () => setState(() {}),
                         jobRepo.selectedRemarksVar),
+                    // Admin-only: per-job skip supplies toggle
+                    if (isAdmin)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text(
+                              'Skip Funds Recording',
+                              style: TextStyle(
+                                  fontSize: 12, color: Colors.black87),
+                            ),
+                            Switch(
+                              value: skipSuppliesThisJob,
+                              activeThumbColor: Colors.orange,
+                              onChanged: (v) =>
+                                  setState(() => skipSuppliesThisJob = v),
+                            ),
+                          ],
+                        ),
+                      ),
                   ],
                 ),
               ),
             ),
           ),
-          // 👇 Bottom buttons
           actionsAlignment: MainAxisAlignment.end,
           actions: [
             TextButton(
-              onPressed: () {
-                setState(() {
-                  // syncRepoToSelectedSmall(jobRepo);
-                  //jobRepo.syncRepoToSelectedMin(jobRepo);
-                });
-
-                Navigator.pop(context); // close popup
-              },
+              onPressed: () => Navigator.pop(context),
               child: const Text(
                 'Cancel',
                 style: TextStyle(color: Colors.black),

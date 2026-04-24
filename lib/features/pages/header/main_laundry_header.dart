@@ -55,6 +55,10 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader>
     double labelFontSize = 13,
     bool mini = true,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final labelBg = isDark ? const Color(0xFF2A2A2A) : Colors.white;
+    final labelTextColor = isDark ? Colors.white : Colors.black87;
+
     return AnimatedPositioned(
       duration: const Duration(milliseconds: 280),
       curve: Curves.easeOutCubic,
@@ -75,7 +79,7 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader>
                   padding: EdgeInsets.symmetric(
                       horizontal: labelFontSize, vertical: labelFontSize * 0.6),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: labelBg,
                     borderRadius: BorderRadius.circular(8),
                     boxShadow: [
                       BoxShadow(
@@ -90,6 +94,7 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader>
                     style: TextStyle(
                       fontSize: labelFontSize,
                       fontWeight: FontWeight.w500,
+                      color: labelTextColor,
                     ),
                   ),
                 ),

@@ -7,20 +7,29 @@ Expanded visNameArea(JobModel job, bool isSelected) {
   return Expanded(
     child: Builder(builder: (context) {
       final s = AppScale.of(context);
-      final primaryColor = isSelected ? Colors.deepPurple : Colors.black87;
-      final secondaryColor =
-          isSelected ? Colors.deepPurple.shade300 : Colors.grey.shade700;
+      final isDark = Theme.of(context).brightness == Brightness.dark;
+
+      final primaryColor = isSelected
+          ? (isDark ? Colors.deepPurple.shade200 : Colors.deepPurple.shade800)
+          : isDark
+              ? Colors.white
+              : Colors.black87;
+      final secondaryColor = isSelected
+          ? (isDark ? Colors.deepPurple.shade200 : Colors.deepPurple.shade700)
+          : isDark
+              ? Colors.white70
+              : Colors.grey.shade700;
       final statusColor = job.forSorting
-          ? Colors.black
+          ? (isDark ? Colors.deepPurple.shade200 : Colors.black)
           : (job.isDeliveredToCustomer || job.isCustomerPickedUp)
-              ? Colors.black
+              ? Colors.green.shade400
               : job.riderPickup
-                  ? Colors.green.shade600
+                  ? Colors.green.shade400
                   : Colors.redAccent.shade200;
 
       final dateStr = textDateDone(job);
       final daysDiff = _daysSince(job);
-      final dateBg = _dateBgColor(daysDiff);
+      final dateBg = _dateBgColor(daysDiff, isDark);
       final dateTextColor = _dateTextColor(daysDiff);
 
       return Column(
@@ -117,7 +126,9 @@ Expanded visNameArea(JobModel job, bool isSelected) {
                   fontWeight: FontWeight.w500,
                   color: (job.unpaid && job.paidCash)
                       ? Colors.deepOrange
-                      : Colors.deepPurple.shade300,
+                      : isDark
+                          ? Colors.deepPurple.shade200
+                          : Colors.deepPurple.shade300,
                 ),
               ),
             ),
@@ -133,8 +144,8 @@ int _daysSince(JobModel job) {
   return DateTime.now().difference(d).inDays;
 }
 
-Color? _dateBgColor(int days) {
-  if (days > 30) return Colors.black;
+Color? _dateBgColor(int days, bool isDark) {
+  if (days > 30) return isDark ? Colors.grey.shade700 : Colors.black;
   if (days > 14) return Colors.red.shade600;
   if (days > 7) return Colors.amber.shade700;
   return null;

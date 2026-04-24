@@ -24,8 +24,8 @@ class UnpaidCustomersCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final totalUnpaid = unpaidCustomers.values.fold(0, (s, v) => s + v);
     final monthLabel = DateFormat('MMM yyyy').format(currentMonth);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    // Collect only weeks that have unpaid data
     final activeWeeks = List.generate(5, (i) => i + 1)
         .where((w) => (unpaidCustomersByWeek[w] ?? {}).isNotEmpty)
         .toList();
@@ -38,7 +38,10 @@ class UnpaidCustomersCard extends StatelessWidget {
           children: [
             Text(
               'Top Unpaid Customers — ${DateFormat('MMMM yyyy').format(currentMonth)}',
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: isDark ? Colors.white : Colors.black87),
             ),
             const SizedBox(height: 12),
             if (!hasJobs)
@@ -114,10 +117,24 @@ class _UnpaidColumn extends StatelessWidget {
     final sorted = customers.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white : Colors.black87;
+    final subTextColor = isDark ? Colors.white70 : Colors.grey.shade600;
+    final borderColor = isDark ? Colors.grey.shade700 : Colors.grey.shade300;
+    final rowDividerColor =
+        isDark ? Colors.grey.shade800 : Colors.grey.shade100;
+    // Darken accent colors for dark mode so text on them is readable
+    final headerBg = isDark ? accentColor.withValues(alpha: 0.25) : accentColor;
+    final footerBg = isDark
+        ? (total > 0 ? Colors.red.shade900 : Colors.green.shade900)
+        : (total > 0 ? Colors.red.shade50 : Colors.green.shade50);
+    final footerValueColor =
+        total > 0 ? Colors.red.shade300 : Colors.green.shade300;
+
     return Container(
       width: 160,
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey.shade300),
+        border: Border.all(color: borderColor),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Column(
@@ -127,17 +144,18 @@ class _UnpaidColumn extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 7),
             decoration: BoxDecoration(
-              color: accentColor,
+              color: headerBg,
               borderRadius:
                   const BorderRadius.vertical(top: Radius.circular(8)),
             ),
             child: Text(
               title,
-              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                  fontSize: 12, fontWeight: FontWeight.bold, color: textColor),
               textAlign: TextAlign.center,
             ),
           ),
-          // Rows — Expanded so footer always aligns to bottom
+          // Rows
           Expanded(
             child: Column(
               children: [
@@ -145,24 +163,24 @@ class _UnpaidColumn extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 8, vertical: 5),
                       decoration: BoxDecoration(
-                        border: Border(
-                            bottom: BorderSide(color: Colors.grey.shade100)),
+                        border:
+                            Border(bottom: BorderSide(color: rowDividerColor)),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             e.key,
-                            style: const TextStyle(fontSize: 11),
+                            style: TextStyle(fontSize: 11, color: textColor),
                             overflow: TextOverflow.ellipsis,
                             maxLines: 1,
                           ),
                           Text(
                             '₱${formatCurrency(e.value)}',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w600,
-                              color: Colors.red,
+                              color: Colors.red.shade300,
                             ),
                           ),
                         ],
@@ -173,34 +191,35 @@ class _UnpaidColumn extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(vertical: 4),
                     child: Text(
                       '+${sorted.length - 10} more',
-                      style:
-                          TextStyle(fontSize: 10, color: Colors.grey.shade500),
+                      style: TextStyle(fontSize: 10, color: subTextColor),
                       textAlign: TextAlign.center,
                     ),
                   ),
               ],
             ),
           ),
-          // Footer total — always at bottom
+          // Footer total
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 7),
             decoration: BoxDecoration(
-              color: total > 0 ? Colors.red.shade50 : Colors.green.shade50,
+              color: footerBg,
               borderRadius:
                   const BorderRadius.vertical(bottom: Radius.circular(8)),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Total',
-                    style:
-                        TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                Text('Total',
+                    style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color: textColor)),
                 Text(
                   '₱${formatCurrency(total)}',
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.bold,
-                    color: total > 0 ? Colors.red : Colors.green,
+                    color: footerValueColor,
                   ),
                 ),
               ],

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:laundry_firebase/app.dart';
 import 'package:laundry_firebase/core/utils/app_scale.dart';
 import 'package:intl/intl.dart';
 import 'package:laundry_firebase/core/global/app_version.dart';
@@ -75,6 +76,61 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
   late EmployeeSetupModel empSetup;
 
   bool isLoading = true;
+  bool get _isDarkMode => empSetup.darkMode;
+  Color get _scaffoldColor =>
+      _isDarkMode ? const Color(0xFF121212) : Colors.deepPurple[100]!;
+  Color get _appBarColor =>
+      _isDarkMode ? const Color(0xFF1E1E1E) : Colors.deepPurple[100]!;
+  Color get _appBarForeground => _isDarkMode ? Colors.white : Colors.black87;
+  Color get _menuSelectedColor =>
+      _isDarkMode ? Colors.white.withValues(alpha: 0.12) : Colors.grey[300]!;
+  Color get _menuSurfaceColor =>
+      _isDarkMode ? const Color(0xFF232323) : Colors.white;
+
+  ThemeData _bodyTheme(BuildContext context) {
+    if (!_isDarkMode) return Theme.of(context);
+
+    return Theme.of(context).copyWith(
+      brightness: Brightness.dark,
+      scaffoldBackgroundColor: _scaffoldColor,
+      appBarTheme: AppBarTheme(
+        backgroundColor: _appBarColor,
+        foregroundColor: _appBarForeground,
+        elevation: 0,
+      ),
+      menuTheme: MenuThemeData(
+        style: MenuStyle(
+          backgroundColor: WidgetStatePropertyAll(_menuSurfaceColor),
+          surfaceTintColor: const WidgetStatePropertyAll(Colors.transparent),
+        ),
+      ),
+      // Use dark card/dialog backgrounds but let each widget control its own text
+      cardColor: const Color(0xFF2A2A2A),
+      cardTheme: const CardThemeData(
+        color: Color(0xFF2A2A2A),
+        surfaceTintColor: Colors.transparent,
+      ),
+      dialogTheme: const DialogThemeData(
+        backgroundColor: Color(0xFF1F1F1F),
+      ),
+      iconTheme: const IconThemeData(color: Colors.white70),
+      // Only tint the default text — Cards/Dialogs with explicit colors are unaffected
+      colorScheme: Theme.of(context).colorScheme.copyWith(
+            brightness: Brightness.dark,
+            surface: const Color(0xFF2A2A2A),
+            onSurface: Colors.white,
+          ),
+      progressIndicatorTheme: const ProgressIndicatorThemeData(
+        color: Colors.tealAccent,
+      ),
+      // Menu item text — use dark surface color so text is readable
+      menuButtonTheme: MenuButtonThemeData(
+        style: ButtonStyle(
+          foregroundColor: WidgetStatePropertyAll(Colors.white),
+        ),
+      ),
+    );
+  }
 
   //================ EMPLOYEE =================
   Future<void> _loadEmployeeSetup() async {
@@ -88,10 +144,15 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
       await databaseEmployeeSetup.add(newSetup);
       empSetup = newSetup;
     }
+    // Apply dark mode at MaterialApp level on load
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      myAppKey.currentState?.setDarkMode(empSetup.darkMode);
+    });
   }
 
   void updateEmployeeSetup(EmployeeSetupModel updated) {
     databaseEmployeeSetup.update(updated);
+    myAppKey.currentState?.setDarkMode(updated.darkMode);
     setState(() {
       empSetup = updated;
     });
@@ -172,495 +233,555 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
   //########################### MAIN ###############################
   @override
   Widget build(BuildContext context) {
+    final pageTheme = _bodyTheme(context);
+
     if (isLoading) {
-      return Scaffold(
-        backgroundColor: Colors.deepPurple[100],
-        appBar: AppBar(
-          toolbarHeight: 48,
-          title: Text(
-            "Hello $empIdGlobal v$appVersion",
-            style: const TextStyle(fontSize: 14),
+      return Theme(
+        data: pageTheme,
+        child: Scaffold(
+          backgroundColor: _scaffoldColor,
+          appBar: AppBar(
+            toolbarHeight: 48,
+            backgroundColor: _appBarColor,
+            foregroundColor: _appBarForeground,
+            title: Text(
+              "Hello $empIdGlobal v$appVersion",
+              style: const TextStyle(fontSize: 14),
+            ),
+          ),
+          body: Center(
+            child: CircularProgressIndicator(
+              color: _isDarkMode ? Colors.tealAccent : null,
+            ),
           ),
         ),
-        body: const Center(child: CircularProgressIndicator()),
       );
     }
 
     final dateText = DateFormat('MMM dd, yyyy').format(DateTime.now());
 
-    return Scaffold(
-      backgroundColor: Colors.deepPurple[100],
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        toolbarHeight: 48,
+    return Theme(
+        data: pageTheme,
+        child: Scaffold(
+          backgroundColor: _scaffoldColor,
+          appBar: AppBar(
+            automaticallyImplyLeading: false,
+            toolbarHeight: 48,
+            backgroundColor: _appBarColor,
+            foregroundColor: _appBarForeground,
 
-        /// LEFT MENU
-        leading: MenuAnchor(
-          builder: (context, controller, child) {
-            return IconButton(
-              tooltip: 'Menu',
-              icon: const Icon(Icons.menu, size: 18),
-              onPressed: () {
-                controller.isOpen ? controller.close() : controller.open();
-              },
-            );
-          },
-          menuChildren: [
-            // ── DAILY ROUTINE ──────────────────────────────────
-            SubmenuButton(
-              menuChildren: [
-                MenuItemButton(
-                  onPressed: () => showFundCheck(context),
-                  child: const Text('💵 Funds Check'),
-                ),
-                MenuItemButton(
-                  onPressed: () => showItemsInOut(context),
-                  child: const Text('📦 Inventory Check'),
-                ),
-                MenuItemButton(
-                  onPressed: () => showCalendarDialog(context),
-                  child: const Text('📅 Staff Schedule'),
-                ),
-                MenuItemButton(
-                  onPressed: () => showClosingCheck(context),
-                  child: const Text('🔒 Closing Check'),
-                ),
-              ],
-              child: const Text('📋 Daily Routine'),
-            ),
-
-            // ── RIDER ──────────────────────────────────────────
-            SubmenuButton(
-              menuChildren: [
-                MenuItemButton(
-                  onPressed: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (_) => const ShowRiderManagement())),
-                  child: const Text('🚴 Rider Schedule'),
-                ),
-                MenuItemButton(
-                  onPressed: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (_) => const RiderLocationScreen())),
-                  child: const Text('📍 Rider GPS'),
-                ),
-                // MenuItemButton(
-                //   onPressed: () => Navigator.push(
-                //       context,
-                //       MaterialPageRoute(
-                //           builder: (_) => const RiderRoutePlannerPage())),
-                //   child: const Text('🗺️ Route Planner'),
-                // ),
-              ],
-              child: const Text('🚴 Rider'),
-            ),
-
-            // ── TOOLS ──────────────────────────────────────────
-            SubmenuButton(
-              menuChildren: [
-                MenuItemButton(
-                  onPressed: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (_) => const ShowAdminMainPage())),
-                  child: const Text('🔢 Edit Counter'),
-                ),
-                MenuItemButton(
-                  onPressed: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (_) => const ShowEnablePromo())),
-                  child: const Text('🔢 Edit Promo Days'),
-                ),
-                MenuItemButton(
-                  onPressed: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (_) => const CustomerLocationPage())),
-                  child: const Text('📍 Edit Customer Location'),
-                ),
-                MenuItemButton(
-                  onPressed: () async {
-                    if (isProcessing) return;
-                    final bool? confirm = await showDialog<bool>(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        title: const Text('Confirm Action'),
-                        content: const Text(
-                            'Move ALL Done jobs to Completed?\n\nThis action cannot be undone.'),
-                        actions: [
-                          TextButton(
-                              onPressed: () => Navigator.pop(context, false),
-                              child: const Text('No')),
-                          ElevatedButton(
-                              onPressed: () => Navigator.pop(context, true),
-                              child: const Text('Yes')),
-                        ],
-                      ),
-                    );
-                    if (confirm != true) return;
-                    setState(() => isProcessing = true);
-                    try {
-                      await moveAllDoneToCompleted();
-                    } finally {
-                      if (mounted) setState(() => isProcessing = false);
-                    }
+            /// LEFT MENU
+            leading: MenuAnchor(
+              builder: (context, controller, child) {
+                return IconButton(
+                  tooltip: 'Menu',
+                  icon: const Icon(Icons.menu, size: 18),
+                  onPressed: () {
+                    controller.isOpen ? controller.close() : controller.open();
                   },
-                  child: const Text('🧺 Done → Completed'),
-                ),
-
-                // ── TOOLS > ADMIN ───────────────────────────────
-                if (isAdmin)
-                  SubmenuButton(
-                    menuChildren: [
-                      MenuItemButton(
-                        onPressed: () => showSalaryMaintenance(context),
-                        child: const Text('💸 Salary Correction'),
-                      ),
-                      MenuItemButton(
-                        onPressed: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (_) => Scaffold(
-                                    appBar: AppBar(
-                                        title: const Text('Batch Promo')),
-                                    body: const BatchPromo()))),
-                        child: const Text('🎁 Batch Promo'),
-                      ),
-                      MenuItemButton(
-                        onPressed: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (_) => const BatchPromoReviewPage())),
-                        child: const Text('🔍 Batch Promo Review'),
-                      ),
-                      MenuItemButton(
-                        onPressed: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (_) =>
-                                    const BatchFixPromoCounterPage())),
-                        child: const Text('🔧 Fix PromoCounter'),
-                      ),
-                      MenuItemButton(
-                        onPressed: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (_) =>
-                                    const BatchRemovePromoDisabledDays())),
-                        child: const Text('🚫 Remove Promo on Disabled Days'),
-                      ),
-                      MenuItemButton(
-                        onPressed: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (_) => const MonthlyAnalyticsPage())),
-                        child: const Text('📊 Monthly Analytics'),
-                      ),
-                      MenuItemButton(
-                        onPressed: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (_) => const LoyaltyValidationPage())),
-                        child: const Text('🏅 Loyalty Validation'),
-                      ),
-                      MenuItemButton(
-                        onPressed: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (_) => Scaffold(
-                                    appBar: AppBar(
-                                        title: const Text('Run Migration')),
-                                    body: const RunMigration()))),
-                        child: const Text('⚙️ Run Migration'),
-                      ),
-                      MenuItemButton(
-                        onPressed: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (_) => Scaffold(
-                                    appBar: AppBar(
-                                        title:
-                                            const Text('Migrate to ThirdWeb')),
-                                    body: const SingleChildScrollView(
-                                        padding: EdgeInsets.all(16),
-                                        child: MigrateToThird())))),
-                        child: const Text('🔄 Migrate Reports DB'),
-                      ),
-                      MenuItemButton(
-                        onPressed: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (_) => Scaffold(
-                                    appBar: AppBar(
-                                        title: const Text('Admin Date D')),
-                                    body: const AdminDateDPage()))),
-                        child: const Text('📅 Admin Date D'),
-                      ),
-                      MenuItemButton(
-                        onPressed: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (_) => const OtherItemsPage())),
-                        child: const Text('📦 Other Items'),
-                      ),
-                      MenuItemButton(
-                        onPressed: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (_) => const DetItemsPage())),
-                        child: const Text('🧴 Detergent Items'),
-                      ),
-                      MenuItemButton(
-                        onPressed: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (_) => const FabItemsPage())),
-                        child: const Text('🧺 Fabricon Items'),
-                      ),
-                      MenuItemButton(
-                        onPressed: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (_) => const BleItemsPage())),
-                        child: const Text('🫧 Bleach Items'),
-                      ),
-                      MenuItemButton(
-                        onPressed: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (_) =>
-                                    const AutoSalaryDateOneTimeBatch())),
-                        child: const Text('💰 Auto Salary Date Batch'),
-                      ),
-                    ],
-                    child: const Text('🔑 Admin'),
-                  ),
-              ],
-              child: const Text('🔧 Tools'),
-            ),
-
-            // ── LOGOUT ─────────────────────────────────────────
-            MenuItemButton(
-              leadingIcon: const Icon(Icons.logout, size: 18),
-              onPressed: () {
-                FsUsageTracker.instance.flush(trigger: 'logout');
-                web.window.localStorage.removeItem(storageKey);
-                setState(() {
-                  loggedIn = false;
-                  rememberMe = true;
-                });
-                Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(builder: (_) => const EnterLoyaltyCode()),
-                  (route) => false,
                 );
               },
-              child: const Text('🚪 Logout'),
-            ),
-          ],
-        ),
-
-        /// TITLE
-        title: Text(
-          "$dateText. Hello ${empSetup.empName}",
-          style: const TextStyle(fontSize: 14),
-          overflow: TextOverflow.ellipsis,
-        ),
-
-        /// RIGHT MENU (3 DOTS)
-        actions: [
-          MenuAnchor(
-            builder: (context, controller, child) {
-              return IconButton(
-                tooltip: 'Show',
-                icon: const Icon(Icons.more_vert, size: 18),
-                onPressed: () {
-                  if (controller.isOpen) {
-                    controller.close();
-                  } else {
-                    controller.open();
-                  }
-                },
-              );
-            },
-            menuChildren: [
-              MenuItemButton(
-                style: ButtonStyle(
-                  backgroundColor: WidgetStateProperty.all(
-                    empSetup.showFundsHistory ? Colors.grey[300] : null,
-                  ),
+              menuChildren: [
+                // ── DAILY ROUTINE ──────────────────────────────────
+                SubmenuButton(
+                  menuChildren: [
+                    MenuItemButton(
+                      onPressed: () => showFundCheck(context),
+                      child: const Text('💵 Funds Check'),
+                    ),
+                    MenuItemButton(
+                      onPressed: () => showItemsInOut(context),
+                      child: const Text('📦 Inventory Check'),
+                    ),
+                    MenuItemButton(
+                      onPressed: () => showCalendarDialog(context),
+                      child: const Text('📅 Staff Schedule'),
+                    ),
+                    MenuItemButton(
+                      onPressed: () => showClosingCheck(context),
+                      child: const Text('🔒 Closing Check'),
+                    ),
+                  ],
+                  child: const Text('📋 Daily Routine'),
                 ),
-                child: const Text('💳 GCash'),
-                onPressed: () {
-                  updateEmployeeSetup(
-                    empSetup.copyWith(
-                        showFundsHistory: !empSetup.showFundsHistory),
-                  );
-                },
-              ),
-              MenuItemButton(
-                style: ButtonStyle(
-                  backgroundColor: WidgetStateProperty.all(
-                    empSetup.showLaundry ? Colors.grey[300] : null,
-                  ),
-                ),
-                child: const Text('🧺 Laundry'),
-                onPressed: () {
-                  updateEmployeeSetup(
-                    empSetup.copyWith(showLaundry: !empSetup.showLaundry),
-                  );
-                },
-              ),
-              MenuItemButton(
-                style: ButtonStyle(
-                  backgroundColor: WidgetStateProperty.all(
-                    empSetup.showFunds ? Colors.grey[300] : null,
-                  ),
-                ),
-                child: const Text('💰 Funds'),
-                onPressed: () {
-                  updateEmployeeSetup(
-                    empSetup.copyWith(showFunds: !empSetup.showFunds),
-                  );
-                },
-              ),
-              MenuItemButton(
-                style: ButtonStyle(
-                  backgroundColor: WidgetStateProperty.all(
-                    empSetup.showEmployee ? Colors.grey[300] : null,
-                  ),
-                ),
-                child: const Text('🪪 Staff'),
-                onPressed: () {
-                  updateEmployeeSetup(
-                    empSetup.copyWith(showEmployee: !empSetup.showEmployee),
-                  );
-                },
-              ),
-              // MenuItemButton(
-              //   style: ButtonStyle(
-              //     backgroundColor: WidgetStateProperty.all(
-              //       empSetup.showUnpaidLaundry ? Colors.grey[300] : null,
-              //     ),
-              //   ),
-              //   child: const Text('💸 Unpaid Laundry'),
-              //   onPressed: () {
-              //     updateEmployeeSetup(
-              //       empSetup.copyWith(
-              //           showUnpaidLaundry: !empSetup.showUnpaidLaundry),
-              //     );
-              //   },
-              // ),
-            ],
-          ),
-        ],
-      ),
 
-      /// BODY
-      body: Stack(
-        children: [
-          AbsorbPointer(
-            absorbing: isProcessing,
-            child: Builder(builder: (context) {
-              final isTablet = AppScale.of(context).isTablet;
-              // iPad gets ~25% wider panels
-              double pw(double base) => isTablet ? base * 1.25 : base;
+                // ── RIDER ──────────────────────────────────────────
+                SubmenuButton(
+                  menuChildren: [
+                    MenuItemButton(
+                      onPressed: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => const ShowRiderManagement())),
+                      child: const Text('🚴 Rider Schedule'),
+                    ),
+                    MenuItemButton(
+                      onPressed: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => const RiderLocationScreen())),
+                      child: const Text('📍 Rider GPS'),
+                    ),
+                    // MenuItemButton(
+                    //   onPressed: () => Navigator.push(
+                    //       context,
+                    //       MaterialPageRoute(
+                    //           builder: (_) => const RiderRoutePlannerPage())),
+                    //   child: const Text('🗺️ Route Planner'),
+                    // ),
+                  ],
+                  child: const Text('🚴 Rider'),
+                ),
 
-              return SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                clipBehavior: Clip.hardEdge,
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    animatedPanel(
-                      visible: empSetup.showFundsHistory,
-                      width: pw(350),
-                      child: Column(
-                        children: [
-                          const SizedBox(height: 1),
-                          readDataGCashPending(),
-                          readDataGCashDone(),
+                // ── TOOLS ──────────────────────────────────────────
+                SubmenuButton(
+                  menuChildren: [
+                    MenuItemButton(
+                      onPressed: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => const ShowAdminMainPage())),
+                      child: const Text('🔢 Edit Counter'),
+                    ),
+                    MenuItemButton(
+                      onPressed: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => const ShowEnablePromo())),
+                      child: const Text('🔢 Edit Promo Days'),
+                    ),
+                    MenuItemButton(
+                      onPressed: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => const CustomerLocationPage())),
+                      child: const Text('📍 Edit Customer Location'),
+                    ),
+                    MenuItemButton(
+                      onPressed: () async {
+                        if (isProcessing) return;
+                        final bool? confirm = await showDialog<bool>(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: const Text('Confirm Action'),
+                            content: const Text(
+                                'Move ALL Done jobs to Completed?\n\nThis action cannot be undone.'),
+                            actions: [
+                              TextButton(
+                                  onPressed: () =>
+                                      Navigator.pop(context, false),
+                                  child: const Text('No')),
+                              ElevatedButton(
+                                  onPressed: () => Navigator.pop(context, true),
+                                  child: const Text('Yes')),
+                            ],
+                          ),
+                        );
+                        if (confirm != true) return;
+                        setState(() => isProcessing = true);
+                        try {
+                          await moveAllDoneToCompleted();
+                        } finally {
+                          if (mounted) setState(() => isProcessing = false);
+                        }
+                      },
+                      child: const Text('🧺 Done → Completed'),
+                    ),
+
+                    // ── TOOLS > ADMIN ───────────────────────────────
+                    if (isAdmin)
+                      SubmenuButton(
+                        menuChildren: [
+                          MenuItemButton(
+                            onPressed: () => showSalaryMaintenance(context),
+                            child: const Text('💸 Salary Correction'),
+                          ),
+                          MenuItemButton(
+                            onPressed: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (_) => Scaffold(
+                                        appBar: AppBar(
+                                            title: const Text('Batch Promo')),
+                                        body: const BatchPromo()))),
+                            child: const Text('🎁 Batch Promo'),
+                          ),
+                          MenuItemButton(
+                            onPressed: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (_) =>
+                                        const BatchPromoReviewPage())),
+                            child: const Text('🔍 Batch Promo Review'),
+                          ),
+                          MenuItemButton(
+                            onPressed: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (_) =>
+                                        const BatchFixPromoCounterPage())),
+                            child: const Text('🔧 Fix PromoCounter'),
+                          ),
+                          MenuItemButton(
+                            onPressed: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (_) =>
+                                        const BatchRemovePromoDisabledDays())),
+                            child:
+                                const Text('🚫 Remove Promo on Disabled Days'),
+                          ),
+                          MenuItemButton(
+                            onPressed: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (_) =>
+                                        const MonthlyAnalyticsPage())),
+                            child: const Text('📊 Monthly Analytics'),
+                          ),
+                          MenuItemButton(
+                            onPressed: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (_) =>
+                                        const LoyaltyValidationPage())),
+                            child: const Text('🏅 Loyalty Validation'),
+                          ),
+                          MenuItemButton(
+                            onPressed: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (_) => Scaffold(
+                                        appBar: AppBar(
+                                            title: const Text('Run Migration')),
+                                        body: const RunMigration()))),
+                            child: const Text('⚙️ Run Migration'),
+                          ),
+                          MenuItemButton(
+                            onPressed: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (_) => Scaffold(
+                                        appBar: AppBar(
+                                            title: const Text(
+                                                'Migrate to ThirdWeb')),
+                                        body: const SingleChildScrollView(
+                                            padding: EdgeInsets.all(16),
+                                            child: MigrateToThird())))),
+                            child: const Text('🔄 Migrate Reports DB'),
+                          ),
+                          MenuItemButton(
+                            onPressed: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (_) => Scaffold(
+                                        appBar: AppBar(
+                                            title: const Text('Admin Date D')),
+                                        body: const AdminDateDPage()))),
+                            child: const Text('📅 Admin Date D'),
+                          ),
+                          MenuItemButton(
+                            onPressed: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (_) => const OtherItemsPage())),
+                            child: const Text('📦 Other Items'),
+                          ),
+                          MenuItemButton(
+                            onPressed: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (_) => const DetItemsPage())),
+                            child: const Text('🧴 Detergent Items'),
+                          ),
+                          MenuItemButton(
+                            onPressed: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (_) => const FabItemsPage())),
+                            child: const Text('🧺 Fabricon Items'),
+                          ),
+                          MenuItemButton(
+                            onPressed: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (_) => const BleItemsPage())),
+                            child: const Text('🫧 Bleach Items'),
+                          ),
+                          MenuItemButton(
+                            onPressed: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (_) =>
+                                        const AutoSalaryDateOneTimeBatch())),
+                            child: const Text('💰 Auto Salary Date Batch'),
+                          ),
                         ],
-                      ),
-                      color: Colors.blue,
-                    ),
-                    readDataJobsOnQueue(
-                      empSetup.showLaundry,
-                      LaundryColors.onQueue,
-                    ),
-                    readDataJobsOnGoing(
-                      empSetup.showLaundry,
-                      LaundryColors.ongoing,
-                    ),
-                    animatedPanel(
-                      visible: empSetup.showLaundry,
-                      width: pw(320),
-                      child: readDataJobsDone(() => setState(() {})),
-                      color: LaundryColors.done,
-                    ),
-                    animatedPanel(
-                      visible: empSetup.showLaundry,
-                      width: pw(320),
-                      child: readDataJobsCompleted(
-                        context,
-                        () => setState(() {}),
-                      ),
-                      color: LaundryColors.completed,
-                    ),
-                    animatedPanel(
-                      visible: empSetup.showLaundry,
-                      width: pw(400),
-                      child: const ShowRiderOrders(),
-                      color: Colors.teal.shade100,
-                    ),
-                    animatedPanel(
-                      visible: empSetup.showFunds,
-                      width: pw(400),
-                      child: readDataSuppliesCurrent(),
-                      color: cFundsInFundsOut,
-                    ),
-                    animatedPanel(
-                      visible: empSetup.showFunds,
-                      width: pw(550),
-                      child: readDataSuppliesHistory(),
-                      color: cFundsInFundsOut,
-                    ),
-                    animatedPanel(
-                      visible: empSetup.showFunds,
-                      width: pw(400),
-                      child: readDataItemsHistory(),
-                      color: cFundsInFundsOut,
-                    ),
-                    animatedPanel(
-                      visible: empSetup.showEmployee,
-                      width: pw(600),
-                      child: Column(
-                        children: [
-                          const SizedBox(height: 1),
-                          readDataEmployeeCurr(),
-                          readDataEmployeeHist(),
-                        ],
-                      ),
-                      color: cEmployeeMaintenance,
-                    ),
-                    if (empSetup.showLaundry)
-                      IntrinsicWidth(
-                        child: Container(
-                          color: Colors.red.shade100,
-                          padding: const EdgeInsets.all(8),
-                          child: readUnpaidLaundry(),
-                        ),
+                        child: const Text('🔑 Admin'),
                       ),
                   ],
+                  child: const Text('🔧 Tools'),
                 ),
-              );
-            }),
+
+                // ── LOGOUT ─────────────────────────────────────────
+                MenuItemButton(
+                  leadingIcon: const Icon(Icons.logout, size: 18),
+                  onPressed: () {
+                    FsUsageTracker.instance.flush(trigger: 'logout');
+                    web.window.localStorage.removeItem(storageKey);
+                    setState(() {
+                      loggedIn = false;
+                      rememberMe = true;
+                    });
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => const EnterLoyaltyCode()),
+                      (route) => false,
+                    );
+                  },
+                  child: const Text('🚪 Logout'),
+                ),
+              ],
+            ),
+
+            /// TITLE
+            title: Text(
+              "$dateText. Hello ${empSetup.empName}",
+              style: const TextStyle(fontSize: 14),
+              overflow: TextOverflow.ellipsis,
+            ),
+
+            /// RIGHT MENU (3 DOTS)
+            actions: [
+              MenuAnchor(
+                style: MenuStyle(
+                  backgroundColor: WidgetStatePropertyAll(_menuSurfaceColor),
+                ),
+                builder: (context, controller, child) {
+                  return IconButton(
+                    tooltip: 'Show',
+                    icon: const Icon(Icons.more_vert, size: 18),
+                    onPressed: () {
+                      if (controller.isOpen) {
+                        controller.close();
+                      } else {
+                        controller.open();
+                      }
+                    },
+                  );
+                },
+                menuChildren: [
+                  MenuItemButton(
+                    style: ButtonStyle(
+                      backgroundColor: WidgetStateProperty.all(
+                        empSetup.showFundsHistory ? _menuSelectedColor : null,
+                      ),
+                    ),
+                    child: const Text('💳 GCash'),
+                    onPressed: () {
+                      updateEmployeeSetup(
+                        empSetup.copyWith(
+                            showFundsHistory: !empSetup.showFundsHistory),
+                      );
+                    },
+                  ),
+                  MenuItemButton(
+                    style: ButtonStyle(
+                      backgroundColor: WidgetStateProperty.all(
+                        empSetup.showLaundry ? _menuSelectedColor : null,
+                      ),
+                    ),
+                    child: const Text('🧺 Laundry'),
+                    onPressed: () {
+                      updateEmployeeSetup(
+                        empSetup.copyWith(showLaundry: !empSetup.showLaundry),
+                      );
+                    },
+                  ),
+                  MenuItemButton(
+                    style: ButtonStyle(
+                      backgroundColor: WidgetStateProperty.all(
+                        empSetup.showFunds ? _menuSelectedColor : null,
+                      ),
+                    ),
+                    child: const Text('💰 Funds'),
+                    onPressed: () {
+                      updateEmployeeSetup(
+                        empSetup.copyWith(showFunds: !empSetup.showFunds),
+                      );
+                    },
+                  ),
+                  MenuItemButton(
+                    style: ButtonStyle(
+                      backgroundColor: WidgetStateProperty.all(
+                        empSetup.showEmployee ? _menuSelectedColor : null,
+                      ),
+                    ),
+                    child: const Text('🪪 Staff'),
+                    onPressed: () {
+                      updateEmployeeSetup(
+                        empSetup.copyWith(showEmployee: !empSetup.showEmployee),
+                      );
+                    },
+                  ),
+
+                  MenuItemButton(
+                    style: ButtonStyle(
+                      backgroundColor: WidgetStateProperty.all(
+                        empSetup.darkMode ? _menuSelectedColor : null,
+                      ),
+                    ),
+                    child: const Text('😎 Dark Mode'),
+                    onPressed: () {
+                      updateEmployeeSetup(
+                        empSetup.copyWith(darkMode: !empSetup.darkMode),
+                      );
+                    },
+                  ),
+                  // MenuItemButton(
+                  //   style: ButtonStyle(
+                  //     backgroundColor: WidgetStateProperty.all(
+                  //       empSetup.showUnpaidLaundry ? Colors.grey[300] : null,
+                  //     ),
+                  //   ),
+                  //   child: const Text('💸 Unpaid Laundry'),
+                  //   onPressed: () {
+                  //     updateEmployeeSetup(
+                  //       empSetup.copyWith(
+                  //           showUnpaidLaundry: !empSetup.showUnpaidLaundry),
+                  //     );
+                  //   },
+                  // ),
+                ],
+              ),
+            ],
           ),
-        ],
-      ),
-    );
+
+          /// BODY
+          body: Stack(
+            children: [
+              AbsorbPointer(
+                absorbing: isProcessing,
+                child: Builder(builder: (context) {
+                  final isTablet = AppScale.of(context).isTablet;
+                  // iPad gets ~25% wider panels
+                  double pw(double base) => isTablet ? base * 1.25 : base;
+
+                  return SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    clipBehavior: Clip.hardEdge,
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        animatedPanel(
+                          visible: empSetup.showFundsHistory,
+                          width: pw(350),
+                          child: Column(
+                            children: [
+                              const SizedBox(height: 1),
+                              readDataGCashPending(),
+                              readDataGCashDone(),
+                            ],
+                          ),
+                          color: _isDarkMode
+                              ? const Color(0xFF102A43)
+                              : Colors.blue,
+                        ),
+                        readDataJobsOnQueue(
+                          empSetup.showLaundry,
+                          _isDarkMode
+                              ? const Color(0xFF7A5C00)
+                              : LaundryColors.onQueue,
+                        ),
+                        readDataJobsOnGoing(
+                          empSetup.showLaundry,
+                          _isDarkMode
+                              ? const Color(0xFF0D3A57)
+                              : LaundryColors.ongoing,
+                        ),
+                        animatedPanel(
+                          visible: empSetup.showLaundry,
+                          width: pw(320),
+                          child: readDataJobsDone(() => setState(() {})),
+                          color: _isDarkMode
+                              ? const Color(0xFF1E5A31)
+                              : LaundryColors.done,
+                        ),
+                        animatedPanel(
+                          visible: empSetup.showLaundry,
+                          width: pw(320),
+                          child: readDataJobsCompleted(
+                            context,
+                            () => setState(() {}),
+                          ),
+                          color: _isDarkMode
+                              ? const Color(0xFF35235E)
+                              : LaundryColors.completed,
+                        ),
+                        if (empSetup.showLaundry)
+                          IntrinsicWidth(
+                            child: Container(
+                              color: _isDarkMode
+                                  ? const Color(0xFF4A1F1F)
+                                  : Colors.red.shade100,
+                              padding: const EdgeInsets.all(8),
+                              child: readUnpaidLaundry(),
+                            ),
+                          ),
+                        animatedPanel(
+                          visible: empSetup.showLaundry,
+                          width: pw(400),
+                          child: const ShowRiderOrders(),
+                          color: _isDarkMode
+                              ? const Color(0xFF123C3C)
+                              : Colors.teal.shade100,
+                        ),
+                        animatedPanel(
+                          visible: empSetup.showFunds,
+                          width: pw(400),
+                          child: readDataSuppliesCurrent(),
+                          color: _isDarkMode
+                              ? const Color(0xFF3B2F12)
+                              : cFundsInFundsOut,
+                        ),
+                        animatedPanel(
+                          visible: empSetup.showFunds,
+                          width: pw(550),
+                          child: readDataSuppliesHistory(),
+                          color: _isDarkMode
+                              ? const Color(0xFF3B2F12)
+                              : cFundsInFundsOut,
+                        ),
+                        animatedPanel(
+                          visible: empSetup.showFunds,
+                          width: pw(400),
+                          child: readDataItemsHistory(),
+                          color: _isDarkMode
+                              ? const Color(0xFF3B2F12)
+                              : cFundsInFundsOut,
+                        ),
+                        animatedPanel(
+                          visible: empSetup.showEmployee,
+                          width: pw(600),
+                          child: Column(
+                            children: [
+                              const SizedBox(height: 1),
+                              readDataEmployeeCurr(),
+                              readDataEmployeeHist(),
+                            ],
+                          ),
+                          color: _isDarkMode
+                              ? const Color(0xFF4A2517)
+                              : cEmployeeMaintenance,
+                        ),
+                      ],
+                    ),
+                  );
+                }),
+              ),
+            ],
+          ),
+        ));
   }
 }

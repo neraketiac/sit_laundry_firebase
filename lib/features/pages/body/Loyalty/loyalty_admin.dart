@@ -438,26 +438,27 @@ class _LoyaltyAdminState extends State<LoyaltyAdmin> {
                             'Tap to edit existing:',
                             style: TextStyle(
                                 color: Colors.orange,
-                                fontSize: 11,
+                                fontSize: 13,
                                 fontWeight: FontWeight.bold),
                           ),
-                          const SizedBox(height: 4),
+                          const SizedBox(height: 6),
                           ...duplicates.map((c) => InkWell(
                                 onTap: () => loadExisting(c),
-                                child: Padding(
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 4),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 10, horizontal: 4),
                                   child: Row(
                                     children: [
                                       const Icon(Icons.edit,
-                                          size: 12, color: Colors.cyanAccent),
-                                      const SizedBox(width: 6),
+                                          size: 16, color: Colors.cyanAccent),
+                                      const SizedBox(width: 8),
                                       Expanded(
                                         child: Text(
                                           '${c.name} (#${c.customerId}) — ${c.address}',
                                           style: const TextStyle(
-                                              color: Colors.white70,
-                                              fontSize: 11),
+                                              color: Colors.white,
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w500),
                                         ),
                                       ),
                                     ],

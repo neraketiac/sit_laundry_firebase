@@ -67,43 +67,47 @@ Widget readDataJobsDone(VoidCallback dialogSetState) {
     selected = await showModalBottomSheet<DateTime>(
       context: context,
       builder: (context) {
+        final isDark = Theme.of(context).brightness == Brightness.dark;
         return SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                leading: const Icon(Icons.today),
-                title: const Text("Today"),
-                onTap: () => Navigator.pop(
-                    context, DateTime(now.year, now.month, now.day)),
-              ),
-              ListTile(
-                leading: const Icon(Icons.history),
-                title: const Text("Yesterday"),
-                onTap: () => Navigator.pop(
-                  context,
-                  DateTime(now.year, now.month, now.day - 1),
+          child: Container(
+            color: isDark ? const Color(0xFF1E1E1E) : null,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.today),
+                  title: const Text("Today"),
+                  onTap: () => Navigator.pop(
+                      context, DateTime(now.year, now.month, now.day)),
                 ),
-              ),
-              ListTile(
-                leading: const Icon(Icons.calendar_month),
-                title: const Text("Pick Date"),
-                onTap: () async {
-                  Navigator.pop(context);
+                ListTile(
+                  leading: const Icon(Icons.history),
+                  title: const Text("Yesterday"),
+                  onTap: () => Navigator.pop(
+                    context,
+                    DateTime(now.year, now.month, now.day - 1),
+                  ),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.calendar_month),
+                  title: const Text("Pick Date"),
+                  onTap: () async {
+                    Navigator.pop(context);
 
-                  DateTime? picked = await showDatePicker(
-                    context: context,
-                    initialDate: now,
-                    firstDate: DateTime(2020),
-                    lastDate: DateTime(2100),
-                  );
+                    DateTime? picked = await showDatePicker(
+                      context: context,
+                      initialDate: now,
+                      firstDate: DateTime(2020),
+                      lastDate: DateTime(2100),
+                    );
 
-                  if (picked != null) {
-                    sortJobsByDay(picked);
-                  }
-                },
-              ),
-            ],
+                    if (picked != null) {
+                      sortJobsByDay(picked);
+                    }
+                  },
+                ),
+              ],
+            ),
           ),
         );
       },
@@ -217,18 +221,34 @@ Widget readDataJobsDone(VoidCallback dialogSetState) {
 
                   await showDialog(
                     context: context,
-                    builder: (context) => AlertDialog(
-                      title: const Text("Customer Balance"),
-                      content: Text(
-                        "Total unpaid: ₱${moneyFormatter.format(totalUnpaid - (totalCashAmount + totalGCashAmount))}",
-                      ),
-                      actions: [
-                        ElevatedButton(
-                          onPressed: () => Navigator.pop(context),
-                          child: const Text("OK"),
+                    builder: (context) {
+                      final isDark =
+                          Theme.of(context).brightness == Brightness.dark;
+                      final balance =
+                          totalUnpaid - (totalCashAmount + totalGCashAmount);
+                      return AlertDialog(
+                        title: Text(
+                          "Customer Balance",
+                          style: TextStyle(
+                              color: isDark ? Colors.white : Colors.black87),
                         ),
-                      ],
-                    ),
+                        content: Text(
+                          "Total unpaid: ₱${moneyFormatter.format(balance)}",
+                          style: TextStyle(
+                            color: balance > 0
+                                ? Colors.red.shade400
+                                : Colors.green.shade400,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        actions: [
+                          ElevatedButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text("OK"),
+                          ),
+                        ],
+                      );
+                    },
                   );
                 }
               },
@@ -378,6 +398,8 @@ Widget readDataJobsDone(VoidCallback dialogSetState) {
                   jobRepo.syncRepoToSelectedAll(jobRepo);
 
                   final isSelected = selectedIndexDone == index;
+                  final isDark =
+                      Theme.of(context).brightness == Brightness.dark;
 
                   return ReorderableDelayedDragStartListener(
                     key: ValueKey(job.docId),
@@ -415,20 +437,31 @@ Widget readDataJobsDone(VoidCallback dialogSetState) {
                             /// 🎨 Softer gradient instead of flat purple
                             gradient: LinearGradient(
                               colors: isSelected
-                                  ? [
-                                      Colors.deepPurple.shade200,
-                                      Colors.deepPurple.shade100,
-                                    ]
-                                  : [
-                                      Colors.deepPurple.shade50,
-                                      Colors.deepPurple.shade50,
-                                    ],
+                                  ? isDark
+                                      ? [
+                                          const Color(0xFF4A3F6B),
+                                          const Color(0xFF3D3357),
+                                        ]
+                                      : [
+                                          Colors.deepPurple.shade200,
+                                          Colors.deepPurple.shade100,
+                                        ]
+                                  : isDark
+                                      ? [
+                                          const Color(0xFF2A2535),
+                                          const Color(0xFF2A2535),
+                                        ]
+                                      : [
+                                          Colors.deepPurple.shade50,
+                                          Colors.deepPurple.shade50,
+                                        ],
                             ),
 
                             boxShadow: [
                               if (isSelected)
                                 BoxShadow(
-                                  color: Colors.deepPurple.withOpacity(0.4),
+                                  color: Colors.deepPurple
+                                      .withValues(alpha: isDark ? 0.6 : 0.4),
                                   blurRadius: 14,
                                   offset: const Offset(0, 6),
                                 ),
@@ -437,7 +470,10 @@ Widget readDataJobsDone(VoidCallback dialogSetState) {
                             border: Border.all(
                               color: isSelected
                                   ? Colors.deepPurple
-                                  : Colors.deepPurple.withOpacity(0.1),
+                                  : isDark
+                                      ? Colors.deepPurple.withValues(alpha: 0.3)
+                                      : Colors.deepPurple
+                                          .withValues(alpha: 0.1),
                               width: isSelected ? 1.5 : 1,
                             ),
                           ),
