@@ -4,11 +4,12 @@ import 'package:laundry_firebase/core/utils/firestore_timeout.dart';
 import 'package:laundry_firebase/features/items/models/suppliesmodelhist.dart';
 import 'package:laundry_firebase/core/services/database_funds_history.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
+import 'package:laundry_firebase/core/services/firebase_service.dart';
 
 const String SUPPLIES_CURR_REF = "SuppliesCurr";
 
 class DatabaseSuppliesCurrent {
-  final _firestore = FirebaseFirestore.instance;
+  final _firestore = FirebaseService.suppliesFirestore;
   late final CollectionReference _suppliesCurrRef;
 
   DatabaseSuppliesCurrent() {
@@ -24,7 +25,7 @@ class DatabaseSuppliesCurrent {
   }
 
   Future<SuppliesModelHist> computeCurrentStocks(SuppliesModelHist sMH) async {
-    final snap = await FirebaseFirestore.instance
+    final snap = await FirebaseService.suppliesFirestore
         .collection('SuppliesCurr')
         .where('ItemId', isEqualTo: sMH.itemId)
         .get()

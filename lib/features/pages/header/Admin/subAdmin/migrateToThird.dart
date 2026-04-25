@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:laundry_firebase/firebase_options.dart';
+import 'package:laundry_firebase/core/services/firebase_service.dart';
 
 // Known collections in main firestore — add more as needed
 const List<String> _knownCollections = [
@@ -189,7 +190,8 @@ class _MigrateToThirdState extends State<MigrateToThird> {
       progressKey.currentState?.setStatus("Counting documents...");
       int totalDocs = 0;
       for (final col in selected) {
-        final snap = await main.collection(col).get();
+        final sourceDb = _getSourceDb(col, main);
+        final snap = await sourceDb.collection(col).get();
         totalDocs += snap.docs.length;
       }
 
@@ -198,7 +200,8 @@ class _MigrateToThirdState extends State<MigrateToThird> {
       // Step 3: migrate
       progressKey.currentState?.setStatus("Migrating...");
       for (final col in selected) {
-        final snap = await main.collection(col).get();
+        final sourceDb = _getSourceDb(col, main);
+        final snap = await sourceDb.collection(col).get();
         WriteBatch batch = third.batch();
         int ops = 0;
         int colCount = 0;
@@ -254,6 +257,18 @@ class _MigrateToThirdState extends State<MigrateToThird> {
         ],
       ),
     );
+  }
+
+  FirebaseFirestore _getSourceDb(String collection, FirebaseFirestore main) {
+    if (collection == 'GCash_done' || collection == 'GCash_pending') {
+      return FirebaseService.gcashPendingDoneFirestore;
+    } else if (collection == 'EmployeeCurr' || collection == 'EmployeeHist') {
+      return FirebaseService.employeeFirestore;
+    } else if (collection == 'SuppliesCurr' || collection == 'SuppliesHist') {
+      return FirebaseService.suppliesFirestore;
+    } else {
+      return main;
+    }
   }
 }
 

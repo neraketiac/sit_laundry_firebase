@@ -5,7 +5,6 @@ import 'package:intl/intl.dart';
 import 'package:laundry_firebase/features/jobs/models/jobmodel.dart';
 import 'package:laundry_firebase/features/jobs/repository/jobmodel_repository.dart';
 import 'package:laundry_firebase/firebase_options.dart';
-import 'package:laundry_firebase/core/services/firebase_service.dart';
 import 'widgets/month_selector.dart';
 import 'widgets/supplies_summary_card.dart';
 import 'widgets/supplies_chart.dart';
@@ -82,10 +81,7 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
         .subtract(const Duration(seconds: 1)); // last second of the month
 
     try {
-      // Read Jobs_done from jobsDoneDb
-      final jobsDoneDb = FirebaseService.jobsDoneFirestore;
-
-      // Read Jobs_completed and history collections from reportsDb
+      // Read all collections from reportsDb
       FirebaseApp thirdApp;
       try {
         thirdApp = Firebase.app('thirdWeb');
@@ -98,7 +94,7 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
       final reportsDb = FirebaseFirestore.instanceFor(app: thirdApp);
 
       // Jobs
-      final doneSnap = await jobsDoneDb
+      final doneSnap = await reportsDb
           .collection('Jobs_done')
           .where('A05_DateD',
               isGreaterThanOrEqualTo: Timestamp.fromDate(startDate))

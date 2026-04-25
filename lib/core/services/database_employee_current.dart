@@ -4,11 +4,12 @@ import 'package:laundry_firebase/core/utils/firestore_timeout.dart';
 import 'package:laundry_firebase/features/employees/models/employeemodel.dart';
 import 'package:laundry_firebase/core/services/database_employee_hist.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
+import 'package:laundry_firebase/core/services/firebase_service.dart';
 
 const String EMPLOYEE_CURR_REF = "EmployeeCurr";
 
 class DatabaseEmployeeCurrent {
-  final _firestore = FirebaseFirestore.instance;
+  final _firestore = FirebaseService.employeeFirestore;
 
   late final CollectionReference _employeeCurrRef;
 
@@ -92,7 +93,7 @@ class DatabaseEmployeeCurrent {
 
   Future<EmployeeModel> _computeCurrentStocks(EmployeeModel eM) async {
     debugPrint("Compute Current Stocks for ${eM.empId}");
-    var collectionRef = FirebaseFirestore.instance
+    var collectionRef = FirebaseService.employeeFirestore
         .collection('EmployeeCurr')
         .where('EmpId', isEqualTo: eM.empId);
     var querySnapshots = await collectionRef.get().withFsTimeout();

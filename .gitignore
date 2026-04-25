@@ -51,4 +51,21 @@ android/app/google-services.json
 ios/Runner/GoogleService-Info.plist
 .firebaserc
 firebase.json
+web/firebase-messaging-sw.js
+web/index.html
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Service account keys
+*-service-account.json
+service-account-key.json
+firebase-key.json
+
+# Python environment
+batch/.env
+batch/venv/
+batch/__pycache__/
 

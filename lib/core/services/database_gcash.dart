@@ -6,6 +6,7 @@ import 'package:laundry_firebase/core/global/variables_all_codes.dart';
 import 'package:laundry_firebase/features/payments/models/gcashmodel.dart';
 import 'package:laundry_firebase/core/utils/sharedMethods.dart';
 import 'package:laundry_firebase/core/utils/sharedmethodsdatabase.dart';
+import 'package:laundry_firebase/core/services/firebase_service.dart';
 
 /// 🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦
 /// 🔹 COLLECTION REFERENCES
@@ -17,7 +18,8 @@ const String GCASH_DONE_REF = "GCash_done";
 /// 🔹 DATABASE : GCASH PENDING
 /// 🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦
 class DatabaseGCashPending {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseFirestore _firestore =
+      FirebaseService.gcashPendingDoneFirestore;
   late final CollectionReference<Map<String, dynamic>> _ref =
       _firestore.collection(GCASH_PENDING_REF);
 
@@ -151,7 +153,8 @@ class DatabaseGCashPending {
 /// 🔹 DATABASE : GCash Done
 /// 🟨🟨🟨🟨🟨🟨🟨🟨🟨🟨
 class DatabaseGCashDone {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseFirestore _firestore =
+      FirebaseService.gcashPendingDoneFirestore;
   late final CollectionReference<Map<String, dynamic>> _ref =
       _firestore.collection(GCASH_DONE_REF);
 
@@ -182,7 +185,7 @@ class DatabaseGCashDone {
 
 /// ▶ Queue → Ongoing (start washing)
 Future<void> moveToNext(String docId) async {
-  final firestore = FirebaseFirestore.instance;
+  final firestore = FirebaseService.gcashPendingDoneFirestore;
 
   await firestore.runTransaction((tx) async {
     final queueRef = firestore.collection(GCASH_PENDING_REF).doc(docId);

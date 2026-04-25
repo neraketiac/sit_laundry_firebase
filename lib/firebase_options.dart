@@ -97,6 +97,33 @@ class DefaultFirebaseOptions {
     storageBucket: "fir-hosting-7fa46.firebasestorage.app",
   );
 
+  static const FirebaseOptions gcashPendingDoneDB = FirebaseOptions(
+    apiKey: "AIzaSyDjIXSoN0hie_VSaM3IQ5SHZ2U4b-WYHbQ",
+    appId: "1:163176064044:web:ea1d3f80365334ec6edd89",
+    messagingSenderId: "163176064044",
+    projectId: "gcashpendingdoneonly",
+    authDomain: "gcashpendingdoneonly.firebaseapp.com",
+    storageBucket: "gcashpendingdoneonly.firebasestorage.app",
+  );
+
+  static const FirebaseOptions employeeDB = FirebaseOptions(
+    apiKey: "AIzaSyCga18-j-AfbiTiP6C4LjMyzPdYuvgVAbI",
+    appId: "1:415110402913:web:cf2345e52e3595775bab20",
+    messagingSenderId: "415110402913",
+    projectId: "employeeonly-a70b8",
+    authDomain: "employeeonly-a70b8.firebaseapp.com",
+    storageBucket: "employeeonly-a70b8.firebasestorage.app",
+  );
+
+  static const FirebaseOptions suppliesDB = FirebaseOptions(
+    apiKey: "AIzaSyARVsTliE3jce4PV1mcZFFnTABxiyAPzgo",
+    appId: "1:265925850034:web:acd45f8b8d8791844eaaab",
+    messagingSenderId: "265925850034",
+    projectId: "suppliesonly-6ec46",
+    authDomain: "suppliesonly-6ec46.firebaseapp.com",
+    storageBucket: "suppliesonly-6ec46.firebasestorage.app",
+  );
+
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyABXoKDWC1JUR1FwE4es4O-glGHGpDFbI8',
     appId: '1:248306194923:android:246830746ad13f22b7a1ae',

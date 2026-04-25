@@ -1,11 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:laundry_firebase/core/utils/firestore_timeout.dart';
 import 'package:laundry_firebase/features/items/models/suppliesmodelhist.dart';
+import 'package:laundry_firebase/core/services/firebase_service.dart';
 
 const String FUNDS_HIS_REF = "SuppliesHist";
 
 class DatabaseFundsHist {
-  final _firestore = FirebaseFirestore.instance;
+  final _firestore = FirebaseService.suppliesFirestore;
   late final CollectionReference _fundsRef;
 
   DatabaseFundsHist() {

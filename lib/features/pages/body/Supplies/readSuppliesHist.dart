@@ -9,6 +9,7 @@ import 'package:laundry_firebase/core/services/database_funds_history.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
 import 'package:laundry_firebase/core/global/variables_supplies.dart';
 import 'package:laundry_firebase/core/utils/fs_usage_tracker.dart';
+import 'package:laundry_firebase/core/services/firebase_service.dart';
 
 final DatabaseFundsHist dbFundsHist = DatabaseFundsHist();
 
@@ -186,7 +187,7 @@ class _SuppliesHistoryListState extends State<_SuppliesHistoryList> {
   void _startNewDocListener() {
     _newDocSub?.cancel();
     // Listen to the first page — handles adds, updates AND deletes
-    _newDocSub = FirebaseFirestore.instance
+    _newDocSub = FirebaseService.suppliesFirestore
         .collection('SuppliesHist')
         .orderBy('LogDate', descending: true)
         .limit(_pageSize)

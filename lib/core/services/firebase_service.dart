@@ -12,6 +12,15 @@ class FirebaseService {
   static late FirebaseApp jobsDoneApp;
   static late FirebaseFirestore jobsDoneFirestore;
 
+  static late FirebaseApp gcashPendingDoneApp;
+  static late FirebaseFirestore gcashPendingDoneFirestore;
+
+  static late FirebaseApp employeeApp;
+  static late FirebaseFirestore employeeFirestore;
+
+  static late FirebaseApp suppliesApp;
+  static late FirebaseFirestore suppliesFirestore;
+
   static FirebaseFirestore get primaryFirestore => FirebaseFirestore.instance;
 
   static Future<void> initialize() async {
@@ -40,6 +49,28 @@ class FirebaseService {
       options: DefaultFirebaseOptions.jobsDoneDb,
     );
     jobsDoneFirestore = FirebaseFirestore.instanceFor(app: jobsDoneApp);
+
+    // GCASH PENDING DONE Firebase
+    gcashPendingDoneApp = await Firebase.initializeApp(
+      name: 'gcashPendingDone',
+      options: DefaultFirebaseOptions.gcashPendingDoneDB,
+    );
+    gcashPendingDoneFirestore =
+        FirebaseFirestore.instanceFor(app: gcashPendingDoneApp);
+
+    // EMPLOYEE Firebase
+    employeeApp = await Firebase.initializeApp(
+      name: 'employee',
+      options: DefaultFirebaseOptions.employeeDB,
+    );
+    employeeFirestore = FirebaseFirestore.instanceFor(app: employeeApp);
+
+    // SUPPLIES Firebase
+    suppliesApp = await Firebase.initializeApp(
+      name: 'supplies',
+      options: DefaultFirebaseOptions.suppliesDB,
+    );
+    suppliesFirestore = FirebaseFirestore.instanceFor(app: suppliesApp);
 
     print("Firebase projects initialized");
   }

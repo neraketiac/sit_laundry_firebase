@@ -2,11 +2,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:laundry_firebase/core/utils/firestore_timeout.dart';
 import 'package:laundry_firebase/features/employees/models/employeemodel.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
+import 'package:laundry_firebase/core/services/firebase_service.dart';
 
 const String EMPLOYEE_HIST_REF = "EmployeeHist";
 
 class DatabaseEmployeeHist {
-  final _firestore = FirebaseFirestore.instance;
+  final _firestore = FirebaseService.employeeFirestore;
   late final CollectionReference _employeeHistRef;
 
   DatabaseEmployeeHist() {

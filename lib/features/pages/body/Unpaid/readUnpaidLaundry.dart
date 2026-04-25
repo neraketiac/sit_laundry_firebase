@@ -5,7 +5,6 @@ import 'package:intl/intl.dart';
 import 'package:laundry_firebase/features/jobs/models/jobmodel.dart';
 import 'package:laundry_firebase/features/jobs/repository/jobmodel_repository.dart';
 import 'package:laundry_firebase/firebase_options.dart';
-import 'package:laundry_firebase/core/services/firebase_service.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/reports/monthly_analytics/widgets/unpaid_customers_card.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/reports/monthly_analytics/widgets/unpaid_data.dart';
 
@@ -62,10 +61,7 @@ class _UnpaidLaundryPanelState extends State<_UnpaidLaundryPanel> {
     final end = DateTime(_month.year, _month.month + 1, 0);
 
     try {
-      // Read Jobs_done from jobsDoneDb
-      final jobsDoneDb = FirebaseService.jobsDoneFirestore;
-
-      // Read Jobs_completed from reportsDb
+      // Read all collections from reportsDb
       FirebaseApp thirdApp;
       try {
         thirdApp = Firebase.app('thirdWeb');
@@ -77,7 +73,7 @@ class _UnpaidLaundryPanelState extends State<_UnpaidLaundryPanel> {
       }
       final reportsDb = FirebaseFirestore.instanceFor(app: thirdApp);
 
-      final doneSnap = await jobsDoneDb
+      final doneSnap = await reportsDb
           .collection('Jobs_done')
           .where('A05_DateD', isGreaterThanOrEqualTo: Timestamp.fromDate(start))
           .where('A05_DateD', isLessThanOrEqualTo: Timestamp.fromDate(end))
