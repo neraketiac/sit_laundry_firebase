@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:laundry_firebase/core/services/database_jobs.dart';
 
@@ -129,8 +130,14 @@ Future<void> runAddressSync(BuildContext context) async {
 
         int customerId = data['C00_CustomerId'];
 
-        /// FIND LOYALTY
-        final loyaltySnapshot = await firestore
+        /// FIND LOYALTY - use loyaltyCardDb
+        final loyaltyFirestore = FirebaseFirestore.instanceFor(
+          app: Firebase.apps.firstWhere(
+            (app) => app.name == 'loyaltyCardDb',
+            orElse: () => Firebase.app(),
+          ),
+        );
+        final loyaltySnapshot = await loyaltyFirestore
             .collection("loyalty")
             .where('cardNumber', isEqualTo: customerId)
             .limit(1)

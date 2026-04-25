@@ -88,6 +88,15 @@ class DefaultFirebaseOptions {
     storageBucket: "signuptest-53277.firebasestorage.app",
   );
 
+  static const FirebaseOptions jobsDoneDb = FirebaseOptions(
+    apiKey: "AIzaSyCr0xKAejLZ_wq-Rk4Ab4w_cI2FPnnc818",
+    appId: "1:973802324201:web:c6f244512eb0a7198a3078",
+    messagingSenderId: "973802324201",
+    projectId: "fir-hosting-7fa46",
+    authDomain: "fir-hosting-7fa46.firebaseapp.com",
+    storageBucket: "fir-hosting-7fa46.firebasestorage.app",
+  );
+
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyABXoKDWC1JUR1FwE4es4O-glGHGpDFbI8',
     appId: '1:248306194923:android:246830746ad13f22b7a1ae',

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:web/web.dart' as web;
 import 'routes/app_router.dart';
 
 /// Global key to allow rebuilding MyApp from anywhere (e.g. dark mode toggle)
@@ -20,6 +21,24 @@ class MyAppState extends State<MyApp> {
   void setDarkMode(bool value) {
     if (_isDark == value) return;
     setState(() => _isDark = value);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _disableBackGesture();
+  }
+
+  /// Disable browser back gesture (swipe back) to prevent accidental navigation
+  void _disableBackGesture() {
+    // Push a new history state to prevent browser back navigation
+    web.window.history.pushState(null, '', web.window.location.href);
+
+    // Listen for popstate events (back button or swipe back)
+    web.window.onPopState.listen((event) {
+      // Push state again to prevent going back
+      web.window.history.pushState(null, '', web.window.location.href);
+    });
   }
 
   @override

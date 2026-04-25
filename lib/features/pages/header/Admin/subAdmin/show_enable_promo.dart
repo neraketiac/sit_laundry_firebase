@@ -107,11 +107,11 @@ class _ShowEnablePromoState extends State<ShowEnablePromo> {
 
   @override
   Widget build(BuildContext context) {
-    if (!isAdmin) {
-      return const Scaffold(
-        body: Center(child: Text('Admin access only.')),
-      );
-    }
+    // if (!isAdmin) {
+    //   return const Scaffold(
+    //     body: Center(child: Text('Admin access only.')),
+    //   );
+    // }
 
     return Scaffold(
       appBar: AppBar(

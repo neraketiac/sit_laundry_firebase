@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:laundry_firebase/core/global/variables_all_codes.dart';
 import 'package:laundry_firebase/features/payments/models/gcashmodel.dart';
 import 'package:laundry_firebase/core/utils/sharedMethods.dart';
@@ -11,8 +10,8 @@ import 'package:laundry_firebase/features/payments/repository/gcash_repository.d
 import 'package:laundry_firebase/core/global/variables.dart';
 import 'package:laundry_firebase/shared/widgets/actions/showUploadedImage.dart';
 import 'package:laundry_firebase/core/utils/fs_usage_tracker.dart';
-import 'package:laundry_firebase/core/services/database_supplies_current.dart';
-import 'package:laundry_firebase/features/items/models/suppliesmodelhist.dart';
+import 'package:laundry_firebase/features/items/repository/supplies_hist_repository.dart';
+import 'package:laundry_firebase/core/utils/sharedmethodsdatabase.dart';
 
 /// Generate Supplies Hist/Curr records for Cash-Out when status >= 0.75
 Future<void> _generateCashOutSuppliesRecords(GCashRepository gRepo) async {
@@ -21,24 +20,20 @@ Future<void> _generateCashOutSuppliesRecords(GCashRepository gRepo) async {
     return;
   }
 
-  // Create and add Supplies Hist record for Cash-Out
-  final suppliesSMH = SuppliesModelHist(
-    docId: '',
-    countId: 0,
-    itemId: menuOthCashInOutFunds,
-    itemUniqueId: menuOthUniqIdCashOut,
-    itemName: getItemNameOnly(menuOthCashInOutFunds, menuOthUniqIdCashOut),
-    currentCounter: gRepo.customerAmount,
-    currentStocks: 0,
-    logDate: Timestamp.now(),
-    empId: empIdGlobal,
-    customerId: 0,
-    customerName: gRepo.customerName,
-    remarks: 'GCash ${gRepo.itemName} ${gRepo.remarks}',
-  );
+  // Follow the same pattern as showFundsInFundsOut.dart
+  SuppliesHistRepository.instance.setItemName(
+      getItemNameOnly(menuOthCashInOutFunds, menuOthUniqIdCashOut));
+  SuppliesHistRepository.instance.setItemId(menuOthCashInOutFunds);
+  SuppliesHistRepository.instance.setItemUniqueId(menuOthUniqIdCashOut);
+  SuppliesHistRepository.instance.setCurrentCounter(gRepo.customerAmount);
+  SuppliesHistRepository.instance.setCustomerName(gRepo.customerName);
+  SuppliesHistRepository.instance.setCustomerId(0);
+  SuppliesHistRepository.instance
+      .setRemarks('GCash ${gRepo.itemName} ${gRepo.remarks}');
 
-  // Add to Supplies Current database
-  await DatabaseSuppliesCurrent().addSuppliesCurr(suppliesSMH);
+  // This will go through callDatabaseSuppliesCurrentAdd which applies negation
+  await callDatabaseSuppliesCurrentAdd(
+      SuppliesHistRepository.instance.suppliesModelHist!);
 }
 
 Widget readDataGCashPending() {

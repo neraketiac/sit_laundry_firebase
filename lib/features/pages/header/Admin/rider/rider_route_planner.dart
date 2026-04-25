@@ -4,6 +4,7 @@ import 'dart:js_interop_unsafe';
 import 'dart:math' as math;
 import 'dart:ui_web' as ui_web;
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:web/web.dart' as web;
@@ -219,7 +220,14 @@ class _RiderRoutePlannerState extends State<RiderRoutePlanner> {
     setState(() => _searching = true);
 
     try {
-      final snap = await FirebaseFirestore.instance
+      // Use loyaltyCardDb for loyalty collection
+      final loyaltyFirestore = FirebaseFirestore.instanceFor(
+        app: Firebase.apps.firstWhere(
+          (app) => app.name == 'loyaltyCardDb',
+          orElse: () => Firebase.app(),
+        ),
+      );
+      final snap = await loyaltyFirestore
           .collection('loyalty')
           .where('cardNumber', isEqualTo: customer.customerId)
           .limit(1)
@@ -518,8 +526,16 @@ class _RiderRoutePlannerState extends State<RiderRoutePlanner> {
     try {
       final batch = FirebaseFirestore.instance.batch();
 
+      // Use loyaltyCardDb for loyalty collection
+      final loyaltyFirestore = FirebaseFirestore.instanceFor(
+        app: Firebase.apps.firstWhere(
+          (app) => app.name == 'loyaltyCardDb',
+          orElse: () => Firebase.app(),
+        ),
+      );
+
       for (final stop in stopsWithEta) {
-        final snap = await FirebaseFirestore.instance
+        final snap = await loyaltyFirestore
             .collection('loyalty')
             .where('cardNumber', isEqualTo: stop.customerId)
             .limit(1)

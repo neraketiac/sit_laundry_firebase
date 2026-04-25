@@ -15,6 +15,9 @@ import 'package:laundry_firebase/core/global/variables_supplies.dart';
 void showFundsInFundsOut(BuildContext context) {
   JobModelRepository jobRepo = JobModelRepository();
 
+  // Initialize selectedFundCode to Funds In by default
+  selectedFundCode = menuOthUniqIdFundsIn;
+
   final List<int> fundTypeCodes3rdLayer = [
     menuOthUniqIdFundsIn,
     menuOthUniqIdFundsOut,
