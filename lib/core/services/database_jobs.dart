@@ -372,47 +372,62 @@ Future<void> moveQueueToOngoing(String docId) async {
 /// ▶ Ongoing → Done
 Future<void> moveOngoingToDone(
     String docId, bool forDelivery, int customerId, int promoCounter) async {
-  final firestore = FirebaseFirestore.instance;
+  final primaryFirestore = FirebaseFirestore.instance;
+  final jobsDoneFirestore = FirebaseService.jobsDoneFirestore;
 
   // Resolve the actual DateD that will be written.
-  // When not using admin override, DateD will be Timestamp.now() set inside
-  // the transaction — so we use DateTime.now() here too (never timestamp1900).
   final resolvedDateD =
       useAdminTimestampDateD ? adminTimestampDateD.toDate() : DateTime.now();
   final promoEnabled = await isPromoEnabled(resolvedDateD);
   final effectivePromoCounter = promoEnabled ? promoCounter : 0;
 
-  await firestore.runTransaction((tx) async {
-    final ongoingRef = firestore.collection(JOBS_ONGOING_REF).doc(docId);
-    final doneRef = firestore.collection(JOBS_DONE_REF).doc(docId);
+  try {
+    // Step 1: Read from Jobs_ongoing (primary database)
+    final ongoingRef = primaryFirestore.collection(JOBS_ONGOING_REF).doc(docId);
+    final snapshot = await ongoingRef.get();
 
-    final snapshot = await tx.get(ongoingRef);
-    if (!snapshot.exists) return;
+    if (!snapshot.exists) {
+      print("❌ Job not found in Jobs_ongoing: $docId");
+      return;
+    }
 
     if (!useAdminTimestampDateD) {
       adminTimestampDateD = Timestamp.now();
     }
 
-    tx.set(
-      doneRef,
-      withPendingDb2Sync({
-        ...snapshot.data()!,
-        if (forDelivery) ...{
-          'Q00_ForSorting': false,
-          'Q01_RiderPickup': true,
-        },
-        'O00_ProcessStep': 'done',
-        'O01_AllStatus': 0.7,
-        'A05_DateD': adminTimestampDateD,
-        'Q06_PromoCounter': effectivePromoCounter,
-      }),
-    );
+    final jobData = withPendingDb2Sync({
+      ...snapshot.data()!,
+      if (forDelivery) ...{
+        'Q00_ForSorting': false,
+        'Q01_RiderPickup': true,
+      },
+      'O00_ProcessStep': 'done',
+      'O01_AllStatus': 0.7,
+      'A05_DateD': adminTimestampDateD,
+      'Q06_PromoCounter': effectivePromoCounter,
+    });
 
-    tx.delete(ongoingRef);
+    // Step 2: Write to Jobs_done in jobsDoneDb FIRST
+    print("📝 Writing to Jobs_done in jobsDoneDb...");
+    await jobsDoneFirestore.collection(JOBS_DONE_REF).doc(docId).set(jobData);
+    print("✅ Successfully wrote to Jobs_done");
 
+    // Step 3: Delete from Jobs_ongoing in primary database
+    print("🗑️ Deleting from Jobs_ongoing in primary database...");
+    await ongoingRef.delete();
+    print("✅ Successfully deleted from Jobs_ongoing");
+
+    // Step 4: Update loyalty counter
+    print("📊 Updating loyalty counter...");
     DatabaseLoyalty loyalty = DatabaseLoyalty();
     loyalty.addCountByCardNumber(customerId, effectivePromoCounter);
-  });
+    print("✅ Loyalty counter updated");
+
+    print("✅ Job $docId successfully moved to Jobs_done!");
+  } catch (e) {
+    print("❌ Error moving job to Jobs_done: $e");
+    rethrow;
+  }
 }
 
 /// ▶ Done → Completed

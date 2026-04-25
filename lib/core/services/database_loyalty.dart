@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:laundry_firebase/core/utils/firestore_timeout.dart';
 import 'package:laundry_firebase/features/loyalty/models/loyaltymodel.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
+import 'package:laundry_firebase/core/services/firebase_service.dart';
 
 const String LOYALTY_REF = "loyalty";
 const String LOYALTY_VERSION_DOC = "loyalty_updated";
@@ -11,7 +12,7 @@ const String LOYALTY_VERSION_COUNTER = "counter";
 /// Increments the loyalty version counter so clients know to re-fetch.
 Future<void> bumpLoyaltyVersion() async {
   try {
-    await FirebaseFirestore.instance
+    await FirebaseService.forthFirestore
         .collection(LOYALTY_VERSION_DOC)
         .doc(LOYALTY_VERSION_COUNTER)
         .set({'version': FieldValue.increment(1)}, SetOptions(merge: true));
@@ -19,7 +20,7 @@ Future<void> bumpLoyaltyVersion() async {
 }
 
 class DatabaseLoyalty {
-  final _firestore = FirebaseFirestore.instance;
+  final _firestore = FirebaseService.forthFirestore;
 
   late final CollectionReference _customerRef;
 

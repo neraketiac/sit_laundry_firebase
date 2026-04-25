@@ -130,7 +130,7 @@ class DatabaseGCashPending {
     }
 
     if (model.itemUniqueId == menuOthUniqIdCashOut) {
-      await FirebaseFirestore.instance
+      await FirebaseService.gcashPendingDoneFirestore
           .collection(GCASH_PENDING_REF)
           .doc(model.docId)
           .update({
@@ -138,7 +138,7 @@ class DatabaseGCashPending {
         'GCashStatus': 0.5,
       });
     } else {
-      await FirebaseFirestore.instance
+      await FirebaseService.gcashPendingDoneFirestore
           .collection(GCASH_PENDING_REF)
           .doc(model.docId)
           .update({

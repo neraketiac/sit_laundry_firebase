@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:laundry_firebase/core/services/firebase_service.dart';
 
 class EditAutoSalaryDatePage extends StatefulWidget {
   const EditAutoSalaryDatePage({super.key});
@@ -10,7 +11,7 @@ class EditAutoSalaryDatePage extends StatefulWidget {
 }
 
 class _EditAutoSalaryDatePageState extends State<EditAutoSalaryDatePage> {
-  final _firestore = FirebaseFirestore.instance;
+  final _firestore = FirebaseService.employeeFirestore;
   final _searchController = TextEditingController();
 
   String _searchQuery = '';

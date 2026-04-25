@@ -2,6 +2,7 @@
 /// Run this once, then remove the button/call.
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:laundry_firebase/core/services/firebase_service.dart';
 
 class AutoSalaryDateOneTimeBatch extends StatefulWidget {
   const AutoSalaryDateOneTimeBatch({super.key});
@@ -27,7 +28,7 @@ class _AutoSalaryDateOneTimeBatchState
     });
 
     try {
-      final firestore = FirebaseFirestore.instance;
+      final firestore = FirebaseService.employeeFirestore;
       final collection = firestore.collection('EmployeeHist');
 
       // Fetch all docs (paginate in chunks of 400 to stay under batch limit)
