@@ -10,6 +10,31 @@ import 'package:laundry_firebase/features/payments/repository/gcash_repository.d
 import 'package:laundry_firebase/core/global/variables.dart';
 import 'package:laundry_firebase/shared/widgets/actions/showUploadedImage.dart';
 import 'package:laundry_firebase/core/utils/fs_usage_tracker.dart';
+import 'package:laundry_firebase/features/items/repository/supplies_hist_repository.dart';
+import 'package:laundry_firebase/core/utils/sharedmethodsdatabase.dart';
+
+/// Generate Supplies Hist/Curr records for Cash-Out when status >= 0.75
+Future<void> _generateCashOutSuppliesRecords(GCashRepository gRepo) async {
+  // Only generate for Cash-Out
+  if (gRepo.itemUniqueId != menuOthUniqIdCashOut) {
+    return;
+  }
+
+  // Follow the same pattern as showFundsInFundsOut.dart
+  SuppliesHistRepository.instance.setItemName(
+      getItemNameOnly(menuOthCashInOutFunds, menuOthUniqIdCashOut));
+  SuppliesHistRepository.instance.setItemId(menuOthCashInOutFunds);
+  SuppliesHistRepository.instance.setItemUniqueId(menuOthUniqIdCashOut);
+  SuppliesHistRepository.instance.setCurrentCounter(gRepo.customerAmount);
+  SuppliesHistRepository.instance.setCustomerName(gRepo.customerName);
+  SuppliesHistRepository.instance.setCustomerId(0);
+  SuppliesHistRepository.instance
+      .setRemarks('GCash ${gRepo.itemName} ${gRepo.remarks}');
+
+  // This will go through callDatabaseSuppliesCurrentAdd which applies negation
+  await callDatabaseSuppliesCurrentAdd(
+      SuppliesHistRepository.instance.suppliesModelHist!);
+}
 
 Widget readDataGCashPending() {
   DatabaseGCashPending dbGCashPending = DatabaseGCashPending();
@@ -147,6 +172,13 @@ Widget readDataGCashPending() {
                                           context: context,
                                           label: 'Complete',
                                           onPressed: () async {
+                                            // Generate Supplies Hist/Curr for Cash-Out
+                                            if (gRepo.itemUniqueId ==
+                                                    menuOthUniqIdCashOut &&
+                                                gRepo.gCashStatus >= 0.75) {
+                                              await _generateCashOutSuppliesRecords(
+                                                  gRepo);
+                                            }
                                             gRepo.gCashStatus = 1.0;
                                             await moveToNext(gRepo.docId);
                                             return true;

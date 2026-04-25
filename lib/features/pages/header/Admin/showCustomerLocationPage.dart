@@ -1,6 +1,7 @@
 import 'dart:js_interop';
 import 'dart:ui_web' as ui_web;
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
 import 'package:laundry_firebase/core/services/database_loyalty.dart';
@@ -83,7 +84,14 @@ class _CustomerLocationPageState extends State<CustomerLocationPage> {
 
   Future<void> _loadCustomerLocation(int cardNumber) async {
     try {
-      final snap = await FirebaseFirestore.instance
+      // Use loyaltyCardDb for loyalty collection
+      final loyaltyFirestore = FirebaseFirestore.instanceFor(
+        app: Firebase.apps.firstWhere(
+          (app) => app.name == 'loyaltyCardDb',
+          orElse: () => Firebase.app(),
+        ),
+      );
+      final snap = await loyaltyFirestore
           .collection('loyalty')
           .where('cardNumber', isEqualTo: cardNumber)
           .limit(1)

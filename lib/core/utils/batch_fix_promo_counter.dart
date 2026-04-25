@@ -1,11 +1,15 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
+import 'package:laundry_firebase/core/services/firebase_service.dart';
 import 'package:laundry_firebase/features/jobs/models/jobmodel.dart';
 import 'package:laundry_firebase/core/global/variables_all_codes.dart';
 
 /// Utility class to batch fix promoCounter values in Jobs_done and Jobs_completed collections
 class BatchFixPromoCounter {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  late final FirebaseFirestore _jobsDoneFirestore =
+      FirebaseService.jobsDoneFirestore;
 
   /// Calculate correct promoCounter based on job data
   int calculateCorrectPromoCounter(JobModel job) {
@@ -14,34 +18,33 @@ class BatchFixPromoCounter {
       double kg = job.finalKilo;
       double remainder = kg % 8;
       int wholeEight = kg ~/ 8;
-      
+
       if (remainder >= 3) {
         return wholeEight + 1;
       } else {
         return wholeEight;
       }
     }
-    
+
     // For Regular Package (Per Load)
     if (job.regular && job.perLoad) {
       return job.finalLoad;
     }
-    
+
     // For Others Package - count only premium items (155 and 195)
     if (job.addOn) {
-      final onlyPromo = 
-          job.items.where((v) => v.itemId == menuOth155).length +
+      final onlyPromo = job.items.where((v) => v.itemId == menuOth155).length +
           job.items.where((v) => v.itemId == menuOth195).length;
       return onlyPromo;
     }
-    
+
     // For Sayosabon Package - same as regular
     if (job.sayosabon) {
       if (job.perKilo) {
         double kg = job.finalKilo;
         double remainder = kg % 8;
         int wholeEight = kg ~/ 8;
-        
+
         if (remainder >= 3) {
           return wholeEight + 1;
         } else {
@@ -51,7 +54,7 @@ class BatchFixPromoCounter {
         return job.finalLoad;
       }
     }
-    
+
     return 0; // Default fallback
   }
 
@@ -62,9 +65,9 @@ class BatchFixPromoCounter {
     List<String> errors = [];
 
     try {
-      // Get all documents from Jobs_done
-      final snapshot = await _firestore.collection('Jobs_done').get();
-      
+      // Get all documents from Jobs_done (from jobsDoneDb)
+      final snapshot = await _jobsDoneFirestore.collection('Jobs_done').get();
+
       if (snapshot.docs.isEmpty) {
         return {
           'success': true,
@@ -83,31 +86,31 @@ class BatchFixPromoCounter {
       for (final doc in snapshot.docs) {
         try {
           totalProcessed++;
-          
+
           final jobModel = JobModel.fromJson(doc.data());
           final correctPromoCounter = calculateCorrectPromoCounter(jobModel);
-          
+
           // Only update if promoCounter is different
           if (jobModel.promoCounter != correctPromoCounter) {
             currentBatch.update(doc.reference, {
               'Q06_PromoCounter': correctPromoCounter,
             });
-            
+
             totalUpdated++;
             batchCount++;
-            
+
             if (kDebugMode) {
-              print('Jobs_done - ${jobModel.customerName} (${jobModel.jobId}): ${jobModel.promoCounter} → $correctPromoCounter');
+              print(
+                  'Jobs_done - ${jobModel.customerName} (${jobModel.jobId}): ${jobModel.promoCounter} → $correctPromoCounter');
             }
           }
-          
+
           // Create new batch if current one reaches 500 operations
           if (batchCount >= 500) {
             batches.add(currentBatch);
             currentBatch = _firestore.batch();
             batchCount = 0;
           }
-          
         } catch (e) {
           errors.add('Error processing document ${doc.id}: $e');
           if (kDebugMode) {
@@ -115,17 +118,16 @@ class BatchFixPromoCounter {
           }
         }
       }
-      
+
       // Add the last batch if it has operations
       if (batchCount > 0) {
         batches.add(currentBatch);
       }
-      
+
       // Commit all batches
       for (final batch in batches) {
         await batch.commit();
       }
-      
     } catch (e) {
       errors.add('Error in fixJobsDone: $e');
       if (kDebugMode) {
@@ -151,7 +153,7 @@ class BatchFixPromoCounter {
     try {
       // Get all documents from Jobs_completed
       final snapshot = await _firestore.collection('Jobs_completed').get();
-      
+
       if (snapshot.docs.isEmpty) {
         return {
           'success': true,
@@ -170,31 +172,31 @@ class BatchFixPromoCounter {
       for (final doc in snapshot.docs) {
         try {
           totalProcessed++;
-          
+
           final jobModel = JobModel.fromJson(doc.data());
           final correctPromoCounter = calculateCorrectPromoCounter(jobModel);
-          
+
           // Only update if promoCounter is different
           if (jobModel.promoCounter != correctPromoCounter) {
             currentBatch.update(doc.reference, {
               'Q06_PromoCounter': correctPromoCounter,
             });
-            
+
             totalUpdated++;
             batchCount++;
-            
+
             if (kDebugMode) {
-              print('Jobs_completed - ${jobModel.customerName} (${jobModel.jobId}): ${jobModel.promoCounter} → $correctPromoCounter');
+              print(
+                  'Jobs_completed - ${jobModel.customerName} (${jobModel.jobId}): ${jobModel.promoCounter} → $correctPromoCounter');
             }
           }
-          
+
           // Create new batch if current one reaches 500 operations
           if (batchCount >= 500) {
             batches.add(currentBatch);
             currentBatch = _firestore.batch();
             batchCount = 0;
           }
-          
         } catch (e) {
           errors.add('Error processing document ${doc.id}: $e');
           if (kDebugMode) {
@@ -202,17 +204,16 @@ class BatchFixPromoCounter {
           }
         }
       }
-      
+
       // Add the last batch if it has operations
       if (batchCount > 0) {
         batches.add(currentBatch);
       }
-      
+
       // Commit all batches
       for (final batch in batches) {
         await batch.commit();
       }
-      
     } catch (e) {
       errors.add('Error in fixJobsCompleted: $e');
       if (kDebugMode) {
@@ -251,7 +252,8 @@ class BatchFixPromoCounter {
     results['errors'].addAll(doneResults['errors'] as List<String>);
 
     if (kDebugMode) {
-      print('Jobs_done: ${doneResults['totalUpdated']}/${doneResults['totalProcessed']} updated');
+      print(
+          'Jobs_done: ${doneResults['totalUpdated']}/${doneResults['totalProcessed']} updated');
     }
 
     // Fix Jobs_completed
@@ -262,13 +264,15 @@ class BatchFixPromoCounter {
     results['errors'].addAll(completedResults['errors'] as List<String>);
 
     if (kDebugMode) {
-      print('Jobs_completed: ${completedResults['totalUpdated']}/${completedResults['totalProcessed']} updated');
+      print(
+          'Jobs_completed: ${completedResults['totalUpdated']}/${completedResults['totalProcessed']} updated');
     }
 
     results['success'] = (results['errors'] as List).isEmpty;
 
     if (kDebugMode) {
-      print('Batch fix completed: ${results['totalUpdated']}/${results['totalProcessed']} total updated');
+      print(
+          'Batch fix completed: ${results['totalUpdated']}/${results['totalProcessed']} total updated');
     }
 
     return results;
@@ -278,9 +282,9 @@ class BatchFixPromoCounter {
   int calculateApplicablePromoCounter(List<JobModel> customerJobs) {
     // Sort jobs by dateD descending (latest first)
     customerJobs.sort((a, b) => b.dateD.compareTo(a.dateD));
-    
+
     int totalApplicable = 0;
-    
+
     for (final job in customerJobs) {
       // If promoErrorCode is 0, include in promo
       if (job.promoErrorCode == 0) {
@@ -290,7 +294,7 @@ class BatchFixPromoCounter {
         break;
       }
     }
-    
+
     return totalApplicable;
   }
 
@@ -298,14 +302,16 @@ class BatchFixPromoCounter {
   Future<Map<String, dynamic>> getLoyaltyMismatches() async {
     final mismatches = <Map<String, dynamic>>[];
     final customerJobsMap = <int, List<JobModel>>{};
-    
+
     try {
       // Get all jobs from both collections
-      final doneSnapshot = await _firestore.collection('Jobs_done').get();
-      final completedSnapshot = await _firestore.collection('Jobs_completed').get();
-      
+      final doneSnapshot =
+          await _jobsDoneFirestore.collection('Jobs_done').get();
+      final completedSnapshot =
+          await _firestore.collection('Jobs_completed').get();
+
       final allJobs = <JobModel>[];
-      
+
       // Add Jobs_done
       for (final doc in doneSnapshot.docs) {
         try {
@@ -316,7 +322,7 @@ class BatchFixPromoCounter {
           }
         }
       }
-      
+
       // Add Jobs_completed
       for (final doc in completedSnapshot.docs) {
         try {
@@ -327,7 +333,7 @@ class BatchFixPromoCounter {
           }
         }
       }
-      
+
       // Group jobs by customer
       for (final job in allJobs) {
         if (!customerJobsMap.containsKey(job.customerId)) {
@@ -335,11 +341,18 @@ class BatchFixPromoCounter {
         }
         customerJobsMap[job.customerId]!.add(job);
       }
-      
-      // Get current loyalty counts from database
-      final loyaltySnapshot = await _firestore.collection('Loyalty').get();
+
+      // Get current loyalty counts from database - use loyaltyCardDb
+      final loyaltyFirestore = FirebaseFirestore.instanceFor(
+        app: Firebase.apps.firstWhere(
+          (app) => app.name == 'loyaltyCardDb',
+          orElse: () => Firebase.app(),
+        ),
+      );
+      final loyaltySnapshot =
+          await loyaltyFirestore.collection('Loyalty').get();
       final loyaltyMap = <int, int>{};
-      
+
       for (final doc in loyaltySnapshot.docs) {
         try {
           final data = doc.data();
@@ -352,27 +365,28 @@ class BatchFixPromoCounter {
           }
         }
       }
-      
+
       // Check each customer
       for (final entry in customerJobsMap.entries) {
         final customerId = entry.key;
         final jobs = entry.value;
-        
+
         if (jobs.isEmpty) continue;
-        
+
         final applicablePromoCounter = calculateApplicablePromoCounter(jobs);
         final currentLoyaltyCount = loyaltyMap[customerId] ?? 0;
-        
+
         if (applicablePromoCounter != currentLoyaltyCount) {
           // Get customer name from first job
           final customerName = jobs.first.customerName;
-          
+
           // Count jobs by promoErrorCode
           final errorCodeCounts = <int, int>{};
           for (final job in jobs) {
-            errorCodeCounts[job.promoErrorCode] = (errorCodeCounts[job.promoErrorCode] ?? 0) + 1;
+            errorCodeCounts[job.promoErrorCode] =
+                (errorCodeCounts[job.promoErrorCode] ?? 0) + 1;
           }
-          
+
           mismatches.add({
             'customerId': customerId,
             'customerName': customerName,
@@ -385,22 +399,24 @@ class BatchFixPromoCounter {
           });
         }
       }
-      
+
       // Sort by difference (largest discrepancies first)
-      mismatches.sort((a, b) => (b['difference'] as int).abs().compareTo((a['difference'] as int).abs()));
-      
+      mismatches.sort((a, b) => (b['difference'] as int)
+          .abs()
+          .compareTo((a['difference'] as int).abs()));
     } catch (e) {
       if (kDebugMode) {
         print('Error in getLoyaltyMismatches: $e');
       }
     }
-    
+
     return {
       'mismatches': mismatches,
       'totalMismatches': mismatches.length,
       'totalCustomersChecked': customerJobsMap.length,
     };
   }
+
   Future<Map<String, dynamic>> previewChanges() async {
     final preview = <String, dynamic>{
       'Jobs_done': <Map<String, dynamic>>[],
@@ -410,11 +426,12 @@ class BatchFixPromoCounter {
 
     // Preview Jobs_done
     try {
-      final doneSnapshot = await _firestore.collection('Jobs_done').get();
+      final doneSnapshot =
+          await _jobsDoneFirestore.collection('Jobs_done').get();
       for (final doc in doneSnapshot.docs) {
         final jobModel = JobModel.fromJson(doc.data());
         final correctPromoCounter = calculateCorrectPromoCounter(jobModel);
-        
+
         if (jobModel.promoCounter != correctPromoCounter) {
           preview['Jobs_done'].add({
             'docId': jobModel.docId,
@@ -422,7 +439,11 @@ class BatchFixPromoCounter {
             'jobId': jobModel.jobId,
             'currentPromoCounter': jobModel.promoCounter,
             'correctPromoCounter': correctPromoCounter,
-            'packageType': jobModel.regular ? 'Regular' : jobModel.sayosabon ? 'Sayosabon' : 'Others',
+            'packageType': jobModel.regular
+                ? 'Regular'
+                : jobModel.sayosabon
+                    ? 'Sayosabon'
+                    : 'Others',
             'pricingType': jobModel.perKilo ? 'Per Kilo' : 'Per Load',
             'finalKilo': jobModel.finalKilo,
             'finalLoad': jobModel.finalLoad,
@@ -438,11 +459,12 @@ class BatchFixPromoCounter {
 
     // Preview Jobs_completed
     try {
-      final completedSnapshot = await _firestore.collection('Jobs_completed').get();
+      final completedSnapshot =
+          await _firestore.collection('Jobs_completed').get();
       for (final doc in completedSnapshot.docs) {
         final jobModel = JobModel.fromJson(doc.data());
         final correctPromoCounter = calculateCorrectPromoCounter(jobModel);
-        
+
         if (jobModel.promoCounter != correctPromoCounter) {
           preview['Jobs_completed'].add({
             'docId': jobModel.docId,
@@ -450,7 +472,11 @@ class BatchFixPromoCounter {
             'jobId': jobModel.jobId,
             'currentPromoCounter': jobModel.promoCounter,
             'correctPromoCounter': correctPromoCounter,
-            'packageType': jobModel.regular ? 'Regular' : jobModel.sayosabon ? 'Sayosabon' : 'Others',
+            'packageType': jobModel.regular
+                ? 'Regular'
+                : jobModel.sayosabon
+                    ? 'Sayosabon'
+                    : 'Others',
             'pricingType': jobModel.perKilo ? 'Per Kilo' : 'Per Load',
             'finalKilo': jobModel.finalKilo,
             'finalLoad': jobModel.finalLoad,

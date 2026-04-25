@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:laundry_firebase/firebase_options.dart';
 import 'package:laundry_firebase/core/utils/fs_usage_tracker.dart';
 import 'package:laundry_firebase/features/customers/models/customermodel.dart';
 import 'package:web/web.dart' as web;
@@ -69,7 +71,7 @@ class CustomerRepository {
 
   Future<void> _fetchFromFirestore() async {
     try {
-      // Fetch version
+      // Fetch version from main Firestore
       int remoteVersion = 0;
       try {
         final versionDoc = await FirebaseFirestore.instance
@@ -80,8 +82,14 @@ class CustomerRepository {
         FsUsageTracker.instance.track('loyaltyVersionCheck', 1);
       } catch (_) {}
 
-      final snapshot =
-          await FirebaseFirestore.instance.collection('loyalty').get();
+      // Fetch loyalty data from loyaltyCardDb
+      final loyaltyFirestore = FirebaseFirestore.instanceFor(
+        app: Firebase.apps.firstWhere(
+          (app) => app.name == 'loyaltyCardDb',
+          orElse: () => Firebase.app(),
+        ),
+      );
+      final snapshot = await loyaltyFirestore.collection('loyalty').get();
 
       final loaded = snapshot.docs
           .map((doc) => CustomerModel(

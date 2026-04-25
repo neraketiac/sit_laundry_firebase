@@ -1,6 +1,7 @@
 import 'dart:js_interop';
 import 'dart:ui_web' as ui_web;
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:laundry_firebase/features/customers/models/customermodel.dart';
 import 'package:laundry_firebase/features/customers/repository/customer_repository.dart';
@@ -94,8 +95,14 @@ class _RiderRoutePlannerPageState extends State<RiderRoutePlannerPage> {
       return;
     }
 
-    // fetch GPS from loyalty
-    final snap = await FirebaseFirestore.instance
+    // fetch GPS from loyalty - use loyaltyCardDb
+    final loyaltyFirestore = FirebaseFirestore.instanceFor(
+      app: Firebase.apps.firstWhere(
+        (app) => app.name == 'loyaltyCardDb',
+        orElse: () => Firebase.app(),
+      ),
+    );
+    final snap = await loyaltyFirestore
         .collection('loyalty')
         .where('cardNumber', isEqualTo: _selectedCustomer!.customerId)
         .limit(1)

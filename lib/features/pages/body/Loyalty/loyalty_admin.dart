@@ -1,6 +1,8 @@
 import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:laundry_firebase/firebase_options.dart';
 import 'package:laundry_firebase/features/customers/models/customermodel.dart';
 import 'package:laundry_firebase/features/customers/repository/customer_repository.dart';
 import 'package:laundry_firebase/features/loyalty/models/loyaltymodel.dart';
@@ -18,6 +20,9 @@ class _LoyaltyAdminState extends State<LoyaltyAdmin> {
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
+  // Separate Firestore instance for loyalty collection
+  late final FirebaseFirestore _loyaltyFirestore;
+
   final TextEditingController _docIdController = TextEditingController();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _contactController = TextEditingController();
@@ -27,6 +32,18 @@ class _LoyaltyAdminState extends State<LoyaltyAdmin> {
   int _nextId = 1000;
 
   // ================= LIFECYCLE =================
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize loyaltyFirestore with loyaltyCardDb
+    _loyaltyFirestore = FirebaseFirestore.instanceFor(
+      app: Firebase.apps.firstWhere(
+        (app) => app.name == 'loyaltyCardDb',
+        orElse: () => Firebase.app(),
+      ),
+    );
+  }
 
   @override
   void dispose() {
@@ -83,8 +100,10 @@ class _LoyaltyAdminState extends State<LoyaltyAdmin> {
 
   Widget _buildLoyaltyStream() {
     return StreamBuilder<QuerySnapshot>(
-      stream:
-          _firestore.collection('loyalty').orderBy('cardNumber').snapshots(),
+      stream: _loyaltyFirestore
+          .collection('loyalty')
+          .orderBy('cardNumber')
+          .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
           return const Center(
@@ -325,7 +344,7 @@ class _LoyaltyAdminState extends State<LoyaltyAdmin> {
 
           Future<void> loadExisting(CustomerModel c) async {
             // Fetch full loyalty doc to get all fields
-            final snap = await _firestore
+            final snap = await _loyaltyFirestore
                 .collection('loyalty')
                 .where('cardNumber', isEqualTo: c.customerId)
                 .limit(1)
@@ -493,7 +512,7 @@ class _LoyaltyAdminState extends State<LoyaltyAdmin> {
                       address: _addressController.text.trim(),
                       remarks: _remarksController.text.trim(),
                       // count unchanged — only editable via stars
-                      count: (await _firestore
+                      count: (await _loyaltyFirestore
                                   .collection('loyalty')
                                   .doc(editDocId)
                                   .get())
@@ -535,7 +554,7 @@ class _LoyaltyAdminState extends State<LoyaltyAdmin> {
   }
 
   Future<void> _generateNextId() async {
-    final snapshot = await _firestore
+    final snapshot = await _loyaltyFirestore
         .collection('loyalty')
         .orderBy('cardNumber', descending: true)
         .limit(1)
@@ -595,7 +614,7 @@ class _LoyaltyAdminState extends State<LoyaltyAdmin> {
     required int count,
   }) async {
     // 1. Update loyalty record
-    await _firestore.collection('loyalty').doc(docId).update({
+    await _loyaltyFirestore.collection('loyalty').doc(docId).update({
       'Name': name,
       'Contact': contact,
       'Address': address,
@@ -674,6 +693,9 @@ class _LoyaltyAdminState extends State<LoyaltyAdmin> {
   }
 
   Future<void> _updateStars(String docId, int count) async {
-    await _firestore.collection('loyalty').doc(docId).update({'Count': count});
+    await _loyaltyFirestore
+        .collection('loyalty')
+        .doc(docId)
+        .update({'Count': count});
   }
 }

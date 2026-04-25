@@ -162,13 +162,15 @@ class DatabaseGCashDone {
         );
   }
 
-  /// Paginated fetch — 20 per page
+  /// Paginated fetch — 20 per page, ordered by CompleteDate descending, then LogDate descending
   Future<QuerySnapshot<Map<String, dynamic>>> fetchPaginated({
     DocumentSnapshot? lastDoc,
     int limit = 20,
   }) async {
-    Query<Map<String, dynamic>> query =
-        _ref.orderBy('CompleteDate', descending: true).limit(limit);
+    Query<Map<String, dynamic>> query = _ref
+        .orderBy('CompleteDate', descending: true)
+        .orderBy('LogDate', descending: true)
+        .limit(limit);
     if (lastDoc != null) query = query.startAfterDocument(lastDoc);
     return query.get().withFsTimeout();
   }

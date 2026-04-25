@@ -8,7 +8,6 @@ import 'package:laundry_firebase/core/utils/app_scale.dart';
 import 'package:laundry_firebase/core/services/database_supplies_current.dart';
 import 'package:laundry_firebase/features/items/models/suppliesmodelhist.dart';
 import 'package:laundry_firebase/features/items/repository/supplies_hist_repository.dart';
-import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_alter_job/conRemarks.dart';
 import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_alter_job/customerAmount.dart';
 import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_alter_job/customerNumber.dart';
 import 'package:laundry_firebase/shared/widgets/actions/fundTypeToggle.dart';
@@ -70,52 +69,56 @@ void showGCashPending(BuildContext context) {
 
     await callDatabaseGCashPendingAdd(context, gRepo.getModel()!);
 
-    if (deductFromSalary && isStaffSelected()) {
-      // Deduct from staff salary — same pattern as showSalaryMaintenance
-      // menuOthUniqIdCashIn with isGcashCredit=true triggers employee deduction
-      SuppliesHistRepository.instance.setItemName(
-          getItemNameOnly(menuOthCashInOutFunds, menuOthUniqIdCashIn));
-      SuppliesHistRepository.instance.setItemId(menuOthCashInOutFunds);
-      SuppliesHistRepository.instance.setItemUniqueId(menuOthUniqIdCashIn);
-      SuppliesHistRepository.instance.setCurrentCounter(gRepo.customerAmount);
-      SuppliesHistRepository.instance.setCustomerName(gRepo.customerName);
-      SuppliesHistRepository.instance.setCustomerId(0);
-      SuppliesHistRepository.instance
-          .setRemarks('GCash deduct ${gRepo.itemName} ${gRepo.remarks}');
-      isGcashCredit = true; // triggers employee balance deduction
-      await setSuppliesRepository(context);
-    } else if (!skipSuppliesThisSave) {
-      // Normal funds recording
-      // Cash-in/Load → positive, Cash-out → negative (handled by callDatabaseSuppliesCurrentAdd)
-      SuppliesHistRepository.instance.setItemName(
-          getItemNameOnly(menuOthCashInOutFunds, gRepo.selectedFundCode));
-      SuppliesHistRepository.instance.setItemId(menuOthCashInOutFunds);
-      SuppliesHistRepository.instance.setItemUniqueId(gRepo.selectedFundCode);
-      SuppliesHistRepository.instance.setCurrentCounter(gRepo.customerAmount);
-      SuppliesHistRepository.instance.setCustomerName(gRepo.customerName);
-      SuppliesHistRepository.instance.setCustomerId(0);
-      SuppliesHistRepository.instance
-          .setRemarks('GCash ${gRepo.itemName} ${gRepo.remarks}');
-      await setSuppliesRepository(context);
+    // Only generate Supplies Hist/Curr for Cash-In and Load, NOT for Cash-Out
+    final isCashOut = gRepo.selectedFundCode == menuOthUniqIdCashOut;
 
-      // Fee record
-      final fee = int.tryParse(feeController.text.replaceAll(',', '')) ?? 0;
-      if (fee > 0) {
-        final feeSMH = SuppliesModelHist(
-          docId: '',
-          countId: 0,
-          itemId: menuOthCashInOutFunds,
-          itemUniqueId: menuOthUniqIdFee,
-          itemName: 'Gcash Fee',
-          currentCounter: fee,
-          currentStocks: 0,
-          logDate: Timestamp.now(),
-          empId: empIdGlobal,
-          customerId: 0,
-          customerName: gRepo.customerName,
-          remarks: gRepo.remarksVar.text,
-        );
-        await DatabaseSuppliesCurrent().addSuppliesCurr(feeSMH);
+    if (!isCashOut) {
+      if (deductFromSalary && isStaffSelected()) {
+        // Deduct from staff salary — same pattern as showSalaryMaintenance
+        // menuOthUniqIdCashIn with isGcashCredit=true triggers employee deduction
+        SuppliesHistRepository.instance.setItemName(
+            getItemNameOnly(menuOthCashInOutFunds, menuOthUniqIdCashIn));
+        SuppliesHistRepository.instance.setItemId(menuOthCashInOutFunds);
+        SuppliesHistRepository.instance.setItemUniqueId(menuOthUniqIdCashIn);
+        SuppliesHistRepository.instance.setCurrentCounter(gRepo.customerAmount);
+        SuppliesHistRepository.instance.setCustomerName(gRepo.customerName);
+        SuppliesHistRepository.instance.setCustomerId(0);
+        SuppliesHistRepository.instance
+            .setRemarks('GCash deduct ${gRepo.itemName} ${gRepo.remarks}');
+        isGcashCredit = true; // triggers employee balance deduction
+        await setSuppliesRepository(context);
+      } else if (!skipSuppliesThisSave) {
+        // Normal funds recording for Cash-In and Load
+        SuppliesHistRepository.instance.setItemName(
+            getItemNameOnly(menuOthCashInOutFunds, gRepo.selectedFundCode));
+        SuppliesHistRepository.instance.setItemId(menuOthCashInOutFunds);
+        SuppliesHistRepository.instance.setItemUniqueId(gRepo.selectedFundCode);
+        SuppliesHistRepository.instance.setCurrentCounter(gRepo.customerAmount);
+        SuppliesHistRepository.instance.setCustomerName(gRepo.customerName);
+        SuppliesHistRepository.instance.setCustomerId(0);
+        SuppliesHistRepository.instance
+            .setRemarks('GCash ${gRepo.itemName} ${gRepo.remarks}');
+        await setSuppliesRepository(context);
+
+        // Fee record
+        final fee = int.tryParse(feeController.text.replaceAll(',', '')) ?? 0;
+        if (fee > 0) {
+          final feeSMH = SuppliesModelHist(
+            docId: '',
+            countId: 0,
+            itemId: menuOthCashInOutFunds,
+            itemUniqueId: menuOthUniqIdFee,
+            itemName: 'Gcash Fee',
+            currentCounter: fee,
+            currentStocks: 0,
+            logDate: Timestamp.now(),
+            empId: empIdGlobal,
+            customerId: 0,
+            customerName: gRepo.customerName,
+            remarks: gRepo.remarksVar.text,
+          );
+          await DatabaseSuppliesCurrent().addSuppliesCurr(feeSMH);
+        }
       }
     }
   }
@@ -311,9 +314,45 @@ void showGCashPending(BuildContext context) {
                               ),
                             ),
 
-                          // 6. Remarks field
-                          conRemarks(
-                              context, () => setState(() {}), gRepo.remarksVar),
+                          // 6. Remarks / Notes / GCash Reference No field
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 4),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('Remarks / Notes / GCash Reference No',
+                                    style: TextStyle(
+                                        fontSize: s.small,
+                                        color: Colors.white70)),
+                                const SizedBox(height: 4),
+                                TextField(
+                                  controller: gRepo.remarksVar,
+                                  maxLines: 3,
+                                  style: TextStyle(
+                                      fontSize: s.body, color: Colors.white),
+                                  decoration: InputDecoration(
+                                    isDense: true,
+                                    hintText:
+                                        'Enter remarks, notes, or GCash reference number',
+                                    hintStyle:
+                                        const TextStyle(color: Colors.white38),
+                                    border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(6),
+                                        borderSide: const BorderSide(
+                                            color: Colors.white38)),
+                                    enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(6),
+                                        borderSide: const BorderSide(
+                                            color: Colors.white38)),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                        horizontal: 10, vertical: 8),
+                                  ),
+                                  onChanged: (_) => setState(() {}),
+                                ),
+                              ],
+                            ),
+                          ),
 
                           // 7. "Enable this, kapag No Funds In" toggle (only visible if NOT Cash-out AND name is staff)
                           if (!isCashOut && nameIsStaff)

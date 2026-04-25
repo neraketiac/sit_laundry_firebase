@@ -2,6 +2,8 @@ import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:laundry_firebase/firebase_options.dart';
 import 'package:laundry_firebase/features/pages/body/Loyalty/loyalty_admin.dart';
 import 'package:laundry_firebase/features/pages/body/Loyalty/loyalty_single.dart';
 import 'package:laundry_firebase/features/menus/menu_constants.dart';
@@ -343,7 +345,14 @@ class _EnterLoyaltyCodeState extends State<EnterLoyaltyCode> {
       fsKey = s;
       _menuMain(context);
     } else {
-      var collection = FirebaseFirestore.instance.collection('loyalty');
+      // Use loyaltyCardDb for loyalty collection
+      final loyaltyFirestore = FirebaseFirestore.instanceFor(
+        app: Firebase.apps.firstWhere(
+          (app) => app.name == 'loyaltyCardDb',
+          orElse: () => Firebase.app(),
+        ),
+      );
+      var collection = loyaltyFirestore.collection('loyalty');
       var docSnapshot = await collection.doc(s).get();
       if (docSnapshot.exists) {
         // ignore: use_build_context_synchronously

@@ -2,6 +2,8 @@ import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:laundry_firebase/firebase_options.dart';
 
 class MyLoyalty extends StatefulWidget {
   const MyLoyalty({super.key});
@@ -137,11 +139,19 @@ class _MyLoyaltyState extends State<MyLoyalty> {
   }
 
   Widget _singleReadData(String s) {
-    CollectionReference users = FirebaseFirestore.instance.collection('loyalty');
+    // Use loyaltyCardDb for loyalty collection
+    final loyaltyFirestore = FirebaseFirestore.instanceFor(
+      app: Firebase.apps.firstWhere(
+        (app) => app.name == 'loyaltyCardDb',
+        orElse: () => Firebase.app(),
+      ),
+    );
+    CollectionReference users = loyaltyFirestore.collection('loyalty');
 
     return FutureBuilder<DocumentSnapshot>(
       future: users.doc(s).get(),
-      builder: (BuildContext context, AsyncSnapshot<DocumentSnapshot> snapshot) {
+      builder:
+          (BuildContext context, AsyncSnapshot<DocumentSnapshot> snapshot) {
         if (snapshot.hasError) {
           return const Text("Something went wrong");
         }
@@ -151,7 +161,8 @@ class _MyLoyaltyState extends State<MyLoyalty> {
         }
 
         if (snapshot.connectionState == ConnectionState.done) {
-          Map<String, dynamic> buffRecord = snapshot.data!.data() as Map<String, dynamic>;
+          Map<String, dynamic> buffRecord =
+              snapshot.data!.data() as Map<String, dynamic>;
 
           final int loyaltyCount = buffRecord['Count']; //mod 10
 
@@ -168,15 +179,51 @@ class _MyLoyaltyState extends State<MyLoyalty> {
                   ),
                   Row(
                     children: [
-                      ElevatedButton(onPressed: () {}, child: Icon((loyaltyCount) >= 1 ? Icons.star_border_purple500_outlined : Icons.circle_outlined)),
-                      ElevatedButton(onPressed: () {}, child: Icon((loyaltyCount) >= 2 ? Icons.star_border_purple500_outlined : Icons.circle_outlined)),
-                      ElevatedButton(onPressed: () {}, child: Icon((loyaltyCount) >= 3 ? Icons.star_border_purple500_outlined : Icons.circle_outlined)),
-                      ElevatedButton(onPressed: () {}, child: Icon((loyaltyCount) >= 4 ? Icons.star_border_purple500_outlined : Icons.circle_outlined)),
-                      ElevatedButton(onPressed: () {}, child: Icon((loyaltyCount) >= 5 ? Icons.star_border_purple500_outlined : Icons.circle_outlined)),
-                      ElevatedButton(onPressed: () {}, child: Icon((loyaltyCount) >= 6 ? Icons.star_border_purple500_outlined : Icons.circle_outlined)),
-                      ElevatedButton(onPressed: () {}, child: Icon((loyaltyCount) >= 7 ? Icons.star_border_purple500_outlined : Icons.circle_outlined)),
-                      ElevatedButton(onPressed: () {}, child: Icon((loyaltyCount) >= 8 ? Icons.star_border_purple500_outlined : Icons.circle_outlined)),
-                      ElevatedButton(onPressed: () {}, child: Icon((loyaltyCount) >= 9 ? Icons.star_border_purple500_outlined : Icons.circle_outlined)),
+                      ElevatedButton(
+                          onPressed: () {},
+                          child: Icon((loyaltyCount) >= 1
+                              ? Icons.star_border_purple500_outlined
+                              : Icons.circle_outlined)),
+                      ElevatedButton(
+                          onPressed: () {},
+                          child: Icon((loyaltyCount) >= 2
+                              ? Icons.star_border_purple500_outlined
+                              : Icons.circle_outlined)),
+                      ElevatedButton(
+                          onPressed: () {},
+                          child: Icon((loyaltyCount) >= 3
+                              ? Icons.star_border_purple500_outlined
+                              : Icons.circle_outlined)),
+                      ElevatedButton(
+                          onPressed: () {},
+                          child: Icon((loyaltyCount) >= 4
+                              ? Icons.star_border_purple500_outlined
+                              : Icons.circle_outlined)),
+                      ElevatedButton(
+                          onPressed: () {},
+                          child: Icon((loyaltyCount) >= 5
+                              ? Icons.star_border_purple500_outlined
+                              : Icons.circle_outlined)),
+                      ElevatedButton(
+                          onPressed: () {},
+                          child: Icon((loyaltyCount) >= 6
+                              ? Icons.star_border_purple500_outlined
+                              : Icons.circle_outlined)),
+                      ElevatedButton(
+                          onPressed: () {},
+                          child: Icon((loyaltyCount) >= 7
+                              ? Icons.star_border_purple500_outlined
+                              : Icons.circle_outlined)),
+                      ElevatedButton(
+                          onPressed: () {},
+                          child: Icon((loyaltyCount) >= 8
+                              ? Icons.star_border_purple500_outlined
+                              : Icons.circle_outlined)),
+                      ElevatedButton(
+                          onPressed: () {},
+                          child: Icon((loyaltyCount) >= 9
+                              ? Icons.star_border_purple500_outlined
+                              : Icons.circle_outlined)),
                       ElevatedButton(
                         onPressed: () {},
                         child: const Wrap(
@@ -205,5 +252,4 @@ class _MyLoyaltyState extends State<MyLoyalty> {
       },
     );
   }
-
 }

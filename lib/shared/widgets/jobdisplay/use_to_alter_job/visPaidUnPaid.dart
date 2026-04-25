@@ -188,9 +188,57 @@ Visibility visPaidUnPaid(BuildContext context, VoidCallback dialogSetState,
             children: [
               if (jobRepo.selectedPaidCash)
                 Expanded(
-                  child: glassAmountField(
-                    label: "Cash Amount",
-                    controller: jobRepo.repoVarCashAmountVar,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      glassAmountField(
+                        label: "Cash Amount",
+                        controller: jobRepo.repoVarCashAmountVar,
+                      ),
+                      // Validation message for cash amount
+                      if (jobRepo.paidCashAmount > 0)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4, left: 8),
+                          child: Builder(
+                            builder: (ctx) {
+                              final currentAmount = int.tryParse(jobRepo
+                                      .repoVarCashAmountVar.text
+                                      .replaceAll(',', '')) ??
+                                  0;
+                              final finalPrice = jobRepo.selectedFinalPrice;
+
+                              if (currentAmount < jobRepo.paidCashAmount) {
+                                return const Text(
+                                  'Amount cannot be less than current payment',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    color: Colors.redAccent,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                );
+                              } else if (currentAmount < finalPrice) {
+                                return Text(
+                                  'Kulang: ₱${finalPrice - currentAmount}',
+                                  style: const TextStyle(
+                                    fontSize: 10,
+                                    color: Colors.orangeAccent,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                );
+                              } else {
+                                return const Text(
+                                  'Fully Paid',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    color: Colors.greenAccent,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                );
+                              }
+                            },
+                          ),
+                        ),
+                    ],
                   ),
                 ),
               if (jobRepo.selectedPaidCash && jobRepo.selectedPaidGCash)

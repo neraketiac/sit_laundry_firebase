@@ -126,10 +126,47 @@ void showPaidUnpaid(BuildContext context, JobModelRepository jobRepo) {
                           content: Text('Please select customer name.')),
                     );
                     return false;
-                  } else {
-                    await saveButtonSetRepository();
-                    return true;
                   }
+
+                  // Validate cash amount if selected
+                  if (jobRepo.selectedPaidCash) {
+                    final currentAmount = int.tryParse(jobRepo
+                            .repoVarCashAmountVar.text
+                            .replaceAll(',', '')) ??
+                        0;
+                    final finalPrice = jobRepo.selectedFinalPrice;
+
+                    // If already fully paid, cannot edit anymore
+                    if (jobRepo.paidCashAmount >= finalPrice &&
+                        currentAmount != jobRepo.paidCashAmount) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            'This job is already fully paid. Cannot edit.',
+                          ),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                      return false;
+                    }
+
+                    // Check if amount is below current payment
+                    if (jobRepo.paidCashAmount > 0 &&
+                        currentAmount < jobRepo.paidCashAmount) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            'Amount cannot be less than current payment (₱${jobRepo.paidCashAmount})',
+                          ),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                      return false;
+                    }
+                  }
+
+                  await saveButtonSetRepository();
+                  return true;
                 }),
           ],
         );

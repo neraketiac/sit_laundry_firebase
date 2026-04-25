@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:laundry_firebase/firebase_options.dart';
 
 class MyLoyaltyCard extends StatefulWidget {
   final String something;
@@ -41,8 +43,14 @@ class _MyLoyaltyCardState extends State<MyLoyaltyCard> {
   }
 
   Widget _singleReadData(String s) {
-    CollectionReference users =
-        FirebaseFirestore.instance.collection('loyalty');
+    // Use loyaltyCardDb for loyalty collection
+    final loyaltyFirestore = FirebaseFirestore.instanceFor(
+      app: Firebase.apps.firstWhere(
+        (app) => app.name == 'loyaltyCardDb',
+        orElse: () => Firebase.app(),
+      ),
+    );
+    CollectionReference users = loyaltyFirestore.collection('loyalty');
 
     return FutureBuilder<DocumentSnapshot>(
       future: users.doc(s).get(),
