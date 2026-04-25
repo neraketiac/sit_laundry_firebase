@@ -9,6 +9,9 @@ class FirebaseService {
   static late FirebaseApp forthApp;
   static late FirebaseFirestore forthFirestore;
 
+  static late FirebaseApp jobsDoneApp;
+  static late FirebaseFirestore jobsDoneFirestore;
+
   static FirebaseFirestore get primaryFirestore => FirebaseFirestore.instance;
 
   static Future<void> initialize() async {
@@ -24,12 +27,19 @@ class FirebaseService {
     );
     secondaryFirestore = FirebaseFirestore.instanceFor(app: secondaryApp);
 
-    // FORTH Firebase
+    // FORTH Firebase (Loyalty Card DB)
     forthApp = await Firebase.initializeApp(
       name: 'forth',
       options: DefaultFirebaseOptions.loyaltyCardDb,
     );
     forthFirestore = FirebaseFirestore.instanceFor(app: forthApp);
+
+    // JOBS DONE Firebase
+    jobsDoneApp = await Firebase.initializeApp(
+      name: 'jobsDone',
+      options: DefaultFirebaseOptions.jobsDoneDb,
+    );
+    jobsDoneFirestore = FirebaseFirestore.instanceFor(app: jobsDoneApp);
 
     print("Firebase projects initialized");
   }

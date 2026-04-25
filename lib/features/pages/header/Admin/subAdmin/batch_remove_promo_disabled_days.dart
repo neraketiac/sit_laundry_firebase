@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:laundry_firebase/core/services/firebase_service.dart';
 
 /// Finds all Jobs_done and Jobs_completed where DateD falls on a
 /// promo-disabled day (from promo_days collection), then sets
@@ -70,29 +71,54 @@ class _BatchRemovePromoDisabledDaysState
       final List<_JobEntry> affected = [];
       int scanned = 0;
 
-      for (final col in ['Jobs_done', 'Jobs_completed']) {
-        final snap = await _firestore.collection(col).get();
-        for (final doc in snap.docs) {
-          scanned++;
-          final data = doc.data();
-          final ts = data['A05_DateD'] as Timestamp?;
-          if (ts == null) continue;
+      // Read Jobs_done from jobsDoneDb
+      final jobsDoneDb = FirebaseService.jobsDoneFirestore;
+      final jobsDoneSnap = await jobsDoneDb.collection('Jobs_done').get();
+      for (final doc in jobsDoneSnap.docs) {
+        scanned++;
+        final data = doc.data();
+        final ts = data['A05_DateD'] as Timestamp?;
+        if (ts == null) continue;
 
-          final dateId = DateFormat('yyyy-MM-dd').format(ts.toDate());
-          if (!_disabledDays.containsKey(dateId)) continue;
+        final dateId = DateFormat('yyyy-MM-dd').format(ts.toDate());
+        if (!_disabledDays.containsKey(dateId)) continue;
 
-          final current = (data['Q06_PromoCounter'] as num?)?.toInt() ?? 0;
-          if (current == 0) continue; // already 0, skip
+        final current = (data['Q06_PromoCounter'] as num?)?.toInt() ?? 0;
+        if (current == 0) continue; // already 0, skip
 
-          affected.add(_JobEntry(
-            doc: doc,
-            collection: col,
-            jobId: (data['A00_JobId'] as num?)?.toInt() ?? 0,
-            customerName: data['C01_CustomerName']?.toString() ?? '—',
-            dateD: ts.toDate(),
-            currentPromoCounter: current,
-          ));
-        }
+        affected.add(_JobEntry(
+          doc: doc,
+          collection: 'Jobs_done',
+          jobId: (data['A00_JobId'] as num?)?.toInt() ?? 0,
+          customerName: data['C01_CustomerName']?.toString() ?? '—',
+          dateD: ts.toDate(),
+          currentPromoCounter: current,
+        ));
+      }
+
+      // Read Jobs_completed from primaryDb
+      final jobsCompletedSnap =
+          await _firestore.collection('Jobs_completed').get();
+      for (final doc in jobsCompletedSnap.docs) {
+        scanned++;
+        final data = doc.data();
+        final ts = data['A05_DateD'] as Timestamp?;
+        if (ts == null) continue;
+
+        final dateId = DateFormat('yyyy-MM-dd').format(ts.toDate());
+        if (!_disabledDays.containsKey(dateId)) continue;
+
+        final current = (data['Q06_PromoCounter'] as num?)?.toInt() ?? 0;
+        if (current == 0) continue; // already 0, skip
+
+        affected.add(_JobEntry(
+          doc: doc,
+          collection: 'Jobs_completed',
+          jobId: (data['A00_JobId'] as num?)?.toInt() ?? 0,
+          customerName: data['C01_CustomerName']?.toString() ?? '—',
+          dateD: ts.toDate(),
+          currentPromoCounter: current,
+        ));
       }
 
       setState(() {

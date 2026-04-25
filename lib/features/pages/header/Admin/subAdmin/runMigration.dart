@@ -133,6 +133,7 @@ class _RunMigrationState extends State<RunMigration> {
     );
 
     final main = FirebaseService.primaryFirestore;
+    final jobsDone = FirebaseService.jobsDoneFirestore;
     final forth = FirebaseService.forthFirestore;
 
     bool success = true;
@@ -163,7 +164,8 @@ class _RunMigrationState extends State<RunMigration> {
       progressKey.currentState?.setStatus("Counting documents...");
       int totalDocs = 0;
       for (final col in selected) {
-        final snap = await main.collection(col).get();
+        final firestore = col == JOBS_DONE_REF ? jobsDone : main;
+        final snap = await firestore.collection(col).get();
         totalDocs += snap.docs.length;
       }
 
@@ -174,7 +176,8 @@ class _RunMigrationState extends State<RunMigration> {
         deleteFirst ? "Migrating to Forth DB..." : "Merging to Forth DB...",
       );
       for (final col in selected) {
-        final snap = await main.collection(col).get();
+        final firestore = col == JOBS_DONE_REF ? jobsDone : main;
+        final snap = await firestore.collection(col).get();
         WriteBatch batch = forth.batch();
         int ops = 0;
         int colCount = 0;

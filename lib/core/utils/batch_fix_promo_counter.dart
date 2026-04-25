@@ -1,12 +1,15 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
+import 'package:laundry_firebase/core/services/firebase_service.dart';
 import 'package:laundry_firebase/features/jobs/models/jobmodel.dart';
 import 'package:laundry_firebase/core/global/variables_all_codes.dart';
 
 /// Utility class to batch fix promoCounter values in Jobs_done and Jobs_completed collections
 class BatchFixPromoCounter {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  late final FirebaseFirestore _jobsDoneFirestore =
+      FirebaseService.jobsDoneFirestore;
 
   /// Calculate correct promoCounter based on job data
   int calculateCorrectPromoCounter(JobModel job) {
@@ -62,8 +65,8 @@ class BatchFixPromoCounter {
     List<String> errors = [];
 
     try {
-      // Get all documents from Jobs_done
-      final snapshot = await _firestore.collection('Jobs_done').get();
+      // Get all documents from Jobs_done (from jobsDoneDb)
+      final snapshot = await _jobsDoneFirestore.collection('Jobs_done').get();
 
       if (snapshot.docs.isEmpty) {
         return {
@@ -302,7 +305,8 @@ class BatchFixPromoCounter {
 
     try {
       // Get all jobs from both collections
-      final doneSnapshot = await _firestore.collection('Jobs_done').get();
+      final doneSnapshot =
+          await _jobsDoneFirestore.collection('Jobs_done').get();
       final completedSnapshot =
           await _firestore.collection('Jobs_completed').get();
 
@@ -422,7 +426,8 @@ class BatchFixPromoCounter {
 
     // Preview Jobs_done
     try {
-      final doneSnapshot = await _firestore.collection('Jobs_done').get();
+      final doneSnapshot =
+          await _jobsDoneFirestore.collection('Jobs_done').get();
       for (final doc in doneSnapshot.docs) {
         final jobModel = JobModel.fromJson(doc.data());
         final correctPromoCounter = calculateCorrectPromoCounter(jobModel);

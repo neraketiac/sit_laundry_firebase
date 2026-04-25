@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:laundry_firebase/core/services/firebase_service.dart';
 
 /// A job record with its computed new promo error code
 class _JobReview {
@@ -70,7 +71,8 @@ class _BatchPromoReviewPageState extends State<BatchPromoReviewPage> {
     });
 
     try {
-      final firestore = FirebaseFirestore.instance;
+      final jobsDoneDb = FirebaseService.jobsDoneFirestore;
+      final primaryDb = FirebaseFirestore.instance;
       const collections = ['Jobs_done', 'Jobs_completed'];
       final Map<String, List<QueryDocumentSnapshot>> byCustomer = {};
       final Map<String, String> customerNames = {};
@@ -78,7 +80,9 @@ class _BatchPromoReviewPageState extends State<BatchPromoReviewPage> {
 
       int scanned = 0;
 
+      // Read Jobs_done from jobsDoneDb, Jobs_completed from primaryDb
       for (final col in collections) {
+        final firestore = col == 'Jobs_done' ? jobsDoneDb : primaryDb;
         final snap = await firestore
             .collection(col)
             .orderBy('A05_DateD', descending: true)

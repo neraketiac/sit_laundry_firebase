@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:laundry_firebase/core/utils/firestore_timeout.dart';
 import 'package:laundry_firebase/features/jobs/models/jobmodel.dart';
 import 'package:laundry_firebase/core/services/database_loyalty.dart';
+import 'package:laundry_firebase/core/services/firebase_service.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/promo_day_checker.dart';
 
@@ -216,7 +217,7 @@ class DatabaseJobsOngoing {
 /// (Completed / Archived)
 /// 🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩
 class DatabaseJobsDone {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseFirestore _firestore = FirebaseService.jobsDoneFirestore;
   late final CollectionReference<Map<String, dynamic>> _ref =
       _firestore.collection(JOBS_DONE_REF);
 

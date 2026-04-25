@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:laundry_firebase/features/jobs/models/jobmodel.dart';
 import 'package:laundry_firebase/features/jobs/repository/jobmodel_repository.dart';
 import 'package:laundry_firebase/firebase_options.dart';
+import 'package:laundry_firebase/core/services/firebase_service.dart';
 
 class MonthlyAnalyticsPage extends StatefulWidget {
   const MonthlyAnalyticsPage({super.key});
@@ -41,6 +42,10 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
           'Loading data for: ${DateFormat('MMMM yyyy').format(currentMonth)}');
       print('Date range: $startDate to $endDate');
 
+      // Read Jobs_done from jobsDoneDb
+      final jobsDoneDb = FirebaseService.jobsDoneFirestore;
+
+      // Read Jobs_completed from reportsDb
       FirebaseApp thirdApp;
       try {
         thirdApp = Firebase.app('thirdWeb');
@@ -50,10 +55,10 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
           options: DefaultFirebaseOptions.reportsDb,
         );
       }
-      final db = FirebaseFirestore.instanceFor(app: thirdApp);
+      final reportsDb = FirebaseFirestore.instanceFor(app: thirdApp);
 
       // Load from Jobs_done
-      final doneSnapshot = await db
+      final doneSnapshot = await jobsDoneDb
           .collection('Jobs_done')
           .where('A05_DateD',
               isGreaterThanOrEqualTo: Timestamp.fromDate(startDate))
@@ -61,7 +66,7 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
           .get();
 
       // Load from Jobs_completed
-      final completedSnapshot = await db
+      final completedSnapshot = await reportsDb
           .collection('Jobs_completed')
           .where('A05_DateD',
               isGreaterThanOrEqualTo: Timestamp.fromDate(startDate))
@@ -90,7 +95,7 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
       }
 
       // Load from SuppliesHist
-      final suppliesSnapshot = await db
+      final suppliesSnapshot = await reportsDb
           .collection('SuppliesHist')
           .where('LogDate',
               isGreaterThanOrEqualTo: Timestamp.fromDate(startDate))

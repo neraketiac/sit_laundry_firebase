@@ -1,12 +1,15 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
+import 'package:laundry_firebase/core/services/firebase_service.dart';
 import 'package:laundry_firebase/features/jobs/models/jobmodel.dart';
 import 'package:laundry_firebase/core/global/variables_oth.dart';
 
 /// Utility class to validate loyalty counts against applicable promoCounter
 class LoyaltyCountValidator {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  late final FirebaseFirestore _jobsDoneFirestore =
+      FirebaseService.jobsDoneFirestore;
 
   /// Calculate total applicable promoCounter for a customer based on promoErrorCode logic
   int calculateApplicablePromoCounter(List<JobModel> customerJobs) {

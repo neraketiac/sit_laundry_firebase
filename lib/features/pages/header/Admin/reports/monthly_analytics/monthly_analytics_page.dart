@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:laundry_firebase/features/jobs/models/jobmodel.dart';
 import 'package:laundry_firebase/features/jobs/repository/jobmodel_repository.dart';
 import 'package:laundry_firebase/firebase_options.dart';
+import 'package:laundry_firebase/core/services/firebase_service.dart';
 import 'widgets/month_selector.dart';
 import 'widgets/supplies_summary_card.dart';
 import 'widgets/supplies_chart.dart';
@@ -81,6 +82,10 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
         .subtract(const Duration(seconds: 1)); // last second of the month
 
     try {
+      // Read Jobs_done from jobsDoneDb
+      final jobsDoneDb = FirebaseService.jobsDoneFirestore;
+
+      // Read Jobs_completed and history collections from reportsDb
       FirebaseApp thirdApp;
       try {
         thirdApp = Firebase.app('thirdWeb');
@@ -90,17 +95,17 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
           options: DefaultFirebaseOptions.reportsDb,
         );
       }
-      final db = FirebaseFirestore.instanceFor(app: thirdApp);
+      final reportsDb = FirebaseFirestore.instanceFor(app: thirdApp);
 
       // Jobs
-      final doneSnap = await db
+      final doneSnap = await jobsDoneDb
           .collection('Jobs_done')
           .where('A05_DateD',
               isGreaterThanOrEqualTo: Timestamp.fromDate(startDate))
           .where('A05_DateD', isLessThanOrEqualTo: Timestamp.fromDate(endDate))
           .get();
 
-      final completedSnap = await db
+      final completedSnap = await reportsDb
           .collection('Jobs_completed')
           .where('A05_DateD',
               isGreaterThanOrEqualTo: Timestamp.fromDate(startDate))
@@ -121,7 +126,7 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
       ];
 
       // Supplies
-      final suppliesSnap = await db
+      final suppliesSnap = await reportsDb
           .collection('SuppliesHist')
           .where('LogDate',
               isGreaterThanOrEqualTo: Timestamp.fromDate(startDate))
@@ -129,7 +134,7 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
           .get();
 
       // ItemsHist expense
-      final itemsHistSnap = await db
+      final itemsHistSnap = await reportsDb
           .collection('ItemsHist')
           .where('LogDate',
               isGreaterThanOrEqualTo: Timestamp.fromDate(startDate))
@@ -137,7 +142,7 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
           .get();
 
       // EmployeeHist expense — two queries (4404 + 4401), merged
-      final empHist4404 = await db
+      final empHist4404 = await reportsDb
           .collection('EmployeeHist')
           .where('LogDate',
               isGreaterThanOrEqualTo: Timestamp.fromDate(startDate))
@@ -145,7 +150,7 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
           .where('ItemUniqueId', isEqualTo: 4404) // funds out
           .get();
 
-      final empHist4401 = await db
+      final empHist4401 = await reportsDb
           .collection('EmployeeHist')
           .where('LogDate',
               isGreaterThanOrEqualTo: Timestamp.fromDate(startDate))
@@ -163,7 +168,7 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
       _unpaid.process(completedJobs, _weekNumber);
 
       // Salary payments (ItemUniqueId = 4406)
-      final salarySnap = await db
+      final salarySnap = await reportsDb
           .collection('EmployeeHist')
           .where('LogDate',
               isGreaterThanOrEqualTo: Timestamp.fromDate(startDate))
