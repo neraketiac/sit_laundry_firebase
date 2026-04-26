@@ -1,10 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:laundry_firebase/features/jobs/models/jobmodel.dart';
 import 'package:laundry_firebase/features/jobs/repository/jobmodel_repository.dart';
-import 'package:laundry_firebase/firebase_options.dart';
+import 'package:laundry_firebase/core/services/firebase_service.dart';
 import 'widgets/month_selector.dart';
 import 'widgets/supplies_summary_card.dart';
 import 'widgets/supplies_chart.dart';
@@ -81,27 +80,16 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
         .subtract(const Duration(seconds: 1)); // last second of the month
 
     try {
-      // Read all collections from reportsDb
-      FirebaseApp thirdApp;
-      try {
-        thirdApp = Firebase.app('thirdWeb');
-      } catch (_) {
-        thirdApp = await Firebase.initializeApp(
-          name: 'thirdWeb',
-          options: DefaultFirebaseOptions.reportsDb,
-        );
-      }
-      final reportsDb = FirebaseFirestore.instanceFor(app: thirdApp);
-
-      // Jobs
-      final doneSnap = await reportsDb
+      // Jobs_done from jobsDoneDb
+      final doneSnap = await FirebaseService.jobsDoneFirestore
           .collection('Jobs_done')
           .where('A05_DateD',
               isGreaterThanOrEqualTo: Timestamp.fromDate(startDate))
           .where('A05_DateD', isLessThanOrEqualTo: Timestamp.fromDate(endDate))
           .get();
 
-      final completedSnap = await reportsDb
+      // Jobs_completed from primary DB (not in migration list)
+      final completedSnap = await FirebaseFirestore.instance
           .collection('Jobs_completed')
           .where('A05_DateD',
               isGreaterThanOrEqualTo: Timestamp.fromDate(startDate))
@@ -121,24 +109,24 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
         }),
       ];
 
-      // Supplies
-      final suppliesSnap = await reportsDb
+      // SuppliesHist from suppliesDB
+      final suppliesSnap = await FirebaseService.suppliesFirestore
           .collection('SuppliesHist')
           .where('LogDate',
               isGreaterThanOrEqualTo: Timestamp.fromDate(startDate))
           .where('LogDate', isLessThanOrEqualTo: Timestamp.fromDate(endDate))
           .get();
 
-      // ItemsHist expense
-      final itemsHistSnap = await reportsDb
+      // ItemsHist from primary DB (not in migration list)
+      final itemsHistSnap = await FirebaseFirestore.instance
           .collection('ItemsHist')
           .where('LogDate',
               isGreaterThanOrEqualTo: Timestamp.fromDate(startDate))
           .where('LogDate', isLessThanOrEqualTo: Timestamp.fromDate(endDate))
           .get();
 
-      // EmployeeHist expense — two queries (4404 + 4401), merged
-      final empHist4404 = await reportsDb
+      // EmployeeHist from employeeDB — two queries (4404 + 4401), merged
+      final empHist4404 = await FirebaseService.employeeFirestore
           .collection('EmployeeHist')
           .where('LogDate',
               isGreaterThanOrEqualTo: Timestamp.fromDate(startDate))
@@ -146,7 +134,7 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
           .where('ItemUniqueId', isEqualTo: 4404) // funds out
           .get();
 
-      final empHist4401 = await reportsDb
+      final empHist4401 = await FirebaseService.employeeFirestore
           .collection('EmployeeHist')
           .where('LogDate',
               isGreaterThanOrEqualTo: Timestamp.fromDate(startDate))
@@ -163,8 +151,8 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
       _weekly.mergeExpense(_expense.byWeek);
       _unpaid.process(completedJobs, _weekNumber);
 
-      // Salary payments (ItemUniqueId = 4406)
-      final salarySnap = await reportsDb
+      // Salary payments (ItemUniqueId = 4406) from employeeDB
+      final salarySnap = await FirebaseService.employeeFirestore
           .collection('EmployeeHist')
           .where('LogDate',
               isGreaterThanOrEqualTo: Timestamp.fromDate(startDate))

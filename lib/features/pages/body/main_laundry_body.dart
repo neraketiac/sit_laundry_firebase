@@ -45,7 +45,7 @@ import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/batch_fix_
 import 'package:laundry_firebase/features/pages/header/Admin/reports/monthly_analytics/monthly_analytics_page.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/loyalty_validation_page.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/runMigration.dart';
-import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/migrateToThird.dart';
+import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/migrateToReportsDB.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/showAdminDateDPage.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/other_item_admin/showOtherItemsMaintenance.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/other_item_admin/showDetItemsMaintenance.dart';

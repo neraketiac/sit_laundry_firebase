@@ -260,12 +260,16 @@ class _MigrateToThirdState extends State<MigrateToThird> {
   }
 
   FirebaseFirestore _getSourceDb(String collection, FirebaseFirestore main) {
-    if (collection == 'GCash_done' || collection == 'GCash_pending') {
+    if (collection == 'Jobs_done') {
+      return FirebaseService.jobsDoneFirestore;
+    } else if (collection == 'GCash_done' || collection == 'GCash_pending') {
       return FirebaseService.gcashPendingDoneFirestore;
     } else if (collection == 'EmployeeCurr' || collection == 'EmployeeHist') {
       return FirebaseService.employeeFirestore;
     } else if (collection == 'SuppliesCurr' || collection == 'SuppliesHist') {
       return FirebaseService.suppliesFirestore;
+    } else if (collection == 'loyalty') {
+      return FirebaseService.forthFirestore;
     } else {
       return main;
     }

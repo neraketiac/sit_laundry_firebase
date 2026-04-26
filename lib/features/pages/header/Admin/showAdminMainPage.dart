@@ -11,7 +11,7 @@ import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/showBatchP
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/batch_fix_promo_counter_page.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/batch_promo_review_page.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/loyalty_validation_page.dart';
-import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/migrateToThird.dart';
+import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/migrateToReportsDB.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/rider/show_rider_management.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/reports/monthly_analytics/monthly_analytics_page.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
