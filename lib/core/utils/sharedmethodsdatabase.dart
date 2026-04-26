@@ -157,12 +157,11 @@ Future<void> callDatabaseGCashPendingAdd(
   }
 }
 
-Future<void> callPickImageUniversal(
-    BuildContext context, GCashModel gM, bool bCashIn,
-    {VoidCallback? onImageUploaded}) async {
+Future<String?> callPickImageUniversal(
+    BuildContext context, GCashModel gM, bool bCashIn) async {
   final bytes = await pickImageUniversal();
 
-  if (bytes == null) return;
+  if (bytes == null) return null;
 
   // Compress and upload to Cloudinary
   Uint8List compressedBytes = await compressImage(bytes);
@@ -174,7 +173,7 @@ Future<void> callPickImageUniversal(
         const SnackBar(content: Text('Image upload failed')),
       );
     }
-    return;
+    return null;
   }
 
   // If docId exists, save to Firestore immediately
@@ -189,9 +188,8 @@ Future<void> callPickImageUniversal(
       gM.cashOutImageUrl = imageUrl;
     }
   }
-
-  // Notify caller that image was uploaded
-  onImageUploaded?.call();
+  
+  return imageUrl;
 }
 
 /// Upload a GCash receipt image for a job and save the URL to Firestore.

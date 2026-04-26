@@ -7,7 +7,9 @@ import 'package:laundry_firebase/shared/widgets/actions/uploadPlaceholder.dart';
 
 Widget showUploadedImage(BuildContext context, GCashRepository gRepo,
     {VoidCallback? onImageUploaded}) {
-  final bool isCashOut = gRepo.itemUniqueId == menuOthUniqIdCashOut;
+  // Use selectedFundCode for new records (showGCashPending), itemUniqueId for existing records (readDataGCashPending)
+  final fundCode = gRepo.docId.isEmpty ? gRepo.selectedFundCode : gRepo.itemUniqueId;
+  final bool isCashOut = fundCode == menuOthUniqIdCashOut;
 
   final String imageUrl =
       isCashOut ? gRepo.cashOutImageUrl : gRepo.cashInImageUrl;
@@ -23,8 +25,16 @@ Widget showUploadedImage(BuildContext context, GCashRepository gRepo,
 
         if (imageUrl.isEmpty) {
           // No image — pick directly
-          callPickImageUniversal(context, gRepo.getModel()!, !isCashOut,
-              onImageUploaded: onImageUploaded);
+          final uploadedUrl = await callPickImageUniversal(
+              context, gRepo.getModel()!, !isCashOut);
+          if (uploadedUrl != null) {
+            if (isCashOut) {
+              gRepo.cashOutImageUrl = uploadedUrl;
+            } else {
+              gRepo.cashInImageUrl = uploadedUrl;
+            }
+            onImageUploaded?.call();
+          }
         } else {
           // Image exists — show options
           final action = await showDialog<String>(
@@ -77,8 +87,16 @@ Widget showUploadedImage(BuildContext context, GCashRepository gRepo,
               ),
             );
             if (confirm == true && context.mounted) {
-              callPickImageUniversal(context, gRepo.getModel()!, !isCashOut,
-                  onImageUploaded: onImageUploaded);
+              final uploadedUrl = await callPickImageUniversal(
+                  context, gRepo.getModel()!, !isCashOut);
+              if (uploadedUrl != null) {
+                if (isCashOut) {
+                  gRepo.cashOutImageUrl = uploadedUrl;
+                } else {
+                  gRepo.cashInImageUrl = uploadedUrl;
+                }
+                onImageUploaded?.call();
+              }
             }
           }
         }

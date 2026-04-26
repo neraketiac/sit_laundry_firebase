@@ -54,8 +54,8 @@ class GCashModel {
           customerName: json['CustomerName']! as String,
           customerNumber: json['CustomerNumber']! as String,
           remarks: json['Remarks']! as String,
-          cashInImageUrl: json['CashInImageUrl'] as String,
-          cashOutImageUrl: json['CashOutImageUrl'] as String,
+          cashInImageUrl: (json['CashInImageUrl'] as String?) ?? '',
+          cashOutImageUrl: (json['CashOutImageUrl'] as String?) ?? '',
         );
 
   GCashModel copyWith({
