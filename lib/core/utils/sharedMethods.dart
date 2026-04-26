@@ -816,8 +816,39 @@ Future<void> revertLaundryPaymentSuppliesHistory(
 
 Future<Uint8List?> pickImageUniversal() async {
   if (kIsWeb) {
+    // Show dialog to choose between camera and gallery on web
+    final source = await showDialog<String>(
+      context: navigatorKey.currentContext!,
+      builder: (context) => AlertDialog(
+        title: const Text('Select Image Source'),
+        content: const Text('Choose how to get the image:'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, 'camera'),
+            child: const Text('📷 Camera'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, 'gallery'),
+            child: const Text('🖼️ Gallery'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+        ],
+      ),
+    );
+
+    if (source == null) return null;
+
     final uploadInput = html.FileUploadInputElement();
     uploadInput.accept = 'image/*';
+
+    // For camera on mobile browsers, use capture attribute
+    if (source == 'camera') {
+      uploadInput.setAttribute('capture', 'environment');
+    }
+
     uploadInput.click();
 
     await uploadInput.onChange.first;
