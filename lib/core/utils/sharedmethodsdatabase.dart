@@ -14,6 +14,7 @@ import 'package:laundry_firebase/core/services/database_gcash.dart';
 import 'package:laundry_firebase/core/services/database_jobs.dart';
 import 'package:laundry_firebase/core/services/database_loyalty.dart';
 import 'package:laundry_firebase/core/services/database_supplies_current.dart';
+import 'package:laundry_firebase/core/services/firebase_service.dart';
 import 'package:laundry_firebase/features/jobs/repository/jobmodel_repository.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
 import 'package:laundry_firebase/core/utils/firestore_handler.dart';
@@ -217,10 +218,12 @@ Future<void> callPickGCashReceiptForJob(BuildContext context,
                 ? JOBS_ONGOING_REF
                 : JOBS_QUEUE_REF;
 
-    await FirebaseFirestore.instance
-        .collection(collection)
-        .doc(jobRepo.docId)
-        .update({
+    // Use correct database instance based on collection
+    final firestore = collection == JOBS_DONE_REF
+        ? FirebaseService.jobsDoneFirestore
+        : FirebaseFirestore.instance;
+
+    await firestore.collection(collection).doc(jobRepo.docId).update({
       'P09_GCashReceiptUrl': url,
       if (collection == JOBS_DONE_REF || collection == JOBS_COMPLETED_REF)
         SYNC_TO_DB2_FIELD: false,

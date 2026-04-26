@@ -42,9 +42,7 @@ void showJobOnQueue(BuildContext context, JobModelRepository jobRepo) {
 
   // Capture dark mode from the calling context BEFORE showDialog opens
   final bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
-  //final dialogBg = isDarkMode ? const Color(0xFF0D1117) : Colors.lightBlue;
-  final dialogBg =
-      isDarkMode ? const Color(0xFF0D1117) : const Color(0xFF0D1117);
+  final dialogBg = isDarkMode ? const Color(0xFF0D1117) : Colors.lightBlue;
 
   showDialog(
     context: context,
