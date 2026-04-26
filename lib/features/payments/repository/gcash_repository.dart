@@ -24,7 +24,24 @@ class GCashRepository {
   }
 
   Future<void> reset() async {
-    gM = finalGCashModel;
+    gM = GCashModel(
+      docId: "",
+      countId: 0,
+      logDate: Timestamp.now(),
+      logBy: empIdGlobal,
+      completeDate: Timestamp.now(),
+      itemId: menuOthUniqIdCashIn,
+      itemUniqueId: menuOthUniqIdCashIn,
+      itemName: 'Cash-In',
+      customerAmount: 0,
+      gCashStatus: 0.25,
+      customerId: 1,
+      customerName: '',
+      customerNumber: '',
+      remarks: "",
+      cashInImageUrl: "",
+      cashOutImageUrl: "",
+    );
   }
 
 /////////////////////////////////////////////////////////////
