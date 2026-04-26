@@ -17,6 +17,7 @@ import 'widgets/salary_card.dart';
 import 'widgets/unpaid_data.dart';
 import 'widgets/weekly_data.dart';
 import 'widgets/supplies_data.dart';
+import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/monthly_loads_calendar.dart';
 
 class MonthlyAnalyticsPage extends StatefulWidget {
   const MonthlyAnalyticsPage({super.key});
@@ -237,6 +238,8 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
                     currentMonth: currentMonth,
                     getWeekDateRange: _weekDateRange,
                   ),
+                  const SizedBox(height: 20),
+                  MonthlyLoadsCalendar(currentMonth: currentMonth),
                   const SizedBox(height: 20),
                 ],
               ),
