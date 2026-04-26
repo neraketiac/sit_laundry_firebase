@@ -158,13 +158,17 @@ Future<void> callDatabaseGCashPendingAdd(
 }
 
 Future<void> callPickImageUniversal(
-    BuildContext context, GCashModel gM, bool bCashIn) async {
+    BuildContext context, GCashModel gM, bool bCashIn,
+    {VoidCallback? onImageUploaded}) async {
   final bytes = await pickImageUniversal();
 
   if (bytes == null) return;
 
   DatabaseGCashPending databaseGCashPending = DatabaseGCashPending();
   await databaseGCashPending.saveImageUrl(gM, bytes);
+
+  // Notify caller that image was uploaded
+  onImageUploaded?.call();
 }
 
 /// Upload a GCash receipt image for a job and save the URL to Firestore.

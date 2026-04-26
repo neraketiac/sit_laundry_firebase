@@ -196,7 +196,11 @@ void showGCashPending(BuildContext context) {
                                           color: Colors.white70)),
                                   const SizedBox(height: 8),
                                   Center(
-                                    child: showUploadedImage(context, gRepo),
+                                    child: showUploadedImage(
+                                      context,
+                                      gRepo,
+                                      onImageUploaded: () => setState(() {}),
+                                    ),
                                   ),
                                   SizedBox(
                                     height: 10,

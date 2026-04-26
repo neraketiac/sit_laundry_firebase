@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:laundry_firebase/core/global/variables_all_codes.dart';
-import 'package:laundry_firebase/core/global/variables_oth.dart';
 import 'package:laundry_firebase/core/utils/sharedMethods.dart';
 import 'package:laundry_firebase/core/utils/sharedmethodsdatabase.dart';
 import 'package:laundry_firebase/features/payments/repository/gcash_repository.dart';
 import 'package:laundry_firebase/shared/widgets/actions/uploadPlaceholder.dart';
 
-Widget showUploadedImage(
-  BuildContext context,
-  GCashRepository gRepo,
-) {
+Widget showUploadedImage(BuildContext context, GCashRepository gRepo,
+    {VoidCallback? onImageUploaded}) {
   final bool isCashOut = gRepo.itemUniqueId == menuOthUniqIdCashOut;
 
   final String imageUrl =
@@ -26,7 +23,8 @@ Widget showUploadedImage(
 
         if (imageUrl.isEmpty) {
           // No image — pick directly
-          callPickImageUniversal(context, gRepo.getModel()!, !isCashOut);
+          callPickImageUniversal(context, gRepo.getModel()!, !isCashOut,
+              onImageUploaded: onImageUploaded);
         } else {
           // Image exists — show options
           final action = await showDialog<String>(
@@ -79,7 +77,8 @@ Widget showUploadedImage(
               ),
             );
             if (confirm == true && context.mounted) {
-              callPickImageUniversal(context, gRepo.getModel()!, !isCashOut);
+              callPickImageUniversal(context, gRepo.getModel()!, !isCashOut,
+                  onImageUploaded: onImageUploaded);
             }
           }
         }
