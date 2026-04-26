@@ -1,10 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:laundry_firebase/core/services/firebase_service.dart';
 import 'package:laundry_firebase/features/jobs/models/jobmodel.dart';
 import 'package:laundry_firebase/features/jobs/repository/jobmodel_repository.dart';
-import 'package:laundry_firebase/firebase_options.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/reports/monthly_analytics/widgets/unpaid_customers_card.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/reports/monthly_analytics/widgets/unpaid_data.dart';
 
@@ -61,25 +60,14 @@ class _UnpaidLaundryPanelState extends State<_UnpaidLaundryPanel> {
     final end = DateTime(_month.year, _month.month + 1, 0);
 
     try {
-      // Read all collections from reportsDb
-      FirebaseApp thirdApp;
-      try {
-        thirdApp = Firebase.app('thirdWeb');
-      } catch (_) {
-        thirdApp = await Firebase.initializeApp(
-          name: 'thirdWeb',
-          options: DefaultFirebaseOptions.reportsDb,
-        );
-      }
-      final reportsDb = FirebaseFirestore.instanceFor(app: thirdApp);
-
-      final doneSnap = await reportsDb
+      // Jobs_done from jobsDoneDb, Jobs_completed from primaryDb
+      final doneSnap = await FirebaseService.jobsDoneFirestore
           .collection('Jobs_done')
           .where('A05_DateD', isGreaterThanOrEqualTo: Timestamp.fromDate(start))
           .where('A05_DateD', isLessThanOrEqualTo: Timestamp.fromDate(end))
           .get();
 
-      final completedSnap = await reportsDb
+      final completedSnap = await FirebaseFirestore.instance
           .collection('Jobs_completed')
           .where('A05_DateD', isGreaterThanOrEqualTo: Timestamp.fromDate(start))
           .where('A05_DateD', isLessThanOrEqualTo: Timestamp.fromDate(end))

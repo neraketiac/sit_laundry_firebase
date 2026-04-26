@@ -26,7 +26,7 @@ class DatabaseEmployeeCurrent {
     if (filterEmpId != null) {
       return _employeeCurrRef
           .where('EmpId', isEqualTo: filterEmpId)
-          .orderBy('LogDate', descending: true)
+          //.orderBy('LogDate', descending: true)
           .snapshots();
     }
     if (empIdGlobal == 'Ket' || empIdGlobal == 'DonF') {
@@ -34,7 +34,7 @@ class DatabaseEmployeeCurrent {
     } else {
       return _employeeCurrRef
           .where('EmpId', isEqualTo: empNameToId[empIdGlobal])
-          .orderBy('LogDate', descending: true)
+          //.orderBy('LogDate', descending: true)
           .snapshots();
     }
   }

@@ -111,7 +111,11 @@ Future<void> deleteSecondaryCollection(
 
   if (confirm != true) return;
 
-  final secondary = FirebaseService.forthFirestore;
+  final secondary = collectionName == 'Jobs_done'
+      ? FirebaseService.jobsDoneFirestore
+      : collectionName == 'Jobs_completed'
+          ? FirebaseFirestore.instance
+          : FirebaseService.forthFirestore;
 
   /// Loading dialog
   showDialog(

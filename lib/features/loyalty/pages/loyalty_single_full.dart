@@ -20,25 +20,36 @@ Future<List<JobModel>> getJobsByCardNumber(String cardNumber) async {
   const String JOBS_DONE_REF = "Jobs_done";
   const String JOBS_COMPLETED_REF = "Jobs_completed";
 
-  // Jobs live in the secondary Firebase project
-  const jobCollections = [JOBS_DONE_REF, JOBS_COMPLETED_REF];
-
   List<JobModel> allJobs = [];
 
-  for (final jobCollection in jobCollections) {
-    final snapshot = await FirebaseService.forthFirestore
-        .collection(jobCollection)
-        .where(
-          'C00_CustomerId',
-          isEqualTo: int.tryParse(cardNumber) ?? cardNumber,
-        )
-        .get();
+  // Jobs_done from jobsDoneFirestore
+  final doneSnapshot = await FirebaseService.jobsDoneFirestore
+      .collection(JOBS_DONE_REF)
+      .where(
+        'C00_CustomerId',
+        isEqualTo: int.tryParse(cardNumber) ?? cardNumber,
+      )
+      .get();
 
-    for (final doc in snapshot.docs) {
-      final data = doc.data();
-      data['docId'] = doc.id;
-      allJobs.add(JobModel.fromJson(data));
-    }
+  for (final doc in doneSnapshot.docs) {
+    final data = doc.data();
+    data['docId'] = doc.id;
+    allJobs.add(JobModel.fromJson(data));
+  }
+
+  // Jobs_completed from primary DB
+  final completedSnapshot = await FirebaseFirestore.instance
+      .collection(JOBS_COMPLETED_REF)
+      .where(
+        'C00_CustomerId',
+        isEqualTo: int.tryParse(cardNumber) ?? cardNumber,
+      )
+      .get();
+
+  for (final doc in completedSnapshot.docs) {
+    final data = doc.data();
+    data['docId'] = doc.id;
+    allJobs.add(JobModel.fromJson(data));
   }
 
   allJobs.sort((a, b) => b.dateD.compareTo(a.dateD));

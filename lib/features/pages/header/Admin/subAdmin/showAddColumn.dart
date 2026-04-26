@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:laundry_firebase/core/services/database_jobs.dart';
+import 'package:laundry_firebase/core/services/firebase_service.dart';
 
 class AddPromoErrorCodeWidget extends StatefulWidget {
   const AddPromoErrorCodeWidget({super.key});
@@ -25,12 +26,14 @@ class _AddPromoErrorCodeWidgetState extends State<AddPromoErrorCodeWidget> {
       status = "Starting...";
     });
 
-    FirebaseFirestore firestore = FirebaseFirestore.instance;
-
     for (String collectionName in collections) {
       setState(() {
         status = "Processing $collectionName...";
       });
+
+      final firestore = collectionName == JOBS_DONE_REF
+          ? FirebaseService.jobsDoneFirestore
+          : FirebaseFirestore.instance;
 
       final snapshot = await firestore.collection(collectionName).get();
 

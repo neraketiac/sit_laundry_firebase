@@ -432,10 +432,11 @@ Future<void> moveOngoingToDone(
 
 /// ▶ Done → Completed
 Future<void> moveAllDoneToCompleted() async {
-  final firestore = FirebaseFirestore.instance;
+  final jobsDoneDb = FirebaseService.jobsDoneFirestore; // Jobs_done source
+  final primaryDb = FirebaseFirestore.instance; // Jobs_completed destination
 
-  final doneCollection = firestore.collection(JOBS_DONE_REF);
-  final completedCollection = firestore.collection(JOBS_COMPLETED_REF);
+  final doneCollection = jobsDoneDb.collection(JOBS_DONE_REF);
+  final completedCollection = primaryDb.collection(JOBS_COMPLETED_REF);
 
   // 🔥 Only get PAID jobs
   final snapshot = await doneCollection
@@ -448,8 +449,8 @@ Future<void> moveAllDoneToCompleted() async {
     return;
   }
 
-  final batch = firestore.batch();
-  final deleteQueue = firestore.collection(SYNC_DELETE_QUEUE_REF);
+  final batch = primaryDb.batch(); // Use primary DB for batch operations
+  final deleteQueue = primaryDb.collection(SYNC_DELETE_QUEUE_REF);
 
   for (final doc in snapshot.docs) {
     final completedRef = completedCollection.doc(doc.id);

@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:laundry_firebase/core/services/database_jobs.dart';
+import 'package:laundry_firebase/core/services/firebase_service.dart';
 
 class ShowUpdateAddressJobs extends StatelessWidget {
   const ShowUpdateAddressJobs({super.key});
@@ -99,7 +99,8 @@ Future<void> runAddressSync(BuildContext context) async {
     builder: (_) => AddressSyncProgressDialog(key: progressKey),
   );
 
-  final firestore = FirebaseFirestore.instance;
+  final firestore =
+      FirebaseFirestore.instance; // used for primary DB operations
 
   const collections = [
     JOBS_DONE_REF,
@@ -114,6 +115,9 @@ Future<void> runAddressSync(BuildContext context) async {
     int totalDocsAll = 0;
 
     for (final col in collections) {
+      final firestore = col == JOBS_DONE_REF
+          ? FirebaseService.jobsDoneFirestore
+          : FirebaseFirestore.instance;
       final snapshot = await firestore.collection(col).get();
       totalDocsAll += snapshot.docs.length;
     }
@@ -123,6 +127,9 @@ Future<void> runAddressSync(BuildContext context) async {
 
     /// PROCESS JOBS
     for (final col in collections) {
+      final firestore = col == JOBS_DONE_REF
+          ? FirebaseService.jobsDoneFirestore
+          : FirebaseFirestore.instance;
       final snapshot = await firestore.collection(col).get();
 
       for (final doc in snapshot.docs) {
@@ -130,14 +137,8 @@ Future<void> runAddressSync(BuildContext context) async {
 
         int customerId = data['C00_CustomerId'];
 
-        /// FIND LOYALTY - use loyaltyCardDb
-        final loyaltyFirestore = FirebaseFirestore.instanceFor(
-          app: Firebase.apps.firstWhere(
-            (app) => app.name == 'loyaltyCardDb',
-            orElse: () => Firebase.app(),
-          ),
-        );
-        final loyaltySnapshot = await loyaltyFirestore
+        /// FIND LOYALTY - use loyaltyCardDb (forthFirestore)
+        final loyaltySnapshot = await FirebaseService.forthFirestore
             .collection("loyalty")
             .where('cardNumber', isEqualTo: customerId)
             .limit(1)
