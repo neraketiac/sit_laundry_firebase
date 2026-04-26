@@ -164,8 +164,31 @@ Future<void> callPickImageUniversal(
 
   if (bytes == null) return;
 
-  DatabaseGCashPending databaseGCashPending = DatabaseGCashPending();
-  await databaseGCashPending.saveImageUrl(gM, bytes);
+  // Compress and upload to Cloudinary
+  Uint8List compressedBytes = await compressImage(bytes);
+  String? imageUrl = await uploadToCloudinaryBytes(compressedBytes);
+
+  if (imageUrl == null) {
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Image upload failed')),
+      );
+    }
+    return;
+  }
+
+  // If docId exists, save to Firestore immediately
+  if (gM.docId.isNotEmpty) {
+    DatabaseGCashPending databaseGCashPending = DatabaseGCashPending();
+    await databaseGCashPending.saveImageUrl(gM, bytes);
+  } else {
+    // If no docId yet (new record), just update the model locally
+    if (bCashIn) {
+      gM.cashInImageUrl = imageUrl;
+    } else {
+      gM.cashOutImageUrl = imageUrl;
+    }
+  }
 
   // Notify caller that image was uploaded
   onImageUploaded?.call();
