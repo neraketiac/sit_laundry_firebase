@@ -8,15 +8,15 @@ for /f "tokens=*" %%a in ('findstr /r "appVersion = " "%VERSION_FILE%"') do set 
 
 for /f "tokens=2 delims='" %%v in ("!LINE!") do set CURRENT=%%v
 
-for /f "tokens=1,2,3 delims=." %%a in ("!CURRENT!") do (
+REM Extract major and build numbers from pattern like "1.144"
+for /f "tokens=1,2 delims=." %%a in ("!CURRENT!") do (
     set MAJOR=%%a
-    set MINOR=%%b
-    set PATCH=%%c
+    set BUILD=%%b
 )
 
 echo [2/6] Bumping version...
-set /a PATCH=PATCH+1
-set NEW_VERSION=!MAJOR!.!MINOR!.!PATCH!
+set /a BUILD=BUILD+1
+set NEW_VERSION=!MAJOR!.!BUILD!
 echo       !CURRENT! -^> !NEW_VERSION!
 
 (

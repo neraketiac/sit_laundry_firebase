@@ -547,7 +547,7 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
 
             /// TITLE
             title: Text(
-              "$dateText. Hello ${empSetup.empName}",
+              "$dateText. Hello ${empSetup.empName} (v$appVersion)",
               style: const TextStyle(fontSize: 14),
               overflow: TextOverflow.ellipsis,
             ),

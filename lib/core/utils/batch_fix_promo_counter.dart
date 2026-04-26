@@ -80,7 +80,7 @@ class BatchFixPromoCounter {
 
       // Process in batches of 500 (Firestore batch limit)
       final batches = <WriteBatch>[];
-      WriteBatch currentBatch = _firestore.batch();
+      WriteBatch currentBatch = _jobsDoneFirestore.batch();
       int batchCount = 0;
 
       for (final doc in snapshot.docs) {
@@ -108,7 +108,7 @@ class BatchFixPromoCounter {
           // Create new batch if current one reaches 500 operations
           if (batchCount >= 500) {
             batches.add(currentBatch);
-            currentBatch = _firestore.batch();
+            currentBatch = _jobsDoneFirestore.batch();
             batchCount = 0;
           }
         } catch (e) {
@@ -350,7 +350,7 @@ class BatchFixPromoCounter {
         ),
       );
       final loyaltySnapshot =
-          await loyaltyFirestore.collection('Loyalty').get();
+          await loyaltyFirestore.collection('loyalty').get();
       final loyaltyMap = <int, int>{};
 
       for (final doc in loyaltySnapshot.docs) {

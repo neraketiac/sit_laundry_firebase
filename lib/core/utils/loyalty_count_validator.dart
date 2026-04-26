@@ -47,7 +47,8 @@ class LoyaltyCountValidator {
 
     try {
       // Get all jobs from both collections
-      final doneSnapshot = await _firestore.collection('Jobs_done').get();
+      final doneSnapshot =
+          await _jobsDoneFirestore.collection('Jobs_done').get();
       final completedSnapshot =
           await _firestore.collection('Jobs_completed').get();
 
@@ -91,7 +92,7 @@ class LoyaltyCountValidator {
         ),
       );
       final loyaltySnapshot =
-          await loyaltyFirestore.collection('Loyalty').get();
+          await loyaltyFirestore.collection('loyalty').get();
       final loyaltyMap = <int, int>{};
 
       for (final doc in loyaltySnapshot.docs) {
@@ -206,7 +207,8 @@ class LoyaltyCountValidator {
 
     try {
       // Get all jobs
-      final doneSnapshot = await _firestore.collection('Jobs_done').get();
+      final doneSnapshot =
+          await _jobsDoneFirestore.collection('Jobs_done').get();
       final completedSnapshot =
           await _firestore.collection('Jobs_completed').get();
 
@@ -285,7 +287,7 @@ class LoyaltyCountValidator {
         ),
       );
       final loyaltySnapshot =
-          await loyaltyFirestore2.collection('Loyalty').get();
+          await loyaltyFirestore2.collection('loyalty').get();
       for (final doc in loyaltySnapshot.docs) {
         try {
           final data = doc.data();

@@ -288,6 +288,19 @@ void addListOthItems() {
     stocksType: "pcs",
     logDate: timestamp1900,
   ));
+
+  listOthItems.add(OtherItemModel(
+    docId: "",
+    itemId: menuOthPlastic,
+    itemUniqueId: menuOthPlastic,
+    itemGroup: groupOth,
+    itemName: "Plastic",
+    itemPrice: 3,
+    stocksAlert: 5,
+    stocksType: "pcs",
+    logDate: timestamp1900,
+  ));
+
   // listOthItems.add(OtherItemModel(
   //   docId: "",
   //   itemId: menuOthW10t11,

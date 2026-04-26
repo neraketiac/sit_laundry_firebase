@@ -14,6 +14,7 @@ import 'package:laundry_firebase/shared/widgets/actions/fundTypeToggle.dart';
 import 'package:laundry_firebase/core/utils/sharedmethodsdatabase.dart';
 import 'package:laundry_firebase/features/payments/repository/gcash_repository.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
+import 'package:laundry_firebase/shared/widgets/actions/showUploadedImage.dart';
 
 void showGCashPending(BuildContext context) {
   GCashRepository gRepo = GCashRepository();
@@ -67,12 +68,18 @@ void showGCashPending(BuildContext context) {
     gRepo.logDate = Timestamp.now();
     gRepo.logBy = empIdGlobal;
 
+    // If CashOut and picture is uploaded, set status to 0.75
+    final isCashOut = gRepo.selectedFundCode == menuOthUniqIdCashOut;
+    if (isCashOut && gRepo.cashOutImageUrl.isNotEmpty) {
+      gRepo.gCashStatus = 0.75;
+    }
+
     await callDatabaseGCashPendingAdd(context, gRepo.getModel()!);
 
     // Only generate Supplies Hist/Curr for Cash-In and Load, NOT for Cash-Out
-    final isCashOut = gRepo.selectedFundCode == menuOthUniqIdCashOut;
+    final isCashOutTransaction = gRepo.selectedFundCode == menuOthUniqIdCashOut;
 
-    if (!isCashOut) {
+    if (!isCashOutTransaction) {
       if (deductFromSalary && isStaffSelected()) {
         // Deduct from staff salary — same pattern as showSalaryMaintenance
         // menuOthUniqIdCashIn with isGcashCredit=true triggers employee deduction
@@ -174,6 +181,29 @@ void showGCashPending(BuildContext context) {
                             fundTypeCodes1stLayer,
                             gRepo,
                           ),
+
+                          // 6.5 Picture Upload (only for Cash-Out)
+                          if (isCashOut)
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 8),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('Upload Receipt Picture',
+                                      style: TextStyle(
+                                          fontSize: s.small,
+                                          color: Colors.white70)),
+                                  const SizedBox(height: 8),
+                                  Center(
+                                    child: showUploadedImage(context, gRepo),
+                                  ),
+                                  SizedBox(
+                                    height: 10,
+                                  ),
+                                ],
+                              ),
+                            ),
 
                           // 2. Customer Number field
                           customerNumber(context, gRepo.customerNumberVar),

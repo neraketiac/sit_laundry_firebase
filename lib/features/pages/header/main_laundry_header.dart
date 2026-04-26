@@ -35,7 +35,7 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader>
     _sEmpId = widget.empid;
     empIdGlobal = _sEmpId;
 
-    isAdmin = (empIdGlobal == 'Ket' || empIdGlobal == 'DonF');
+    isAdmin = (empIdGlobal == 'DonF');
 
     SuppliesHistRepository.instance.reset();
 
