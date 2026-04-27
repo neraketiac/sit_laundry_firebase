@@ -172,7 +172,7 @@ class DatabaseGCashDone {
   }) async {
     Query<Map<String, dynamic>> query = _ref
         .orderBy('CompleteDate', descending: true)
-        .orderBy('LogDate', descending: true)
+        //.orderBy('LogDate', descending: true)
         .limit(limit);
     if (lastDoc != null) query = query.startAfterDocument(lastDoc);
     return query.get().withFsTimeout();

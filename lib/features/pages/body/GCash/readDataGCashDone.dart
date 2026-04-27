@@ -54,7 +54,7 @@ class _GCashDoneWidgetState extends State<_GCashDoneWidget> {
         snap.docs.map((d) => GCashModel.fromJson(d.data())).toList();
 
     // Sort by CompleteDate descending (newest first)
-    newItems.sort((a, b) => b.completeDate.compareTo(a.completeDate));
+    //newItems.sort((a, b) => b.completeDate.compareTo(a.completeDate));
 
     setState(() {
       _loading = false;

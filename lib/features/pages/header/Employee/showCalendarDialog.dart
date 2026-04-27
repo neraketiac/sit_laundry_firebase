@@ -189,13 +189,19 @@ Future<Map<DateTime, DaySelection>?> showCalendarDialog(BuildContext context) {
                         childAspectRatio: 0.85,
                       ),
                       itemBuilder: (_, i) {
+                        final now = DateTime.now();
+                        // Calculate start of current week (Monday)
+                        final startOfWeek = DateTime(now.year, now.month, now.day).subtract(Duration(days: now.weekday - 1));
+                        // Calculate end of current week (Sunday)
+                        final endOfWeek = startOfWeek.add(const Duration(days: 6));
+                        
                         if (i < offset) {
                           final daysInPrevMonth = DateTime(month.year, month.month, 0).day;
                           final day = daysInPrevMonth - offset + i + 1;
                           final date = DateTime(month.year, month.month - 1, day);
-                          final now = DateTime.now();
-                          final startOfWeek = DateTime(now.year, now.month, now.day).subtract(Duration(days: now.weekday - 1));
-                          final isPastWeek = date.isBefore(startOfWeek);
+                          // Check if date is within current week
+                          final isInCurrentWeek = !date.isBefore(startOfWeek) && !date.isAfter(endOfWeek);
+                          final isPastWeek = !isInCurrentWeek;
                           final isLocked = !isAdmin && isPastWeek;
                           selections.putIfAbsent(date, () => DaySelection());
                           return _buildDayCell(day, date, selections[date]!, isPastWeek, false, isLocked, setState, Colors.grey.shade300);
@@ -206,18 +212,18 @@ Future<Map<DateTime, DaySelection>?> showCalendarDialog(BuildContext context) {
                         if (day > daysInMonth) {
                           final nextDay = day - daysInMonth;
                           final date = DateTime(month.year, month.month + 1, nextDay);
-                          final now = DateTime.now();
-                          final startOfWeek = DateTime(now.year, now.month, now.day).subtract(Duration(days: now.weekday - 1));
-                          final isPastWeek = date.isBefore(startOfWeek);
+                          // Check if date is within current week
+                          final isInCurrentWeek = !date.isBefore(startOfWeek) && !date.isAfter(endOfWeek);
+                          final isPastWeek = !isInCurrentWeek;
                           final isLocked = !isAdmin && isPastWeek;
                           selections.putIfAbsent(date, () => DaySelection());
                           return _buildDayCell(nextDay, date, selections[date]!, isPastWeek, false, isLocked, setState, Colors.grey.shade300);
                         }
 
                         final date = DateTime(month.year, month.month, day);
-                        final now = DateTime.now();
-                        final startOfWeek = DateTime(now.year, now.month, now.day).subtract(Duration(days: now.weekday - 1));
-                        final isPastWeek = date.isBefore(startOfWeek);
+                        // Check if date is within current week
+                        final isInCurrentWeek = !date.isBefore(startOfWeek) && !date.isAfter(endOfWeek);
+                        final isPastWeek = !isInCurrentWeek;
                         final isLocked = !isAdmin && isPastWeek;
                         final today = DateTime.now();
                         final isToday = date.year == today.year && date.month == today.month && date.day == today.day;
