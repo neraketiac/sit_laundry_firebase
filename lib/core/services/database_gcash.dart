@@ -168,7 +168,7 @@ class DatabaseGCashDone {
   /// Paginated fetch — 20 per page, ordered by CompleteDate descending, then LogDate descending
   Future<QuerySnapshot<Map<String, dynamic>>> fetchPaginated({
     DocumentSnapshot? lastDoc,
-    int limit = 20,
+    int limit = 10,
   }) async {
     Query<Map<String, dynamic>> query = _ref
         .orderBy('CompleteDate', descending: true)
@@ -176,6 +176,13 @@ class DatabaseGCashDone {
         .limit(limit);
     if (lastDoc != null) query = query.startAfterDocument(lastDoc);
     return query.get().withFsTimeout();
+  }
+
+  Stream<QuerySnapshot<Map<String, dynamic>>> streamTop(int limit) {
+    return _ref
+        .orderBy('CompleteDate', descending: true)
+        .limit(limit)
+        .snapshots();
   }
 }
 

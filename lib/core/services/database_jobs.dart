@@ -432,13 +432,12 @@ Future<void> moveOngoingToDone(
 
 /// ▶ Done → Completed
 Future<void> moveAllDoneToCompleted() async {
-  final jobsDoneDb = FirebaseService.jobsDoneFirestore; // Jobs_done source
-  final primaryDb = FirebaseFirestore.instance; // Jobs_completed destination
+  final jobsDoneDb = FirebaseService.jobsDoneFirestore;
+  final primaryDb = FirebaseFirestore.instance;
 
   final doneCollection = jobsDoneDb.collection(JOBS_DONE_REF);
   final completedCollection = primaryDb.collection(JOBS_COMPLETED_REF);
 
-  // 🔥 Only get PAID jobs
   final snapshot = await doneCollection
       .where('O01_AllStatus', isEqualTo: 1)
       .get()
@@ -449,7 +448,8 @@ Future<void> moveAllDoneToCompleted() async {
     return;
   }
 
-  final batch = primaryDb.batch(); // Use primary DB for batch operations
+  final primaryBatch = primaryDb.batch(); // ✅ for writes to primaryDb
+  final doneBatch = jobsDoneDb.batch(); // ✅ for deletes on jobsDoneDb
   final deleteQueue = primaryDb.collection(SYNC_DELETE_QUEUE_REF);
 
   for (final doc in snapshot.docs) {
@@ -457,7 +457,7 @@ Future<void> moveAllDoneToCompleted() async {
     final deleteQueueRef =
         deleteQueue.doc(syncDeleteQueueDocId(JOBS_DONE_REF, doc.id));
 
-    batch.set(
+    primaryBatch.set(
       completedRef,
       withPendingDb2Sync({
         ...doc.data(),
@@ -465,7 +465,8 @@ Future<void> moveAllDoneToCompleted() async {
         'A06_DateC': Timestamp.now(),
       }),
     );
-    batch.set(
+
+    primaryBatch.set(
       deleteQueueRef,
       buildSyncDeleteQueuePayload(
         sourceCollection: JOBS_DONE_REF,
@@ -474,10 +475,12 @@ Future<void> moveAllDoneToCompleted() async {
       ),
     );
 
-    batch.delete(doc.reference);
+    doneBatch.delete(doc.reference); // ✅ same instance as jobsDoneDb
   }
 
-  await batch.commit();
+  // Commit primary first, then clean up source
+  await primaryBatch.commit();
+  await doneBatch.commit();
 
   print("Paid documents moved successfully.");
 }

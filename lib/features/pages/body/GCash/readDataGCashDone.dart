@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -18,20 +19,26 @@ class _GCashDoneWidget extends StatefulWidget {
 }
 
 class _GCashDoneWidgetState extends State<_GCashDoneWidget> {
-  static const int _pageSize = 20;
+  static const int _pageSize = 10;
 
   final List<GCashModel> _items = [];
+  final Set<String> _loadedIds = {};
+
   DocumentSnapshot? _lastDoc;
   bool _loading = false;
   bool _hasMore = true;
   int? _selectedIndex;
+
   final ScrollController _scroll = ScrollController();
-  final _db = DatabaseGCashDone();
+  final DatabaseGCashDone _db = DatabaseGCashDone();
+
+  StreamSubscription? _liveSub;
 
   @override
   void initState() {
     super.initState();
     _loadMore();
+
     _scroll.addListener(() {
       if (_scroll.position.pixels >= _scroll.position.maxScrollExtent - 200) {
         _loadMore();
@@ -42,36 +49,88 @@ class _GCashDoneWidgetState extends State<_GCashDoneWidget> {
   @override
   void dispose() {
     _scroll.dispose();
+    _liveSub?.cancel();
     super.dispose();
   }
 
+  // ✅ REALTIME (SAFE MERGE, NO UI CHANGE)
+  void _startLiveListener() {
+    _liveSub?.cancel();
+
+    _liveSub = _db.streamTop(_pageSize).listen((snap) {
+      if (!mounted) return;
+
+      final docs = snap.docs;
+
+      setState(() {
+        for (int i = 0; i < docs.length; i++) {
+          final doc = docs[i];
+          final id = doc.id;
+
+          final newItem = GCashModel.fromJson(doc.data())..docId = id;
+
+          final index = _items.indexWhere((e) => e.docId == id);
+
+          if (index >= 0) {
+            // 🔁 update existing
+            _items[index] = newItem;
+          } else {
+            // ➕ insert new at top
+            _items.insert(i, newItem);
+            _loadedIds.add(id);
+          }
+        }
+      });
+    });
+  }
+
+  // ✅ PAGINATION (UNCHANGED LOGIC + docId fix)
   Future<void> _loadMore() async {
     if (_loading || !_hasMore) return;
+
     setState(() => _loading = true);
 
     final snap = await _db.fetchPaginated(lastDoc: _lastDoc);
-    final newItems =
-        snap.docs.map((d) => GCashModel.fromJson(d.data())).toList();
+    final docs = snap.docs;
 
-    // Sort by CompleteDate descending (newest first)
-    //newItems.sort((a, b) => b.completeDate.compareTo(a.completeDate));
+    final newItems = docs.map((d) => GCashModel.fromJson(d.data())).toList();
 
     setState(() {
       _loading = false;
+
       if (newItems.length < _pageSize) _hasMore = false;
-      if (snap.docs.isNotEmpty) _lastDoc = snap.docs.last;
-      _items.addAll(newItems);
-      FsUsageTracker.instance.track('readDataGCashDone', snap.docs.length);
+      if (docs.isNotEmpty) _lastDoc = docs.last;
+
+      for (int i = 0; i < docs.length; i++) {
+        final id = docs[i].id;
+
+        if (!_loadedIds.contains(id)) {
+          _loadedIds.add(id);
+          newItems[i].docId = id; // ✅ IMPORTANT FIX
+          _items.add(newItems[i]);
+        }
+      }
+
+      // 🚀 start realtime AFTER first load
+      if (_liveSub == null && docs.isNotEmpty) {
+        _startLiveListener();
+      }
+
+      FsUsageTracker.instance.track('readDataGCashDone', docs.length);
     });
   }
 
   Future<void> _refresh() async {
+    _liveSub?.cancel();
+
     setState(() {
       _items.clear();
+      _loadedIds.clear();
       _lastDoc = null;
       _hasMore = true;
       _selectedIndex = null;
     });
+
     await _loadMore();
   }
 
@@ -159,22 +218,12 @@ class _GCashDoneWidgetState extends State<_GCashDoneWidget> {
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
                           color: borderCol, width: isSelected ? 2 : 1),
-                      boxShadow: [
-                        BoxShadow(
-                          color: isSelected
-                              ? Colors.green.withValues(alpha: 0.3)
-                              : Colors.black.withValues(alpha: 0.05),
-                          blurRadius: isSelected ? 12 : 4,
-                          offset: Offset(0, isSelected ? 4 : 2),
-                        ),
-                      ],
                     ),
                     child: Padding(
                       padding: const EdgeInsets.all(16),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Status circle
                           Stack(
                             alignment: Alignment.center,
                             children: [
@@ -184,9 +233,7 @@ class _GCashDoneWidgetState extends State<_GCashDoneWidget> {
                                 child: CircularProgressIndicator(
                                   value: gRepo.gCashStatus,
                                   strokeWidth: 4,
-                                  color: isSelected
-                                      ? Colors.green.shade600
-                                      : Colors.green.shade400,
+                                  color: Colors.green.shade400,
                                   backgroundColor: Colors.grey.shade200,
                                 ),
                               ),
@@ -195,49 +242,15 @@ class _GCashDoneWidgetState extends State<_GCashDoneWidget> {
                             ],
                           ),
                           const SizedBox(width: 16),
-                          // Content
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: Text(
-                                        gRepo.customerNumber,
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 16,
-                                          color: primaryText,
-                                        ),
-                                      ),
-                                    ),
-                                    if (gRepo.customerNumber.isNotEmpty)
-                                      InkWell(
-                                        borderRadius: BorderRadius.circular(20),
-                                        onTap: () async {
-                                          await Clipboard.setData(ClipboardData(
-                                              text: gRepo.customerNumber
-                                                  .replaceAll(
-                                                      RegExp(r'[^0-9]'), '')));
-                                          if (context.mounted) {
-                                            ScaffoldMessenger.of(context)
-                                                .showSnackBar(const SnackBar(
-                                              content: Text(
-                                                  'Customer number copied'),
-                                              duration:
-                                                  Duration(milliseconds: 800),
-                                            ));
-                                          }
-                                        },
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(4),
-                                          child: Icon(Icons.copy,
-                                              size: 18, color: primaryText),
-                                        ),
-                                      ),
-                                  ],
-                                ),
+                                Text(gRepo.customerNumber,
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                        color: primaryText)),
                                 const SizedBox(height: 8),
                                 Row(
                                   children: [
@@ -254,33 +267,28 @@ class _GCashDoneWidgetState extends State<_GCashDoneWidget> {
                                               color: badgeText,
                                               fontSize: 12)),
                                     ),
-                                    SizedBox(width: 5),
+                                    const SizedBox(width: 5),
                                     Icon(Icons.access_time,
                                         size: 14, color: secondaryText),
                                     const SizedBox(width: 4),
-                                    Flexible(
-                                      child: Text(
-                                        DateFormat('MM/dd hh:mm a')
-                                            .format(gRepo.logDate.toDate()),
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.w500,
-                                            color: secondaryText,
-                                            fontSize: 11),
-                                      ),
+                                    Text(
+                                      DateFormat('MM/dd hh:mm a')
+                                          .format(gRepo.logDate.toDate()),
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.w500,
+                                          color: secondaryText,
+                                          fontSize: 11),
                                     ),
                                   ],
                                 ),
-                                if (gRepo.customerName.isNotEmpty ||
-                                    gRepo.remarks.isNotEmpty) ...[
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    '${gRepo.customerName}${gRepo.customerName.isNotEmpty && gRepo.remarks.isNotEmpty ? ": " : ""}${gRepo.remarks}',
-                                    style: TextStyle(
-                                        fontWeight: FontWeight.w500,
-                                        color: remarksText,
-                                        fontSize: 12),
-                                  ),
-                                ],
+                                const SizedBox(height: 8),
+                                Text(
+                                  '${gRepo.customerName}: ${gRepo.remarks}',
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                      color: remarksText,
+                                      fontSize: 12),
+                                ),
                               ],
                             ),
                           ),
