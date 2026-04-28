@@ -141,14 +141,60 @@ Widget readDataGCashPending() {
                                     ),
                                     actions: [
                                       if (gRepo.gCashStatus <= 0.5)
-                                        boxButtonElevated(
-                                          context: context,
-                                          label: 'Delete',
+                                        TextButton(
                                           onPressed: () async {
-                                            await dbGCashPending
-                                                .deleteVoid(gRepo.getModel()!);
-                                            return true;
+                                            final confirmDelete =
+                                                await showDialog<bool>(
+                                              context: context,
+                                              builder: (context) {
+                                                return AlertDialog(
+                                                  title: const Text(
+                                                    'Delete GCash Record',
+                                                    style:
+                                                        TextStyle(fontSize: 14),
+                                                  ),
+                                                  content: Text(
+                                                    'Are you sure you want to delete this GCash record?\nThis action cannot be undone.',
+                                                    style:
+                                                        TextStyle(fontSize: 12),
+                                                  ),
+                                                  actions: [
+                                                    TextButton(
+                                                      onPressed: () =>
+                                                          Navigator.pop(
+                                                              context, false),
+                                                      child:
+                                                          const Text('Cancel'),
+                                                    ),
+                                                    TextButton(
+                                                      onPressed: () =>
+                                                          Navigator.pop(
+                                                              context, true),
+                                                      style:
+                                                          TextButton.styleFrom(
+                                                        foregroundColor:
+                                                            Colors.red,
+                                                      ),
+                                                      child:
+                                                          const Text('Delete'),
+                                                    ),
+                                                  ],
+                                                );
+                                              },
+                                            );
+
+                                            if (confirmDelete == true) {
+                                              await dbGCashPending.deleteVoid(
+                                                  gRepo.getModel()!);
+                                              if (context.mounted) {
+                                                Navigator.pop(context, true);
+                                              }
+                                            }
                                           },
+                                          style: TextButton.styleFrom(
+                                            foregroundColor: Colors.red,
+                                          ),
+                                          child: const Text('Delete'),
                                         ),
                                       if (isAdmin &&
                                           gRepo.itemUniqueId ==
@@ -170,17 +216,43 @@ Widget readDataGCashPending() {
                                       if (gRepo.gCashStatus > 0.5)
                                         boxButtonElevated(
                                           context: context,
-                                          label: 'Complete',
+                                          label: gRepo.itemUniqueId ==
+                                                      menuOthUniqIdCashOut &&
+                                                  gRepo.gCashStatus < 1.0
+                                              ? 'Bigay Cash'
+                                              : 'Complete',
                                           onPressed: () async {
-                                            // Generate Supplies Hist/Curr for Cash-Out
+                                            // For Cash-Out: First complete sets to 1.0 and stays in pending
+                                            // Second complete moves to done
                                             if (gRepo.itemUniqueId ==
-                                                    menuOthUniqIdCashOut &&
-                                                gRepo.gCashStatus >= 0.75) {
-                                              await _generateCashOutSuppliesRecords(
-                                                  gRepo);
+                                                menuOthUniqIdCashOut) {
+                                              if (gRepo.gCashStatus < 1.0) {
+                                                // First complete: Admin only - set to 1.0 and stay in pending
+                                                if (!isAdmin) {
+                                                  ScaffoldMessenger.of(context)
+                                                      .showSnackBar(
+                                                    const SnackBar(
+                                                      content: Text(
+                                                          'Only admin can complete this step'),
+                                                    ),
+                                                  );
+                                                  return false;
+                                                }
+                                                gRepo.gCashStatus = 1.0;
+                                                await dbGCashPending.updateVoid(
+                                                    gRepo.getModel()!);
+                                              } else if (gRepo.gCashStatus >=
+                                                  1.0) {
+                                                // Second complete: Non-admin can do this - move to done
+                                                await _generateCashOutSuppliesRecords(
+                                                    gRepo);
+                                                await moveToNext(gRepo.docId);
+                                              }
+                                            } else {
+                                              // For Cash-In/Load: move to done immediately
+                                              gRepo.gCashStatus = 1.0;
+                                              await moveToNext(gRepo.docId);
                                             }
-                                            gRepo.gCashStatus = 1.0;
-                                            await moveToNext(gRepo.docId);
                                             return true;
                                           },
                                         ),
@@ -318,6 +390,169 @@ Widget readDataGCashPending() {
                                     ),
                                   ],
                                 ),
+                                // Process Progress Indicator
+                                if (gRepo.itemUniqueId == menuOthUniqIdCashIn ||
+                                    gRepo.itemUniqueId ==
+                                        menuOthUniqIdLoad) ...[
+                                  const SizedBox(height: 8),
+                                  Row(
+                                    children: [
+                                      // Ticket + Payment
+                                      Text(
+                                        'Ticket + Payment',
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w600,
+                                          color: isDark
+                                              ? Colors.white
+                                              : Colors.black87,
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 3),
+                                        child: Text(
+                                          '>',
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.bold,
+                                            color: isDark
+                                                ? Colors.white
+                                                : Colors.black87,
+                                          ),
+                                        ),
+                                      ),
+                                      // SS (Screenshot)
+                                      Text(
+                                        'Attach SS',
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w600,
+                                          color: gRepo.cashInImageUrl.isNotEmpty
+                                              ? (isDark
+                                                  ? Colors.white
+                                                  : Colors.black87)
+                                              : (isDark
+                                                  ? Colors.grey.shade600
+                                                      .withValues(alpha: 0.5)
+                                                  : Colors.grey.shade600
+                                                      .withValues(alpha: 0.5)),
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 3),
+                                        child: Text(
+                                          '>',
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.bold,
+                                            color:
+                                                gRepo.cashInImageUrl.isNotEmpty
+                                                    ? (isDark
+                                                        ? Colors.white
+                                                        : Colors.black87)
+                                                    : (isDark
+                                                        ? Colors.grey.shade600
+                                                        : Colors.grey.shade600),
+                                            decoration: gRepo
+                                                    .cashInImageUrl.isNotEmpty
+                                                ? TextDecoration.none
+                                                : TextDecoration.lineThrough,
+                                          ),
+                                        ),
+                                      ),
+                                      // Complete
+                                      Text(
+                                        'Complete',
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.grey.shade600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ] else if (gRepo.itemUniqueId ==
+                                    menuOthUniqIdCashOut) ...[
+                                  const SizedBox(height: 8),
+                                  Row(
+                                    children: [
+                                      // Ticket + SS
+                                      Text(
+                                        'Ticket + SS',
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w600,
+                                          color: isDark
+                                              ? Colors.white
+                                              : Colors.black87,
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 3),
+                                        child: Text(
+                                          '>',
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.bold,
+                                            color: isDark
+                                                ? Colors.white
+                                                : Colors.black87,
+                                          ),
+                                        ),
+                                      ),
+                                      // Complete (Bigay Cash)
+                                      Text(
+                                        'Check SS',
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w600,
+                                          color: gRepo.gCashStatus >= 1.0
+                                              ? (isDark
+                                                  ? Colors.white
+                                                  : Colors.black87)
+                                              : (isDark
+                                                  ? Colors.grey.shade600
+                                                      .withValues(alpha: 0.5)
+                                                  : Colors.grey.shade600
+                                                      .withValues(alpha: 0.5)),
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 3),
+                                        child: Text(
+                                          '>',
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.bold,
+                                            color: gRepo.gCashStatus >= 1.0
+                                                ? (isDark
+                                                    ? Colors.white
+                                                    : Colors.black87)
+                                                : (isDark
+                                                    ? Colors.grey.shade600
+                                                    : Colors.grey.shade600),
+                                            decoration: gRepo.gCashStatus >= 1.0
+                                                ? TextDecoration.none
+                                                : TextDecoration.lineThrough,
+                                          ),
+                                        ),
+                                      ),
+                                      // Complete
+                                      Text(
+                                        'Bigay Cash',
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.grey.shade600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
                                 // Customer Name & Remarks
                                 if (gRepo.customerName.isNotEmpty ||
                                     gRepo.remarks.isNotEmpty) ...[

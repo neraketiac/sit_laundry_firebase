@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:laundry_firebase/core/constants/sharedConstantsFinal.dart';
 import 'package:laundry_firebase/core/global/variables_all_codes.dart';
-import 'package:laundry_firebase/core/global/variables_oth.dart';
 import 'package:laundry_firebase/features/payments/repository/gcash_repository.dart';
 
 Widget fundTypeToggle(
@@ -18,6 +17,52 @@ Widget fundTypeToggle(
     return labels[index];
   }
 
+  List<List<String>> getDescriptionStepsGrouped(int fundCode) {
+    if (fundCode == menuOthUniqIdCashIn || fundCode == menuOthUniqIdLoad) {
+      return [
+        ["Staff", "Ket", "Staff/Ket"],
+        ["Ticket + Payment", "Attach SS", "Complete"]
+      ];
+    } else if (fundCode == menuOthUniqIdCashOut) {
+      return [
+        ["Staff", "Ket", "Staff/Ket"],
+        ["Ticket + SS", "Check SS", "Bigay Cash"]
+      ];
+    }
+    return [];
+  }
+
+  List<List<Color>> getDescriptionColorsGrouped(int fundCode) {
+    final isDarkMode =
+        true; // You can detect this from Theme.of(context).brightness
+
+    final amberColor = isDarkMode ? Colors.amber[300]! : Colors.amber;
+    final whiteColor = isDarkMode ? Colors.grey[200]! : Colors.white;
+    final greenColor = isDarkMode ? Colors.green[300]! : Colors.green;
+
+    if (fundCode == menuOthUniqIdCashIn || fundCode == menuOthUniqIdLoad) {
+      return [
+        [amberColor, whiteColor, greenColor],
+        [amberColor, whiteColor, greenColor]
+      ];
+    } else if (fundCode == menuOthUniqIdCashOut) {
+      return [
+        [amberColor, whiteColor, greenColor],
+        [amberColor, whiteColor, greenColor]
+      ];
+    }
+    return [];
+  }
+
+  String getFundTypeLabel(int fundCode) {
+    if (fundCode == menuOthUniqIdCashIn || fundCode == menuOthUniqIdLoad) {
+      return "Cash In / Load Procedure";
+    } else if (fundCode == menuOthUniqIdCashOut) {
+      return "Cash Out Procedure";
+    }
+    return "";
+  }
+
   return Visibility(
     visible: true,
     child: Container(
@@ -26,16 +71,16 @@ Widget fundTypeToggle(
         borderRadius: BorderRadius.circular(24),
         gradient: LinearGradient(
           colors: [
-            Colors.white.withOpacity(0.12),
-            Colors.white.withOpacity(0.05),
+            Colors.white.withValues(alpha: 0.12),
+            Colors.white.withValues(alpha: 0.05),
           ],
         ),
         border: Border.all(
-          color: Colors.white.withOpacity(0.25),
+          color: Colors.white.withValues(alpha: 0.25),
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.35),
+            color: Colors.black.withValues(alpha: 0.35),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -51,7 +96,7 @@ Widget fundTypeToggle(
               fontSize: 12,
               letterSpacing: 1,
               fontWeight: FontWeight.w600,
-              color: Colors.white.withOpacity(0.7),
+              color: Colors.white.withValues(alpha: 0.7),
             ),
           ),
 
@@ -62,9 +107,9 @@ Widget fundTypeToggle(
             padding: const EdgeInsets.all(1),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(18),
-              color: Colors.black.withOpacity(0.25),
+              color: Colors.black.withValues(alpha: 0.25),
               border: Border.all(
-                color: Colors.white.withOpacity(0.2),
+                color: Colors.white.withValues(alpha: 0.2),
               ),
             ),
             child: Row(
@@ -114,13 +159,124 @@ Widget fundTypeToggle(
                             fontWeight: FontWeight.w600,
                             color: isSelected
                                 ? Colors.white
-                                : Colors.white.withOpacity(0.6),
+                                : Colors.white.withValues(alpha: 0.6),
                           ),
                         ),
                       ),
                     ),
                   );
                 },
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 12),
+
+          /// 🔹 DESCRIPTION - ROW 1: FUND TYPE LABEL
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: Center(
+              child: Text(
+                getFundTypeLabel(gRepo.selectedFundCode),
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white.withValues(alpha: 0.9),
+                ),
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 6),
+
+          /// 🔹 DESCRIPTION - ROWS 2 & 3: ALIGNED COLUMNS
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: List.generate(
+                  getDescriptionStepsGrouped(gRepo.selectedFundCode)[0].length,
+                  (columnIndex) {
+                    final steps1 =
+                        getDescriptionStepsGrouped(gRepo.selectedFundCode)[0];
+                    final steps2 =
+                        getDescriptionStepsGrouped(gRepo.selectedFundCode)[1];
+                    final colors1 =
+                        getDescriptionColorsGrouped(gRepo.selectedFundCode)[0];
+                    final colors2 =
+                        getDescriptionColorsGrouped(gRepo.selectedFundCode)[1];
+
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          // Row 2 content
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                steps1[columnIndex],
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: colors1[columnIndex],
+                                ),
+                              ),
+                              if (columnIndex < steps1.length - 1)
+                                Padding(
+                                  padding:
+                                      const EdgeInsets.symmetric(horizontal: 4),
+                                  child: Text(
+                                    ">",
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                      color:
+                                          Colors.white.withValues(alpha: 0.5),
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                          const SizedBox(height: 6),
+                          // Row 3 content
+                          if (columnIndex < steps2.length)
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  steps2[columnIndex],
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                    color: colors2[columnIndex],
+                                  ),
+                                ),
+                                if (columnIndex < steps2.length - 1)
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 4),
+                                    child: Text(
+                                      ">",
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.bold,
+                                        color:
+                                            Colors.white.withValues(alpha: 0.5),
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
               ),
             ),
           ),
