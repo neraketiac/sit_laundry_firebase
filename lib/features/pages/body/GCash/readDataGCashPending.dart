@@ -319,18 +319,18 @@ Widget readDataGCashPending() {
                                       child: InkWell(
                                         borderRadius: BorderRadius.circular(20),
                                         onTap: () async {
+                                          final cleanNumber =
+                                              gRepo.customerNumber.replaceAll(
+                                                  RegExp(r'[^0-9]'), '');
                                           await Clipboard.setData(
-                                            ClipboardData(
-                                                text: gRepo.customerNumber
-                                                    .replaceAll(
-                                                        RegExp(r'[^0-9]'), '')),
+                                            ClipboardData(text: cleanNumber),
                                           );
 
                                           ScaffoldMessenger.of(context)
                                               .showSnackBar(
-                                            const SnackBar(
+                                            SnackBar(
                                               content: Text(
-                                                  'Customer number copied'),
+                                                  'Copied $cleanNumber ${gRepo.remarks}'),
                                               duration:
                                                   Duration(milliseconds: 800),
                                             ),

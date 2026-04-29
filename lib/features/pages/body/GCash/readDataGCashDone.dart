@@ -246,11 +246,55 @@ class _GCashDoneWidgetState extends State<_GCashDoneWidget> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(gRepo.customerNumber,
-                                    style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 16,
-                                        color: primaryText)),
+                                // Phone Number with Copy Button
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        gRepo.customerNumber,
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16,
+                                          color: primaryText,
+                                        ),
+                                      ),
+                                    ),
+                                    Material(
+                                      color: Colors.transparent,
+                                      child: InkWell(
+                                        borderRadius: BorderRadius.circular(20),
+                                        onTap: () async {
+                                          final cleanNumber =
+                                              gRepo.customerNumber.replaceAll(
+                                                  RegExp(r'[^0-9]'), '');
+                                          await Clipboard.setData(
+                                            ClipboardData(text: cleanNumber),
+                                          );
+
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            SnackBar(
+                                              content: Text(
+                                                  'Copied $cleanNumber ${gRepo.remarks}'),
+                                              duration:
+                                                  Duration(milliseconds: 800),
+                                            ),
+                                          );
+                                        },
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(4),
+                                          child: Icon(
+                                            Icons.copy,
+                                            size: 18,
+                                            color: isSelected
+                                                ? Colors.deepPurple
+                                                : Colors.grey.shade600,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                                 const SizedBox(height: 8),
                                 Row(
                                   children: [
