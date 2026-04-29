@@ -38,39 +38,9 @@ call firebase deploy --only hosting
 if errorlevel 1 ( echo ERROR: firebase deploy failed & exit /b 1 )
 
 echo [6/7] Updating Firestore project_version...
-REM Create a temporary Node.js script to update Firestore
-(
-echo const admin = require('firebase-admin');
-echo const serviceAccount = require('./firebase-key.json');
-echo.
-echo admin.initializeApp({
-echo   credential: admin.credential.cert(serviceAccount)
-echo });
-echo.
-echo const db = admin.firestore();
-echo.
-echo async function updateVersion() {
-echo   try {
-echo     await db.collection('project_version').doc('current').set({
-echo       version: '!NEW_VERSION!'
-echo     }, { merge: true });
-echo     console.log('✅ Firestore project_version updated to !NEW_VERSION!');
-echo     process.exit(0);
-echo   } catch (error) {
-echo     console.error('❌ Error updating Firestore:', error);
-echo     process.exit(1);
-echo   }
-echo }
-echo.
-echo updateVersion();
-) > update_firestore_version.js
-
-REM Run the Node.js script
-node update_firestore_version.js
+REM Run the Dart script to update Firestore
+dart scripts/update_firestore_version.dart !NEW_VERSION!
 if errorlevel 1 ( echo WARNING: Firestore update failed, but deployment completed )
-
-REM Clean up the temporary script
-del update_firestore_version.js
 
 echo.
 echo [7/7] Done. Version: !NEW_VERSION!
