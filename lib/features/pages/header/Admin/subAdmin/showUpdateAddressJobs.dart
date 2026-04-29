@@ -138,7 +138,7 @@ Future<void> runAddressSync(BuildContext context) async {
         int customerId = data['C00_CustomerId'];
 
         /// FIND LOYALTY - use loyaltyCardDb (forthFirestore)
-        final loyaltySnapshot = await FirebaseService.forthFirestore
+        final loyaltySnapshot = await FirebaseService.loyaltyFirestore
             .collection("loyalty")
             .where('cardNumber', isEqualTo: customerId)
             .limit(1)

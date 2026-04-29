@@ -13,7 +13,7 @@ import 'package:laundry_firebase/core/global/variables.dart';
 external JSPromise<JSObject> _requestWakeLock(JSString type);
 
 // Shorthand for the secondary Firestore
-FirebaseFirestore get _db => FirebaseService.secondaryFirestore;
+FirebaseFirestore get _db => FirebaseService.riderFirestore;
 
 const _kCollection = 'rider_location';
 const _kDoc = 'current';

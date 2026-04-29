@@ -12,7 +12,7 @@ const String LOYALTY_VERSION_COUNTER = "counter";
 /// Increments the loyalty version counter so clients know to re-fetch.
 Future<void> bumpLoyaltyVersion() async {
   try {
-    await FirebaseService.forthFirestore
+    await FirebaseService.loyaltyFirestore
         .collection(LOYALTY_VERSION_DOC)
         .doc(LOYALTY_VERSION_COUNTER)
         .set({'version': FieldValue.increment(1)}, SetOptions(merge: true));
@@ -20,7 +20,7 @@ Future<void> bumpLoyaltyVersion() async {
 }
 
 class DatabaseLoyalty {
-  final _firestore = FirebaseService.forthFirestore;
+  final _firestore = FirebaseService.loyaltyFirestore;
 
   late final CollectionReference _customerRef;
 

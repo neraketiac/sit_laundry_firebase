@@ -15,7 +15,7 @@ import 'package:laundry_firebase/features/customers/repository/customer_reposito
 @JS('navigator.wakeLock.request')
 external JSPromise<JSObject> _requestWakeLock(JSString type);
 
-FirebaseFirestore get _secondaryDb => FirebaseService.secondaryFirestore;
+FirebaseFirestore get _secondaryDb => FirebaseService.riderFirestore;
 
 const _kCollection = 'rider_location';
 const _kDoc = 'current';

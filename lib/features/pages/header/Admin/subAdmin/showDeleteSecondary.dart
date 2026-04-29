@@ -115,7 +115,7 @@ Future<void> deleteSecondaryCollection(
       ? FirebaseService.jobsDoneFirestore
       : collectionName == 'Jobs_completed'
           ? FirebaseFirestore.instance
-          : FirebaseService.forthFirestore;
+          : FirebaseService.loyaltyFirestore;
 
   /// Loading dialog
   showDialog(

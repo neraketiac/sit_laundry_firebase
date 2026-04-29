@@ -17,7 +17,7 @@ class _ShowRiderManagementState extends State<ShowRiderManagement> {
   final Map<String, ModelRiderAvailability> _schedule = {};
   bool _loading = true;
 
-  final _col = FirebaseService.secondaryFirestore.collection('Rider_schedule');
+  final _col = FirebaseService.riderFirestore.collection('Rider_schedule');
   final _today = DateTime.now();
 
   @override

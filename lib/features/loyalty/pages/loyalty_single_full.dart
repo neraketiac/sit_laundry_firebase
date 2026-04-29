@@ -136,7 +136,7 @@ class _MyLoyaltyCardFullState extends State<MyLoyaltyCardFull>
     if (parsed == null) return null;
 
     // loyalty collection is on the forthWeb database
-    final snap = await FirebaseService.forthFirestore
+    final snap = await FirebaseService.loyaltyFirestore
         .collection('loyalty')
         .where('cardNumber', isEqualTo: parsed)
         .limit(1)
@@ -796,7 +796,7 @@ class _MyLoyaltyCardFullState extends State<MyLoyaltyCardFull>
 
   Widget _pickupOrdersList(int cardNumber) {
     return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseService.secondaryFirestore
+      stream: FirebaseService.riderFirestore
           .collection('loyalty_order_online')
           .where('cardNumber', isEqualTo: cardNumber)
           .snapshots(),

@@ -134,7 +134,7 @@ class _RunMigrationState extends State<RunMigration> {
 
     final main = FirebaseService.primaryFirestore;
     final jobsDone = FirebaseService.jobsDoneFirestore;
-    final forth = FirebaseService.forthFirestore;
+    final forth = FirebaseService.loyaltyFirestore;
 
     bool success = true;
     String resultMessage = "";

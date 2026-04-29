@@ -28,7 +28,7 @@ class ShowRiderOrders extends StatefulWidget {
 
 class _ShowRiderOrdersState extends State<ShowRiderOrders> {
   final _col =
-      FirebaseService.secondaryFirestore.collection('loyalty_order_online');
+      FirebaseService.riderFirestore.collection('loyalty_order_online');
 
   // Filter state
   PickupStatus? _filterStatus; // null = all

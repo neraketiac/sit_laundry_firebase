@@ -3,11 +3,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../firebase_options.dart';
 
 class FirebaseService {
-  static late FirebaseApp secondaryApp;
-  static late FirebaseFirestore secondaryFirestore;
+  static late FirebaseApp riderApp;
+  static late FirebaseFirestore riderFirestore;
 
-  static late FirebaseApp forthApp;
-  static late FirebaseFirestore forthFirestore;
+  static late FirebaseApp loyaltyApp;
+  static late FirebaseFirestore loyaltyFirestore;
 
   static late FirebaseApp jobsDoneApp;
   static late FirebaseFirestore jobsDoneFirestore;
@@ -30,18 +30,18 @@ class FirebaseService {
     );
 
     // SECONDARY Firebase
-    secondaryApp = await Firebase.initializeApp(
+    riderApp = await Firebase.initializeApp(
       name: 'secondary',
       options: DefaultFirebaseOptions.riderDb,
     );
-    secondaryFirestore = FirebaseFirestore.instanceFor(app: secondaryApp);
+    riderFirestore = FirebaseFirestore.instanceFor(app: riderApp);
 
-    // FORTH Firebase (Loyalty Card DB)
-    forthApp = await Firebase.initializeApp(
-      name: 'forth',
+    // LOYALTY CARD DB Firebase
+    loyaltyApp = await Firebase.initializeApp(
+      name: 'loyaltyCardDb',
       options: DefaultFirebaseOptions.loyaltyCardDb,
     );
-    forthFirestore = FirebaseFirestore.instanceFor(app: forthApp);
+    loyaltyFirestore = FirebaseFirestore.instanceFor(app: loyaltyApp);
 
     // JOBS DONE Firebase
     jobsDoneApp = await Firebase.initializeApp(

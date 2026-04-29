@@ -60,12 +60,12 @@ class _MigrateToThirdState extends State<MigrateToThird> {
         const Divider(),
         const SizedBox(height: 20),
         const Text(
-          "Migrate to Third DB",
+          "Migrate to Reports DB",
           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 4),
         const Text(
-          "Select collections from main firestore to migrate to thirdWeb.",
+          "Select collections from main firestore to migrate to Reports DB.",
           style: TextStyle(color: Colors.grey),
         ),
         const SizedBox(height: 12),
@@ -120,7 +120,7 @@ class _MigrateToThirdState extends State<MigrateToThird> {
       builder: (_) => AlertDialog(
         title: const Text("Confirm Migration"),
         content: Text(
-          "${deleteFirst ? '⚠️ DELETE then migrate' : 'Migrate'} the following collections to thirdWeb?\n\n${selected.join('\n')}"
+          "${deleteFirst ? '⚠️ DELETE then migrate' : 'Migrate'} the following collections to Reports DB?\n\n${selected.join('\n')}"
           "${deleteFirst ? '\n\nDestination docs will be permanently deleted first.' : ''}",
         ),
         actions: [
@@ -269,7 +269,7 @@ class _MigrateToThirdState extends State<MigrateToThird> {
     } else if (collection == 'SuppliesCurr' || collection == 'SuppliesHist') {
       return FirebaseService.suppliesFirestore;
     } else if (collection == 'loyalty') {
-      return FirebaseService.forthFirestore;
+      return FirebaseService.loyaltyFirestore;
     } else {
       return main;
     }
@@ -304,7 +304,7 @@ class _ProgressDialogState extends State<_ProgressDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text("Migrating to ThirdWeb..."),
+      title: const Text("Migrating to Reports DB..."),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
