@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/copy_to_loyalty_db.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/edit_auto_salary_date_page.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/AutoSalaryDateOneTimeBatch.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/other_item_admin/showBleItemsMaintenance.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/other_item_admin/showDetItemsMaintenance.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/other_item_admin/showFabItemsMaintenance.dart';
-import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/runMigration.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/showAdminDateDPage.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/showBatchPromo.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/batch_fix_promo_counter_page.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/batch_promo_review_page.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/loyalty_validation_page.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/migrateToReportsDB.dart';
+import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/sit_vs_loyalty.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/rider/show_rider_management.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/reports/monthly_analytics/monthly_analytics_page.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
@@ -108,6 +109,43 @@ class _ShowAdminMainPageState extends State<ShowAdminMainPage> {
 
             const SizedBox(height: 30),
 
+            /// LOYALTY DATA SYNC - TOP PRIORITY
+            if (isAdmin)
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.purple.shade700, width: 2),
+                  borderRadius: BorderRadius.circular(8),
+                  color: Colors.purple.shade50,
+                ),
+                child: ListTile(
+                  leading:
+                      const Icon(Icons.compare_arrows, color: Colors.purple),
+                  title: const Text("🔄 Loyalty Data Sync",
+                      style: TextStyle(fontWeight: FontWeight.bold)),
+                  subtitle: const Text(
+                      "Compare and sync loyalty records between Primary DB and Loyalty DB"),
+                  trailing: const Icon(Icons.arrow_forward_ios),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => Scaffold(
+                          appBar:
+                              AppBar(title: const Text("Loyalty Data Sync")),
+                          body: const SingleChildScrollView(
+                            padding: EdgeInsets.all(16),
+                            child: SitVsLoyalty(),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+
+            const SizedBox(height: 30),
+
             if (isAdmin)
               Container(
                 padding: const EdgeInsets.all(16),
@@ -155,7 +193,7 @@ class _ShowAdminMainPageState extends State<ShowAdminMainPage> {
                 ),
                 child: ListTile(
                   leading: const Icon(Icons.build_circle, color: Colors.orange),
-                  title: const Text("Batch Fix PromoCounter"),
+                  title: const Text("Batch Fix PromoCounterxxx"),
                   subtitle: const Text(
                       "Fix incorrect promoCounter values in Jobs_done and Jobs_completed"),
                   trailing: const Icon(Icons.arrow_forward_ios),
@@ -309,7 +347,7 @@ class _ShowAdminMainPageState extends State<ShowAdminMainPage> {
                       MaterialPageRoute(
                         builder: (_) => Scaffold(
                           appBar:
-                              AppBar(title: const Text("Migrate to ThirdWeb")),
+                              AppBar(title: const Text("Migrate to ThirdWebx")),
                           body: const SingleChildScrollView(
                             padding: EdgeInsets.all(16),
                             child: MigrateToThird(),
@@ -320,6 +358,8 @@ class _ShowAdminMainPageState extends State<ShowAdminMainPage> {
                   },
                 ),
               ),
+
+            const SizedBox(height: 12),
 
             const SizedBox(height: 30),
 

@@ -18,6 +18,7 @@ import 'package:laundry_firebase/features/pages/body/Loyalty/enterloyaltycode.da
 import 'package:laundry_firebase/features/pages/body/Employee/readDataEmployeeCurr.dart';
 import 'package:laundry_firebase/features/pages/body/Employee/readDataEmployeeHist.dart';
 import 'package:laundry_firebase/features/pages/body/JobsCompleted/readDataJobsCompleted.dart';
+import 'package:laundry_firebase/features/customers/repository/customer_repository.dart';
 import 'package:laundry_firebase/features/pages/body/JobsOnGoing/readDataJobsOnGoing.dart';
 import 'package:laundry_firebase/features/pages/body/JobsOnQueue/readDataJobsOnQueue.dart';
 import 'package:laundry_firebase/features/pages/body/JobsDone/readDataJobsDone.dart';
@@ -25,6 +26,7 @@ import 'package:laundry_firebase/features/pages/body/rider/show_rider_orders.dar
 import 'package:laundry_firebase/features/pages/body/Supplies/readSuppliesCurrent.dart';
 import 'package:laundry_firebase/features/pages/body/Supplies/readSuppliesHist.dart';
 import 'package:laundry_firebase/features/pages/body/Unpaid/readUnpaidLaundry.dart';
+import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/copy_to_loyalty_db.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/show_enable_promo.dart';
 // ── Daily Routine ──────────────────────────────────────────────
 import 'package:laundry_firebase/features/pages/header/Funds/showFundCheck.dart';
@@ -44,8 +46,8 @@ import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/batch_prom
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/batch_fix_promo_counter_page.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/reports/monthly_analytics/monthly_analytics_page.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/loyalty_validation_page.dart';
-import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/runMigration.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/migrateToReportsDB.dart';
+import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/sit_vs_loyalty.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/showAdminDateDPage.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/other_item_admin/showOtherItemsMaintenance.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/other_item_admin/showDetItemsMaintenance.dart';
@@ -402,6 +404,19 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                                 MaterialPageRoute(
                                     builder: (_) => Scaffold(
                                         appBar: AppBar(
+                                            title: const Text(
+                                                'Loyalty Data Sync')),
+                                        body: const SingleChildScrollView(
+                                            padding: EdgeInsets.all(16),
+                                            child: SitVsLoyalty())))),
+                            child: const Text('🔄 Loyalty Data Sync'),
+                          ),
+                          MenuItemButton(
+                            onPressed: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (_) => Scaffold(
+                                        appBar: AppBar(
                                             title: const Text('Batch Promo')),
                                         body: const BatchPromo()))),
                             child: const Text('🎁 Batch Promo'),
@@ -420,7 +435,7 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                                 MaterialPageRoute(
                                     builder: (_) =>
                                         const BatchFixPromoCounterPage())),
-                            child: const Text('🔧 Fix PromoCounter'),
+                            child: const Text('🔧 Fix PromoCounterxxx'),
                           ),
                           MenuItemButton(
                             onPressed: () => Navigator.push(
@@ -529,6 +544,10 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                   onPressed: () {
                     FsUsageTracker.instance.flush(trigger: 'logout');
                     web.window.localStorage.removeItem(storageKey);
+                    web.window.localStorage.removeItem('loyalty_cache');
+                    web.window.localStorage.removeItem('loyalty_cache_version');
+                    // Clear in-memory customer cache
+                    CustomerRepository.instance.invalidate();
                     setState(() {
                       loggedIn = false;
                       rememberMe = true;

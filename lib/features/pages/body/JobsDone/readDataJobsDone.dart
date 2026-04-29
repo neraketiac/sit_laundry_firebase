@@ -15,6 +15,7 @@ import 'package:laundry_firebase/core/utils/fs_usage_tracker.dart';
 import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_display_job/visIconArea.dart';
 import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_display_job/visNameArea.dart';
 import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_alter_job/visPaidUnpaidArea.dart';
+import 'package:laundry_firebase/features/customers/repository/customer_repository.dart';
 
 Widget readDataJobsDone(VoidCallback dialogSetState) {
   DatabaseJobsDone databaseJobsDone = DatabaseJobsDone();
@@ -153,6 +154,9 @@ Widget readDataJobsDone(VoidCallback dialogSetState) {
   Future<void> showSearchDialog(
     BuildContext context,
   ) async {
+    // Check for updated loyalty data before opening search
+    await CustomerRepository.instance.loadOnce();
+
     JobModelRepository jobRepox = JobModelRepository();
     jobRepox.reset();
 
