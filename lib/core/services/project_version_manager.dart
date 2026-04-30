@@ -12,7 +12,7 @@ class ProjectVersionManager {
 
   static const Duration _cacheDuration = Duration(minutes: 15);
 
-  bool _isVersionValid = false;
+  bool _isVersionValid = true;
   bool _versionChecked = false;
   DateTime? _lastCheckTime;
 

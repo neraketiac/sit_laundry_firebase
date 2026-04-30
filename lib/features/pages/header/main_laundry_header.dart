@@ -1,7 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:laundry_firebase/core/utils/app_scale.dart';
-import 'package:laundry_firebase/core/services/project_version_manager.dart';
 import 'package:laundry_firebase/features/pages/body/main_laundry_body.dart';
 import 'package:laundry_firebase/features/pages/header/Funds/showLaundryPayment.dart';
 import 'package:laundry_firebase/features/pages/header/GCash/showGCashOnly.dart';
@@ -55,7 +54,6 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader>
     double iconSize = 20,
     double labelFontSize = 13,
     bool mini = true,
-    bool enabled = true,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final labelBg = isDark ? const Color(0xFF2A2A2A) : Colors.white;
@@ -67,16 +65,16 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader>
       bottom: bottom,
       right: right,
       child: AnimatedScale(
-        scale: _isOpen && enabled ? 1 : 0,
+        scale: _isOpen ? 1 : 0,
         duration: const Duration(milliseconds: 250),
         curve: Curves.easeOutBack,
         child: AnimatedOpacity(
-          opacity: _isOpen && enabled ? 1 : 0,
+          opacity: _isOpen ? 1 : 0,
           duration: const Duration(milliseconds: 200),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              if (_isOpen && label != null && enabled)
+              if (_isOpen && label != null)
                 Container(
                   padding: EdgeInsets.symmetric(
                       horizontal: labelFontSize, vertical: labelFontSize * 0.6),
@@ -100,7 +98,7 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader>
                     ),
                   ),
                 ),
-              if (label != null && enabled) const SizedBox(width: 12),
+              if (label != null) const SizedBox(width: 12),
               Container(
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
@@ -115,8 +113,8 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader>
                 child: FloatingActionButton(
                   heroTag: hero,
                   mini: mini,
-                  backgroundColor: enabled ? backgroundColor : Colors.grey,
-                  onPressed: enabled ? onTap : null,
+                  backgroundColor: backgroundColor,
+                  onPressed: onTap,
                   child: Icon(icon, size: iconSize),
                 ),
               ),
@@ -136,10 +134,6 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader>
     final double iconSize = s.isTablet ? 26.0 : 20.0;
     final double labelSize = s.isTablet ? 15.0 : 13.0;
     final bool mini = !s.isTablet; // full-size FAB on iPad
-
-    // Check if version is valid
-    final isVersionValid =
-        ProjectVersionManager.instance.isVersionCurrentlyValid();
 
     return Scaffold(
       body: MyMainLaundryBody(_sEmpId),
@@ -163,7 +157,6 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader>
                   showLaundryPayment(context, jobRepoNonJob);
                 },
                 backgroundColor: Colors.teal,
-                enabled: isVersionValid,
               ),
 
             /// Cash In/Out
@@ -182,7 +175,6 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader>
                 iconSize: iconSize,
                 labelFontSize: labelSize,
                 mini: mini,
-                enabled: isVersionValid,
               ),
 
             /// Funds In/Out
@@ -201,7 +193,6 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader>
                 iconSize: iconSize,
                 labelFontSize: labelSize,
                 mini: mini,
-                enabled: isVersionValid,
               ),
 
             /// Enter GCash (Bottom Middle - No Label)
@@ -219,7 +210,6 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader>
                 backgroundColor: cShowGCash,
                 iconSize: iconSize,
                 mini: mini,
-                enabled: isVersionValid,
               ),
 
             /// Enter Laundry (Bottom Left)
@@ -238,7 +228,6 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader>
                 iconSize: iconSize,
                 labelFontSize: labelSize,
                 mini: mini,
-                enabled: isVersionValid,
               ),
 
             /// MAIN FAB (Always visible)
@@ -254,15 +243,13 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader>
                     mini: mini,
                     backgroundColor: _isOpen ? Colors.red : Colors.deepPurple,
                     elevation: 12,
-                    onPressed: isVersionValid
-                        ? () {
-                            if (_isOpen) {
-                              setState(() => _isOpen = false);
-                            } else {
-                              setState(() => _isOpen = true);
-                            }
-                          }
-                        : null,
+                    onPressed: () {
+                      if (_isOpen) {
+                        setState(() => _isOpen = false);
+                      } else {
+                        setState(() => _isOpen = true);
+                      }
+                    },
                     child: AnimatedRotation(
                       duration: const Duration(milliseconds: 250),
                       turns: _isOpen ? 0.125 : 0,
