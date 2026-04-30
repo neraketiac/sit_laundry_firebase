@@ -48,6 +48,7 @@ import 'package:laundry_firebase/features/pages/header/Admin/reports/monthly_ana
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/loyalty_validation_page.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/migrateToReportsDB.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/sit_vs_loyalty.dart';
+import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/sit_vs_loyalty_jobs.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/showAdminDateDPage.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/other_item_admin/showOtherItemsMaintenance.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/other_item_admin/showDetItemsMaintenance.dart';
@@ -410,6 +411,19 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                                             padding: EdgeInsets.all(16),
                                             child: SitVsLoyalty())))),
                             child: const Text('🔄 Loyalty Data Sync'),
+                          ),
+                          MenuItemButton(
+                            onPressed: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (_) => Scaffold(
+                                        appBar: AppBar(
+                                            title:
+                                                const Text('Jobs vs Loyalty')),
+                                        body: const SingleChildScrollView(
+                                            padding: EdgeInsets.all(16),
+                                            child: SitVsLoyaltyJobs())))),
+                            child: const Text('📋 Jobs vs Loyalty'),
                           ),
                           MenuItemButton(
                             onPressed: () => Navigator.push(

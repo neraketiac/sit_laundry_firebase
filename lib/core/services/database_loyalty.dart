@@ -10,9 +10,10 @@ const String LOYALTY_VERSION_DOC = "loyalty_updated";
 const String LOYALTY_VERSION_COUNTER = "counter";
 
 /// Increments the loyalty version counter so clients know to re-fetch.
+/// Writes to Primary DB so it's consistent with where it's read from
 Future<void> bumpLoyaltyVersion() async {
   try {
-    await FirebaseService.loyaltyFirestore
+    await FirebaseService.primaryFirestore
         .collection(LOYALTY_VERSION_DOC)
         .doc(LOYALTY_VERSION_COUNTER)
         .set({'version': FieldValue.increment(1)}, SetOptions(merge: true));
