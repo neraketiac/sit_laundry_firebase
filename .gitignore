@@ -63,6 +63,7 @@ web/index.html
 *-service-account.json
 service-account-key.json
 firebase-key.json
+batch/primary-key.json
 
 # Python environment
 batch/.env

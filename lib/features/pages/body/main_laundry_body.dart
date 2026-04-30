@@ -435,7 +435,7 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                                 MaterialPageRoute(
                                     builder: (_) =>
                                         const BatchFixPromoCounterPage())),
-                            child: const Text('🔧 Fix PromoCounterxxx'),
+                            child: const Text('🔧 Fix PromoCounter'),
                           ),
                           MenuItemButton(
                             onPressed: () => Navigator.push(
@@ -468,9 +468,10 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                                 MaterialPageRoute(
                                     builder: (_) => Scaffold(
                                         appBar: AppBar(
-                                            title: const Text('Run Migration')),
-                                        body: const RunMigration()))),
-                            child: const Text('⚙️ Run Migration'),
+                                            title: const Text(
+                                                'Update Loyalty DB')),
+                                        body: const UpdateLoyaltyDB()))),
+                            child: const Text('⚙️ Update Loyalty DB'),
                           ),
                           MenuItemButton(
                             onPressed: () => Navigator.push(
@@ -478,12 +479,13 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                                 MaterialPageRoute(
                                     builder: (_) => Scaffold(
                                         appBar: AppBar(
-                                            title: const Text(
-                                                'Migrate to ThirdWeb')),
+                                            title:
+                                                const Text('Update BackupDB')),
                                         body: const SingleChildScrollView(
                                             padding: EdgeInsets.all(16),
-                                            child: MigrateToThird())))),
-                            child: const Text('🔄 Migrate Reports DB'),
+                                            child: UpdateBackUpDB())))),
+                            child:
+                                const Text('🔄 Migrate Reports DB(BackupDB)'),
                           ),
                           MenuItemButton(
                             onPressed: () => Navigator.push(

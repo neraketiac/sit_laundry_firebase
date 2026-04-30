@@ -8,6 +8,7 @@ import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_alter_job/visP
 import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_alter_job/conRemarks.dart';
 import 'package:laundry_firebase/core/utils/sharedmethodsdatabase.dart';
 import 'package:laundry_firebase/features/jobs/repository/jobmodel_repository.dart';
+import 'package:laundry_firebase/features/customers/repository/customer_repository.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
 import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_alter_job/visAddDry.dart';
 import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_alter_job/visAddFab.dart';
@@ -22,7 +23,10 @@ import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_alter_job/visM
 import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_alter_job/visRiderPickup.dart';
 import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_alter_job/visSako.dart';
 
-void showJobOnQueue(BuildContext context, JobModelRepository jobRepo) {
+void showJobOnQueue(BuildContext context, JobModelRepository jobRepo) async {
+  // Load latest customer data before opening dialog
+  await CustomerRepository.instance.loadOnce();
+
   Future<void> saveButtonSetRepository() async {
     jobRepo.dateQ = Timestamp.now();
     jobRepo.createdBy = empIdGlobal;

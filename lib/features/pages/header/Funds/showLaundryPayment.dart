@@ -8,9 +8,14 @@ import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_alter_job/conR
 import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_alter_job/customerAmount.dart';
 import 'package:laundry_firebase/features/jobs/repository/jobmodel_repository.dart';
 import 'package:laundry_firebase/features/items/repository/supplies_hist_repository.dart';
+import 'package:laundry_firebase/features/customers/repository/customer_repository.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
 
-void showLaundryPayment(BuildContext context, JobModelRepository jobRepo) {
+void showLaundryPayment(
+    BuildContext context, JobModelRepository jobRepo) async {
+  // Load latest customer data before opening dialog
+  await CustomerRepository.instance.loadOnce();
+
   // if (selectedFundCode == menuOthSalaryPayment) {
   //   selectedFundCode = menuOthLaundryPayment;
   // }

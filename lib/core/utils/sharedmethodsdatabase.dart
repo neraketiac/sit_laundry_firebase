@@ -149,6 +149,7 @@ Future<void> callDatabaseGCashPendingAdd(
       title: gM.itemName,
       body: "${gM.customerName} ₱${gM.customerAmount}",
       url: "https://wash-ko-lang-sit.web.app/#/scan?empId=${gM.logBy}",
+      sound: 'gcash-pending',
     );
   } else {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -188,7 +189,7 @@ Future<String?> callPickImageUniversal(
       gM.cashOutImageUrl = imageUrl;
     }
   }
-  
+
   return imageUrl;
 }
 
@@ -363,6 +364,7 @@ Future<void> notifyAllUsers({
   required String title,
   required String body,
   required String url,
+  String sound = 'default',
 }) async {
   final snap = await FirebaseFirestore.instance.collection('users').get();
 
@@ -390,6 +392,7 @@ Future<void> notifyAllUsers({
       'title': title,
       'body': body,
       'url': url,
+      'sound': sound,
     }),
   );
 

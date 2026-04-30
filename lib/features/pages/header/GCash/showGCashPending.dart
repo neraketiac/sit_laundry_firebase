@@ -16,7 +16,7 @@ import 'package:laundry_firebase/features/payments/repository/gcash_repository.d
 import 'package:laundry_firebase/core/global/variables.dart';
 import 'package:laundry_firebase/shared/widgets/actions/showUploadedImage.dart';
 
-void showGCashPending(BuildContext context) {
+void showGCashPending(BuildContext context) async {
   GCashRepository gRepo = GCashRepository();
 
   final List<int> fundTypeCodes1stLayer = [

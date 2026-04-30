@@ -1,73 +1,110 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:laundry_firebase/core/global/app_version.dart';
+import 'dart:async';
 
-/// Manages project version synchronization with Firestore
-/// Ensures the running project version matches the Firestore version
+import 'package:laundry_firebase/core/global/app_version.dart';
+import 'package:web/web.dart' as web;
+
+/// Manages project version synchronization with version.json
+/// Fetches version from Firebase Hosting (no Firestore reads)
+/// Caches version check results for 15 minutes to avoid excessive HTTP requests
 class ProjectVersionManager {
   ProjectVersionManager._();
   static final ProjectVersionManager instance = ProjectVersionManager._();
 
-  static const String _versionCollection = 'project_version';
-  static const String _versionDoc = 'current';
-  static const String _versionField = 'version';
+  static const Duration _cacheDuration = Duration(minutes: 15);
 
   bool _isVersionValid = false;
   bool _versionChecked = false;
+  DateTime? _lastCheckTime;
 
   bool get isVersionValid => _isVersionValid;
   bool get versionChecked => _versionChecked;
 
-  /// Returns true if version is valid (local >= firestore)
-  /// This can be called after checkAndSyncVersion() has been called
+  /// Returns true if version is valid (local >= remote)
   bool isVersionCurrentlyValid() => _isVersionValid;
 
-  /// Checks if the running project version matches Firestore version
-  /// Returns true if versions match or if local version is higher (will update Firestore)
+  /// Checks if the running project version matches remote version
+  /// Fetches from /version.json (no Firestore reads)
+  /// Returns cached result if checked within last 15 minutes
+  /// Returns true if versions match or if local version is higher
   /// Returns false if local version is lower (requires browser refresh)
   Future<bool> checkAndSyncVersion() async {
+    // Skip check if done within last 15 minutes
+    if (_lastCheckTime != null) {
+      final timeSinceLastCheck = DateTime.now().difference(_lastCheckTime!);
+      if (timeSinceLastCheck < _cacheDuration) {
+        return _isVersionValid;
+      }
+    }
+
     try {
-      final primaryDb = FirebaseFirestore.instance;
+      // Fetch version.json from Firebase Hosting using XMLHttpRequest
+      final completer = Completer<String>();
+      final xhr = web.XMLHttpRequest();
 
-      // Get Firestore version
-      final versionDoc =
-          await primaryDb.collection(_versionCollection).doc(_versionDoc).get();
+      // Use absolute URL to ensure proper CORS and caching behavior
+      final versionUrl = '${web.window.location.origin}/version.json';
 
-      final firestoreVersion =
-          versionDoc.data()?[_versionField] as String? ?? '0.0';
+      xhr.open('GET', versionUrl);
 
-      print('📦 Project Version Check:');
-      print('   Local: $appVersion');
-      print('   Firestore: $firestoreVersion');
+      xhr.addEventListener(
+          'load',
+          (web.Event _) {
+            if (xhr.status == 200) {
+              completer.complete(xhr.responseText);
+            } else {
+              completer.completeError(
+                  Exception('Failed to fetch version.json: ${xhr.status}'));
+            }
+          } as web.EventListener?);
+
+      xhr.addEventListener(
+          'error',
+          (web.Event _) {
+            completer
+                .completeError(Exception('Network error fetching version'));
+          } as web.EventListener?);
+
+      xhr.send();
+
+      final jsonText = await completer.future;
+      final jsonData = _parseJson(jsonText);
+      final remoteVersion = jsonData['version'] as String? ?? '0.0';
 
       // Compare versions
-      final comparison = _compareVersions(appVersion, firestoreVersion);
+      final comparison = _compareVersions(appVersion, remoteVersion);
 
-      if (comparison > 0) {
-        // Local version is higher — update Firestore
-        print('   ✅ Local version is newer, updating Firestore...');
-        await primaryDb
-            .collection(_versionCollection)
-            .doc(_versionDoc)
-            .set({_versionField: appVersion}, SetOptions(merge: true));
-        _isVersionValid = true;
-      } else if (comparison == 0) {
-        // Versions match
-        print('   ✅ Versions match');
-        _isVersionValid = true;
-      } else {
+      if (comparison < 0) {
         // Local version is lower — require refresh
-        print('   ❌ Local version is outdated, refresh required');
         _isVersionValid = false;
+      } else {
+        // Versions match or local is higher
+        _isVersionValid = true;
       }
 
       _versionChecked = true;
+      _lastCheckTime = DateTime.now();
       return _isVersionValid;
     } catch (e) {
-      print('❌ Version check error: $e');
       // On error, allow access (fail open)
       _isVersionValid = true;
       _versionChecked = true;
+      _lastCheckTime = DateTime.now();
       return true;
+    }
+  }
+
+  /// Simple JSON parser for version.json
+  Map<String, dynamic> _parseJson(String jsonText) {
+    try {
+      // Simple regex-based parsing for {"version": "1.191"}
+      final versionMatch =
+          RegExp(r'"version"\s*:\s*"([^"]+)"').firstMatch(jsonText);
+      if (versionMatch != null) {
+        return {'version': versionMatch.group(1)};
+      }
+      return {'version': '0.0'};
+    } catch (_) {
+      return {'version': '0.0'};
     }
   }
 
@@ -79,8 +116,12 @@ class ProjectVersionManager {
       final parts2 = v2.split('.').map(int.parse).toList();
 
       // Pad with zeros if needed
-      while (parts1.length < parts2.length) parts1.add(0);
-      while (parts2.length < parts1.length) parts2.add(0);
+      while (parts1.length < parts2.length) {
+        parts1.add(0);
+      }
+      while (parts2.length < parts1.length) {
+        parts2.add(0);
+      }
 
       for (int i = 0; i < parts1.length; i++) {
         if (parts1[i] > parts2[i]) return 1;

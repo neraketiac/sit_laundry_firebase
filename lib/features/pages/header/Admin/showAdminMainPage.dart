@@ -323,7 +323,7 @@ class _ShowAdminMainPageState extends State<ShowAdminMainPage> {
                   color: Colors.grey.shade300,
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const RunMigration(),
+                child: const UpdateLoyaltyDB(),
               ),
 
             const SizedBox(height: 30),
@@ -350,7 +350,7 @@ class _ShowAdminMainPageState extends State<ShowAdminMainPage> {
                               AppBar(title: const Text("Migrate to ThirdWebx")),
                           body: const SingleChildScrollView(
                             padding: EdgeInsets.all(16),
-                            child: MigrateToThird(),
+                            child: UpdateBackUpDB(),
                           ),
                         ),
                       ),

@@ -4,19 +4,18 @@ import 'package:laundry_firebase/core/services/firebase_service.dart';
 import 'package:laundry_firebase/core/services/database_jobs.dart';
 
 const List<String> _forthCollections = [
-  'loyalty',
   JOBS_DONE_REF,
   JOBS_COMPLETED_REF,
 ];
 
-class RunMigration extends StatefulWidget {
-  const RunMigration({super.key});
+class UpdateLoyaltyDB extends StatefulWidget {
+  const UpdateLoyaltyDB({super.key});
 
   @override
-  State<RunMigration> createState() => _RunMigrationState();
+  State<UpdateLoyaltyDB> createState() => _UpdateLoyaltyDBState();
 }
 
-class _RunMigrationState extends State<RunMigration> {
+class _UpdateLoyaltyDBState extends State<UpdateLoyaltyDB> {
   final Map<String, bool> _selected = {
     for (final c in _forthCollections) c: false,
   };
@@ -86,7 +85,7 @@ class _RunMigrationState extends State<RunMigration> {
         ElevatedButton.icon(
           onPressed: _anySelected ? () => _confirmAndMigrate(context) : null,
           icon: const Icon(Icons.sync_alt),
-          label: const Text("Run Migration"),
+          label: const Text("Copy Jobs to Loyalty"),
         ),
         const SizedBox(height: 20),
       ],

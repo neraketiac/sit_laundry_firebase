@@ -28,14 +28,14 @@ const List<String> _knownCollections = [
   'users',
 ];
 
-class MigrateToThird extends StatefulWidget {
-  const MigrateToThird({super.key});
+class UpdateBackUpDB extends StatefulWidget {
+  const UpdateBackUpDB({super.key});
 
   @override
-  State<MigrateToThird> createState() => _MigrateToThirdState();
+  State<UpdateBackUpDB> createState() => _UpdateBackUpDBState();
 }
 
-class _MigrateToThirdState extends State<MigrateToThird> {
+class _UpdateBackUpDBState extends State<UpdateBackUpDB> {
   final Map<String, bool> _selected = {
     for (final c in _knownCollections) c: false,
   };
@@ -60,12 +60,12 @@ class _MigrateToThirdState extends State<MigrateToThird> {
         const Divider(),
         const SizedBox(height: 20),
         const Text(
-          "Migrate to Reports DB",
+          "Migrate to Reports DB(BackupDB)",
           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 4),
         const Text(
-          "Select collections from main firestore to migrate to Reports DB.",
+          "Select collections from main firestore to migrate to Reports DB(BackupDB).",
           style: TextStyle(color: Colors.grey),
         ),
         const SizedBox(height: 12),
@@ -120,7 +120,7 @@ class _MigrateToThirdState extends State<MigrateToThird> {
       builder: (_) => AlertDialog(
         title: const Text("Confirm Migration"),
         content: Text(
-          "${deleteFirst ? '⚠️ DELETE then migrate' : 'Migrate'} the following collections to Reports DB?\n\n${selected.join('\n')}"
+          "${deleteFirst ? '⚠️ DELETE then migrate' : 'Migrate'} the following collections to Reports DB(BackupDB)?\n\n${selected.join('\n')}"
           "${deleteFirst ? '\n\nDestination docs will be permanently deleted first.' : ''}",
         ),
         actions: [
@@ -304,7 +304,7 @@ class _ProgressDialogState extends State<_ProgressDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text("Migrating to Reports DB..."),
+      title: const Text("Migrating to Reports DB(BackupDB)..."),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [

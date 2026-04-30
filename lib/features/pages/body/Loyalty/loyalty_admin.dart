@@ -2,7 +2,6 @@ import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:laundry_firebase/firebase_options.dart';
 import 'package:laundry_firebase/features/customers/models/customermodel.dart';
 import 'package:laundry_firebase/features/customers/repository/customer_repository.dart';
 import 'package:laundry_firebase/features/loyalty/models/loyaltymodel.dart';
@@ -317,6 +316,9 @@ class _LoyaltyAdminState extends State<LoyaltyAdmin> {
   // ================= CREATE =================
 
   Future<void> _openCreateDialog() async {
+    // Load latest customer data before opening dialog
+    await CustomerRepository.instance.loadOnce();
+
     await _generateNextId();
     _docIdController.text = _nextId.toString();
     _nameController.clear();

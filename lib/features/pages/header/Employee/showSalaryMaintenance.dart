@@ -7,10 +7,14 @@ import 'package:laundry_firebase/core/utils/sharedMethods.dart';
 import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_alter_job/customerAmount.dart';
 import 'package:laundry_firebase/features/jobs/repository/jobmodel_repository.dart';
 import 'package:laundry_firebase/features/items/repository/supplies_hist_repository.dart';
+import 'package:laundry_firebase/features/customers/repository/customer_repository.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
 import 'package:laundry_firebase/core/global/variables_supplies.dart';
 
-void showSalaryMaintenance(BuildContext context) {
+void showSalaryMaintenance(BuildContext context) async {
+  // Load latest customer data before opening dialog
+  await CustomerRepository.instance.loadOnce();
+
   //selectedFundCode = menuOthSalaryPayment;
   JobModelRepository jobRepo = JobModelRepository();
 

@@ -3,7 +3,6 @@ import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:laundry_firebase/firebase_options.dart';
 import 'package:laundry_firebase/features/pages/body/Loyalty/loyalty_admin.dart';
 import 'package:laundry_firebase/features/pages/body/Loyalty/loyalty_single.dart';
 import 'package:laundry_firebase/features/menus/menu_constants.dart';
