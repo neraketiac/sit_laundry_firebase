@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -30,6 +31,8 @@ Future<void> _generateCashOutSuppliesRecords(GCashRepository gRepo) async {
   SuppliesHistRepository.instance.setCustomerId(0);
   SuppliesHistRepository.instance
       .setRemarks('GCash ${gRepo.itemName} ${gRepo.remarks}');
+  // Ensure LogDate uses current timestamp
+  SuppliesHistRepository.instance.setLogDate(Timestamp.now());
 
   // This will go through callDatabaseSuppliesCurrentAdd which applies negation
   await callDatabaseSuppliesCurrentAdd(

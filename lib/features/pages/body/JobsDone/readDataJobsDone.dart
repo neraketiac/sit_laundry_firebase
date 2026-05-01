@@ -127,6 +127,14 @@ Widget readDataJobsDone(VoidCallback dialogSetState) {
     dialogSetState();
   }
 
+  Future<void> sortClothesToBeDelivered(BuildContext context) async {
+    sortedJobsDone
+      ..clear()
+      ..addAll(sortedJobsDoneClothesHereToBeDelivered);
+
+    dialogSetState();
+  }
+
   Future<void> sortNoticeCash(BuildContext context) async {
     sortedJobsDone
       ..clear()
@@ -317,6 +325,17 @@ Widget readDataJobsDone(VoidCallback dialogSetState) {
             ),
           );
 
+        sortedJobsDoneClothesHereToBeDelivered
+          ..clear()
+          ..addAll(
+            originalJobsDone.where(
+              (job) =>
+                  job.riderPickup &&
+                  !job.isCustomerPickedUp &&
+                  !job.isDeliveredToCustomer,
+            ),
+          );
+
         intJobsDoneDefault = originalJobsDone.length;
         intJobsDoneClothesHere = sortedJobsDoneClothesHere.length;
         intJobsDoneClothesGoneCash = sortedJobsDoneClothesGoneCash.length;
@@ -347,9 +366,11 @@ Widget readDataJobsDone(VoidCallback dialogSetState) {
                   ),
                   IconBadgeButton(
                     icon: '👕',
-                    tooltip: "Clothes still here",
+                    tooltip:
+                        "Clothes still here (double-tap for to-be-delivered)",
                     badgeCount: intJobsDoneClothesHere,
                     onPressed: () => sortClothesStillInHere(context),
+                    onDoubleTap: () => sortClothesToBeDelivered(context),
                   ),
                   IconBadgeButton(
                     icon: '💳',
@@ -533,6 +554,7 @@ class IconBadgeButton extends StatelessWidget {
   final String tooltip;
   final int? badgeCount;
   final VoidCallback onPressed;
+  final VoidCallback? onDoubleTap;
 
   const IconBadgeButton({
     super.key,
@@ -540,6 +562,7 @@ class IconBadgeButton extends StatelessWidget {
     required this.tooltip,
     required this.onPressed,
     this.badgeCount,
+    this.onDoubleTap,
   });
 
   @override
@@ -549,53 +572,67 @@ class IconBadgeButton extends StatelessWidget {
     final iconSize = s.isTablet ? 28.0 : 22.0;
     final badgeSize = s.isTablet ? 11.0 : 9.0;
 
-    return Tooltip(
-      message: tooltip,
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: const Color.fromARGB(255, 22, 198, 84),
-          padding: EdgeInsets.zero,
-          minimumSize: Size(btnSize, btnSize),
-          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        ),
-        onPressed: onPressed,
-        child: Stack(
-          clipBehavior: Clip.none,
-          alignment: Alignment.center,
-          children: [
-            Text(
-              icon,
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: iconSize,
-              ),
+    final button = ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: const Color.fromARGB(255, 22, 198, 84),
+        padding: EdgeInsets.zero,
+        minimumSize: Size(btnSize, btnSize),
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      ),
+      onPressed: onPressed,
+      child: Stack(
+        clipBehavior: Clip.none,
+        alignment: Alignment.center,
+        children: [
+          Text(
+            icon,
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: iconSize,
             ),
-            if (badgeCount != null && badgeCount! > 0)
-              Positioned(
-                top: -4,
-                right: -5,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 5,
-                    vertical: 2,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.red,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Text(
-                    '$badgeCount',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: badgeSize,
-                      fontWeight: FontWeight.bold,
-                    ),
+          ),
+          if (badgeCount != null && badgeCount! > 0)
+            Positioned(
+              top: -4,
+              right: -5,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 5,
+                  vertical: 2,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.red,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  '$badgeCount',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: badgeSize,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
-          ],
-        ),
+            ),
+        ],
       ),
+    );
+
+    // Wrap with GestureDetector if onDoubleTap is provided
+    if (onDoubleTap != null) {
+      return Tooltip(
+        message: tooltip,
+        child: GestureDetector(
+          onTap: onPressed,
+          onDoubleTap: onDoubleTap,
+          child: button,
+        ),
+      );
+    }
+
+    return Tooltip(
+      message: tooltip,
+      child: button,
     );
   }
 }

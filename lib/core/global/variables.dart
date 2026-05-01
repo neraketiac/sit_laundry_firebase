@@ -34,6 +34,7 @@ int selectedIndexCompleted = intSortByDateC;
 List<JobModel> originalJobsDone = [];
 List<JobModel> sortedJobsDone = [];
 List<JobModel> sortedJobsDoneClothesHere = [];
+List<JobModel> sortedJobsDoneClothesHereToBeDelivered = [];
 List<JobModel> sortedJobsDoneClothesGoneCash = [];
 List<JobModel> sortedJobsDoneClothesGoneGCash = [];
 List<JobModel> sortedJobsDoneAdminRequest = [];
