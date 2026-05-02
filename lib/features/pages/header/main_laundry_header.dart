@@ -10,6 +10,7 @@ import 'package:laundry_firebase/features/pages/header/JobOnQueue/showJobOnQueue
 import 'package:laundry_firebase/features/jobs/repository/jobmodel_repository.dart';
 import 'package:laundry_firebase/features/items/repository/supplies_hist_repository.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
+import 'package:laundry_firebase/core/services/project_version_manager.dart';
 
 class MyMainLaundryHeader extends StatefulWidget {
   final String empid;
@@ -243,7 +244,11 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader>
                     mini: mini,
                     backgroundColor: _isOpen ? Colors.red : Colors.deepPurple,
                     elevation: 12,
-                    onPressed: () {
+                    onPressed: () async {
+                      // Check version on main button click
+                      await ProjectVersionManager.instance
+                          .checkVersionOnMainButton(context);
+
                       if (_isOpen) {
                         setState(() => _isOpen = false);
                       } else {

@@ -64,6 +64,12 @@ web/index.html
 service-account-key.json
 firebase-key.json
 batch/primary-key.json
+scripts/firestore-key.json
+
+# Node.js / npm (for scripts directory)
+scripts/node_modules/
+scripts/package-lock.json
+scripts/.env
 
 # Python environment
 batch/.env

@@ -46,7 +46,11 @@ echo [6/7] Deploying to Firebase Hosting...
 call firebase deploy --only hosting
 if errorlevel 1 ( echo ERROR: firebase deploy failed & exit /b 1 )
 
+echo [7/7] Updating Firestore project_version...
+call node scripts/update_firestore_version.js
+if errorlevel 1 ( echo WARNING: Firestore update failed, but deployment succeeded )
+
 echo.
-echo [7/7] Done. Version: !NEW_VERSION!
+echo [8/8] Done. Version: !NEW_VERSION!
 echo       Finished at: %TIME%
 endlocal

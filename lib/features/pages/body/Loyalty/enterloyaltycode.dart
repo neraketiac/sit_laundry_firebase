@@ -11,6 +11,7 @@ import 'package:laundry_firebase/features/pages/body/Loyalty/save_text.dart';
 import 'package:laundry_firebase/features/pages/header/main_laundry_header.dart';
 import 'package:laundry_firebase/features/customers/repository/customer_repository.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
+import 'package:laundry_firebase/core/services/project_version_manager.dart';
 
 import 'package:web/web.dart' as web;
 
@@ -289,7 +290,10 @@ class _EnterLoyaltyCodeState extends State<EnterLoyaltyCode> {
     log(s);
   }
 
-  void _queuePage(BuildContext context, String empid) {
+  void _queuePage(BuildContext context, String empid) async {
+    // Check version on login
+    await ProjectVersionManager.instance.checkVersionOnLogin(context);
+
     Navigator.of(context).push(
         MaterialPageRoute(builder: (context) => MyMainLaundryHeader(empid)));
   }

@@ -1,114 +1,72 @@
-import 'dart:async';
-
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 import 'package:laundry_firebase/core/global/app_version.dart';
-import 'package:web/web.dart' as web;
+import 'dart:html' as html;
 
-/// Manages project version synchronization with version.json
-/// Fetches version from Firebase Hosting (no Firestore reads)
-/// Caches version check results for 15 minutes to avoid excessive HTTP requests
+/// Manages project version checking against Firestore
+/// Checks version only on login and main button click (no periodic checking)
 class ProjectVersionManager {
   ProjectVersionManager._();
   static final ProjectVersionManager instance = ProjectVersionManager._();
 
-  static const Duration _cacheDuration = Duration(minutes: 15);
+  String? _cachedRemoteVersion;
+  bool _versionCheckedOnLogin = false;
 
-  bool _isVersionValid = true;
-  bool _versionChecked = false;
-  DateTime? _lastCheckTime;
-
-  bool get isVersionValid => _isVersionValid;
-  bool get versionChecked => _versionChecked;
-
-  /// Returns true if version is valid (local >= remote)
-  bool isVersionCurrentlyValid() => _isVersionValid;
-
-  /// Checks if the running project version matches remote version
-  /// Fetches from /version.json (no Firestore reads)
-  /// Returns cached result if checked within last 15 minutes
-  /// Returns true if versions match or if local version is higher
-  /// Returns false if local version is lower (requires browser refresh)
-  Future<bool> checkAndSyncVersion() async {
-    // Skip check if done within last 15 minutes
-    if (_lastCheckTime != null) {
-      final timeSinceLastCheck = DateTime.now().difference(_lastCheckTime!);
-      if (timeSinceLastCheck < _cacheDuration) {
-        return _isVersionValid;
-      }
-    }
+  /// Check version once on login
+  /// Fetches from Firestore and compares with app version
+  /// Shows message if outdated
+  Future<void> checkVersionOnLogin(BuildContext context) async {
+    if (_versionCheckedOnLogin) return; // Only check once per session
 
     try {
-      // Fetch version.json from Firebase Hosting using XMLHttpRequest
-      final completer = Completer<String>();
-      final xhr = web.XMLHttpRequest();
+      final remoteVersion = await _fetchVersionFromFirestore();
+      if (remoteVersion != null) {
+        _cachedRemoteVersion = remoteVersion;
+        _versionCheckedOnLogin = true;
 
-      // Use absolute URL to ensure proper CORS and caching behavior
-      final versionUrl = '${web.window.location.origin}/version.json';
-
-      xhr.open('GET', versionUrl);
-
-      xhr.addEventListener(
-          'load',
-          (web.Event _) {
-            if (xhr.status == 200) {
-              completer.complete(xhr.responseText);
-            } else {
-              completer.completeError(
-                  Exception('Failed to fetch version.json: ${xhr.status}'));
-            }
-          } as web.EventListener?);
-
-      xhr.addEventListener(
-          'error',
-          (web.Event _) {
-            completer
-                .completeError(Exception('Network error fetching version'));
-          } as web.EventListener?);
-
-      xhr.send();
-
-      final jsonText = await completer.future;
-      final jsonData = _parseJson(jsonText);
-      final remoteVersion = jsonData['version'] as String? ?? '0.0';
-
-      // Compare versions
-      final comparison = _compareVersions(appVersion, remoteVersion);
-
-      if (comparison < 0) {
-        // Local version is lower — require refresh
-        _isVersionValid = false;
-      } else {
-        // Versions match or local is higher
-        _isVersionValid = true;
+        if (_isOutdated(remoteVersion)) {
+          _showVersionMessage(context, remoteVersion);
+        }
       }
-
-      _versionChecked = true;
-      _lastCheckTime = DateTime.now();
-      return _isVersionValid;
     } catch (e) {
-      // On error, allow access (fail open)
-      _isVersionValid = true;
-      _versionChecked = true;
-      _lastCheckTime = DateTime.now();
-      return true;
+      // Fail silently - don't block login
+      debugPrint('Version check failed: $e');
     }
   }
 
-  /// Simple JSON parser for version.json
-  Map<String, dynamic> _parseJson(String jsonText) {
+  /// Check version when main button is clicked
+  /// Uses cached version from login check
+  /// Shows message if outdated
+  Future<void> checkVersionOnMainButton(BuildContext context) async {
+    if (_cachedRemoteVersion == null) return; // Not checked yet
+
+    if (_isOutdated(_cachedRemoteVersion!)) {
+      _showVersionMessage(context, _cachedRemoteVersion!);
+    }
+  }
+
+  /// Fetch version from Firestore project_version/current
+  Future<String?> _fetchVersionFromFirestore() async {
     try {
-      // Simple regex-based parsing for {"version": "1.191"}
-      final versionMatch =
-          RegExp(r'"version"\s*:\s*"([^"]+)"').firstMatch(jsonText);
-      if (versionMatch != null) {
-        return {'version': versionMatch.group(1)};
-      }
-      return {'version': '0.0'};
-    } catch (_) {
-      return {'version': '0.0'};
+      final doc = await FirebaseFirestore.instance
+          .collection('project_version')
+          .doc('current')
+          .get();
+
+      final version = doc.data()?['version'] as String?;
+      return version;
+    } catch (e) {
+      debugPrint('Failed to fetch version from Firestore: $e');
+      return null;
     }
   }
 
-  /// Compares two version strings in format "major.minor"
+  /// Compare versions: returns true if remote > local
+  bool _isOutdated(String remoteVersion) {
+    return _compareVersions(appVersion, remoteVersion) < 0;
+  }
+
+  /// Compare two version strings in format "major.minor"
   /// Returns: 1 if v1 > v2, -1 if v1 < v2, 0 if equal
   int _compareVersions(String v1, String v2) {
     try {
@@ -133,14 +91,40 @@ class ProjectVersionManager {
     }
   }
 
-  /// Gets a user-friendly message about the version status
-  String getVersionMessage() {
-    if (!_versionChecked) {
-      return 'Checking version...';
-    }
-    if (_isVersionValid) {
-      return 'Version OK';
-    }
-    return 'Version outdated - please refresh the browser';
+  /// Show version outdated message
+  void _showVersionMessage(BuildContext context, String remoteVersion) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('New Version Available'),
+          content: Text(
+            'You are using the old version, new version $remoteVersion is available.\n\n'
+            'Please refresh the page to load it.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('Later'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                // Refresh the page
+                _refreshPage();
+              },
+              child: const Text('Refresh Now'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  /// Refresh the browser page
+  void _refreshPage() {
+    html.window.location.reload();
   }
 }
