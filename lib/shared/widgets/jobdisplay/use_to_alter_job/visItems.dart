@@ -154,7 +154,7 @@ Widget visItemsOnly(
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 ),
                 onPressed: () {
-                  addOtherItem(jobRepo, jobRepo.repoVarSelectedItem!);
+                  addOtherItem(jobRepo, jobRepo.repoVarSelectedItem);
                   dialogSetState();
                 },
                 child: const Icon(Icons.add),
@@ -173,7 +173,7 @@ Widget visItemsOnly(
 
               jobRepo.itemQtyControllers.putIfAbsent(
                 key,
-                () => TextEditingController(text: "-1"),
+                () => TextEditingController(text: "1"),
               );
               jobRepo.itemExpenseControllers.putIfAbsent(
                 key,
@@ -183,6 +183,19 @@ Widget visItemsOnly(
                 key,
                 () => TextEditingController(text: ""),
               );
+
+              // Add checkbox states for negative values (stored separately)
+              final qtyNegativeKey = '${key}_qty_neg';
+              final expenseNegativeKey = '${key}_exp_neg';
+
+              if (!jobRepo.itemNegativeFlags.containsKey(qtyNegativeKey)) {
+                jobRepo.itemNegativeFlags[qtyNegativeKey] =
+                    true; // default checked = negative
+              }
+              if (!jobRepo.itemNegativeFlags.containsKey(expenseNegativeKey)) {
+                jobRepo.itemNegativeFlags[expenseNegativeKey] =
+                    false; // default unchecked = positive
+              }
 
               final controller = jobRepo.itemQtyControllers[key]!;
               final expenseController = jobRepo.itemExpenseControllers[key]!;
@@ -198,7 +211,7 @@ Widget visItemsOnly(
                   border: Border.all(color: Colors.blueGrey.shade100),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.blueGrey.withOpacity(0.08),
+                      color: Colors.blueGrey.withValues(alpha: 0.08),
                       blurRadius: 4,
                       offset: const Offset(0, 2),
                     ),
@@ -212,6 +225,8 @@ Widget visItemsOnly(
                         jobRepo.itemQtyControllers.remove(key);
                         jobRepo.itemExpenseControllers.remove(key);
                         jobRepo.itemRemarksControllers.remove(key);
+                        jobRepo.itemNegativeFlags.remove(qtyNegativeKey);
+                        jobRepo.itemNegativeFlags.remove(expenseNegativeKey);
                         dialogSetState();
                       },
                       child: const Icon(Icons.remove_circle_outline,
@@ -232,24 +247,45 @@ Widget visItemsOnly(
                           ),
                           const SizedBox(height: 8),
                           Builder(builder: (context) {
-                            final isTablet =
-                                MediaQuery.of(context).size.width >= 600;
+                            // Get current values
+                            final isQtyNegative =
+                                jobRepo.itemNegativeFlags[qtyNegativeKey] ??
+                                    true;
+                            final expenseValue =
+                                int.tryParse(expenseController.text.trim()) ??
+                                    0;
+                            final isExpenseNegative =
+                                jobRepo.itemNegativeFlags[expenseNegativeKey] ??
+                                    false;
+                            final canCheckExpense = expenseValue != 0;
+
+                            // Qty field with dynamic label showing negative indicator
                             final qtyField = SizedBox(
-                              width: 70,
+                              width: 80,
                               child: TextField(
                                 controller: controller,
                                 keyboardType: TextInputType.number,
                                 textAlign: TextAlign.center,
                                 inputFormatters: [
                                   FilteringTextInputFormatter.allow(
-                                      RegExp(r'^-?\d*'))
+                                      RegExp(r'^\d*$')),
                                 ],
+                                onTap: () {
+                                  controller.selection = TextSelection(
+                                    baseOffset: 0,
+                                    extentOffset: controller.text.length,
+                                  );
+                                },
                                 style: const TextStyle(fontSize: 13),
                                 decoration: InputDecoration(
-                                  labelText: e.stocksType,
+                                  labelText: isQtyNegative
+                                      ? '-${e.stocksType}'
+                                      : e.stocksType,
                                   labelStyle: TextStyle(
                                       fontSize: 11,
-                                      color: Colors.blueGrey.shade500),
+                                      color: isQtyNegative
+                                          ? Colors.red.shade600
+                                          : Colors.blueGrey.shade500),
                                   isDense: true,
                                   contentPadding: const EdgeInsets.symmetric(
                                       vertical: 8, horizontal: 8),
@@ -263,21 +299,58 @@ Widget visItemsOnly(
                                 ),
                               ),
                             );
-                            final expenseField = Expanded(
+
+                            // Qty checkbox
+                            final qtyCheckbox = Checkbox(
+                              value: isQtyNegative,
+                              onChanged: (val) {
+                                jobRepo.itemNegativeFlags[qtyNegativeKey] =
+                                    val ?? true;
+                                dialogSetState();
+                              },
+                              materialTapTargetSize:
+                                  MaterialTapTargetSize.shrinkWrap,
+                            );
+
+                            // Expense field with dynamic label showing negative indicator
+                            final expenseField = SizedBox(
+                              width: 80,
                               child: TextField(
                                 controller: expenseController,
                                 keyboardType: TextInputType.number,
-                                textAlign: TextAlign.right,
+                                textAlign: TextAlign.center,
                                 inputFormatters: [
                                   FilteringTextInputFormatter.allow(
-                                      RegExp(r'^-?\d*'))
+                                      RegExp(r'^\d*$')),
                                 ],
+                                onTap: () {
+                                  expenseController.selection = TextSelection(
+                                    baseOffset: 0,
+                                    extentOffset: expenseController.text.length,
+                                  );
+                                },
+                                onChanged: (val) {
+                                  // If expense becomes 0, uncheck the checkbox
+                                  final newValue =
+                                      int.tryParse(val.trim()) ?? 0;
+                                  if (newValue == 0 && isExpenseNegative) {
+                                    jobRepo.itemNegativeFlags[
+                                        expenseNegativeKey] = false;
+                                  }
+                                  dialogSetState();
+                                },
                                 style: const TextStyle(fontSize: 13),
                                 decoration: InputDecoration(
-                                  labelText: 'Expense ₱',
+                                  labelText:
+                                      (canCheckExpense && isExpenseNegative)
+                                          ? '-Exp'
+                                          : 'Exp',
                                   labelStyle: TextStyle(
                                       fontSize: 11,
-                                      color: Colors.blueGrey.shade500),
+                                      color:
+                                          (canCheckExpense && isExpenseNegative)
+                                              ? Colors.red.shade600
+                                              : Colors.blueGrey.shade500),
                                   isDense: true,
                                   contentPadding: const EdgeInsets.symmetric(
                                       vertical: 8, horizontal: 8),
@@ -291,8 +364,23 @@ Widget visItemsOnly(
                                 ),
                               ),
                             );
+
+                            // Expense checkbox
+                            final expenseCheckbox = Checkbox(
+                              value: canCheckExpense && isExpenseNegative,
+                              onChanged: canCheckExpense
+                                  ? (val) {
+                                      jobRepo.itemNegativeFlags[
+                                          expenseNegativeKey] = val ?? false;
+                                      dialogSetState();
+                                    }
+                                  : null,
+                              materialTapTargetSize:
+                                  MaterialTapTargetSize.shrinkWrap,
+                            );
+
+                            // Remarks field
                             final remarksField = Expanded(
-                              flex: 2,
                               child: TextField(
                                 controller: remarksController,
                                 style: const TextStyle(fontSize: 12),
@@ -316,30 +404,29 @@ Widget visItemsOnly(
                               ),
                             );
 
-                            if (isTablet) {
-                              // iPad: all three in one row
-                              return Row(children: [
-                                qtyField,
-                                const SizedBox(width: 8),
-                                expenseField,
-                                const SizedBox(width: 8),
-                                remarksField,
-                              ]);
-                            } else {
-                              // iPhone: qty+expense row, remarks below
-                              return Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(children: [
-                                    qtyField,
-                                    const SizedBox(width: 10),
-                                    expenseField,
-                                  ]),
-                                  const SizedBox(height: 8),
+                            // Two-row layout:
+                            // Row 1: QTY Input Box + Checkbox
+                            // Row 2: EXPENSE Input Box + Checkbox + Remarks
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Row 1: QTY Field + Checkbox
+                                Row(children: [
+                                  qtyField,
+                                  const SizedBox(width: 8),
+                                  qtyCheckbox,
+                                ]),
+                                const SizedBox(height: 8),
+                                // Row 2: EXPENSE Field + Checkbox + Remarks
+                                Row(children: [
+                                  expenseField,
+                                  const SizedBox(width: 8),
+                                  expenseCheckbox,
+                                  const SizedBox(width: 8),
                                   remarksField,
-                                ],
-                              );
-                            }
+                                ]),
+                              ],
+                            );
                           }),
                         ],
                       ),

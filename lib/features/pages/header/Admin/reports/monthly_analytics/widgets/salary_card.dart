@@ -122,7 +122,9 @@ class _SalaryColumn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final totalDiff = totalExpense - totalSalary;
+    // Use absolute value of expense: net = salary - abs(expense)
+    final totalExpenseAbsolute = totalExpense.abs();
+    final totalDiff = totalSalary - totalExpenseAbsolute;
 
     return Container(
       width: 160,
@@ -158,7 +160,7 @@ class _SalaryColumn extends StatelessWidget {
               ...orderedNames.map((emp) {
                 final salary = salaryMap[emp] ?? 0;
                 final expense = expenseMap[emp] ?? 0;
-                final diff = expense - salary;
+                final expenseAbsolute = expense.abs();
 
                 return Container(
                   padding:
@@ -195,15 +197,13 @@ class _SalaryColumn extends StatelessWidget {
                                         : Colors.indigo,
                                   ),
                                 ),
-                                if (diff != 0)
+                                if (expense != 0)
                                   Text(
-                                    diff > 0
-                                        ? '(+₱${formatCurrency(diff)})'
-                                        : '(-₱${formatCurrency(diff.abs())})',
+                                    '(₱${formatCurrency(expenseAbsolute)})',
                                     style: TextStyle(
                                       fontSize: 10,
                                       fontWeight: FontWeight.w600,
-                                      color: diff > 0
+                                      color: expenseAbsolute > salary
                                           ? Colors.red.shade600
                                           : Colors.green.shade600,
                                     ),
@@ -245,15 +245,13 @@ class _SalaryColumn extends StatelessWidget {
                 ),
                 if (totalDiff != 0)
                   Text(
-                    totalDiff > 0
-                        ? '+₱${formatCurrency(totalDiff)} over'
-                        : '-₱${formatCurrency(totalDiff.abs())} under',
+                    '₱${formatCurrency(totalDiff)}',
                     style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.w600,
-                      color: totalDiff > 0
-                          ? Colors.red.shade600
-                          : Colors.green.shade600,
+                      color: totalDiff < 0
+                          ? Colors.green.shade600
+                          : Colors.red.shade600,
                     ),
                   ),
               ],

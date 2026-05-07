@@ -29,6 +29,9 @@ class WeeklyRevenueChart extends StatelessWidget {
       weeklyData.values.fold(0, (s, w) => s + (w['unpaid'] as int? ?? 0));
   int get _totalRevenue => _totalPaid + _totalUnpaid;
 
+  /// Absolute value of total expense: abs(sum(expenses))
+  int get _totalExpenseAbsolute => totalExpense.abs();
+
   int get _maxValue {
     int max = 0;
     for (final w in weeklyData.values) {
@@ -139,7 +142,7 @@ class WeeklyRevenueChart extends StatelessWidget {
               _miniTile('Cash', _totalPaidCash, Colors.blue),
               _miniTile('GCash', _totalPaidGCash, Colors.purple),
               _miniTile('Unpaid', _totalUnpaid, Colors.red),
-              _miniTileNeg('Expense', totalExpense, Colors.orange),
+              _miniTileNeg('Expense', _totalExpenseAbsolute, Colors.orange),
             ],
           ),
         ],
@@ -181,7 +184,10 @@ class WeeklyRevenueChart extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(label, style: TextStyle(fontSize: 11, color: color.shade700)),
-          Text('-₱${formatCurrency(amount)}',
+          Text(
+              amount > 0
+                  ? '-₱${formatCurrency(amount)}'
+                  : '₱${formatCurrency(amount)}',
               style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 12,
@@ -406,9 +412,9 @@ class WeeklyRevenueChart extends StatelessWidget {
                         color:
                             unpaid > 0 ? Colors.red.shade700 : Colors.grey))),
                 DataCell(Text(
-                    expense > 0 ? '-₱${formatCurrency(expense)}' : '—',
+                    expense != 0 ? '₱${formatCurrency(expense)}' : '—',
                     style: TextStyle(
-                        color: expense > 0
+                        color: expense != 0
                             ? Colors.orange.shade700
                             : Colors.grey))),
               ]);
@@ -420,7 +426,7 @@ class WeeklyRevenueChart extends StatelessWidget {
           _summaryBlock(
             label: 'Month Total',
             amount: _totalRevenue,
-            expense: totalExpense,
+            expense: _totalExpenseAbsolute,
             amountColor: Colors.blue,
           ),
           const SizedBox(height: 4),
@@ -429,7 +435,7 @@ class WeeklyRevenueChart extends StatelessWidget {
           _summaryBlock(
             label: 'Month Paid Total',
             amount: _totalPaid,
-            expense: totalExpense,
+            expense: _totalExpenseAbsolute,
             amountColor: Colors.green,
           ),
         ],
@@ -443,14 +449,16 @@ class WeeklyRevenueChart extends StatelessWidget {
     required int expense,
     required Color amountColor,
   }) {
+    // expense is already absolute value: net = amount - expense
     final net = amount - expense;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Column(
         children: [
           _summaryRow(label, '₱${formatCurrency(amount)}', amountColor),
-          if (expense > 0) ...[
+          if (expense != 0) ...[
             const SizedBox(height: 2),
+            // Display expense as cost (negative display)
             _summaryRow(
                 'Expense', '-₱${formatCurrency(expense)}', Colors.orange),
             const SizedBox(height: 2),

@@ -82,14 +82,35 @@ void showItemsInOut(BuildContext context) {
       if (excludedSupplyItems.contains(item.itemUniqueId)) continue;
 
       int qty = int.tryParse(
-            jobRepo.itemQtyControllers[key]?.text ?? "1",
+            jobRepo.itemQtyControllers[key]?.text.trim() ?? "1",
           ) ??
           1;
 
       int expense = int.tryParse(
-            jobRepo.itemExpenseControllers[key]?.text ?? "0",
+            jobRepo.itemExpenseControllers[key]?.text.trim() ?? "0",
           ) ??
           0;
+
+      // Apply negative sign based on checkbox state
+      final qtyNegativeKey = '${key}_qty_neg';
+      final expenseNegativeKey = '${key}_exp_neg';
+
+      final isQtyNegative = jobRepo.itemNegativeFlags[qtyNegativeKey] ?? true;
+      final isExpenseNegative =
+          jobRepo.itemNegativeFlags[expenseNegativeKey] ?? false;
+
+      // If checkbox is checked (true), make value negative; if unchecked (false), make value positive
+      if (isQtyNegative && qty > 0) {
+        qty = -qty;
+      } else if (!isQtyNegative && qty < 0) {
+        qty = -qty; // make it positive
+      }
+
+      if (isExpenseNegative && expense > 0) {
+        expense = -expense;
+      } else if (!isExpenseNegative && expense < 0) {
+        expense = -expense; // make it positive
+      }
 
       sMH.itemName = item.itemName;
       sMH.itemId = item.itemId;

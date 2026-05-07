@@ -58,7 +58,7 @@ class ExpenseData {
       final raw = data['ExpenseAmount'];
       if (raw == null) continue;
       final amount =
-          (raw is num ? raw.toInt() : int.tryParse(raw.toString()) ?? 0).abs();
+          (raw is num ? raw.toInt() : int.tryParse(raw.toString()) ?? 0);
       if (amount == 0) continue;
 
       final label = (data['ItemName']?.toString().trim().isNotEmpty == true
@@ -77,7 +77,7 @@ class ExpenseData {
       final raw = data['CurrentCounter'];
       if (raw == null) continue;
       final amount =
-          (raw is num ? raw.toInt() : int.tryParse(raw.toString()) ?? 0).abs();
+          (raw is num ? raw.toInt() : int.tryParse(raw.toString()) ?? 0);
       if (amount == 0) continue;
 
       final label = (data['EmpName']?.toString().trim().isNotEmpty == true

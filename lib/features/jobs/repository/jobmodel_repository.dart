@@ -491,6 +491,11 @@ class JobModelRepository {
   set itemRemarksControllers(Map<String, TextEditingController> value) =>
       jobselectedRepository.itemRemarksControllers = value;
 
+  Map<String, bool> get itemNegativeFlags =>
+      jobselectedRepository.itemNegativeFlags;
+  set itemNegativeFlags(Map<String, bool> value) =>
+      jobselectedRepository.itemNegativeFlags = value;
+
   /////////////////////////////////////////////////////////////
   //                    GETTER SETTER                         //
   //                          LOYALTY                         //

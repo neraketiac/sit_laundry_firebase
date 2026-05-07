@@ -229,13 +229,15 @@ class _ReadDataItemsHistoryWidgetState
             ),
           ),
           const SizedBox(width: 4),
-          if ((sMH.expenseAmount ?? 0) > 0)
+          if ((sMH.expenseAmount ?? 0) != 0)
             Text(
               "₱${value.format(sMH.expenseAmount)}",
               style: TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.w600,
-                color: Color.fromARGB(255, 185, 57, 48),
+                color: (sMH.expenseAmount ?? 0) < 0
+                    ? Color.fromARGB(255, 185, 57, 48)
+                    : Color.fromARGB(255, 76, 175, 80),
               ),
             ),
           const SizedBox(width: 4),
