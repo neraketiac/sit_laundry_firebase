@@ -27,6 +27,7 @@ const _kStaleThreshold = Duration(minutes: 2);
 class RouteStop {
   final int customerId;
   final String name;
+  final String address;
   final double lat;
   final double lng;
   // Computed after OSRM call
@@ -36,6 +37,7 @@ class RouteStop {
   RouteStop({
     required this.customerId,
     required this.name,
+    required this.address,
     required this.lat,
     required this.lng,
   });
@@ -251,6 +253,7 @@ class _RiderRoutePlannerState extends State<RiderRoutePlanner> {
         _stops.add(RouteStop(
           customerId: customer.customerId,
           name: customer.name,
+          address: customer.address,
           lat: lat,
           lng: lng,
         ));
@@ -1240,8 +1243,9 @@ class _RiderRoutePlannerState extends State<RiderRoutePlanner> {
                             ),
                           ),
                           title: _stops[i].name,
-                          subtitle:
-                              '${_stops[i].lat.toStringAsFixed(5)}, ${_stops[i].lng.toStringAsFixed(5)}',
+                          subtitle: _stops[i].address.isNotEmpty
+                              ? _stops[i].address
+                              : '${_stops[i].lat.toStringAsFixed(5)}, ${_stops[i].lng.toStringAsFixed(5)}',
                           eta: _stops[i].etaTime,
                           etaMinutes: _stops[i].etaMinutes,
                           trailing: IconButton(

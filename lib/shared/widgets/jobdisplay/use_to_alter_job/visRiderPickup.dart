@@ -71,6 +71,10 @@ Widget visRiderPickup(
                       jobRepo.repoVarSelectedIntRiderPickup =
                           listRiderPickup[index];
 
+                      // Reset checkboxes when toggle changes
+                      jobRepo.selectedIsCustomerPickedUp = false;
+                      jobRepo.selectedIsDeliveredToCustomer = false;
+
                       dialogSetState();
                     },
                     child: AnimatedContainer(
