@@ -17,6 +17,9 @@ Widget _buildSupplyRow(SuppliesModelHist sMH) {
   bool bNegative = (sMH.currentCounter < 0 ? true : false);
   bool bNegativePCF = (sMH.currentStocks < 0 ? true : false);
 
+  // Determine if this is Funds In transaction
+  final isFundsIn = sMH.itemUniqueId == 4403;
+
   if (ifMenuUniqueIsEOD(sMH)) {
     return Container(
       height: 22,
@@ -45,9 +48,12 @@ Widget _buildSupplyRow(SuppliesModelHist sMH) {
             style: TextStyle(
               fontSize: 10,
               fontWeight: FontWeight.w600,
-              color: (bNegative
-                  ? Color.fromARGB(255, 185, 57, 48)
-                  : Color(0xFF0D47A1)),
+              color: isFundsIn
+                  ? const Color(0xFF0D47A1) // Blue for Funds In
+                  : (bNegative
+                      ? const Color.fromARGB(
+                          255, 185, 57, 48) // Red for negative
+                      : const Color(0xFF0D47A1)), // Blue for positive
             ),
           ),
           const SizedBox(width: 4),
@@ -81,7 +87,7 @@ Widget _buildSupplyRow(SuppliesModelHist sMH) {
     height: 22,
     padding: const EdgeInsets.symmetric(horizontal: 4),
     decoration: BoxDecoration(
-      color: Colors.grey[400],
+      color: isFundsIn ? Colors.green.shade100 : Colors.grey[400],
       border: Border(
         bottom: BorderSide(
           color: const Color.fromARGB(255, 89, 89, 89),
@@ -104,9 +110,11 @@ Widget _buildSupplyRow(SuppliesModelHist sMH) {
           style: TextStyle(
             fontSize: 10,
             fontWeight: FontWeight.w600,
-            color: (bNegative
-                ? Color.fromARGB(255, 185, 57, 48)
-                : Color(0xFF0D47A1)),
+            color: isFundsIn
+                ? const Color(0xFF0D47A1) // Blue for Funds In
+                : (bNegative
+                    ? const Color.fromARGB(255, 185, 57, 48) // Red for negative
+                    : const Color(0xFF0D47A1)), // Blue for positive
           ),
         ),
         const SizedBox(width: 4),

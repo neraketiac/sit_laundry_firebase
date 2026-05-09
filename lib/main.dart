@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'core/services/firebase_service.dart';
 import 'core/services/notification_service.dart';
+import 'core/services/project_version_manager.dart';
 import 'app.dart';
 
 Future<void> main() async {
@@ -24,6 +25,9 @@ Future<void> main() async {
   };
 
   await FirebaseService.initialize();
+
+  // Initialize session version (captures app version at startup)
+  ProjectVersionManager.initializeSessionVersion();
 
   // Initialize notifications in background without blocking app startup
   NotificationService.initialize();

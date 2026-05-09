@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:laundry_firebase/core/global/variables_all_codes.dart';
+import 'package:laundry_firebase/core/global/variables.dart';
 import 'package:laundry_firebase/core/utils/sharedMethods.dart';
 import 'package:laundry_firebase/core/utils/sharedmethodsdatabase.dart';
 import 'package:laundry_firebase/features/payments/repository/gcash_repository.dart';
@@ -8,7 +9,8 @@ import 'package:laundry_firebase/shared/widgets/actions/uploadPlaceholder.dart';
 Widget showUploadedImage(BuildContext context, GCashRepository gRepo,
     {VoidCallback? onImageUploaded}) {
   // Use selectedFundCode for new records (showGCashPending), itemUniqueId for existing records (readDataGCashPending)
-  final fundCode = gRepo.docId.isEmpty ? gRepo.selectedFundCode : gRepo.itemUniqueId;
+  final fundCode =
+      gRepo.docId.isEmpty ? gRepo.selectedFundCode : gRepo.itemUniqueId;
   final bool isCashOut = fundCode == menuOthUniqIdCashOut;
 
   final String imageUrl =
@@ -64,6 +66,18 @@ Widget showUploadedImage(BuildContext context, GCashRepository gRepo,
           if (action == 'view') {
             showImagePreview(context, imageUrl);
           } else if (action == 'replace') {
+            // Only admin can replace existing images
+            if (!isAdmin) {
+              if (!context.mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Only admin can replace existing receipts'),
+                  duration: Duration(seconds: 2),
+                ),
+              );
+              return;
+            }
+
             if (!context.mounted) return;
             final confirm = await showDialog<bool>(
               context: context,

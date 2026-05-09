@@ -72,7 +72,7 @@ class ExpenseData {
     // ── EmployeeHist: ItemUniqueId=4406, skip EmpId '#1919' ───────────────
     for (final doc in empDocs) {
       final data = doc.data() as Map<String, dynamic>;
-      if ((data['EmpId']?.toString() ?? '') == '#1919') continue;
+      final empId = data['EmpId']?.toString() ?? '';
 
       final raw = data['CurrentCounter'];
       if (raw == null) continue;
@@ -86,17 +86,17 @@ class ExpenseData {
               ?.toString() ??
           'Unknown';
 
-      _add(
-          label,
-          amount,
-          (data['AutoSalaryDate'] ?? data['LogDate']) as Timestamp?,
-          weekNumber);
+      final ts = (data['AutoSalaryDate'] ?? data['LogDate']) as Timestamp?;
 
-      // Also track employee-only for SalaryCard comparison
-      final ts2 = (data['AutoSalaryDate'] ?? data['LogDate']) as Timestamp?;
+      // Skip Lorie (#1919) from Top Expense display
+      if (empId != '#1919') {
+        _add(label, amount, ts, weekNumber);
+      }
+
+      // Always track employee-only for SalaryCard comparison (including Lorie)
       empOnlyByEmployee[label] = (empOnlyByEmployee[label] ?? 0) + amount;
-      if (ts2 != null) {
-        final w = weekNumber(ts2.toDate());
+      if (ts != null) {
+        final w = weekNumber(ts.toDate());
         final wMap = empOnlyByWeek[w] ??= {};
         wMap[label] = (wMap[label] ?? 0) + amount;
       }

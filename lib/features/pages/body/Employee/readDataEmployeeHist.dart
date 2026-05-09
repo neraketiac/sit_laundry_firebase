@@ -120,11 +120,15 @@ class _EmployeeHistWidgetState extends State<_EmployeeHistWidget> {
   Widget _buildRow(EmployeeModel eM) {
     final bNegative = eM.currentCounter < 0;
     final bNegativePCF = eM.currentStocks < 0;
+
+    // Determine if this is Funds In transaction
+    final isFundsIn = eM.itemUniqueId == 4403;
+
     return Container(
       height: 22,
       padding: const EdgeInsets.symmetric(horizontal: 4),
       decoration: BoxDecoration(
-        color: Colors.grey[400],
+        color: isFundsIn ? Colors.green.shade100 : Colors.grey[400],
         border: const Border(
           bottom:
               BorderSide(color: Color.fromARGB(255, 89, 89, 89), width: 0.6),
@@ -143,9 +147,12 @@ class _EmployeeHistWidgetState extends State<_EmployeeHistWidget> {
             style: TextStyle(
               fontSize: 10,
               fontWeight: FontWeight.w600,
-              color: bNegative
-                  ? const Color.fromARGB(255, 185, 57, 48)
-                  : const Color(0xFF0D47A1),
+              color: isFundsIn
+                  ? const Color(0xFF0D47A1) // Blue for Funds In
+                  : (bNegative
+                      ? const Color.fromARGB(
+                          255, 185, 57, 48) // Red for negative
+                      : const Color(0xFF0D47A1)), // Blue for positive
             ),
           ),
           const SizedBox(width: 4),

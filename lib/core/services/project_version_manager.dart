@@ -1,20 +1,31 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:laundry_firebase/core/global/app_version.dart';
 import 'dart:html' as html;
-import 'dart:convert';
 
-/// Manages project version checking against web/version.json
+/// Global variable that captures the app version when page loads
+/// This won't change during the session, ensuring consistent version checking
+late String sessionAppVersion;
+
+/// Manages project version checking against Firestore
 /// Checks version only on login and main button click (no periodic checking)
 class ProjectVersionManager {
   ProjectVersionManager._();
   static final ProjectVersionManager instance = ProjectVersionManager._();
 
+  /// Initialize session version on app startup
+  /// Call this once when the app first loads
+  static void initializeSessionVersion() {
+    sessionAppVersion = appVersion;
+    debugPrint('Session version initialized: $sessionAppVersion');
+  }
+
   /// Check version when entering laundry (after login)
-  /// Fetches from web/version.json and compares with app version
+  /// Fetches from Firestore and compares with session version
   /// Shows message if outdated
   Future<void> checkVersionOnLogin(BuildContext context) async {
     try {
-      final remoteVersion = await _fetchVersionFromWeb();
+      final remoteVersion = await _fetchVersionFromFirestore();
       if (remoteVersion != null) {
         if (_isOutdated(remoteVersion)) {
           _showVersionMessage(context, remoteVersion);
@@ -27,11 +38,11 @@ class ProjectVersionManager {
   }
 
   /// Check version when main button is clicked
-  /// Fetches fresh version from web/version.json every time
+  /// Fetches fresh version from Firestore every time
   /// Shows message if outdated
   Future<void> checkVersionOnMainButton(BuildContext context) async {
     try {
-      final remoteVersion = await _fetchVersionFromWeb();
+      final remoteVersion = await _fetchVersionFromFirestore();
       if (remoteVersion != null) {
         if (_isOutdated(remoteVersion)) {
           _showVersionMessage(context, remoteVersion);
@@ -43,27 +54,25 @@ class ProjectVersionManager {
     }
   }
 
-  /// Fetch version from web/version.json hosted on Firebase Hosting
-  Future<String?> _fetchVersionFromWeb() async {
+  /// Fetch version from Firestore project_version/current
+  Future<String?> _fetchVersionFromFirestore() async {
     try {
-      final response =
-          await html.HttpRequest.request('/version.json', method: 'GET');
+      final doc = await FirebaseFirestore.instance
+          .collection('project_version')
+          .doc('current')
+          .get();
 
-      if (response.status == 200) {
-        final jsonData = jsonDecode(response.responseText ?? '{}');
-        final version = jsonData['version'] as String?;
-        return version;
-      }
-      return null;
+      final version = doc.data()?['version'] as String?;
+      return version;
     } catch (e) {
-      debugPrint('Failed to fetch version from web/version.json: $e');
+      debugPrint('Failed to fetch version from Firestore: $e');
       return null;
     }
   }
 
-  /// Compare versions: returns true if remote > local
+  /// Compare versions: returns true if remote > local (session version)
   bool _isOutdated(String remoteVersion) {
-    return _compareVersions(appVersion, remoteVersion) < 0;
+    return _compareVersions(sessionAppVersion, remoteVersion) < 0;
   }
 
   /// Compare two version strings in format "major.minor"
