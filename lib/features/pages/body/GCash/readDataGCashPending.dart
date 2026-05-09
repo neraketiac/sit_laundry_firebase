@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:laundry_firebase/core/global/variables_all_codes.dart';
 import 'package:laundry_firebase/features/payments/models/gcashmodel.dart';
 import 'package:laundry_firebase/core/utils/sharedMethods.dart';
+import 'package:laundry_firebase/core/constants/sharedConstantsFinal.dart';
 
 import 'package:laundry_firebase/core/services/database_gcash.dart';
 import 'package:laundry_firebase/features/payments/repository/gcash_repository.dart';
@@ -75,16 +76,27 @@ Widget readDataGCashPending() {
               final isSelected = selectedIndex == index;
               final isDark = Theme.of(context).brightness == Brightness.dark;
 
+              // Different background when Pending Funds In is enabled (isPendingFundsUntilPaid = true)
+              // Orange background shows from the start for pending funds, regardless of status
+              final isPending = gRepo.isPendingFundsUntilPaid;
               final cardBg = isSelected
                   ? (isDark
                       ? Colors.deepPurple.shade900
                       : Colors.deepPurple.shade100)
-                  : (isDark ? const Color(0xFF1E1E2E) : Colors.white);
+                  : isPending
+                      ? (isDark
+                          ? Colors.orange.shade900.withValues(alpha: 0.3)
+                          : Colors.orange.shade500)
+                      : (isDark ? const Color(0xFF1E1E2E) : Colors.white);
               final borderCol = isSelected
                   ? Colors.deepPurple
-                  : (isDark
-                      ? Colors.deepPurple.shade800
-                      : Colors.grey.shade300);
+                  : isPending
+                      ? (isDark
+                          ? Colors.orange.shade700
+                          : Colors.orange.shade300)
+                      : (isDark
+                          ? Colors.deepPurple.shade800
+                          : Colors.grey.shade300);
               final primaryText = isSelected
                   ? (isDark ? Colors.deepPurple.shade200 : Colors.deepPurple)
                   : (isDark ? Colors.white : Colors.black87);
@@ -130,6 +142,63 @@ Widget readDataGCashPending() {
                           // Status Circle
                           InkWell(
                             onTap: () async {
+                              // For Pending Funds In with screenshot attached (status 0.75), show Pay Now dialog directly
+                              if (gRepo.isPendingFundsUntilPaid &&
+                                  gRepo.gCashStatus == 0.75) {
+                                if (!context.mounted) return;
+                                final payNow = await showDialog<bool>(
+                                  context: context,
+                                  barrierDismissible: false,
+                                  builder: (context) => AlertDialog(
+                                    title: const Text('Pay Now?'),
+                                    content: Text(
+                                      'Record funds for ${gRepo.customerName} now?',
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () =>
+                                            Navigator.pop(context, false),
+                                        child: const Text('No'),
+                                      ),
+                                      ElevatedButton(
+                                        onPressed: () =>
+                                            Navigator.pop(context, true),
+                                        child: const Text('Yes'),
+                                      ),
+                                    ],
+                                  ),
+                                );
+
+                                if (payNow == true && context.mounted) {
+                                  // Record funds now as regular Funds In/Cash In/Load
+                                  isGcashCredit = false;
+
+                                  SuppliesHistRepository.instance.setItemName(
+                                      getItemNameOnly(menuOthCashInOutFunds,
+                                          gRepo.itemUniqueId));
+                                  SuppliesHistRepository.instance
+                                      .setItemId(menuOthCashInOutFunds);
+                                  SuppliesHistRepository.instance
+                                      .setItemUniqueId(gRepo.itemUniqueId);
+                                  SuppliesHistRepository.instance
+                                      .setCurrentCounter(gRepo.customerAmount);
+                                  SuppliesHistRepository.instance
+                                      .setCustomerName(gRepo.customerName);
+                                  SuppliesHistRepository.instance
+                                      .setCustomerId(0);
+                                  SuppliesHistRepository.instance.setRemarks(
+                                      'GCash ${gRepo.itemName} ${gRepo.remarks}');
+                                  await setSuppliesRepository(context);
+
+                                  // Set status to 0.85 (Payment done)
+                                  gRepo.gCashStatus = 0.85;
+                                  await dbGCashPending
+                                      .updateVoid(gRepo.getModel()!);
+                                }
+                                return;
+                              }
+
+                              // For other cases, show confirmation dialog
                               final result = await showDialog<bool>(
                                 context: context,
                                 builder: (context) {
@@ -252,7 +321,7 @@ Widget readDataGCashPending() {
                                                 await moveToNext(gRepo.docId);
                                               }
                                             } else {
-                                              // For Cash-In/Load: move to done immediately
+                                              // For Cash-In/Load: Normal flow - move to done immediately
                                               gRepo.gCashStatus = 1.0;
                                               await moveToNext(gRepo.docId);
                                             }
@@ -398,84 +467,210 @@ Widget readDataGCashPending() {
                                     gRepo.itemUniqueId ==
                                         menuOthUniqIdLoad) ...[
                                   const SizedBox(height: 8),
-                                  Row(
-                                    children: [
-                                      // Ticket + Payment
-                                      Text(
-                                        'Ticket + Payment',
-                                        style: TextStyle(
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.w600,
-                                          color: isDark
-                                              ? Colors.white
-                                              : Colors.black87,
-                                        ),
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 3),
-                                        child: Text(
-                                          '>',
+                                  if (gRepo.isPendingFundsUntilPaid)
+                                    // 4-step flow for pending funds
+                                    Row(
+                                      children: [
+                                        // Ticket
+                                        Text(
+                                          'Ticket',
                                           style: TextStyle(
                                             fontSize: 10,
-                                            fontWeight: FontWeight.bold,
+                                            fontWeight: FontWeight.w600,
                                             color: isDark
                                                 ? Colors.white
                                                 : Colors.black87,
                                           ),
                                         ),
-                                      ),
-                                      // SS (Screenshot)
-                                      Text(
-                                        'Attach SS',
-                                        style: TextStyle(
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.w600,
-                                          color: gRepo.cashInImageUrl.isNotEmpty
-                                              ? (isDark
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 3),
+                                          child: Text(
+                                            '>',
+                                            style: TextStyle(
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.bold,
+                                              color: isDark
                                                   ? Colors.white
-                                                  : Colors.black87)
-                                              : (isDark
-                                                  ? Colors.grey.shade600
-                                                      .withValues(alpha: 0.5)
-                                                  : Colors.grey.shade600
-                                                      .withValues(alpha: 0.5)),
-                                        ),
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 3),
-                                        child: Text(
-                                          '>',
-                                          style: TextStyle(
-                                            fontSize: 10,
-                                            fontWeight: FontWeight.bold,
-                                            color:
-                                                gRepo.cashInImageUrl.isNotEmpty
-                                                    ? (isDark
-                                                        ? Colors.white
-                                                        : Colors.black87)
-                                                    : (isDark
-                                                        ? Colors.grey.shade600
-                                                        : Colors.grey.shade600),
-                                            decoration: gRepo
-                                                    .cashInImageUrl.isNotEmpty
-                                                ? TextDecoration.none
-                                                : TextDecoration.lineThrough,
+                                                  : Colors.black87,
+                                            ),
                                           ),
                                         ),
-                                      ),
-                                      // Complete
-                                      Text(
-                                        'Complete',
-                                        style: TextStyle(
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.w600,
-                                          color: Colors.grey.shade600,
+                                        // Attach SS
+                                        Text(
+                                          'Attach SS',
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.w600,
+                                            color: gRepo
+                                                    .cashInImageUrl.isNotEmpty
+                                                ? (isDark
+                                                    ? Colors.white
+                                                    : Colors.black87)
+                                                : (isDark
+                                                    ? Colors.grey.shade600
+                                                        .withValues(alpha: 0.5)
+                                                    : Colors.grey.shade600
+                                                        .withValues(
+                                                            alpha: 0.5)),
+                                          ),
                                         ),
-                                      ),
-                                    ],
-                                  ),
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 3),
+                                          child: Text(
+                                            '>',
+                                            style: TextStyle(
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.bold,
+                                              color: gRepo
+                                                      .cashInImageUrl.isNotEmpty
+                                                  ? (isDark
+                                                      ? Colors.white
+                                                      : Colors.black87)
+                                                  : (isDark
+                                                      ? Colors.grey.shade600
+                                                      : Colors.grey.shade600),
+                                              decoration: gRepo
+                                                      .cashInImageUrl.isNotEmpty
+                                                  ? TextDecoration.none
+                                                  : TextDecoration.lineThrough,
+                                            ),
+                                          ),
+                                        ),
+                                        // Payment
+                                        Text(
+                                          'Payment',
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.w600,
+                                            color: gRepo.gCashStatus >= 0.85
+                                                ? (isDark
+                                                    ? Colors.white
+                                                    : Colors.black87)
+                                                : (isDark
+                                                    ? Colors.grey.shade600
+                                                        .withValues(alpha: 0.5)
+                                                    : Colors.grey.shade600
+                                                        .withValues(
+                                                            alpha: 0.5)),
+                                          ),
+                                        ),
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 3),
+                                          child: Text(
+                                            '>',
+                                            style: TextStyle(
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.bold,
+                                              color: gRepo.gCashStatus >= 0.85
+                                                  ? (isDark
+                                                      ? Colors.white
+                                                      : Colors.black87)
+                                                  : (isDark
+                                                      ? Colors.grey.shade600
+                                                      : Colors.grey.shade600),
+                                              decoration: gRepo.gCashStatus >=
+                                                      0.85
+                                                  ? TextDecoration.none
+                                                  : TextDecoration.lineThrough,
+                                            ),
+                                          ),
+                                        ),
+                                        // Complete
+                                        Text(
+                                          'Complete',
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.w600,
+                                            color: Colors.grey.shade600,
+                                          ),
+                                        ),
+                                      ],
+                                    )
+                                  else
+                                    // 3-step flow for normal funds
+                                    Row(
+                                      children: [
+                                        // Ticket + Payment
+                                        Text(
+                                          'Ticket + Payment',
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.w600,
+                                            color: isDark
+                                                ? Colors.white
+                                                : Colors.black87,
+                                          ),
+                                        ),
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 3),
+                                          child: Text(
+                                            '>',
+                                            style: TextStyle(
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.bold,
+                                              color: isDark
+                                                  ? Colors.white
+                                                  : Colors.black87,
+                                            ),
+                                          ),
+                                        ),
+                                        // SS (Screenshot)
+                                        Text(
+                                          'Attach SS',
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.w600,
+                                            color: gRepo
+                                                    .cashInImageUrl.isNotEmpty
+                                                ? (isDark
+                                                    ? Colors.white
+                                                    : Colors.black87)
+                                                : (isDark
+                                                    ? Colors.grey.shade600
+                                                        .withValues(alpha: 0.5)
+                                                    : Colors.grey.shade600
+                                                        .withValues(
+                                                            alpha: 0.5)),
+                                          ),
+                                        ),
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 3),
+                                          child: Text(
+                                            '>',
+                                            style: TextStyle(
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.bold,
+                                              color: gRepo
+                                                      .cashInImageUrl.isNotEmpty
+                                                  ? (isDark
+                                                      ? Colors.white
+                                                      : Colors.black87)
+                                                  : (isDark
+                                                      ? Colors.grey.shade600
+                                                      : Colors.grey.shade600),
+                                              decoration: gRepo
+                                                      .cashInImageUrl.isNotEmpty
+                                                  ? TextDecoration.none
+                                                  : TextDecoration.lineThrough,
+                                            ),
+                                          ),
+                                        ),
+                                        // Complete
+                                        Text(
+                                          'Complete',
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.w600,
+                                            color: Colors.grey.shade600,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                 ] else if (gRepo.itemUniqueId ==
                                     menuOthUniqIdCashOut) ...[
                                   const SizedBox(height: 8),

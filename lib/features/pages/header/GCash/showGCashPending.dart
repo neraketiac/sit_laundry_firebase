@@ -44,8 +44,8 @@ void showGCashPending(BuildContext context) async {
   // Per-save skip toggle — local only, resets every time dialog opens
   bool skipSuppliesThisSave = false;
 
-  // Deduct from salary toggle — local only, only for staff names
-  bool deductFromSalary = false;
+  // Pending Funds In toggle — local only, only for staff names
+  bool pendingFundsUntilPaid = false;
 
   /// Returns true if the typed name is a staff (excluding Ket and DonF)
   bool isStaffSelected() {
@@ -67,6 +67,7 @@ void showGCashPending(BuildContext context) async {
         int.parse(gRepo.customerAmountVar.text.replaceAll(',', ''));
     gRepo.logDate = Timestamp.now();
     gRepo.logBy = empIdGlobal;
+    gRepo.isPendingFundsUntilPaid = pendingFundsUntilPaid;
 
     // If CashOut and picture is uploaded, set status to 0.75
     final isCashOut = gRepo.selectedFundCode == menuOthUniqIdCashOut;
@@ -80,20 +81,10 @@ void showGCashPending(BuildContext context) async {
     final isCashOutTransaction = gRepo.selectedFundCode == menuOthUniqIdCashOut;
 
     if (!isCashOutTransaction) {
-      if (deductFromSalary && isStaffSelected()) {
-        // Deduct from staff salary — same pattern as showSalaryMaintenance
-        // menuOthUniqIdCashIn with isGcashCredit=true triggers employee deduction
-        SuppliesHistRepository.instance.setItemName(
-            getItemNameOnly(menuOthCashInOutFunds, menuOthUniqIdCashIn));
-        SuppliesHistRepository.instance.setItemId(menuOthCashInOutFunds);
-        SuppliesHistRepository.instance.setItemUniqueId(menuOthUniqIdCashIn);
-        SuppliesHistRepository.instance.setCurrentCounter(gRepo.customerAmount);
-        SuppliesHistRepository.instance.setCustomerName(gRepo.customerName);
-        SuppliesHistRepository.instance.setCustomerId(0);
-        SuppliesHistRepository.instance
-            .setRemarks('GCash deduct ${gRepo.itemName} ${gRepo.remarks}');
-        isGcashCredit = true; // triggers employee balance deduction
-        await setSuppliesRepository(context);
+      // If Pending Funds In, skip funds recording (will be done in readDataGCashPending)
+      if (pendingFundsUntilPaid && isStaffSelected()) {
+        // Skip funds recording - will be done when status moves to next and user confirms "Pay Now?"
+        return;
       } else if (!skipSuppliesThisSave) {
         // Normal funds recording for Cash-In and Load
         SuppliesHistRepository.instance.setItemName(
@@ -301,7 +292,7 @@ void showGCashPending(BuildContext context) async {
                                     ),
                                     onChanged: (_) => setState(() {
                                       if (!isStaffSelected()) {
-                                        deductFromSalary = false;
+                                        pendingFundsUntilPaid = false;
                                       }
                                     }),
                                   ),
@@ -319,7 +310,8 @@ void showGCashPending(BuildContext context) async {
                                                   gRepo.customerNameVar.text =
                                                       name;
                                                   if (!isStaffSelected()) {
-                                                    deductFromSalary = false;
+                                                    pendingFundsUntilPaid =
+                                                        false;
                                                   }
                                                 }),
                                                 child: Chip(
@@ -388,7 +380,7 @@ void showGCashPending(BuildContext context) async {
                             ),
                           ),
 
-                          // 7. "Enable this, kapag No Funds In" toggle (only visible if NOT Cash-out AND name is staff)
+                          // 7. "Pending Funds In" toggle (only visible if NOT Cash-out AND name is staff)
                           if (!isCashOut && nameIsStaff)
                             Padding(
                               padding: const EdgeInsets.symmetric(
@@ -402,14 +394,14 @@ void showGCashPending(BuildContext context) async {
                                         CrossAxisAlignment.start,
                                     children: [
                                       const Text(
-                                        'Enable this, kapag No Funds In.',
+                                        'Pending Funds In',
                                         style: TextStyle(
                                             fontSize: 14,
                                             color: Colors.black87,
                                             fontWeight: FontWeight.w600),
                                       ),
                                       Text(
-                                        'Ibabawas sa sweldo ni ${gRepo.customerNameVar.text}',
+                                        'Pause funds recording for ${gRepo.customerNameVar.text}',
                                         style: const TextStyle(
                                             fontSize: 12,
                                             color: Colors.black54),
@@ -417,10 +409,10 @@ void showGCashPending(BuildContext context) async {
                                     ],
                                   ),
                                   Switch(
-                                    value: deductFromSalary,
+                                    value: pendingFundsUntilPaid,
                                     activeThumbColor: Colors.deepOrange,
                                     onChanged: (v) => setState(() {
-                                      deductFromSalary = v;
+                                      pendingFundsUntilPaid = v;
                                       if (v) skipSuppliesThisSave = false;
                                     }),
                                   ),
@@ -428,8 +420,111 @@ void showGCashPending(BuildContext context) async {
                               ),
                             ),
 
-                          // 8. "Skip Funds Recording" toggle (only visible if admin AND NOT deductFromSalary AND NOT Cash-out)
-                          if (isAdmin && !deductFromSalary && !isCashOut)
+                          // 7.5 Procedure display when pending funds is enabled
+                          if (!isCashOut &&
+                              nameIsStaff &&
+                              pendingFundsUntilPaid)
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 8),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'Procedure:',
+                                    style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.black87,
+                                        fontWeight: FontWeight.w600),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Row(
+                                    children: [
+                                      Text(
+                                        'Ticket',
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.black87,
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 4),
+                                        child: Text(
+                                          '>',
+                                          style: TextStyle(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black87,
+                                          ),
+                                        ),
+                                      ),
+                                      Text(
+                                        'Attach SS',
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.black87,
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 4),
+                                        child: Text(
+                                          '>',
+                                          style: TextStyle(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black87,
+                                          ),
+                                        ),
+                                      ),
+                                      Text(
+                                        'Payment',
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.deepOrange.shade700,
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 4),
+                                        child: Text(
+                                          '>',
+                                          style: TextStyle(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black87,
+                                          ),
+                                        ),
+                                      ),
+                                      Text(
+                                        'Complete',
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.black54,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    '• Ticket (by Staff) • Attach SS (by Ket) • Payment (by Staff) • Complete (by Staff/Ket)',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      color: Colors.black54,
+                                      fontStyle: FontStyle.italic,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+
+                          // 8. "Skip Funds Recording" toggle (only visible if admin AND NOT pendingFundsUntilPaid AND NOT Cash-out)
+                          if (isAdmin && !pendingFundsUntilPaid && !isCashOut)
                             Padding(
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 8, vertical: 4),

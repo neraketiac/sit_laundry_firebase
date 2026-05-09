@@ -19,6 +19,7 @@ class GCashModel {
   String remarks;
   String cashInImageUrl;
   String cashOutImageUrl;
+  bool isPendingFundsUntilPaid; // true = pause funds recording until paid
 
   GCashModel(
       {required this.docId,
@@ -36,7 +37,8 @@ class GCashModel {
       required this.customerNumber,
       required this.remarks,
       required this.cashInImageUrl,
-      required this.cashOutImageUrl});
+      required this.cashOutImageUrl,
+      this.isPendingFundsUntilPaid = false});
 
   GCashModel.fromJson(Map<String, dynamic> json)
       : this(
@@ -56,6 +58,8 @@ class GCashModel {
           remarks: json['Remarks']! as String,
           cashInImageUrl: (json['CashInImageUrl'] as String?) ?? '',
           cashOutImageUrl: (json['CashOutImageUrl'] as String?) ?? '',
+          isPendingFundsUntilPaid:
+              (json['IsPendingFundsUntilPaid'] as bool?) ?? false,
         );
 
   GCashModel copyWith({
@@ -75,6 +79,7 @@ class GCashModel {
     String? remarks,
     String? cashInImageUrl,
     String? cashOutImageUrl,
+    bool? isPendingFundsUntilPaid,
   }) {
     return GCashModel(
       docId: docId ?? this.docId,
@@ -93,6 +98,8 @@ class GCashModel {
       remarks: remarks ?? this.remarks,
       cashInImageUrl: cashInImageUrl ?? this.cashInImageUrl,
       cashOutImageUrl: cashOutImageUrl ?? this.cashOutImageUrl,
+      isPendingFundsUntilPaid:
+          isPendingFundsUntilPaid ?? this.isPendingFundsUntilPaid,
     );
   }
 
@@ -113,5 +120,6 @@ class GCashModel {
         'Remarks': remarks,
         'CashInImageUrl': cashInImageUrl,
         'CashOutImageUrl': cashOutImageUrl,
+        'IsPendingFundsUntilPaid': isPendingFundsUntilPaid,
       };
 }

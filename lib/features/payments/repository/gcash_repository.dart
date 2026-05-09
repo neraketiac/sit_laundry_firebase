@@ -72,6 +72,7 @@ class GCashRepository {
   String get remarks => gM.remarks;
   String get cashInImageUrl => gM.cashInImageUrl;
   String get cashOutImageUrl => gM.cashOutImageUrl;
+  bool get isPendingFundsUntilPaid => gM.isPendingFundsUntilPaid;
 
   /////////////////////////////////////////////////////////////
   //                          SETTER                         //
@@ -104,6 +105,7 @@ class GCashRepository {
   set remarks(String value) => gM.remarks = value;
   set cashInImageUrl(String value) => gM.cashInImageUrl = value;
   set cashOutImageUrl(String value) => gM.cashOutImageUrl = value;
+  set isPendingFundsUntilPaid(bool value) => gM.isPendingFundsUntilPaid = value;
 
   /////////////////////////////////////////////////////////////
   //                          SETTER                         //

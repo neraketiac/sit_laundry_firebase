@@ -100,7 +100,7 @@ class ProjectVersionManager {
     }
   }
 
-  /// Show version outdated message
+  /// Show version outdated message - user must refresh to continue
   void _showVersionMessage(BuildContext context, String remoteVersion) {
     showDialog(
       context: context,
@@ -110,15 +110,9 @@ class ProjectVersionManager {
           title: const Text('New Version Available'),
           content: Text(
             'You are using the old version, new version $remoteVersion is available.\n\n'
-            'Please refresh the page to load it.',
+            'Please refresh the page to load the latest version.',
           ),
           actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: const Text('Later'),
-            ),
             ElevatedButton(
               onPressed: () {
                 // Refresh the page
