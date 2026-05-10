@@ -793,14 +793,21 @@ class JobModelRepository {
       final onlyPromo = count155 + count195;
 
       jobRepo.finalLoad = onlyPromo +
-          count195 + // ₱260 = 2 loads (1 from onlyPromo + 1 extra)
+          count195 * 2 + // menuOth195 (405) - ₱260 = 2 loads
           (selectedItems.where((v) => v.itemId == menuOth165).length) *
               2 + // ₱165 = 2 loads
           (selectedItems.where((v) => v.itemId == menuOth125).length) +
           (selectedItems.where((v) => v.itemId == menuOth225).length) *
               2 + // ₱225 = 2 loads
           (selectedItems.where((v) => v.itemId == menuOthWD98).length) +
-          (selectedItems.where((v) => v.itemId == menuOthNF125).length);
+          (selectedItems.where((v) => v.itemId == menuOthNF125).length) +
+          (selectedItems.where((v) => v.itemId == menuOthW8t9).length) +
+          // menuOthW8t9 (418) - ₱190 = 1 load
+          (selectedItems.where((v) => v.itemId == menuOthW9t10).length) *
+              2 + // menuOthW9t10 (419) - ₱260 = 2 loads
+          (selectedItems.where((v) => v.itemId == menuOth150).length);
+      // menuOth150 (425) - ₱150 = 1 load
+      // TODO: Add wash49 = 1 load (need constant name)
       jobRepo.promoCounter = onlyPromo;
     }
 

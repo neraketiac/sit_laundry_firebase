@@ -316,8 +316,7 @@ class _GCashDoneWidgetState extends State<_GCashDoneWidget> {
                                         size: 14, color: secondaryText),
                                     const SizedBox(width: 4),
                                     Text(
-                                      DateFormat('MM/dd hh:mm a')
-                                          .format(gRepo.logDate.toDate()),
+                                      '${DateFormat('MM/dd hh:mm a').format(gRepo.logDate.toDate())}:${gRepo.logBy}',
                                       style: TextStyle(
                                           fontWeight: FontWeight.w500,
                                           color: secondaryText,
