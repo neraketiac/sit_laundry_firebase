@@ -249,14 +249,14 @@ void showGCashPending(BuildContext context) async {
                             child: Container(
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
-                                color: Colors.white.withOpacity(0.8),
+                                color: Colors.white,
                               ),
                               padding: const EdgeInsets.all(6),
                               child: Icon(
                                 showStaffButtons
                                     ? Icons.visibility
                                     : Icons.visibility_off,
-                                color: Colors.black,
+                                color: Colors.black87,
                                 size: 28,
                               ),
                             ),
@@ -286,32 +286,33 @@ void showGCashPending(BuildContext context) async {
                               () => setState(() {}),
                               fundTypeCodes1stLayer,
                               gRepo,
-                              showProcedureLabel: showStaffButtons,
+                              showProcedureLabel: false,
                             ),
 
-                            // 2.5 Picture Upload (for all transaction types)
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 8, vertical: 8),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text('Upload Receipt Picture',
-                                      style: TextStyle(
-                                          fontSize: s.small,
-                                          color: Colors.white70)),
-                                  const SizedBox(height: 8),
-                                  Center(
-                                    child: showUploadedImage(
-                                      context,
-                                      gRepo,
-                                      onImageUploaded: () => setState(() {}),
+                            // 2.5 Picture Upload (only for Cash-Out)
+                            if (isCashOut)
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 8),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text('Upload Receipt Picture',
+                                        style: TextStyle(
+                                            fontSize: s.small,
+                                            color: Colors.white70)),
+                                    const SizedBox(height: 8),
+                                    Center(
+                                      child: showUploadedImage(
+                                        context,
+                                        gRepo,
+                                        onImageUploaded: () => setState(() {}),
+                                      ),
                                     ),
-                                  ),
-                                  const SizedBox(height: 10),
-                                ],
+                                    const SizedBox(height: 10),
+                                  ],
+                                ),
                               ),
-                            ),
 
                             // 3. Mobile Number - center alignment
                             Padding(

@@ -198,7 +198,93 @@ Widget readDataGCashPending() {
                                 return;
                               }
 
-                              // For other cases, show confirmation dialog
+                              // Cash-Out specific flow
+                              if (gRepo.itemUniqueId == menuOthUniqIdCashOut) {
+                                // Initial state (0 - 0.75): Admin clicks to show "Pede na I-Bigay ang Cash?"
+                                if (gRepo.gCashStatus <= 0.75) {
+                                  if (!isAdmin) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                            'Only admin can initiate cash-out'),
+                                      ),
+                                    );
+                                    return;
+                                  }
+
+                                  if (!context.mounted) return;
+                                  final confirmCashOut = await showDialog<bool>(
+                                    context: context,
+                                    barrierDismissible: false,
+                                    builder: (context) => AlertDialog(
+                                      title: const Text(
+                                          'Pede na I-Bigay ang Cash?'),
+                                      content: Text(
+                                        'Ready to give cash to ${gRepo.customerName}?',
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () =>
+                                              Navigator.pop(context, false),
+                                          child: const Text('No'),
+                                        ),
+                                        ElevatedButton(
+                                          onPressed: () =>
+                                              Navigator.pop(context, true),
+                                          child: const Text('Yes'),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+
+                                  if (confirmCashOut == true &&
+                                      context.mounted) {
+                                    gRepo.gCashStatus = 0.85;
+                                    await dbGCashPending
+                                        .updateVoid(gRepo.getModel()!);
+                                  }
+                                  return;
+                                }
+
+                                // After 0.85: Staff clicks to show "Complete? Naibigay na ang cash."
+                                if (gRepo.gCashStatus >= 0.85 &&
+                                    gRepo.gCashStatus < 1.0) {
+                                  if (!context.mounted) return;
+                                  final confirmComplete =
+                                      await showDialog<bool>(
+                                    context: context,
+                                    barrierDismissible: false,
+                                    builder: (context) => AlertDialog(
+                                      title: const Text('Complete?'),
+                                      content:
+                                          const Text('Naibigay na ang cash.'),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () =>
+                                              Navigator.pop(context, false),
+                                          child: const Text('No'),
+                                        ),
+                                        ElevatedButton(
+                                          onPressed: () =>
+                                              Navigator.pop(context, true),
+                                          child: const Text('Yes'),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+
+                                  if (confirmComplete == true &&
+                                      context.mounted) {
+                                    // Generate Cash-Out supplies records and move to done
+                                    await _generateCashOutSuppliesRecords(
+                                        gRepo);
+                                    await moveToNext(gRepo.docId);
+                                  }
+                                  return;
+                                }
+                              }
+
+                              // For other cases (Cash-In/Load), show confirmation dialog
                               final result = await showDialog<bool>(
                                 context: context,
                                 builder: (context) {
@@ -358,63 +444,14 @@ Widget readDataGCashPending() {
                                           ),
                                           child: const Text('Revert Payment'),
                                         ),
-                                      if (isAdmin &&
-                                          gRepo.itemUniqueId ==
-                                              menuOthUniqIdCashOut &&
-                                          gRepo.gCashStatus <= 0.5)
-                                        boxButtonElevated(
-                                          context: context,
-                                          label: 'BigayCashOut',
-                                          onPressed: () async {
-                                            gRepo.remarks = (gRepo.remarks == ''
-                                                ? 'Bigay CashOut'
-                                                : '${gRepo.remarks}-BigayCashOut');
-                                            gRepo.gCashStatus = 0.75;
-                                            await dbGCashPending
-                                                .updateVoid(gRepo.getModel()!);
-                                            return true;
-                                          },
-                                        ),
                                       if (gRepo.gCashStatus > 0.5)
                                         boxButtonElevated(
                                           context: context,
-                                          label: gRepo.itemUniqueId ==
-                                                      menuOthUniqIdCashOut &&
-                                                  gRepo.gCashStatus < 1.0
-                                              ? 'Bigay Cash'
-                                              : 'Complete',
+                                          label: 'Complete',
                                           onPressed: () async {
-                                            // For Cash-Out: First complete sets to 1.0 and stays in pending
-                                            // Second complete moves to done
-                                            if (gRepo.itemUniqueId ==
-                                                menuOthUniqIdCashOut) {
-                                              if (gRepo.gCashStatus < 1.0) {
-                                                // First complete: Admin only - set to 1.0 and stay in pending
-                                                if (!isAdmin) {
-                                                  ScaffoldMessenger.of(context)
-                                                      .showSnackBar(
-                                                    const SnackBar(
-                                                      content: Text(
-                                                          'Only admin can complete this step'),
-                                                    ),
-                                                  );
-                                                  return false;
-                                                }
-                                                gRepo.gCashStatus = 1.0;
-                                                await dbGCashPending.updateVoid(
-                                                    gRepo.getModel()!);
-                                              } else if (gRepo.gCashStatus >=
-                                                  1.0) {
-                                                // Second complete: Non-admin can do this - move to done
-                                                await _generateCashOutSuppliesRecords(
-                                                    gRepo);
-                                                await moveToNext(gRepo.docId);
-                                              }
-                                            } else {
-                                              // For Cash-In/Load: Normal flow - move to done immediately
-                                              gRepo.gCashStatus = 1.0;
-                                              await moveToNext(gRepo.docId);
-                                            }
+                                            // For Cash-In/Load: Normal flow - move to done immediately
+                                            gRepo.gCashStatus = 1.0;
+                                            await moveToNext(gRepo.docId);
                                             return true;
                                           },
                                         ),
@@ -766,7 +803,7 @@ Widget readDataGCashPending() {
                                   const SizedBox(height: 8),
                                   Row(
                                     children: [
-                                      // Ticket + SS
+                                      // Ticket + SS (always active for status 0-0.75)
                                       Text(
                                         'Ticket + SS',
                                         style: TextStyle(
@@ -777,67 +814,61 @@ Widget readDataGCashPending() {
                                               : Colors.black87,
                                         ),
                                       ),
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 3),
-                                        child: Text(
-                                          '>',
+                                      // Show arrow and next steps only if status >= 0.85
+                                      if (gRepo.gCashStatus >= 0.85) ...[
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 3),
+                                          child: Text(
+                                            '>',
+                                            style: TextStyle(
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.bold,
+                                              color: isDark
+                                                  ? Colors.white
+                                                  : Colors.black87,
+                                            ),
+                                          ),
+                                        ),
+                                        // Check SS (active when status >= 0.85)
+                                        Text(
+                                          'Check SS',
                                           style: TextStyle(
                                             fontSize: 10,
-                                            fontWeight: FontWeight.bold,
+                                            fontWeight: FontWeight.w600,
                                             color: isDark
                                                 ? Colors.white
                                                 : Colors.black87,
                                           ),
                                         ),
-                                      ),
-                                      // Complete (Bigay Cash)
-                                      Text(
-                                        'Check SS',
-                                        style: TextStyle(
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.w600,
-                                          color: gRepo.gCashStatus >= 1.0
-                                              ? (isDark
-                                                  ? Colors.white
-                                                  : Colors.black87)
-                                              : (isDark
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 3),
+                                          child: Text(
+                                            '>',
+                                            style: TextStyle(
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.bold,
+                                              color: isDark
                                                   ? Colors.grey.shade600
-                                                      .withValues(alpha: 0.5)
-                                                  : Colors.grey.shade600
-                                                      .withValues(alpha: 0.5)),
-                                        ),
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 3),
-                                        child: Text(
-                                          '>',
-                                          style: TextStyle(
-                                            fontSize: 10,
-                                            fontWeight: FontWeight.bold,
-                                            color: gRepo.gCashStatus >= 1.0
-                                                ? (isDark
-                                                    ? Colors.white
-                                                    : Colors.black87)
-                                                : (isDark
-                                                    ? Colors.grey.shade600
-                                                    : Colors.grey.shade600),
-                                            decoration: gRepo.gCashStatus >= 1.0
-                                                ? TextDecoration.none
-                                                : TextDecoration.lineThrough,
+                                                  : Colors.grey.shade600,
+                                            ),
                                           ),
                                         ),
-                                      ),
-                                      // Complete
-                                      Text(
-                                        'Bigay Cash',
-                                        style: TextStyle(
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.w600,
-                                          color: Colors.grey.shade600,
+                                        // Bigay Cash (inactive/grayed when status < 1.0)
+                                        Text(
+                                          'Bigay Cash',
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.w600,
+                                            color: isDark
+                                                ? Colors.grey.shade600
+                                                    .withValues(alpha: 0.5)
+                                                : Colors.grey.shade600
+                                                    .withValues(alpha: 0.5),
+                                          ),
                                         ),
-                                      ),
+                                      ],
                                     ],
                                   ),
                                 ],

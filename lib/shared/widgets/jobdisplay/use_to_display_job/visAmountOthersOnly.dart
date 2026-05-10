@@ -156,19 +156,28 @@ Widget visAmountOthersOnly(
                         label: getShortcutLabel(shortcut),
                         onTap: () {
                           if (shortcut == menuOth155) {
-                            addOtherItem(jobRepo, reg155ItemModel);
+                            addOtherItem(jobRepo, reg155ItemModel,
+                                context: context);
                           } else if (shortcut == menuOthW8t9) {
-                            addOtherItem(jobRepo, reg155ItemModel);
-                            addOtherItem(
-                                jobRepo,
-                                listOthItems.firstWhere(
-                                    (i) => i.itemId == menuOthW8t9));
+                            addOtherItemBundle(
+                              jobRepo,
+                              [
+                                reg155ItemModel,
+                                listOthItems
+                                    .firstWhere((i) => i.itemId == menuOthW8t9),
+                              ],
+                              context: context,
+                            );
                           } else if (shortcut == menuOthW9t10) {
-                            addOtherItem(jobRepo, reg155ItemModel);
-                            addOtherItem(
-                                jobRepo,
+                            addOtherItemBundle(
+                              jobRepo,
+                              [
+                                reg155ItemModel,
                                 listOthItems.firstWhere(
-                                    (i) => i.itemId == menuOthW9t10));
+                                    (i) => i.itemId == menuOthW9t10),
+                              ],
+                              context: context,
+                            );
                           }
                           dialogSetState();
                         },
@@ -188,9 +197,11 @@ Widget visAmountOthersOnly(
                           label: getShortcutLabel(shortcut),
                           onTap: () {
                             if (shortcut == menuOth125) {
-                              addOtherItem(jobRepo, reg125ItemModel);
+                              addOtherItem(jobRepo, reg125ItemModel,
+                                  context: context);
                             } else if (shortcut == menuOth150) {
-                              addOtherItem(jobRepo, reg150ItemModel);
+                              addOtherItem(jobRepo, reg150ItemModel,
+                                  context: context);
                             }
                             dialogSetState();
                           },
@@ -199,7 +210,8 @@ Widget visAmountOthersOnly(
                       glassShortcutButton(
                         label: '₱225',
                         onTap: () {
-                          addOtherItem(jobRepo, reg225ItemModel);
+                          addOtherItem(jobRepo, reg225ItemModel,
+                              context: context);
                           dialogSetState();
                         },
                       ),
@@ -217,11 +229,14 @@ Widget visAmountOthersOnly(
                         label: getShortcutLabel(shortcut),
                         onTap: () {
                           if (shortcut == menuOthXD) {
-                            addOtherItem(jobRepo, xDItemModel);
+                            addOtherItem(jobRepo, xDItemModel,
+                                context: context);
                           } else if (shortcut == menuOthXW) {
-                            addOtherItem(jobRepo, xWashItemModel);
+                            addOtherItem(jobRepo, xWashItemModel,
+                                context: context);
                           } else if (shortcut == menuFabWKLDValAny8ml) {
-                            addOtherItem(jobRepo, addFabAnyItemModel);
+                            addOtherItem(jobRepo, addFabAnyItemModel,
+                                context: context);
                           }
                           dialogSetState();
                         },
@@ -240,11 +255,14 @@ Widget visAmountOthersOnly(
                         label: getOtherShortCutLabel(shortcut),
                         onTap: () {
                           if (shortcut == menuOthNF155) {
-                            addOtherItem(jobRepo, nf155ItemModel);
+                            addOtherItem(jobRepo, nf155ItemModel,
+                                context: context);
                           } else if (shortcut == menuOthNF125) {
-                            addOtherItem(jobRepo, nf125ItemModel);
+                            addOtherItem(jobRepo, nf125ItemModel,
+                                context: context);
                           } else if (shortcut == menuOthWD98) {
-                            addOtherItem(jobRepo, washDryOnlytemModel);
+                            addOtherItem(jobRepo, washDryOnlytemModel,
+                                context: context);
                           }
                           dialogSetState();
                         },
@@ -297,9 +315,11 @@ Widget visAmountOthersOnly(
             glassShortcutButton(
                 label: "Free",
                 onTap: () {
-                  addOtherItem(jobRepo, reg155ItemModel);
-                  addOtherItem(jobRepo, promoFree);
-
+                  addOtherItemBundle(
+                    jobRepo,
+                    [reg155ItemModel, promoFree],
+                    context: context,
+                  );
                   dialogSetState();
                 }),
 
@@ -416,7 +436,8 @@ Widget visAmountOthersOnly(
                     const SizedBox(width: 12),
                     GestureDetector(
                       onTap: () {
-                        addOtherItem(jobRepo, jobRepo.repoVarSelectedItem!);
+                        addOtherItem(jobRepo, jobRepo.repoVarSelectedItem!,
+                            context: context);
                         dialogSetState();
                       },
                       child: Container(

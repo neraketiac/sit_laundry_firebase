@@ -66,13 +66,14 @@ Widget visItemsOnly(
                 label: getShortcutLabel(shortcut),
                 onTap: () {
                   if (shortcut == menuFabWKLDValAny8ml) {
-                    addOtherItem(jobRepo, addFabAnyItemModel);
+                    addOtherItem(jobRepo, addFabAnyItemModel, context: context);
                   } else if (shortcut == menuDetWKL15) {
-                    addOtherItem(jobRepo, detWKL15);
+                    addOtherItem(jobRepo, detWKL15, context: context);
                   } else if (shortcut == menuDetArielDVal) {
-                    addOtherItem(jobRepo, detAriel15);
+                    addOtherItem(jobRepo, detAriel15, context: context);
                   } else if (shortcut == menuFabDowny36mlDVal) {
-                    addOtherItem(jobRepo, addFabDowny36mlModel);
+                    addOtherItem(jobRepo, addFabDowny36mlModel,
+                        context: context);
                   }
                   dialogSetState();
                 },
@@ -154,7 +155,8 @@ Widget visItemsOnly(
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 ),
                 onPressed: () {
-                  addOtherItem(jobRepo, jobRepo.repoVarSelectedItem);
+                  addOtherItem(jobRepo, jobRepo.repoVarSelectedItem,
+                      context: context);
                   dialogSetState();
                 },
                 child: const Icon(Icons.add),

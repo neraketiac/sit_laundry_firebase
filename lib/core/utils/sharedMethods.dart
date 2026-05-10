@@ -908,9 +908,81 @@ Future<Uint8List> compressImage(Uint8List bytes) async {
   return compressed;
 }
 
-void addOtherItem(JobModelRepository jobRepo, OtherItemModel item) {
+void addOtherItem(JobModelRepository jobRepo, OtherItemModel item,
+    {BuildContext? context}) {
+  // Check if item is from the restricted group
+  const restrictedGroup = [
+    418,
+    419,
+    425,
+    427
+  ]; // menuOthW8t9, menuOthW9t10, menuOth150, menuOth225
+
+  if (restrictedGroup.contains(item.itemId)) {
+    // Check if any item from the restricted group already exists
+    final hasRestrictedItem = jobRepo.selectedItems
+        .any((existingItem) => restrictedGroup.contains(existingItem.itemId));
+
+    if (hasRestrictedItem) {
+      // Show snackbar if context is provided
+      if (context != null && context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Only 1 type of extended kilo is allowed.'),
+            duration: Duration(milliseconds: 1500),
+          ),
+        );
+      }
+      // Don't add - already has one from this group
+      return;
+    }
+  }
+
   jobRepo.selectedItems.add(item);
   jobRepo.repoVarTotalPriceOthers += item.itemPrice;
+}
+
+/// Add a bundle of items (e.g., 155 + 418 for menuOthW8t9)
+/// Returns true if added successfully, false if prevented
+bool addOtherItemBundle(JobModelRepository jobRepo, List<OtherItemModel> items,
+    {BuildContext? context}) {
+  // Check if any item in the bundle is from the restricted group
+  const restrictedGroup = [
+    418,
+    419,
+    425,
+    427
+  ]; // menuOthW8t9, menuOthW9t10, menuOth150, menuOth225
+
+  final hasRestrictedInBundle =
+      items.any((item) => restrictedGroup.contains(item.itemId));
+
+  if (hasRestrictedInBundle) {
+    // Check if any item from the restricted group already exists in selectedItems
+    final hasRestrictedItem = jobRepo.selectedItems
+        .any((existingItem) => restrictedGroup.contains(existingItem.itemId));
+
+    if (hasRestrictedItem) {
+      // Show snackbar if context is provided
+      if (context != null && context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Only 1 type of extended kilo is allowed.'),
+            duration: Duration(milliseconds: 1500),
+          ),
+        );
+      }
+      // Don't add any items from this bundle
+      return false;
+    }
+  }
+
+  // Add all items in the bundle
+  for (var item in items) {
+    jobRepo.selectedItems.add(item);
+    jobRepo.repoVarTotalPriceOthers += item.itemPrice;
+  }
+  return true;
 }
 
 void removeOtherItem(JobModelRepository jobRepo, OtherItemModel item) {
