@@ -3,11 +3,9 @@ import 'package:laundry_firebase/core/constants/sharedConstantsFinal.dart';
 import 'package:laundry_firebase/core/global/variables_all_codes.dart';
 import 'package:laundry_firebase/features/payments/repository/gcash_repository.dart';
 
-Widget fundTypeToggle(
-  VoidCallback dialogSetState,
-  List<int> listIntToSelect,
-  GCashRepository gRepo,
-) {
+Widget fundTypeToggle(VoidCallback dialogSetState, List<int> listIntToSelect,
+    GCashRepository gRepo,
+    {bool showProcedureLabel = true}) {
   String getFundLabel(int index) {
     const labels = [
       "Cash-in",
@@ -173,90 +171,64 @@ Widget fundTypeToggle(
           const SizedBox(height: 12),
 
           /// 🔹 DESCRIPTION - ROW 1: FUND TYPE LABEL
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: Center(
-              child: Text(
-                getFundTypeLabel(gRepo.selectedFundCode),
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white.withValues(alpha: 0.9),
+          if (showProcedureLabel)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Center(
+                child: Text(
+                  getFundTypeLabel(gRepo.selectedFundCode),
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white.withValues(alpha: 0.9),
+                  ),
                 ),
               ),
             ),
-          ),
 
-          const SizedBox(height: 6),
+          if (showProcedureLabel) const SizedBox(height: 6),
+          if (!showProcedureLabel) const SizedBox(height: 12),
 
           /// 🔹 DESCRIPTION - ROWS 2 & 3: ALIGNED COLUMNS
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: List.generate(
-                  getDescriptionStepsGrouped(gRepo.selectedFundCode)[0].length,
-                  (columnIndex) {
-                    final steps1 =
-                        getDescriptionStepsGrouped(gRepo.selectedFundCode)[0];
-                    final steps2 =
-                        getDescriptionStepsGrouped(gRepo.selectedFundCode)[1];
-                    final colors1 =
-                        getDescriptionColorsGrouped(gRepo.selectedFundCode)[0];
-                    final colors2 =
-                        getDescriptionColorsGrouped(gRepo.selectedFundCode)[1];
+          if (showProcedureLabel)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: List.generate(
+                    getDescriptionStepsGrouped(gRepo.selectedFundCode)[0]
+                        .length,
+                    (columnIndex) {
+                      final steps1 =
+                          getDescriptionStepsGrouped(gRepo.selectedFundCode)[0];
+                      final steps2 =
+                          getDescriptionStepsGrouped(gRepo.selectedFundCode)[1];
+                      final colors1 = getDescriptionColorsGrouped(
+                          gRepo.selectedFundCode)[0];
+                      final colors2 = getDescriptionColorsGrouped(
+                          gRepo.selectedFundCode)[1];
 
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          // Row 2 content
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                steps1[columnIndex],
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                  color: colors1[columnIndex],
-                                ),
-                              ),
-                              if (columnIndex < steps1.length - 1)
-                                Padding(
-                                  padding:
-                                      const EdgeInsets.symmetric(horizontal: 4),
-                                  child: Text(
-                                    ">",
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.bold,
-                                      color:
-                                          Colors.white.withValues(alpha: 0.5),
-                                    ),
-                                  ),
-                                ),
-                            ],
-                          ),
-                          const SizedBox(height: 6),
-                          // Row 3 content
-                          if (columnIndex < steps2.length)
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            // Row 2 content
                             Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Text(
-                                  steps2[columnIndex],
+                                  steps1[columnIndex],
                                   style: TextStyle(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w600,
-                                    color: colors2[columnIndex],
+                                    color: colors1[columnIndex],
                                   ),
                                 ),
-                                if (columnIndex < steps2.length - 1)
+                                if (columnIndex < steps1.length - 1)
                                   Padding(
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 4),
@@ -272,14 +244,44 @@ Widget fundTypeToggle(
                                   ),
                               ],
                             ),
-                        ],
-                      ),
-                    );
-                  },
+                            const SizedBox(height: 6),
+                            // Row 3 content
+                            if (columnIndex < steps2.length)
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    steps2[columnIndex],
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w600,
+                                      color: colors2[columnIndex],
+                                    ),
+                                  ),
+                                  if (columnIndex < steps2.length - 1)
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 4),
+                                      child: Text(
+                                        ">",
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white
+                                              .withValues(alpha: 0.5),
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
                 ),
               ),
             ),
-          ),
         ],
       ),
     ),

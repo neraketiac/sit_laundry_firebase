@@ -126,13 +126,21 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
           .where('LogDate', isLessThanOrEqualTo: Timestamp.fromDate(endDate))
           .get();
 
-      // EmployeeHist from employeeDB — two queries (4404 + 4401), merged
+      // EmployeeHist from employeeDB — three queries (4404 + 4403 + 4401), merged
       final empHist4404 = await FirebaseService.employeeFirestore
           .collection('EmployeeHist')
           .where('LogDate',
               isGreaterThanOrEqualTo: Timestamp.fromDate(startDate))
           .where('LogDate', isLessThanOrEqualTo: Timestamp.fromDate(endDate))
           .where('ItemUniqueId', isEqualTo: 4404) // funds out
+          .get();
+
+      final empHist4403 = await FirebaseService.employeeFirestore
+          .collection('EmployeeHist')
+          .where('LogDate',
+              isGreaterThanOrEqualTo: Timestamp.fromDate(startDate))
+          .where('LogDate', isLessThanOrEqualTo: Timestamp.fromDate(endDate))
+          .where('ItemUniqueId', isEqualTo: 4403) // funds in
           .get();
 
       final empHist4401 = await FirebaseService.employeeFirestore
@@ -143,7 +151,11 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
           .where('ItemUniqueId', isEqualTo: 4401) // cash in
           .get();
 
-      final empHistDocs = [...empHist4404.docs, ...empHist4401.docs];
+      final empHistDocs = [
+        ...empHist4404.docs,
+        ...empHist4403.docs,
+        ...empHist4401.docs
+      ];
 
       // Process
       _supplies.process(suppliesSnap.docs);

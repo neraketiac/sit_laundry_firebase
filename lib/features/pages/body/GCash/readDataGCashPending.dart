@@ -268,6 +268,96 @@ Widget readDataGCashPending() {
                                           ),
                                           child: const Text('Delete'),
                                         ),
+                                      // Revert from 0.85 back to 0.75 for Pending Funds In (admin only)
+                                      if (isAdmin &&
+                                          gRepo.isPendingFundsUntilPaid &&
+                                          gRepo.gCashStatus == 0.85)
+                                        TextButton(
+                                          onPressed: () async {
+                                            // Show confirmation dialog
+                                            final confirmRevert =
+                                                await showDialog<bool>(
+                                              context: context,
+                                              builder: (context) {
+                                                return AlertDialog(
+                                                  title: const Text(
+                                                    'Revert Payment?',
+                                                    style:
+                                                        TextStyle(fontSize: 14),
+                                                  ),
+                                                  content: Text(
+                                                    'Are you sure you want to revert this payment?\n\nThis will automatically add a revert entry in Funds History (SuppliesHist) with a negative amount.',
+                                                    style:
+                                                        TextStyle(fontSize: 12),
+                                                  ),
+                                                  actions: [
+                                                    TextButton(
+                                                      onPressed: () =>
+                                                          Navigator.pop(
+                                                              context, false),
+                                                      child:
+                                                          const Text('Cancel'),
+                                                    ),
+                                                    TextButton(
+                                                      onPressed: () =>
+                                                          Navigator.pop(
+                                                              context, true),
+                                                      style:
+                                                          TextButton.styleFrom(
+                                                        foregroundColor:
+                                                            Colors.orange,
+                                                      ),
+                                                      child: const Text(
+                                                          'Yes, Revert'),
+                                                    ),
+                                                  ],
+                                                );
+                                              },
+                                            );
+
+                                            if (confirmRevert == true &&
+                                                context.mounted) {
+                                              // Create negative SuppliesHist record to revert the payment
+                                              SuppliesHistRepository.instance
+                                                  .setItemName(getItemNameOnly(
+                                                      menuOthCashInOutFunds,
+                                                      gRepo.itemUniqueId));
+                                              SuppliesHistRepository.instance
+                                                  .setItemId(
+                                                      menuOthCashInOutFunds);
+                                              SuppliesHistRepository.instance
+                                                  .setItemUniqueId(
+                                                      gRepo.itemUniqueId);
+                                              // Negative amount to revert
+                                              SuppliesHistRepository.instance
+                                                  .setCurrentCounter(
+                                                      -gRepo.customerAmount);
+                                              SuppliesHistRepository.instance
+                                                  .setCustomerName(
+                                                      gRepo.customerName);
+                                              SuppliesHistRepository.instance
+                                                  .setCustomerId(0);
+                                              SuppliesHistRepository.instance
+                                                  .setRemarks(
+                                                      'GCash ${gRepo.itemName} ${gRepo.remarks} [REVERTED]');
+                                              await setSuppliesRepository(
+                                                  context);
+
+                                              // Revert status back to 0.75
+                                              gRepo.gCashStatus = 0.75;
+                                              await dbGCashPending.updateVoid(
+                                                  gRepo.getModel()!);
+
+                                              if (context.mounted) {
+                                                Navigator.pop(context, true);
+                                              }
+                                            }
+                                          },
+                                          style: TextButton.styleFrom(
+                                            foregroundColor: Colors.orange,
+                                          ),
+                                          child: const Text('Revert Payment'),
+                                        ),
                                       if (isAdmin &&
                                           gRepo.itemUniqueId ==
                                               menuOthUniqIdCashOut &&

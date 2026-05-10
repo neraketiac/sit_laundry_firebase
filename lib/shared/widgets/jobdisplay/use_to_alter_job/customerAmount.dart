@@ -29,7 +29,7 @@ Widget customerAmount(
         ],
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           /// 🔹 LABEL
           Text(

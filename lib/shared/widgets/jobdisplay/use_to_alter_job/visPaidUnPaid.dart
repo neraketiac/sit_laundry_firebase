@@ -7,6 +7,7 @@ import 'package:laundry_firebase/core/utils/sharedmethodsdatabase.dart';
 import 'package:laundry_firebase/features/jobs/repository/jobmodel_repository.dart';
 import 'package:laundry_firebase/shared/widgets/actions/glassAmountField.dart';
 import 'package:laundry_firebase/shared/widgets/actions/glassPaymentToggle.dart';
+import 'package:laundry_firebase/core/widgets/calculator.dart';
 
 Visibility visPaidUnPaid(BuildContext context, VoidCallback dialogSetState,
     JobModelRepository jobRepo) {
@@ -119,13 +120,47 @@ Visibility visPaidUnPaid(BuildContext context, VoidCallback dialogSetState,
                     : [Colors.greenAccent, Colors.tealAccent],
               ),
             ),
-            child: Text(
-              actualPaymentStatus,
-              style: const TextStyle(
-                fontWeight: FontWeight.w700,
-                fontSize: 13,
-                color: Colors.black,
-              ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Expanded(
+                  child: Text(
+                    actualPaymentStatus,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 13,
+                      color: Colors.black,
+                    ),
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () {
+                    final amount = jobRepo.selectedFinalPrice;
+                    showCalculator(
+                      context,
+                      initialAmount: amount,
+                      initialFee: 0,
+                      showFeeField: false,
+                      onClose: (customerCash, newAmount, newFee) {
+                        // Calculator is for computation only in jobs, don't update anything
+                      },
+                    );
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.black.withOpacity(0.2),
+                    ),
+                    child: const Icon(
+                      Icons.calculate,
+                      size: 18,
+                      color: Colors.black,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
 
