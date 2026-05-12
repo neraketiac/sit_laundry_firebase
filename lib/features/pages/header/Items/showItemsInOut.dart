@@ -8,10 +8,30 @@ import 'package:laundry_firebase/features/items/models/suppliesmodelhist.dart';
 import 'package:laundry_firebase/features/jobs/repository/jobmodel_repository.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
 import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_alter_job/visItems.dart';
+import 'package:laundry_firebase/core/global/variables_oth.dart';
+import 'package:laundry_firebase/core/global/variables_fab.dart';
+import 'package:laundry_firebase/core/global/variables_det.dart';
 
 void showItemsInOut(BuildContext context) {
   JobModelRepository jobRepo = JobModelRepository();
   jobRepo.reset();
+
+  final otherFirestoreItems = listOthItemsFB
+      .where((item) =>
+          [670425, 670437, 670439, 670441].contains(item.itemUniqueId))
+      .toList();
+
+  // Merge hardcoded shortcuts with Firestore items
+  final allShortcuts = [
+    ...listOthItemsFB.where((item) => [
+          menuFabWKLDValAny8ml,
+          menuDetWKL15,
+          menuDetArielDVal,
+          menuFabDowny36mlDVal,
+        ].contains(item.itemId)),
+    ...otherFirestoreItems,
+  ];
+
   const excludedSupplyItems = {
     menuOthWash,
     menuOth2W1DR,
@@ -152,7 +172,62 @@ void showItemsInOut(BuildContext context) {
             ],
           ),
           content: SingleChildScrollView(
-            child: visItemsOnly(context, () => setState(() {}), jobRepo),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // All Shortcuts Section (Merged)
+                if (allShortcuts.isNotEmpty) ...[
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 8.0),
+                    child: Text(
+                      'Quick Add',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.blueGrey,
+                      ),
+                    ),
+                  ),
+                  GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 3,
+                      childAspectRatio: 2.5,
+                      crossAxisSpacing: 8,
+                      mainAxisSpacing: 8,
+                    ),
+                    itemCount: allShortcuts.length,
+                    itemBuilder: (context, index) {
+                      final item = allShortcuts[index];
+                      return ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green.shade600,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                        ),
+                        onPressed: () {
+                          jobRepo.selectedItems.add(item);
+                          setState(() {});
+                        },
+                        child: Text(
+                          item.itemName,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(fontSize: 11),
+                        ),
+                      );
+                    },
+                  ),
+                  const Divider(height: 16),
+                ],
+                // Original Items Section
+                visItemsOnly(context, () => setState(() {}), jobRepo),
+              ],
+            ),
           ),
           actionsAlignment: MainAxisAlignment.end,
           actions: [

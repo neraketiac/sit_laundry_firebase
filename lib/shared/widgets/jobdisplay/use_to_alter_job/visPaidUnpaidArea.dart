@@ -352,14 +352,31 @@ InkWell visPaidUnpaidArea(
                           : Colors.redAccent
                               .withValues(alpha: isDark ? 0.25 : 0.15),
                     ),
-                    child: Text(
-                      statusText,
-                      style: TextStyle(
-                        fontSize: s.tiny,
-                        fontWeight: FontWeight.w600,
-                        color: statusColor,
-                      ),
-                      textAlign: TextAlign.right,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          statusText,
+                          style: TextStyle(
+                            fontSize: s.tiny,
+                            fontWeight: FontWeight.w600,
+                            color: statusColor,
+                          ),
+                          textAlign: TextAlign.right,
+                        ),
+                        // Show "w/ SS" indicator for GCash Pending with screenshot
+                        if (statusText == "GCash Pending" &&
+                            jobRepo.gcashReceiptUrl.isNotEmpty)
+                          Text(
+                            "w/ SS",
+                            style: TextStyle(
+                              fontSize: s.tiny * 0.8,
+                              fontWeight: FontWeight.w500,
+                              color: statusColor,
+                            ),
+                            textAlign: TextAlign.right,
+                          ),
+                      ],
                     ),
                   ),
                 ]),

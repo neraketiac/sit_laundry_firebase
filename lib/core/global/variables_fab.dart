@@ -10,7 +10,7 @@ final addFabAnyItemModel = OtherItemModel(
   itemId: menuFabWKLDValAny8ml,
   itemUniqueId: menuFabWKLDValAny8ml,
   itemGroup: groupFab,
-  itemName: "WKL(any 8ml)",
+  itemName: "Fab-WKL(any SOF 8ml)",
   itemPrice: 8,
   stocksAlert: 5,
   stocksType: "pcs",

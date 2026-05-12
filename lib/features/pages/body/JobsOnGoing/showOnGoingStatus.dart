@@ -112,10 +112,7 @@ void showOnGoingStatus(BuildContext context, JobModelRepository jobRepo) {
                           jobRepo.syncSelectedToRepoAll(jobRepo);
                           await moveOngoingToDone(
                             jobRepo.docId,
-                            (jobRepo.repoVarSelectedIntRiderPickup ==
-                                    intForSorting
-                                ? false
-                                : true),
+                            jobRepo.riderPickup,
                             jobRepo.customerId,
                             //later when isPromoCounter is fix
                             // (jobRepo.isPromoCounter

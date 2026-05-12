@@ -159,6 +159,18 @@ Widget readDataJobsDone(VoidCallback dialogSetState) {
     dialogSetState();
   }
 
+  Future<void> sortNoticeGCashWithSS(BuildContext context) async {
+    sortedJobsDone
+      ..clear()
+      ..addAll(
+        sortedJobsDoneClothesGoneGCash.where(
+          (job) => job.gcashReceiptUrl.isNotEmpty,
+        ),
+      );
+
+    dialogSetState();
+  }
+
   Future<void> showSearchDialog(
     BuildContext context,
   ) async {
@@ -374,9 +386,10 @@ Widget readDataJobsDone(VoidCallback dialogSetState) {
                   ),
                   IconBadgeButton(
                     icon: '💳',
-                    tooltip: "Delivered Pending GCash",
+                    tooltip: "Delivered Pending GCash (double-tap for w/ SS)",
                     badgeCount: intJobsDoneClothesGoneGCash,
                     onPressed: () => sortNoticeGCash(context),
+                    onDoubleTap: () => sortNoticeGCashWithSS(context),
                   ),
                   IconBadgeButton(
                     icon: '⚠️',

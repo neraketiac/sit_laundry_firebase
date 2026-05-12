@@ -752,8 +752,7 @@ class JobModelRepository {
     jobRepo.customerName = selectedCustomerNameVar.text;
     jobRepo.forSorting = repoVarSelectedIntRiderPickup == intForSorting;
     //once true, always true, used when done auto delivery
-    if (jobRepo.riderPickup ||
-        intRiderPickup == repoVarSelectedIntRiderPickup) {
+    if (!jobRepo.riderPickup) {
       jobRepo.riderPickup = intRiderPickup == repoVarSelectedIntRiderPickup;
     }
     jobRepo.isCustomerPickedUp = selectedIsCustomerPickedUp;
@@ -908,8 +907,7 @@ class JobModelRepository {
     //jobRepo.forSorting = selectedForSorting;
     //jobRepo.riderPickup = selectedRiderPickup;
     jobRepo.forSorting = repoVarSelectedIntRiderPickup == intForSorting;
-    if (jobRepo.riderPickup ||
-        intRiderPickup == repoVarSelectedIntRiderPickup) {
+    if (!jobRepo.riderPickup) {
       jobRepo.riderPickup = intRiderPickup == repoVarSelectedIntRiderPickup;
     }
     jobRepo.isDeliveredToCustomer = selectedIsDeliveredToCustomer;
