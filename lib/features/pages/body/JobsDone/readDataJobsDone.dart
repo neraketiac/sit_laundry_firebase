@@ -163,8 +163,12 @@ Widget readDataJobsDone(VoidCallback dialogSetState) {
     sortedJobsDone
       ..clear()
       ..addAll(
-        sortedJobsDoneClothesGoneGCash.where(
-          (job) => job.gcashReceiptUrl.isNotEmpty,
+        originalJobsDone.where(
+          (job) =>
+              job.unpaid &&
+              job.paidGCash &&
+              (job.isCustomerPickedUp || job.isDeliveredToCustomer) &&
+              job.gcashReceiptUrl.isNotEmpty,
         ),
       );
 
@@ -295,71 +299,69 @@ Widget readDataJobsDone(VoidCallback dialogSetState) {
         return const Center(child: CircularProgressIndicator());
       }
 
-      /// 🔥 Sync Firestore → original + sorted
-      if (originalJobsDone.length != snapshot.data!.length) {
-        originalJobsDone
-          ..clear()
-          ..addAll(snapshot.data!);
-        FsUsageTracker.instance
-            .track('readDataJobsDone', snapshot.data!.length);
+      /// 🔥 Sync Firestore → original + sorted (always update to catch property changes)
+      originalJobsDone
+        ..clear()
+        ..addAll(snapshot.data!);
+      FsUsageTracker.instance.track('readDataJobsDone', snapshot.data!.length);
 
-        sortedJobsDone
-          ..clear()
-          ..addAll(originalJobsDone);
+      // Rebuild all sorted lists to catch any property changes (e.g., isDeliveredToCustomer)
+      sortedJobsDone
+        ..clear()
+        ..addAll(originalJobsDone);
 
-        sortedJobsDoneClothesGoneCash
-          ..clear()
-          ..addAll(
-            originalJobsDone.where(
-              (job) =>
-                  job.unpaid &&
-                  !job.paidGCash &&
-                  (job.isCustomerPickedUp || job.isDeliveredToCustomer),
-            ),
-          );
+      sortedJobsDoneClothesGoneCash
+        ..clear()
+        ..addAll(
+          originalJobsDone.where(
+            (job) =>
+                job.unpaid &&
+                !job.paidGCash &&
+                (job.isCustomerPickedUp || job.isDeliveredToCustomer),
+          ),
+        );
 
-        sortedJobsDoneClothesGoneGCash
-          ..clear()
-          ..addAll(
-            originalJobsDone.where(
-              (job) =>
-                  job.unpaid &&
-                  job.paidGCash &&
-                  (job.isCustomerPickedUp || job.isDeliveredToCustomer),
-            ),
-          );
+      sortedJobsDoneClothesGoneGCash
+        ..clear()
+        ..addAll(
+          originalJobsDone.where(
+            (job) =>
+                job.unpaid &&
+                job.paidGCash &&
+                (job.isCustomerPickedUp || job.isDeliveredToCustomer),
+          ),
+        );
 
-        sortedJobsDoneClothesHere
-          ..clear()
-          ..addAll(
-            originalJobsDone.where(
-              (job) => !job.isCustomerPickedUp && !job.isDeliveredToCustomer,
-            ),
-          );
+      sortedJobsDoneClothesHere
+        ..clear()
+        ..addAll(
+          originalJobsDone.where(
+            (job) => !job.isCustomerPickedUp && !job.isDeliveredToCustomer,
+          ),
+        );
 
-        sortedJobsDoneClothesHereToBeDelivered
-          ..clear()
-          ..addAll(
-            originalJobsDone.where(
-              (job) =>
-                  job.riderPickup &&
-                  !job.isCustomerPickedUp &&
-                  !job.isDeliveredToCustomer,
-            ),
-          );
+      sortedJobsDoneClothesHereToBeDelivered
+        ..clear()
+        ..addAll(
+          originalJobsDone.where(
+            (job) =>
+                job.riderPickup &&
+                !job.isCustomerPickedUp &&
+                !job.isDeliveredToCustomer,
+          ),
+        );
 
-        intJobsDoneDefault = originalJobsDone.length;
-        intJobsDoneClothesHere = sortedJobsDoneClothesHere.length;
-        intJobsDoneClothesGoneCash = sortedJobsDoneClothesGoneCash.length;
-        intJobsDoneClothesGoneGCash = sortedJobsDoneClothesGoneGCash.length;
+      intJobsDoneDefault = originalJobsDone.length;
+      intJobsDoneClothesHere = sortedJobsDoneClothesHere.length;
+      intJobsDoneClothesGoneCash = sortedJobsDoneClothesGoneCash.length;
+      intJobsDoneClothesGoneGCash = sortedJobsDoneClothesGoneGCash.length;
 
-        sortedJobsDoneAdminRequest
-          ..clear()
-          ..addAll(
-            originalJobsDone.where((job) => job.requestForAdmin),
-          );
-        intJobsDoneAdminRequest = sortedJobsDoneAdminRequest.length;
-      }
+      sortedJobsDoneAdminRequest
+        ..clear()
+        ..addAll(
+          originalJobsDone.where((job) => job.requestForAdmin),
+        );
+      intJobsDoneAdminRequest = sortedJobsDoneAdminRequest.length;
 
       //sortJobs(sortedJobsDone);
 
