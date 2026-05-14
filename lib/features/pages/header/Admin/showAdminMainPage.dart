@@ -86,16 +86,26 @@ class _ShowAdminMainPageState extends State<ShowAdminMainPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                      "The number below will be the next number for Jobs-OnGoing."),
+                    "The number below will be the next number for Jobs-OnGoing.",
+                    style: TextStyle(
+                      color: Colors.grey.shade900,
+                    ),
+                  ),
                   const SizedBox(
                     height: 10,
                   ),
                   TextField(
                     controller: controller,
                     keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
+                    style: TextStyle(
+                      color: Colors.grey.shade900,
+                    ),
+                    decoration: InputDecoration(
                       labelText: "nextavailable",
-                      border: OutlineInputBorder(),
+                      labelStyle: TextStyle(
+                        color: Colors.grey.shade700,
+                      ),
+                      border: const OutlineInputBorder(),
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -121,10 +131,19 @@ class _ShowAdminMainPageState extends State<ShowAdminMainPage> {
                 child: ListTile(
                   leading:
                       const Icon(Icons.compare_arrows, color: Colors.purple),
-                  title: const Text("🔄 Loyalty Data Sync",
-                      style: TextStyle(fontWeight: FontWeight.bold)),
-                  subtitle: const Text(
-                      "Compare and sync loyalty records between Primary DB and Loyalty DB"),
+                  title: Text(
+                    "🔄 Loyalty Data Sync",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.purple.shade900,
+                    ),
+                  ),
+                  subtitle: Text(
+                    "Compare and sync loyalty records between Primary DB and Loyalty DB",
+                    style: TextStyle(
+                      color: Colors.purple.shade700,
+                    ),
+                  ),
                   trailing: const Icon(Icons.arrow_forward_ios),
                   onTap: () {
                     Navigator.push(
@@ -167,9 +186,18 @@ class _ShowAdminMainPageState extends State<ShowAdminMainPage> {
                 ),
                 child: ListTile(
                   leading: const Icon(Icons.preview, color: Colors.deepOrange),
-                  title: const Text("Batch Promo Review"),
-                  subtitle: const Text(
-                      "Preview & apply promo error code changes per customer"),
+                  title: Text(
+                    "Batch Promo Review",
+                    style: TextStyle(
+                      color: Colors.deepOrange.shade900,
+                    ),
+                  ),
+                  subtitle: Text(
+                    "Preview & apply promo error code changes per customer",
+                    style: TextStyle(
+                      color: Colors.deepOrange.shade700,
+                    ),
+                  ),
                   trailing: const Icon(Icons.arrow_forward_ios),
                   onTap: () {
                     Navigator.push(
@@ -193,9 +221,18 @@ class _ShowAdminMainPageState extends State<ShowAdminMainPage> {
                 ),
                 child: ListTile(
                   leading: const Icon(Icons.build_circle, color: Colors.orange),
-                  title: const Text("Batch Fix PromoCounterxxx"),
-                  subtitle: const Text(
-                      "Fix incorrect promoCounter values in Jobs_done and Jobs_completed"),
+                  title: Text(
+                    "Batch Fix PromoCounterxxx",
+                    style: TextStyle(
+                      color: Colors.orange.shade900,
+                    ),
+                  ),
+                  subtitle: Text(
+                    "Fix incorrect promoCounter values in Jobs_done and Jobs_completed",
+                    style: TextStyle(
+                      color: Colors.orange.shade700,
+                    ),
+                  ),
                   trailing: const Icon(Icons.arrow_forward_ios),
                   onTap: () {
                     Navigator.push(
@@ -219,9 +256,18 @@ class _ShowAdminMainPageState extends State<ShowAdminMainPage> {
                 ),
                 child: ListTile(
                   leading: const Icon(Icons.bar_chart, color: Colors.blue),
-                  title: const Text("Monthly Analytics"),
-                  subtitle: const Text(
-                      "View weekly revenue charts and unpaid customers summary"),
+                  title: Text(
+                    "Monthly Analytics",
+                    style: TextStyle(
+                      color: Colors.blue.shade900,
+                    ),
+                  ),
+                  subtitle: Text(
+                    "View weekly revenue charts and unpaid customers summary",
+                    style: TextStyle(
+                      color: Colors.blue.shade700,
+                    ),
+                  ),
                   trailing: const Icon(Icons.arrow_forward_ios),
                   onTap: () {
                     Navigator.push(
@@ -246,8 +292,18 @@ class _ShowAdminMainPageState extends State<ShowAdminMainPage> {
                 child: ListTile(
                   leading:
                       const Icon(Icons.delivery_dining, color: Colors.cyan),
-                  title: const Text("Rider Schedule Management"),
-                  subtitle: const Text("Set rider availability slots per day"),
+                  title: Text(
+                    "Rider Schedule Management",
+                    style: TextStyle(
+                      color: Colors.cyan.shade900,
+                    ),
+                  ),
+                  subtitle: Text(
+                    "Set rider availability slots per day",
+                    style: TextStyle(
+                      color: Colors.cyan.shade700,
+                    ),
+                  ),
                   trailing: const Icon(Icons.arrow_forward_ios),
                   onTap: () {
                     Navigator.push(
@@ -271,9 +327,18 @@ class _ShowAdminMainPageState extends State<ShowAdminMainPage> {
                 ),
                 child: ListTile(
                   leading: const Icon(Icons.analytics, color: Colors.purple),
-                  title: const Text("Loyalty Count Validation"),
-                  subtitle: const Text(
-                      "Validate loyalty counts against applicable promoCounter (promoErrorCode = 0)"),
+                  title: Text(
+                    "Loyalty Count Validation",
+                    style: TextStyle(
+                      color: Colors.purple.shade900,
+                    ),
+                  ),
+                  subtitle: Text(
+                    "Validate loyalty counts against applicable promoCounter (promoErrorCode = 0)",
+                    style: TextStyle(
+                      color: Colors.purple.shade700,
+                    ),
+                  ),
                   trailing: const Icon(Icons.arrow_forward_ios),
                   onTap: () {
                     Navigator.push(
@@ -337,9 +402,18 @@ class _ShowAdminMainPageState extends State<ShowAdminMainPage> {
                 ),
                 child: ListTile(
                   leading: const Icon(Icons.sync_alt, color: Colors.teal),
-                  title: const Text("Migrate Reports DB"),
-                  subtitle: const Text(
-                      "Select collections to migrate from main to Reports DB"),
+                  title: Text(
+                    "Migrate Reports DB",
+                    style: TextStyle(
+                      color: Colors.teal.shade900,
+                    ),
+                  ),
+                  subtitle: Text(
+                    "Select collections to migrate from main to Reports DB",
+                    style: TextStyle(
+                      color: Colors.teal.shade700,
+                    ),
+                  ),
                   trailing: const Icon(Icons.arrow_forward_ios),
                   onTap: () {
                     Navigator.push(
@@ -384,7 +458,12 @@ class _ShowAdminMainPageState extends State<ShowAdminMainPage> {
                 ),
                 child: ListTile(
                   leading: const Icon(Icons.inventory),
-                  title: const Text("Other Items Maintenance"),
+                  title: Text(
+                    "Other Items Maintenance",
+                    style: TextStyle(
+                      color: Colors.grey.shade900,
+                    ),
+                  ),
                   trailing: const Icon(Icons.arrow_forward_ios),
                   onTap: () {
                     Navigator.push(
@@ -407,7 +486,12 @@ class _ShowAdminMainPageState extends State<ShowAdminMainPage> {
                 ),
                 child: ListTile(
                   leading: const Icon(Icons.inventory),
-                  title: const Text("Deterget Items Maintenance"),
+                  title: Text(
+                    "Deterget Items Maintenance",
+                    style: TextStyle(
+                      color: Colors.grey.shade900,
+                    ),
+                  ),
                   trailing: const Icon(Icons.arrow_forward_ios),
                   onTap: () {
                     Navigator.push(
@@ -431,7 +515,12 @@ class _ShowAdminMainPageState extends State<ShowAdminMainPage> {
                 ),
                 child: ListTile(
                   leading: const Icon(Icons.inventory),
-                  title: const Text("Fabricon Items Maintenance"),
+                  title: Text(
+                    "Fabricon Items Maintenance",
+                    style: TextStyle(
+                      color: Colors.grey.shade900,
+                    ),
+                  ),
                   trailing: const Icon(Icons.arrow_forward_ios),
                   onTap: () {
                     Navigator.push(
@@ -455,7 +544,12 @@ class _ShowAdminMainPageState extends State<ShowAdminMainPage> {
                 ),
                 child: ListTile(
                   leading: const Icon(Icons.inventory),
-                  title: const Text("Bleach Items Maintenance"),
+                  title: Text(
+                    "Bleach Items Maintenance",
+                    style: TextStyle(
+                      color: Colors.grey.shade900,
+                    ),
+                  ),
                   trailing: const Icon(Icons.arrow_forward_ios),
                   onTap: () {
                     Navigator.push(
@@ -479,9 +573,18 @@ class _ShowAdminMainPageState extends State<ShowAdminMainPage> {
                 ),
                 child: ListTile(
                   leading: const Icon(Icons.update, color: Colors.green),
-                  title: const Text("Auto Salary Date — One Time Batch"),
-                  subtitle: const Text(
-                      "Copy LogDate → AutoSalaryDate for all EmployeeHist records"),
+                  title: Text(
+                    "Auto Salary Date — One Time Batch",
+                    style: TextStyle(
+                      color: Colors.green.shade900,
+                    ),
+                  ),
+                  subtitle: Text(
+                    "Copy LogDate → AutoSalaryDate for all EmployeeHist records",
+                    style: TextStyle(
+                      color: Colors.green.shade700,
+                    ),
+                  ),
                   trailing: const Icon(Icons.arrow_forward_ios),
                   onTap: () {
                     Navigator.push(
@@ -505,9 +608,18 @@ class _ShowAdminMainPageState extends State<ShowAdminMainPage> {
                 ),
                 child: ListTile(
                   leading: const Icon(Icons.edit_calendar, color: Colors.teal),
-                  title: const Text("Edit AutoSalaryDate"),
-                  subtitle: const Text(
-                      "Manually edit AutoSalaryDate per EmployeeHist record"),
+                  title: Text(
+                    "Edit AutoSalaryDate",
+                    style: TextStyle(
+                      color: Colors.teal.shade900,
+                    ),
+                  ),
+                  subtitle: Text(
+                    "Manually edit AutoSalaryDate per EmployeeHist record",
+                    style: TextStyle(
+                      color: Colors.teal.shade700,
+                    ),
+                  ),
                   trailing: const Icon(Icons.arrow_forward_ios),
                   onTap: () {
                     Navigator.push(

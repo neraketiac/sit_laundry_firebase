@@ -22,7 +22,16 @@ class _W extends StatelessWidget {
   Widget build(BuildContext context) {
     return Expanded(
       child: Center(
-        child: Text(t, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+        child: Text(
+          t,
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.bold,
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.white
+                : Colors.black,
+          ),
+        ),
       ),
     );
   }
@@ -53,30 +62,55 @@ Widget _buildDayCell(
     ),
     child: Column(
       children: [
-        Text('$day', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+        Text(
+          '$day',
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            color: isPastWeek || overrideColor != null
+                ? Colors.white
+                : Colors.black,
+          ),
+        ),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Checkbox(
               value: d.a,
               activeColor: Colors.green,
-              onChanged: isLocked ? null : (v) => setState(() => d.a = v ?? false),
+              onChanged:
+                  isLocked ? null : (v) => setState(() => d.a = v ?? false),
               visualDensity: const VisualDensity(horizontal: -4, vertical: -4),
             ),
             Checkbox(
               value: d.b,
               activeColor: Colors.green,
-              onChanged: isLocked ? null : (v) => setState(() => d.b = v ?? false),
+              onChanged:
+                  isLocked ? null : (v) => setState(() => d.b = v ?? false),
               visualDensity: const VisualDensity(horizontal: -4, vertical: -4),
             ),
           ],
         ),
-        const Row(
+        Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text('am'),
-            SizedBox(width: 5),
-            Text('pm'),
+            Text(
+              'am',
+              style: TextStyle(
+                color: isPastWeek || overrideColor != null
+                    ? Colors.white
+                    : Colors.black,
+              ),
+            ),
+            const SizedBox(width: 5),
+            Text(
+              'pm',
+              style: TextStyle(
+                color: isPastWeek || overrideColor != null
+                    ? Colors.white
+                    : Colors.black,
+              ),
+            ),
           ],
         ),
       ],
@@ -109,10 +143,20 @@ Future<Map<DateTime, DaySelection>?> showCalendarDialog(BuildContext context) {
       );
       bool am = false, pm = false;
       switch (r.absent) {
-        case 0: am = true; pm = true; break;
-        case 1: pm = true; break;
-        case 2: am = true; break;
-        case 3: am = false; pm = false; break;
+        case 0:
+          am = true;
+          pm = true;
+          break;
+        case 1:
+          pm = true;
+          break;
+        case 2:
+          am = true;
+          break;
+        case 3:
+          am = false;
+          pm = false;
+          break;
       }
       selections[date] = DaySelection(a: am, b: pm);
     }
@@ -150,19 +194,28 @@ Future<Map<DateTime, DaySelection>?> showCalendarDialog(BuildContext context) {
                     children: [
                       IconButton(
                         icon: const Icon(Icons.chevron_left),
-                        onPressed: () => setState(() => month = DateTime(month.year, month.month - 1)),
+                        onPressed: () => setState(() =>
+                            month = DateTime(month.year, month.month - 1)),
                       ),
                       Expanded(
                         child: Center(
                           child: Text(
                             DateFormat('MMMM yyyy').format(month),
-                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(sfContext).brightness ==
+                                      Brightness.dark
+                                  ? Colors.white
+                                  : Colors.black,
+                            ),
                           ),
                         ),
                       ),
                       IconButton(
                         icon: const Icon(Icons.chevron_right),
-                        onPressed: () => setState(() => month = DateTime(month.year, month.month + 1)),
+                        onPressed: () => setState(() =>
+                            month = DateTime(month.year, month.month + 1)),
                       ),
                     ],
                   ),
@@ -170,8 +223,13 @@ Future<Map<DateTime, DaySelection>?> showCalendarDialog(BuildContext context) {
                   /// WEEKDAYS
                   const Row(
                     children: [
-                      _W('Sun'), _W('Mon'), _W('Tue'), _W('Wed'),
-                      _W('Thu'), _W('Fri'), _W('Sat'),
+                      _W('Sun'),
+                      _W('Mon'),
+                      _W('Tue'),
+                      _W('Wed'),
+                      _W('Thu'),
+                      _W('Fri'),
+                      _W('Sat'),
                     ],
                   ),
 
@@ -182,7 +240,8 @@ Future<Map<DateTime, DaySelection>?> showCalendarDialog(BuildContext context) {
                     child: GridView.builder(
                       padding: const EdgeInsets.all(4),
                       itemCount: ((daysInMonth + offset) / 7).ceil() * 7,
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: 7,
                         mainAxisSpacing: 2,
                         crossAxisSpacing: 2,
@@ -191,66 +250,131 @@ Future<Map<DateTime, DaySelection>?> showCalendarDialog(BuildContext context) {
                       itemBuilder: (_, i) {
                         final now = DateTime.now();
                         // Calculate start of current week (Monday)
-                        final startOfWeek = DateTime(now.year, now.month, now.day).subtract(Duration(days: now.weekday - 1));
+                        final startOfWeek =
+                            DateTime(now.year, now.month, now.day)
+                                .subtract(Duration(days: now.weekday - 1));
                         // Calculate end of current week (Sunday)
-                        final endOfWeek = startOfWeek.add(const Duration(days: 6));
-                        
+                        final endOfWeek =
+                            startOfWeek.add(const Duration(days: 6));
+
                         if (i < offset) {
-                          final daysInPrevMonth = DateTime(month.year, month.month, 0).day;
+                          final daysInPrevMonth =
+                              DateTime(month.year, month.month, 0).day;
                           final day = daysInPrevMonth - offset + i + 1;
-                          final date = DateTime(month.year, month.month - 1, day);
+                          final date =
+                              DateTime(month.year, month.month - 1, day);
                           // Check if date is within current week
-                          final isInCurrentWeek = !date.isBefore(startOfWeek) && !date.isAfter(endOfWeek);
+                          final isInCurrentWeek = !date.isBefore(startOfWeek) &&
+                              !date.isAfter(endOfWeek);
                           final isPastWeek = !isInCurrentWeek;
                           final isLocked = !isAdmin && isPastWeek;
                           selections.putIfAbsent(date, () => DaySelection());
-                          return _buildDayCell(day, date, selections[date]!, isPastWeek, false, isLocked, setState, Colors.grey.shade300);
+                          return _buildDayCell(
+                              day,
+                              date,
+                              selections[date]!,
+                              isPastWeek,
+                              false,
+                              isLocked,
+                              setState,
+                              Colors.grey.shade300);
                         }
 
                         final day = i - offset + 1;
 
                         if (day > daysInMonth) {
                           final nextDay = day - daysInMonth;
-                          final date = DateTime(month.year, month.month + 1, nextDay);
+                          final date =
+                              DateTime(month.year, month.month + 1, nextDay);
                           // Check if date is within current week
-                          final isInCurrentWeek = !date.isBefore(startOfWeek) && !date.isAfter(endOfWeek);
+                          final isInCurrentWeek = !date.isBefore(startOfWeek) &&
+                              !date.isAfter(endOfWeek);
                           final isPastWeek = !isInCurrentWeek;
                           final isLocked = !isAdmin && isPastWeek;
                           selections.putIfAbsent(date, () => DaySelection());
-                          return _buildDayCell(nextDay, date, selections[date]!, isPastWeek, false, isLocked, setState, Colors.grey.shade300);
+                          return _buildDayCell(
+                              nextDay,
+                              date,
+                              selections[date]!,
+                              isPastWeek,
+                              false,
+                              isLocked,
+                              setState,
+                              Colors.grey.shade300);
                         }
 
                         final date = DateTime(month.year, month.month, day);
                         // Check if date is within current week
-                        final isInCurrentWeek = !date.isBefore(startOfWeek) && !date.isAfter(endOfWeek);
+                        final isInCurrentWeek = !date.isBefore(startOfWeek) &&
+                            !date.isAfter(endOfWeek);
                         final isPastWeek = !isInCurrentWeek;
                         final isLocked = !isAdmin && isPastWeek;
                         final today = DateTime.now();
-                        final isToday = date.year == today.year && date.month == today.month && date.day == today.day;
+                        final isToday = date.year == today.year &&
+                            date.month == today.month &&
+                            date.day == today.day;
                         selections.putIfAbsent(date, () => DaySelection());
-                        return _buildDayCell(day, date, selections[date]!, isPastWeek, isToday, isLocked, setState, null);
+                        return _buildDayCell(day, date, selections[date]!,
+                            isPastWeek, isToday, isLocked, setState, null);
                       },
                     ),
                   ),
 
                   /// DROPDOWN + GENERATE (generate only for admin)
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     child: Row(
                       children: [
                         Expanded(
                           child: DropdownButtonFormField<String>(
-                            value: (selectedEmp == null || selectedEmp == 'ALL' ||
-                                    !mapEmpId.keys.where((k) => k != '1313#' && k != '1616#').contains(selectedEmp))
+                            value: (selectedEmp == null ||
+                                    selectedEmp == 'ALL' ||
+                                    !mapEmpId.keys
+                                        .where(
+                                            (k) => k != '1313#' && k != '1616#')
+                                        .contains(selectedEmp))
                                 ? null
                                 : selectedEmp,
-                            hint: const Text('Select Employee'),
+                            hint: Text(
+                              'Select Employee',
+                              style: TextStyle(
+                                color: Theme.of(sfContext).brightness ==
+                                        Brightness.dark
+                                    ? Colors.white70
+                                    : Colors.black54,
+                              ),
+                            ),
                             items: [
                               if (isAdmin)
-                                const DropdownMenuItem(value: 'ALL', child: Text('All')),
+                                DropdownMenuItem(
+                                  value: 'ALL',
+                                  child: Text(
+                                    'All',
+                                    style: TextStyle(
+                                      color: Theme.of(sfContext).brightness ==
+                                              Brightness.dark
+                                          ? Colors.white
+                                          : Colors.black,
+                                    ),
+                                  ),
+                                ),
                               ...mapEmpId.entries
-                                  .where((e) => e.key != '1313#' && e.key != '1616#')
-                                  .map((e) => DropdownMenuItem(value: e.key, child: Text(e.value))),
+                                  .where((e) =>
+                                      e.key != '1313#' && e.key != '1616#')
+                                  .map((e) => DropdownMenuItem(
+                                        value: e.key,
+                                        child: Text(
+                                          e.value,
+                                          style: TextStyle(
+                                            color: Theme.of(sfContext)
+                                                        .brightness ==
+                                                    Brightness.dark
+                                                ? Colors.white
+                                                : Colors.black,
+                                          ),
+                                        ),
+                                      )),
                             ],
                             onChanged: (v) async {
                               if (v == 'ALL') {
@@ -270,7 +394,10 @@ Future<Map<DateTime, DaySelection>?> showCalendarDialog(BuildContext context) {
                                 : () async {
                                     if (selectedEmp == null) return;
                                     final empKeys = selectedEmp == 'ALL'
-                                        ? mapEmpId.keys.where((k) => k != '1313#' && k != '1616#').toList()
+                                        ? mapEmpId.keys
+                                            .where((k) =>
+                                                k != '1313#' && k != '1616#')
+                                            .toList()
                                         : [selectedEmp!];
 
                                     if (!sfContext.mounted) return;
@@ -279,18 +406,27 @@ Future<Map<DateTime, DaySelection>?> showCalendarDialog(BuildContext context) {
                                     showDialog(
                                       context: context,
                                       barrierDismissible: false,
-                                      builder: (_) => const PopScope(
+                                      builder: (dialogCtx) => PopScope(
                                         canPop: false,
                                         child: Center(
                                           child: Card(
                                             child: Padding(
-                                              padding: EdgeInsets.all(24),
+                                              padding: const EdgeInsets.all(24),
                                               child: Column(
                                                 mainAxisSize: MainAxisSize.min,
                                                 children: [
-                                                  CircularProgressIndicator(),
-                                                  SizedBox(height: 12),
-                                                  Text('Generating...'),
+                                                  const CircularProgressIndicator(),
+                                                  const SizedBox(height: 12),
+                                                  Text(
+                                                    'Generating...',
+                                                    style: TextStyle(
+                                                      color: Theme.of(dialogCtx)
+                                                                  .brightness ==
+                                                              Brightness.dark
+                                                          ? Colors.white
+                                                          : Colors.black,
+                                                    ),
+                                                  ),
                                                 ],
                                               ),
                                             ),
@@ -299,8 +435,10 @@ Future<Map<DateTime, DaySelection>?> showCalendarDialog(BuildContext context) {
                                       ),
                                     );
 
-                                    final firestore = FirebaseFirestore.instance;
-                                    final List<CoverageRecordModel> allChangedDays = [];
+                                    final firestore =
+                                        FirebaseFirestore.instance;
+                                    final List<CoverageRecordModel>
+                                        allChangedDays = [];
 
                                     for (final empKey in empKeys) {
                                       final empName = mapEmpId[empKey]!;
@@ -309,15 +447,18 @@ Future<Map<DateTime, DaySelection>?> showCalendarDialog(BuildContext context) {
                                       final existing = await db.getAll(empName);
 
                                       final Set<int> alreadyGenerated = {
-                                        for (var r in existing) if (r.isGenerated) r.coverageDate
+                                        for (var r in existing)
+                                          if (r.isGenerated) r.coverageDate
                                       };
                                       final Map<int, int> firestoreMap = {
-                                        for (var r in existing) r.coverageDate: r.absent
+                                        for (var r in existing)
+                                          r.coverageDate: r.absent
                                       };
 
                                       final sourceEntries = selectedEmp == 'ALL'
                                           ? existing.map((r) {
-                                              final ds = r.coverageDate.toString();
+                                              final ds =
+                                                  r.coverageDate.toString();
                                               final date = DateTime(
                                                 int.parse(ds.substring(0, 4)),
                                                 int.parse(ds.substring(4, 6)),
@@ -325,46 +466,72 @@ Future<Map<DateTime, DaySelection>?> showCalendarDialog(BuildContext context) {
                                               );
                                               bool am = false, pm = false;
                                               switch (r.absent) {
-                                                case 0: am = true; pm = true; break;
-                                                case 1: pm = true; break;
-                                                case 2: am = true; break;
+                                                case 0:
+                                                  am = true;
+                                                  pm = true;
+                                                  break;
+                                                case 1:
+                                                  pm = true;
+                                                  break;
+                                                case 2:
+                                                  am = true;
+                                                  break;
                                               }
-                                              return MapEntry(date, DaySelection(a: am, b: pm));
+                                              return MapEntry(date,
+                                                  DaySelection(a: am, b: pm));
                                             }).toList()
                                           : selections.entries.toList();
 
                                       final batch = firestore.batch();
-                                      final List<CoverageRecordModel> changedDays = [];
+                                      final List<CoverageRecordModel>
+                                          changedDays = [];
 
                                       for (final entry in sourceEntries) {
                                         final date = entry.key;
                                         final sel = entry.value;
 
                                         int absent;
-                                        if (sel.a && sel.b) absent = 0;
-                                        else if (!sel.a && sel.b) absent = 1;
-                                        else if (sel.a && !sel.b) absent = 2;
-                                        else absent = 3;
+                                        if (sel.a && sel.b)
+                                          absent = 0;
+                                        else if (!sel.a && sel.b)
+                                          absent = 1;
+                                        else if (sel.a && !sel.b)
+                                          absent = 2;
+                                        else
+                                          absent = 3;
 
-                                        final coverageDate = int.parse(DateFormat('yyyyMMdd').format(date));
-                                        final oldAbsent = firestoreMap[coverageDate];
-                                        final wasGenerated = alreadyGenerated.contains(coverageDate);
+                                        final coverageDate = int.parse(
+                                            DateFormat('yyyyMMdd')
+                                                .format(date));
+                                        final oldAbsent =
+                                            firestoreMap[coverageDate];
+                                        final wasGenerated = alreadyGenerated
+                                            .contains(coverageDate);
 
-                                        if (absent == 3 && oldAbsent == null) continue;
-                                        if (absent == 3 && !wasGenerated) continue;
-                                        if (wasGenerated && oldAbsent == absent) continue;
+                                        if (absent == 3 && oldAbsent == null)
+                                          continue;
+                                        if (absent == 3 && !wasGenerated)
+                                          continue;
+                                        if (wasGenerated && oldAbsent == absent)
+                                          continue;
 
                                         int previousEarned = 0;
                                         if (wasGenerated && oldAbsent != null) {
-                                          if (oldAbsent == 0) previousEarned = rate;
-                                          else if (oldAbsent == 1 || oldAbsent == 2) previousEarned = rate ~/ 2;
+                                          if (oldAbsent == 0)
+                                            previousEarned = rate;
+                                          else if (oldAbsent == 1 ||
+                                              oldAbsent == 2)
+                                            previousEarned = rate ~/ 2;
                                         }
 
                                         int newEarned = 0;
-                                        if (absent == 0) newEarned = rate;
-                                        else if (absent == 1 || absent == 2) newEarned = rate ~/ 2;
+                                        if (absent == 0)
+                                          newEarned = rate;
+                                        else if (absent == 1 || absent == 2)
+                                          newEarned = rate ~/ 2;
 
-                                        final earned = newEarned - previousEarned;
+                                        final earned =
+                                            newEarned - previousEarned;
 
                                         final record = CoverageRecordModel(
                                           docId: '',
@@ -378,7 +545,11 @@ Future<Map<DateTime, DaySelection>?> showCalendarDialog(BuildContext context) {
 
                                         changedDays.add(record);
                                         batch.set(
-                                          firestore.collection('coverage_records').doc(empName).collection('dates').doc(coverageDate.toString()),
+                                          firestore
+                                              .collection('coverage_records')
+                                              .doc(empName)
+                                              .collection('dates')
+                                              .doc(coverageDate.toString()),
                                           record.toMap(),
                                         );
                                       }
@@ -387,38 +558,64 @@ Future<Map<DateTime, DaySelection>?> showCalendarDialog(BuildContext context) {
                                         await batch.commit();
                                         for (final r in changedDays) {
                                           if (r.amountEarned != 0) {
-                                            final ds = r.coverageDate.toString();
+                                            final ds =
+                                                r.coverageDate.toString();
                                             final coverageDateTime = DateTime(
                                               int.parse(ds.substring(0, 4)),
                                               int.parse(ds.substring(4, 6)),
                                               int.parse(ds.substring(6, 8)),
                                             );
-                                            SuppliesHistRepository.instance.clear();
-                                            SuppliesHistRepository.instance.setItemName(getItemNameOnly(menuOthCashInOutFunds, menuOthSalaryPayment));
-                                            SuppliesHistRepository.instance.setItemId(menuOthCashInOutFunds);
-                                            SuppliesHistRepository.instance.setItemUniqueId(menuOthSalaryPayment);
-                                            SuppliesHistRepository.instance.setRemarks('Auto generated ${r.coverageDate}${r.amountEarned < 0 ? ' reverted' : ''}');
-                                            SuppliesHistRepository.instance.setCurrentCounter(r.amountEarned);
-                                            SuppliesHistRepository.instance.setCustomerName(r.empId);
-                                            SuppliesHistRepository.instance.setEmpId(empNameToId[r.empId]!);
-                                            await setSuppliesRepository(context, autoSalaryDate: Timestamp.fromDate(coverageDateTime));
+                                            SuppliesHistRepository.instance
+                                                .clear();
+                                            SuppliesHistRepository.instance
+                                                .setItemName(getItemNameOnly(
+                                                    menuOthCashInOutFunds,
+                                                    menuOthSalaryPayment));
+                                            SuppliesHistRepository.instance
+                                                .setItemId(
+                                                    menuOthCashInOutFunds);
+                                            SuppliesHistRepository.instance
+                                                .setItemUniqueId(
+                                                    menuOthSalaryPayment);
+                                            SuppliesHistRepository.instance
+                                                .setRemarks(
+                                                    'Auto generated ${r.coverageDate}${r.amountEarned < 0 ? ' reverted' : ''}');
+                                            SuppliesHistRepository.instance
+                                                .setCurrentCounter(
+                                                    r.amountEarned);
+                                            SuppliesHistRepository.instance
+                                                .setCustomerName(r.empId);
+                                            SuppliesHistRepository.instance
+                                                .setEmpId(
+                                                    empNameToId[r.empId]!);
+                                            await setSuppliesRepository(context,
+                                                autoSalaryDate:
+                                                    Timestamp.fromDate(
+                                                        coverageDateTime));
                                           }
                                         }
                                         allChangedDays.addAll(changedDays);
                                       }
                                     }
 
-                                    Navigator.of(context, rootNavigator: true).pop();
-                                    if (sfContext.mounted) setState(() => isGenerating = false);
+                                    Navigator.of(context, rootNavigator: true)
+                                        .pop();
+                                    if (sfContext.mounted)
+                                      setState(() => isGenerating = false);
 
                                     if (allChangedDays.isEmpty) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        const SnackBar(content: Text('No changes detected')),
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        const SnackBar(
+                                            content:
+                                                Text('No changes detected')),
                                       );
                                       return;
                                     }
 
-                                    final affectedDays = allChangedDays.where((r) => r.amountEarned != 0).toList();
+                                    final affectedDays = allChangedDays
+                                        .where((r) => r.amountEarned != 0)
+                                        .toList();
                                     final formattedDays = affectedDays.map((r) {
                                       final ds = r.coverageDate.toString();
                                       return '${r.empId} ${DateFormat('MMM dd').format(DateTime(
@@ -430,14 +627,33 @@ Future<Map<DateTime, DaySelection>?> showCalendarDialog(BuildContext context) {
 
                                     showDialog(
                                       context: context,
-                                      builder: (_) => AlertDialog(
-                                        title: const Text('Done'),
+                                      builder: (alertCtx) => AlertDialog(
+                                        title: Text(
+                                          'Done',
+                                          style: TextStyle(
+                                            color:
+                                                Theme.of(alertCtx).brightness ==
+                                                        Brightness.dark
+                                                    ? Colors.white
+                                                    : Colors.black,
+                                          ),
+                                        ),
                                         content: SingleChildScrollView(
-                                          child: Text('Updated ${affectedDays.length} day(s):\n$formattedDays'),
+                                          child: Text(
+                                            'Updated ${affectedDays.length} day(s):\n$formattedDays',
+                                            style: TextStyle(
+                                              color: Theme.of(alertCtx)
+                                                          .brightness ==
+                                                      Brightness.dark
+                                                  ? Colors.white
+                                                  : Colors.black,
+                                            ),
+                                          ),
                                         ),
                                         actions: [
                                           TextButton(
-                                            onPressed: () => Navigator.pop(context),
+                                            onPressed: () =>
+                                                Navigator.pop(context),
                                             child: const Text('OK'),
                                           ),
                                         ],
@@ -448,7 +664,8 @@ Future<Map<DateTime, DaySelection>?> showCalendarDialog(BuildContext context) {
                                 ? const SizedBox(
                                     height: 18,
                                     width: 18,
-                                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                                    child: CircularProgressIndicator(
+                                        strokeWidth: 2, color: Colors.white),
                                   )
                                 : const Text('Generate'),
                           ),
@@ -476,32 +693,46 @@ Future<Map<DateTime, DaySelection>?> showCalendarDialog(BuildContext context) {
                                 : () async {
                                     final empId = selectedEmp;
                                     if (empId == null || empId == 'ALL') {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        const SnackBar(content: Text('Please select an employee')),
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        const SnackBar(
+                                            content: Text(
+                                                'Please select an employee')),
                                       );
                                       return;
                                     }
 
-                                    if (sfContext.mounted) setState(() => isSaving = true);
+                                    if (sfContext.mounted)
+                                      setState(() => isSaving = true);
 
                                     final empName = mapEmpId[empId]!;
                                     final db = DatabaseCoverage();
                                     final existing = await db.getAll(empName);
-                                    final existingDates = {for (var r in existing) r.coverageDate};
+                                    final existingDates = {
+                                      for (var r in existing) r.coverageDate
+                                    };
                                     final toSave = <CoverageRecordModel>[];
 
                                     for (final entry in selections.entries) {
                                       final date = entry.key;
                                       final sel = entry.value;
-                                      final coverageDate = int.parse(DateFormat('yyyyMMdd').format(date));
+                                      final coverageDate = int.parse(
+                                          DateFormat('yyyyMMdd').format(date));
 
-                                      if (!sel.a && !sel.b && !existingDates.contains(coverageDate)) continue;
+                                      if (!sel.a &&
+                                          !sel.b &&
+                                          !existingDates.contains(coverageDate))
+                                        continue;
 
                                       int absent;
-                                      if (sel.a && sel.b) absent = 0;
-                                      else if (!sel.a && sel.b) absent = 1;
-                                      else if (sel.a && !sel.b) absent = 2;
-                                      else absent = 3;
+                                      if (sel.a && sel.b)
+                                        absent = 0;
+                                      else if (!sel.a && sel.b)
+                                        absent = 1;
+                                      else if (sel.a && !sel.b)
+                                        absent = 2;
+                                      else
+                                        absent = 3;
 
                                       toSave.add(CoverageRecordModel(
                                         docId: '',
@@ -515,25 +746,32 @@ Future<Map<DateTime, DaySelection>?> showCalendarDialog(BuildContext context) {
                                     }
 
                                     if (toSave.isEmpty) {
-                                      if (sfContext.mounted) setState(() => isSaving = false);
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        const SnackBar(content: Text('Nothing to save')),
+                                      if (sfContext.mounted)
+                                        setState(() => isSaving = false);
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        const SnackBar(
+                                            content: Text('Nothing to save')),
                                       );
                                       return;
                                     }
 
                                     await db.batchSave(empName, toSave);
 
-                                    if (sfContext.mounted) setState(() => isSaving = false);
+                                    if (sfContext.mounted)
+                                      setState(() => isSaving = false);
                                     ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(content: Text('Saved ${toSave.length} day(s)')),
+                                      SnackBar(
+                                          content: Text(
+                                              'Saved ${toSave.length} day(s)')),
                                     );
                                   },
                             child: isSaving
                                 ? const SizedBox(
                                     height: 18,
                                     width: 18,
-                                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                                    child: CircularProgressIndicator(
+                                        strokeWidth: 2, color: Colors.white),
                                   )
                                 : const Text('Save'),
                           ),

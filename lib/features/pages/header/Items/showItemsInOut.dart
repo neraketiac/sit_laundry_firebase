@@ -153,8 +153,14 @@ void showItemsInOut(BuildContext context) {
     context: context,
     builder: (BuildContext dialogContext) {
       return StatefulBuilder(builder: (context, setState) {
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        final dialogBg =
+            isDark ? const Color(0xFF1E1E1E) : Colors.blueGrey.shade50;
+        final titleColor = isDark ? Colors.white : Colors.black87;
+        final labelColor = isDark ? Colors.white70 : Colors.blueGrey;
+
         return AlertDialog(
-          backgroundColor: Colors.blueGrey.shade50,
+          backgroundColor: dialogBg,
           contentPadding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
           titlePadding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
           actionsPadding:
@@ -163,11 +169,16 @@ void showItemsInOut(BuildContext context) {
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           title: Row(
             children: [
-              const Icon(Icons.inventory_2_outlined, color: Colors.blueGrey),
+              Icon(Icons.inventory_2_outlined,
+                  color: isDark ? Colors.white70 : Colors.blueGrey),
               const SizedBox(width: 8),
-              const Text(
+              Text(
                 'Inventory Check',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: titleColor,
+                ),
               ),
             ],
           ),
@@ -177,14 +188,14 @@ void showItemsInOut(BuildContext context) {
               children: [
                 // All Shortcuts Section (Merged)
                 if (allShortcuts.isNotEmpty) ...[
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 8.0),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
                     child: Text(
                       'Quick Add',
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
-                        color: Colors.blueGrey,
+                        color: labelColor,
                       ),
                     ),
                   ),
@@ -233,7 +244,7 @@ void showItemsInOut(BuildContext context) {
           actions: [
             OutlinedButton(
               onPressed: () => Navigator.pop(dialogContext),
-              child: const Text('Cancel'),
+              child: Text('Cancel', style: TextStyle(color: titleColor)),
             ),
             if (jobRepo.selectedItems.isNotEmpty)
               ElevatedButton.icon(
