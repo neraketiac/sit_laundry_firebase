@@ -234,12 +234,13 @@ class _MonthlyLoadsHeatmapState extends State<MonthlyLoadsHeatmap> {
                             : Colors.grey.shade700,
                       ),
                     ),
-                    if (loads > 0 && !widget.isMobile) ...[
+                    if (loads > 0) ...[
                       const SizedBox(height: 1),
                       Text(
                         loads.toString(),
                         style: TextStyle(
-                          fontSize: fontSize - 3,
+                          fontSize:
+                              widget.isMobile ? fontSize - 4 : fontSize - 3,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
                         ),

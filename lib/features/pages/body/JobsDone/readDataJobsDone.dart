@@ -24,9 +24,6 @@ Widget readDataJobsDone(VoidCallback dialogSetState) {
     sortedJobsDone
       ..clear()
       ..addAll(originalJobsDone);
-    // sortedJobsCompleted
-    //   ..clear()
-    //   ..addAll(originalJobsCompleted);
 
     selectedCustomerIdCompleted = 0;
     selectedPickDate = null;
@@ -215,14 +212,6 @@ Widget readDataJobsDone(VoidCallback dialogSetState) {
                     ),
                   );
 
-                // sortedJobsCompleted
-                //   ..clear()
-                //   ..addAll(
-                //     originalJobsCompleted.where(
-                //       (job) => job.customerId == jobRepox.selectedCustomerId,
-                //     ),
-                //   );
-
                 selectedCustomerIdCompleted = jobRepox.selectedCustomerId;
                 selectedPickDate = null;
 
@@ -299,71 +288,71 @@ Widget readDataJobsDone(VoidCallback dialogSetState) {
         return const Center(child: CircularProgressIndicator());
       }
 
-      /// 🔥 Sync Firestore → original + sorted (always update to catch property changes)
-      originalJobsDone
-        ..clear()
-        ..addAll(snapshot.data!);
-      FsUsageTracker.instance.track('readDataJobsDone', snapshot.data!.length);
+      /// 🔥 Sync Firestore → original + sorted
+      if (originalJobsDone.length != snapshot.data!.length) {
+        originalJobsDone
+          ..clear()
+          ..addAll(snapshot.data!);
+        FsUsageTracker.instance
+            .track('readDataJobsDone', snapshot.data!.length);
 
-      // Rebuild all sorted lists to catch any property changes (e.g., isDeliveredToCustomer)
-      sortedJobsDone
-        ..clear()
-        ..addAll(originalJobsDone);
+        sortedJobsDone
+          ..clear()
+          ..addAll(originalJobsDone);
 
-      sortedJobsDoneClothesGoneCash
-        ..clear()
-        ..addAll(
-          originalJobsDone.where(
-            (job) =>
-                job.unpaid &&
-                !job.paidGCash &&
-                (job.isCustomerPickedUp || job.isDeliveredToCustomer),
-          ),
-        );
+        sortedJobsDoneClothesGoneCash
+          ..clear()
+          ..addAll(
+            originalJobsDone.where(
+              (job) =>
+                  job.unpaid &&
+                  !job.paidGCash &&
+                  (job.isCustomerPickedUp || job.isDeliveredToCustomer),
+            ),
+          );
 
-      sortedJobsDoneClothesGoneGCash
-        ..clear()
-        ..addAll(
-          originalJobsDone.where(
-            (job) =>
-                job.unpaid &&
-                job.paidGCash &&
-                (job.isCustomerPickedUp || job.isDeliveredToCustomer),
-          ),
-        );
+        sortedJobsDoneClothesGoneGCash
+          ..clear()
+          ..addAll(
+            originalJobsDone.where(
+              (job) =>
+                  job.unpaid &&
+                  job.paidGCash &&
+                  (job.isCustomerPickedUp || job.isDeliveredToCustomer),
+            ),
+          );
 
-      sortedJobsDoneClothesHere
-        ..clear()
-        ..addAll(
-          originalJobsDone.where(
-            (job) => !job.isCustomerPickedUp && !job.isDeliveredToCustomer,
-          ),
-        );
+        sortedJobsDoneClothesHere
+          ..clear()
+          ..addAll(
+            originalJobsDone.where(
+              (job) => !job.isCustomerPickedUp && !job.isDeliveredToCustomer,
+            ),
+          );
 
-      sortedJobsDoneClothesHereToBeDelivered
-        ..clear()
-        ..addAll(
-          originalJobsDone.where(
-            (job) =>
-                job.riderPickup &&
-                !job.isCustomerPickedUp &&
-                !job.isDeliveredToCustomer,
-          ),
-        );
+        sortedJobsDoneClothesHereToBeDelivered
+          ..clear()
+          ..addAll(
+            originalJobsDone.where(
+              (job) =>
+                  job.riderPickup &&
+                  !job.isCustomerPickedUp &&
+                  !job.isDeliveredToCustomer,
+            ),
+          );
 
-      intJobsDoneDefault = originalJobsDone.length;
-      intJobsDoneClothesHere = sortedJobsDoneClothesHere.length;
-      intJobsDoneClothesGoneCash = sortedJobsDoneClothesGoneCash.length;
-      intJobsDoneClothesGoneGCash = sortedJobsDoneClothesGoneGCash.length;
+        intJobsDoneDefault = originalJobsDone.length;
+        intJobsDoneClothesHere = sortedJobsDoneClothesHere.length;
+        intJobsDoneClothesGoneCash = sortedJobsDoneClothesGoneCash.length;
+        intJobsDoneClothesGoneGCash = sortedJobsDoneClothesGoneGCash.length;
 
-      sortedJobsDoneAdminRequest
-        ..clear()
-        ..addAll(
-          originalJobsDone.where((job) => job.requestForAdmin),
-        );
-      intJobsDoneAdminRequest = sortedJobsDoneAdminRequest.length;
-
-      //sortJobs(sortedJobsDone);
+        sortedJobsDoneAdminRequest
+          ..clear()
+          ..addAll(
+            originalJobsDone.where((job) => job.requestForAdmin),
+          );
+        intJobsDoneAdminRequest = sortedJobsDoneAdminRequest.length;
+      }
 
       return StatefulBuilder(
         builder: (context, setState) {
@@ -462,19 +451,13 @@ Widget readDataJobsDone(VoidCallback dialogSetState) {
                             selectedIndexDone = index;
                           });
                           showReceipt(context, jobRepo);
-                          // showUpdateDates(context, jobRepo);
                         },
                         child: AnimatedContainer(
                           duration: const Duration(milliseconds: 250),
-
-                          /// 🔹 KEEP SIZE SAME
                           margin: const EdgeInsets.symmetric(vertical: 1),
                           padding: const EdgeInsets.all(4),
-
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(18),
-
-                            /// 🎨 Softer gradient instead of flat purple
                             gradient: LinearGradient(
                               colors: isSelected
                                   ? isDark
@@ -496,7 +479,6 @@ Widget readDataJobsDone(VoidCallback dialogSetState) {
                                           Colors.deepPurple.shade50,
                                         ],
                             ),
-
                             boxShadow: [
                               if (isSelected)
                                 BoxShadow(
@@ -506,7 +488,6 @@ Widget readDataJobsDone(VoidCallback dialogSetState) {
                                   offset: const Offset(0, 6),
                                 ),
                             ],
-
                             border: Border.all(
                               color: isSelected
                                   ? Colors.deepPurple
@@ -517,12 +498,9 @@ Widget readDataJobsDone(VoidCallback dialogSetState) {
                               width: isSelected ? 1.5 : 1,
                             ),
                           ),
-
                           child: Row(
                             children: [
                               const SizedBox(width: 10),
-
-                              /// ICON
                               visIconArea(
                                 context,
                                 jobRepo,
@@ -533,20 +511,14 @@ Widget readDataJobsDone(VoidCallback dialogSetState) {
                                   showDeliverOrCustomerPickup(context, jobRepo);
                                 },
                               ),
-
                               const SizedBox(width: 7),
-
-                              /// NAME
                               visNameArea(jobRepo.getJobsModel()!, isSelected),
-
-                              /// PRICE
                               visPaidUnpaidArea(
                                 context,
                                 jobRepo,
                                 isSelected,
                                 true,
                               ),
-
                               const SizedBox(width: 20),
                             ],
                           ),
@@ -633,12 +605,12 @@ class IconBadgeButton extends StatelessWidget {
       ),
     );
 
-    // Wrap with GestureDetector if onDoubleTap is provided
+    // If onDoubleTap is provided, wrap with GestureDetector for double-tap detection
+    // but don't interfere with the button's single-tap handling
     if (onDoubleTap != null) {
       return Tooltip(
         message: tooltip,
         child: GestureDetector(
-          onTap: onPressed,
           onDoubleTap: onDoubleTap,
           child: button,
         ),

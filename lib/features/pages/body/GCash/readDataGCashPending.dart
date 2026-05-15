@@ -875,13 +875,105 @@ Widget readDataGCashPending() {
                                 if (gRepo.customerName.isNotEmpty ||
                                     gRepo.remarks.isNotEmpty) ...[
                                   const SizedBox(height: 8),
-                                  Text(
-                                    '${gRepo.customerName}${gRepo.customerName.isNotEmpty && gRepo.remarks.isNotEmpty ? ": " : ""}${gRepo.remarks}',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w500,
-                                      color: remarksText,
-                                      fontSize: 12,
-                                    ),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          '${gRepo.customerName}${gRepo.customerName.isNotEmpty && gRepo.remarks.isNotEmpty ? ": " : ""}${gRepo.remarks}',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.w500,
+                                            color: remarksText,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Material(
+                                        color: Colors.transparent,
+                                        child: InkWell(
+                                          borderRadius:
+                                              BorderRadius.circular(20),
+                                          onTap: () async {
+                                            final TextEditingController
+                                                remarksController =
+                                                TextEditingController(
+                                                    text: gRepo.remarks);
+
+                                            if (!context.mounted) return;
+                                            final newRemarks =
+                                                await showDialog<String>(
+                                              context: context,
+                                              builder: (context) {
+                                                return AlertDialog(
+                                                  title: const Text(
+                                                      'Update Remarks'),
+                                                  content: TextField(
+                                                    controller:
+                                                        remarksController,
+                                                    maxLines: 3,
+                                                    decoration: InputDecoration(
+                                                      hintText:
+                                                          'Enter remarks (e.g., Cancel)',
+                                                      border:
+                                                          OutlineInputBorder(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(8),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  actions: [
+                                                    TextButton(
+                                                      onPressed: () =>
+                                                          Navigator.pop(
+                                                              context),
+                                                      child:
+                                                          const Text('Cancel'),
+                                                    ),
+                                                    ElevatedButton(
+                                                      onPressed: () =>
+                                                          Navigator.pop(
+                                                        context,
+                                                        remarksController.text,
+                                                      ),
+                                                      child: const Text('Save'),
+                                                    ),
+                                                  ],
+                                                );
+                                              },
+                                            );
+
+                                            if (newRemarks != null &&
+                                                newRemarks != gRepo.remarks &&
+                                                context.mounted) {
+                                              gRepo.remarks = newRemarks;
+                                              await dbGCashPending.updateVoid(
+                                                  gRepo.getModel()!);
+
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(
+                                                const SnackBar(
+                                                  content:
+                                                      Text('Remarks updated'),
+                                                  duration: Duration(
+                                                      milliseconds: 800),
+                                                ),
+                                              );
+                                            }
+                                          },
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(4),
+                                            child: Icon(
+                                              Icons.edit,
+                                              size: 16,
+                                              color: isSelected
+                                                  ? Colors.deepPurple
+                                                  : Colors.grey.shade600,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ],
                                 const SizedBox(height: 8),
