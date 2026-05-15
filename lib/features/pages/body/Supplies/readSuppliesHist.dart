@@ -163,7 +163,8 @@ class _SuppliesHistoryList extends StatefulWidget {
 }
 
 class _SuppliesHistoryListState extends State<_SuppliesHistoryList> {
-  final List<SuppliesModelHist> _items = [];
+  final List<SuppliesModelHist> _liveItems = []; // Real-time first page items
+  final List<SuppliesModelHist> _paginatedItems = []; // Older paginated items
   final Set<String> _loadedIds = {};
   DocumentSnapshot? _lastDoc;
   bool _loading = false;
@@ -208,14 +209,10 @@ class _SuppliesHistoryListState extends State<_SuppliesHistoryList> {
       final liveIds = snap.docs.map((d) => d.id).toSet();
 
       setState(() {
-        // Keep older paginated items (beyond first page)
-        final olderItems = _items.length > _pageSize
-            ? _items.sublist(_pageSize)
-            : <SuppliesModelHist>[];
-        _items
+        // Update only the live items (first page)
+        _liveItems
           ..clear()
-          ..addAll(liveDocs)
-          ..addAll(olderItems);
+          ..addAll(liveDocs);
 
         // Update loaded IDs for first page
         _loadedIds
@@ -232,7 +229,8 @@ class _SuppliesHistoryListState extends State<_SuppliesHistoryList> {
   Future<void> _refresh() async {
     _newDocSub?.cancel();
     setState(() {
-      _items.clear();
+      _liveItems.clear();
+      _paginatedItems.clear();
       _loadedIds.clear();
       _lastDoc = null;
       _hasMore = true;
@@ -257,13 +255,16 @@ class _SuppliesHistoryListState extends State<_SuppliesHistoryList> {
       _loading = false;
       if (newItems.length < _pageSize) _hasMore = false;
       if (snap.docs.isNotEmpty) _lastDoc = snap.docs.last;
+
+      // Add only new items to paginated list
       for (int i = 0; i < snap.docs.length; i++) {
         if (!_loadedIds.contains(snap.docs[i].id)) {
           _loadedIds.add(snap.docs[i].id);
-          _items.add(newItems[i]);
+          _paginatedItems.add(newItems[i]);
         }
       }
-      // Track the newest LogDate from the first page for the live listener
+
+      // Start real-time listener on first load
       if (_newestLogDate == null && snap.docs.isNotEmpty) {
         final firstData = snap.docs.first.data() as SuppliesModelHist;
         _newestLogDate = firstData.logDate;
@@ -275,6 +276,9 @@ class _SuppliesHistoryListState extends State<_SuppliesHistoryList> {
 
   @override
   Widget build(BuildContext context) {
+    // Combine live items (top) with paginated items (bottom)
+    final allItems = [..._liveItems, ..._paginatedItems];
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -286,18 +290,18 @@ class _SuppliesHistoryListState extends State<_SuppliesHistoryList> {
         ),
         SizedBox(
           height: MediaQuery.of(context).size.height * 0.9,
-          child: _items.isEmpty && _loading
+          child: allItems.isEmpty && _loading
               ? const Center(child: CircularProgressIndicator())
-              : _items.isEmpty
+              : allItems.isEmpty
                   ? const Center(child: Text('No supplies history'))
                   : RefreshIndicator(
                       onRefresh: _refresh,
                       child: ListView.builder(
                         controller: _scroll,
                         physics: const AlwaysScrollableScrollPhysics(),
-                        itemCount: _items.length + (_hasMore ? 1 : 0),
+                        itemCount: allItems.length + (_hasMore ? 1 : 0),
                         itemBuilder: (context, index) {
-                          if (index == _items.length) {
+                          if (index == allItems.length) {
                             if (!_loading) {
                               WidgetsBinding.instance
                                   .addPostFrameCallback((_) => _loadMore());
@@ -315,7 +319,7 @@ class _SuppliesHistoryListState extends State<_SuppliesHistoryList> {
                           }
                           return SizedBox(
                             height: 24,
-                            child: _buildSupplyRow(_items[index]),
+                            child: _buildSupplyRow(allItems[index]),
                           );
                         },
                       ),
