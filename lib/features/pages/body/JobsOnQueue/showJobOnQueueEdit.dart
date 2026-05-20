@@ -19,6 +19,7 @@ import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_alter_job/visF
 import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_alter_job/visMix.dart';
 import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_alter_job/visRiderPickup.dart';
 import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_alter_job/visSako.dart';
+import 'package:laundry_firebase/features/pages/body/JobsDone/showReceipt.dart';
 
 void showJobOnQueueEdit(BuildContext context, JobModelRepository jobRepo) {
   Future<void> saveButtonSetRepository() async {
@@ -155,6 +156,18 @@ void showJobOnQueueEdit(BuildContext context, JobModelRepository jobRepo) {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
+                      TextButton(
+                        onPressed: () {
+                          showReceipt(context, jobRepo);
+                        },
+                        child: Text(
+                          'Tempo Receipt',
+                          style: TextStyle(
+                            color: Colors.red.shade400,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
                       TextButton(
                         onPressed: () {
                           jobRepo.syncRepoToSelectedAll(jobRepo);

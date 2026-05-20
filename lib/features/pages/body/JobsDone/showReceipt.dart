@@ -89,7 +89,7 @@ void showReceipt(BuildContext context, JobModelRepository jobRepo) {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 receiptCenterDark("W A S H * K O * L A N G", bold: true),
-                receiptCenterDark("Laundry Service"),
+                receiptCenterDark("Laundry Hub"),
                 const SizedBox(height: 6),
                 receiptDividerDark(),
                 receiptRowDark("Queue No.", "#${jobRepo.jobId}"),

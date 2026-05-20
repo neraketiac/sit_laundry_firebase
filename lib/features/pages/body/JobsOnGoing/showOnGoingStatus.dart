@@ -9,6 +9,7 @@ import 'package:laundry_firebase/features/jobs/repository/jobmodel_repository.da
 import 'package:laundry_firebase/core/global/variables.dart';
 import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_display_job/visCustomerNameNoAutoComplete.dart';
 import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_alter_job/visOnGoingStatus.dart';
+import 'package:laundry_firebase/features/pages/body/JobsDone/showReceipt.dart';
 
 void showOnGoingStatus(BuildContext context, JobModelRepository jobRepo) {
   Future<void> saveButtonSetRepository() async {
@@ -127,6 +128,18 @@ void showOnGoingStatus(BuildContext context, JobModelRepository jobRepo) {
                       child: const Text('Move to Jobs Done?'),
                     ),
                   ),
+                TextButton(
+                  onPressed: () {
+                    showReceipt(context, jobRepo);
+                  },
+                  child: Text(
+                    'Tempo Receipt',
+                    style: TextStyle(
+                      color: Colors.red.shade400,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
                 TextButton(
                   onPressed: () {
                     setState(() {
