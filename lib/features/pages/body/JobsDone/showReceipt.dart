@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:laundry_firebase/features/jobs/repository/jobmodel_repository.dart';
 import 'package:laundry_firebase/features/loyalty/pages/loyalty_single_full.dart';
 
-void showReceipt(BuildContext context, JobModelRepository jobRepo) {
+void showReceipt(BuildContext context, JobModelRepository jobRepo,
+    {bool isTemporary = false}) {
   jobRepo.syncRepoToSelectedAll(jobRepo);
 
   String formatDate(Timestamp ts) {
@@ -91,9 +92,42 @@ void showReceipt(BuildContext context, JobModelRepository jobRepo) {
                 receiptCenterDark("W A S H * K O * L A N G", bold: true),
                 receiptCenterDark("Laundry Hub"),
                 const SizedBox(height: 6),
+                if (isTemporary)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: Center(
+                      child: Text(
+                        "⚠️ TEMPORARY RECEIPT ⚠️",
+                        style: TextStyle(
+                          fontFamily: "Courier",
+                          fontWeight: FontWeight.bold,
+                          color: Colors.red.shade400,
+                          fontSize: 11,
+                        ),
+                      ),
+                    ),
+                  ),
+                if (isTemporary)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child: Center(
+                      child: Text(
+                        "This is not the final receipt.",
+                        style: TextStyle(
+                          fontFamily: "Courier",
+                          fontSize: 10,
+                          color: Colors.red.shade300,
+                        ),
+                      ),
+                    ),
+                  ),
                 receiptDividerDark(),
                 receiptRowDark("Queue No.", "#${jobRepo.jobId}"),
-                receiptRowDark("Date", formatDate(jobRepo.dateD)),
+                receiptRowDark(
+                    "Date",
+                    isTemporary
+                        ? formatDate(Timestamp.now())
+                        : formatDate(jobRepo.dateD)),
                 receiptRowDark("Customer", jobRepo.customerName),
                 receiptRowDark("Address", jobRepo.address),
                 receiptRowDark("Customer ID", jobRepo.customerId.toString()),

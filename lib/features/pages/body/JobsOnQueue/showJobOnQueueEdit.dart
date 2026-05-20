@@ -157,7 +157,7 @@ void showJobOnQueueEdit(BuildContext context, JobModelRepository jobRepo) {
                     children: [
                       TextButton(
                         onPressed: () {
-                          showReceipt(context, jobRepo);
+                          showReceipt(context, jobRepo, isTemporary: true);
                         },
                         child: Text(
                           'Temp Receipt',
