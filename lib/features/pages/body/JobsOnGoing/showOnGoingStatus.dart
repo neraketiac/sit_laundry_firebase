@@ -76,58 +76,7 @@ void showOnGoingStatus(BuildContext context, JobModelRepository jobRepo) {
           actionsAlignment: MainAxisAlignment.end,
           actions: [
             Row(
-              mainAxisSize: MainAxisSize.min,
               children: [
-                if (jobRepo.selectedProcessStep != 'waiting')
-                  Expanded(
-                    child: TextButton(
-                      style: TextButton.styleFrom(
-                        backgroundColor: Colors.green,
-                        foregroundColor: Colors.black,
-                      ),
-                      onPressed: () async {
-                        final confirm = await showDialog<bool>(
-                          context: context,
-                          builder: (context) {
-                            return AlertDialog(
-                              title: const Text('Confirm Action'),
-                              content: Text(
-                                  'Move #${jobRepo.selectedJobId} ${jobRepo.selectedCustomerNameVar.text} (${jobRepo.selectedFinalLoad}) to Jobs Done?'
-                                  '${useAdminTimestampDateD ? DateFormat('MMM dd, yyyy').format(adminTimestampDateD.toDate()) : ''}'),
-                              actions: [
-                                TextButton(
-                                  onPressed: () =>
-                                      Navigator.pop(context, false),
-                                  child: const Text('No'),
-                                ),
-                                TextButton(
-                                  onPressed: () => Navigator.pop(context, true),
-                                  child: const Text('Yes'),
-                                ),
-                              ],
-                            );
-                          },
-                        );
-
-                        if (confirm == true) {
-                          jobRepo.syncSelectedToRepoAll(jobRepo);
-                          await moveOngoingToDone(
-                            jobRepo.docId,
-                            jobRepo.riderPickup,
-                            jobRepo.customerId,
-                            //later when isPromoCounter is fix
-                            // (jobRepo.isPromoCounter
-                            //     ? jobRepo.promoCounter
-                            //     : 0)
-                            jobRepo.promoCounter,
-                          );
-
-                          Navigator.pop(context, false);
-                        }
-                      },
-                      child: const Text('Move to Jobs Done?'),
-                    ),
-                  ),
                 TextButton(
                   onPressed: () {
                     showReceipt(context, jobRepo);
@@ -140,6 +89,54 @@ void showOnGoingStatus(BuildContext context, JobModelRepository jobRepo) {
                     ),
                   ),
                 ),
+                const Spacer(),
+                if (jobRepo.selectedProcessStep != 'waiting')
+                  TextButton(
+                    style: TextButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      foregroundColor: Colors.black,
+                    ),
+                    onPressed: () async {
+                      final confirm = await showDialog<bool>(
+                        context: context,
+                        builder: (context) {
+                          return AlertDialog(
+                            title: const Text('Confirm Action'),
+                            content: Text(
+                                'Move #${jobRepo.selectedJobId} ${jobRepo.selectedCustomerNameVar.text} (${jobRepo.selectedFinalLoad}) to Jobs Done?'
+                                '${useAdminTimestampDateD ? DateFormat('MMM dd, yyyy').format(adminTimestampDateD.toDate()) : ''}'),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context, false),
+                                child: const Text('No'),
+                              ),
+                              TextButton(
+                                onPressed: () => Navigator.pop(context, true),
+                                child: const Text('Yes'),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+
+                      if (confirm == true) {
+                        jobRepo.syncSelectedToRepoAll(jobRepo);
+                        await moveOngoingToDone(
+                          jobRepo.docId,
+                          jobRepo.riderPickup,
+                          jobRepo.customerId,
+                          //later when isPromoCounter is fix
+                          // (jobRepo.isPromoCounter
+                          //     ? jobRepo.promoCounter
+                          //     : 0)
+                          jobRepo.promoCounter,
+                        );
+
+                        Navigator.pop(context, false);
+                      }
+                    },
+                    child: const Text('Move to Jobs Done?'),
+                  ),
                 TextButton(
                   onPressed: () {
                     setState(() {

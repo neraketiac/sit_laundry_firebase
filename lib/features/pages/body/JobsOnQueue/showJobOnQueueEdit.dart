@@ -154,20 +154,20 @@ void showJobOnQueueEdit(BuildContext context, JobModelRepository jobRepo) {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       TextButton(
                         onPressed: () {
                           showReceipt(context, jobRepo);
                         },
                         child: Text(
-                          'Tempo Receipt',
+                          'Temp Receipt',
                           style: TextStyle(
                             color: Colors.red.shade400,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
+                      const Spacer(),
                       TextButton(
                         onPressed: () {
                           jobRepo.syncRepoToSelectedAll(jobRepo);
