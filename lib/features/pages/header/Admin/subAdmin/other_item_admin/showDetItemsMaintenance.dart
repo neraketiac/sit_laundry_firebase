@@ -249,6 +249,7 @@ class _DetItemsPageState extends State<DetItemsPage> {
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: SingleChildScrollView(
+                scrollDirection: Axis.vertical,
                 child: Column(
                   children: [
                     Container(

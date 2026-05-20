@@ -204,20 +204,14 @@ class _SuppliesHistoryListState extends State<_SuppliesHistoryList> {
         .listen((snap) {
       if (!mounted) return;
 
-      final liveDocs =
-          snap.docs.map((d) => SuppliesModelHist.fromJson(d.data())).toList();
-      final liveIds = snap.docs.map((d) => d.id).toSet();
-
       setState(() {
-        // Update only the live items (first page)
-        _liveItems
-          ..clear()
-          ..addAll(liveDocs);
-
-        // Update loaded IDs for first page
-        _loadedIds
-          ..removeWhere((id) => !liveIds.contains(id))
-          ..addAll(liveIds);
+        // Only keep items that are NOT in the paginated list (avoid duplicates)
+        _liveItems.clear();
+        for (var doc in snap.docs) {
+          if (!_loadedIds.contains(doc.id)) {
+            _liveItems.add(SuppliesModelHist.fromJson(doc.data()));
+          }
+        }
 
         if (snap.docs.isNotEmpty) {
           _newestLogDate = snap.docs.first.data()['LogDate'] as Timestamp?;

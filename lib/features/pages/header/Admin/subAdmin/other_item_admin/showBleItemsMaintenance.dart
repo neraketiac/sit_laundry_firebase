@@ -249,6 +249,7 @@ class _BleItemsPageState extends State<BleItemsPage> {
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: SingleChildScrollView(
+                scrollDirection: Axis.vertical,
                 child: Column(
                   children: [
                     Container(

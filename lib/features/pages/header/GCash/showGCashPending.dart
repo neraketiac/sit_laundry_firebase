@@ -635,7 +635,21 @@ void showGCashPending(BuildContext context) async {
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 12, vertical: 6),
                               child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
+                                  // Warning message for Cash-Out only
+                                  if (isCashOut)
+                                    Padding(
+                                      padding: const EdgeInsets.only(bottom: 8),
+                                      child: Text(
+                                        'Cash-Out: Enter the exact amount to give to customer. Fee is only a guide.',
+                                        style: TextStyle(
+                                          fontSize: s.small,
+                                          fontWeight: FontWeight.w500,
+                                          color: Colors.red.shade400,
+                                        ),
+                                      ),
+                                    ),
                                   Row(
                                     children: [
                                       Text('Fee:',

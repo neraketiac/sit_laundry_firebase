@@ -249,6 +249,7 @@ class _FabItemsPageState extends State<FabItemsPage> {
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: SingleChildScrollView(
+                scrollDirection: Axis.vertical,
                 child: Column(
                   children: [
                     Container(
