@@ -47,16 +47,26 @@ class SalaryData {
               ?.toString() ??
           'Unknown';
 
-      // Use AutoSalaryDate if it falls within the queried month,
-      // otherwise fall back to LogDate
       final autoTs = data['AutoSalaryDate'] as Timestamp?;
       final logTs = data['LogDate'] as Timestamp?;
 
+      // For LogDate >= May 1, 2026: use only AutoSalaryDate
+      // For LogDate < May 1, 2026: use AutoSalaryDate if in month, else LogDate
+      final cutoffDate = DateTime(2026, 5, 1);
+      final logDate = logTs?.toDate();
+
       Timestamp? ts;
-      if (autoTs != null && _isInMonth(autoTs.toDate())) {
+      if (logDate != null && logDate.isAfter(cutoffDate) ||
+          logDate?.isAtSameMomentAs(cutoffDate) == true) {
+        // LogDate >= May 1, 2026: use only AutoSalaryDate
         ts = autoTs;
       } else {
-        ts = logTs;
+        // LogDate < May 1, 2026: use AutoSalaryDate if in month, else LogDate
+        if (autoTs != null && _isInMonth(autoTs.toDate())) {
+          ts = autoTs;
+        } else {
+          ts = logTs;
+        }
       }
 
       totalSalary += amount;

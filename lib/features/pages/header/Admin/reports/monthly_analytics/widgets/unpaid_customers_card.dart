@@ -9,6 +9,7 @@ class UnpaidCustomersCard extends StatelessWidget {
   final DateTime currentMonth;
   final bool hasJobs;
   final String Function(int week) getWeekDateRange;
+  final int maxItemsPerColumn;
 
   const UnpaidCustomersCard({
     super.key,
@@ -18,6 +19,7 @@ class UnpaidCustomersCard extends StatelessWidget {
     required this.currentMonth,
     required this.hasJobs,
     required this.getWeekDateRange,
+    this.maxItemsPerColumn = 10,
   });
 
   @override
@@ -63,6 +65,7 @@ class UnpaidCustomersCard extends StatelessWidget {
                         customers: unpaidCustomers,
                         total: totalUnpaid,
                         accentColor: Colors.red.shade100,
+                        maxItems: maxItemsPerColumn,
                       ),
                       // Week columns
                       ...activeWeeks.map((week) => Padding(
@@ -72,6 +75,7 @@ class UnpaidCustomersCard extends StatelessWidget {
                               customers: unpaidCustomersByWeek[week] ?? {},
                               total: unpaidByWeek[week] ?? 0,
                               accentColor: Colors.orange.shade50,
+                              maxItems: maxItemsPerColumn,
                             ),
                           )),
                     ],
@@ -104,12 +108,14 @@ class _UnpaidColumn extends StatelessWidget {
   final Map<String, int> customers;
   final int total;
   final Color accentColor;
+  final int maxItems;
 
   const _UnpaidColumn({
     required this.title,
     required this.customers,
     required this.total,
     required this.accentColor,
+    this.maxItems = 10,
   });
 
   @override
@@ -159,7 +165,7 @@ class _UnpaidColumn extends StatelessWidget {
           Expanded(
             child: Column(
               children: [
-                ...sorted.take(10).map((e) => Container(
+                ...sorted.take(maxItems).map((e) => Container(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 8, vertical: 5),
                       decoration: BoxDecoration(
@@ -186,11 +192,11 @@ class _UnpaidColumn extends StatelessWidget {
                         ],
                       ),
                     )),
-                if (sorted.length > 10)
+                if (sorted.length > maxItems)
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 4),
                     child: Text(
-                      '+${sorted.length - 10} more',
+                      '+${sorted.length - maxItems} more',
                       style: TextStyle(fontSize: 10, color: subTextColor),
                       textAlign: TextAlign.center,
                     ),

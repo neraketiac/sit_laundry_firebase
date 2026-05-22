@@ -86,21 +86,10 @@ class _UnpaidLaundryPanelState extends State<_UnpaidLaundryPanel> {
         }),
       ];
 
-      // Filter to only include cash unpaid (exclude GCash unpaid)
+      // Filter to only include cash unpaid (exclude GCash)
       final filteredJobs = _jobs.where((job) {
-        // Only include if unpaid is from cash payment method
-        // Exclude if unpaid is from GCash (paidGCash or paidGCashUnverified)
-        final unpaid = job.finalPrice -
-            job.paidCashAmount -
-            (job.paidGCashVerified ? job.paidGCashAmount : 0);
-
-        if (unpaid <= 0) return false; // No unpaid amount
-
-        // Include only if the unpaid portion is from cash
-        // This means: paidCash is false OR paidCash is true but paidGCash/paidGCashUnverified is false
-        final isUnpaidCash =
-            !job.paidCash || (!job.paidGCash && !job.paidGCashVerified);
-        return isUnpaidCash;
+        // Include only: unpaid == true AND paidGCash == false
+        return job.unpaid && !job.paidGCash;
       }).toList();
 
       _jobs = filteredJobs;
@@ -161,6 +150,7 @@ class _UnpaidLaundryPanelState extends State<_UnpaidLaundryPanel> {
               currentMonth: _month,
               hasJobs: _jobs.isNotEmpty,
               getWeekDateRange: _weekDateRange,
+              maxItemsPerColumn: 999,
             ),
         ],
       ),
