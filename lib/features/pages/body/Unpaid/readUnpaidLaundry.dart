@@ -86,6 +86,25 @@ class _UnpaidLaundryPanelState extends State<_UnpaidLaundryPanel> {
         }),
       ];
 
+      // Filter to only include cash unpaid (exclude GCash unpaid)
+      final filteredJobs = _jobs.where((job) {
+        // Only include if unpaid is from cash payment method
+        // Exclude if unpaid is from GCash (paidGCash or paidGCashUnverified)
+        final unpaid = job.finalPrice -
+            job.paidCashAmount -
+            (job.paidGCashVerified ? job.paidGCashAmount : 0);
+
+        if (unpaid <= 0) return false; // No unpaid amount
+
+        // Include only if the unpaid portion is from cash
+        // This means: paidCash is false OR paidCash is true but paidGCash/paidGCashUnverified is false
+        final isUnpaidCash =
+            !job.paidCash || (!job.paidGCash && !job.paidGCashVerified);
+        return isUnpaidCash;
+      }).toList();
+
+      _jobs = filteredJobs;
+
       _unpaid.process(_jobs, _weekNumber);
     } catch (e) {
       debugPrint('Error loading unpaid data: $e');
