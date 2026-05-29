@@ -6,7 +6,6 @@ import 'package:intl/intl.dart';
 import 'package:laundry_firebase/features/payments/models/gcashmodel.dart';
 import 'package:laundry_firebase/core/services/database_gcash.dart';
 import 'package:laundry_firebase/features/payments/repository/gcash_repository.dart';
-import 'package:laundry_firebase/shared/widgets/actions/showUploadedImage.dart';
 import 'package:laundry_firebase/core/utils/fs_usage_tracker.dart';
 
 Widget readDataGCashDone() => const _GCashDoneWidget();
@@ -136,8 +135,6 @@ class _GCashDoneWidgetState extends State<_GCashDoneWidget> {
       return const Center(child: Text('No completed GCash records'));
     }
 
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -163,6 +160,64 @@ class _GCashDoneWidgetState extends State<_GCashDoneWidget> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildImageViewer(BuildContext context, GCashRepository gRepo) {
+    // Determine which image to show based on fund type
+    final fundCode = gRepo.itemUniqueId;
+    final bool isCashOut = fundCode == 4407; // menuOthUniqIdCashOut
+    final String imageUrl =
+        isCashOut ? gRepo.cashOutImageUrl : gRepo.cashInImageUrl;
+    final IconData fallbackIcon = isCashOut ? Icons.logout : Icons.login;
+
+    // Only show SS link if image exists
+    if (imageUrl.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return GestureDetector(
+      onTap: () {
+        showDialog(
+          context: context,
+          builder: (_) => AlertDialog(
+            title: const Text('GCash Receipt'),
+            content: ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.network(
+                imageUrl,
+                fit: BoxFit.contain,
+                errorBuilder: (_, __, ___) => Center(
+                  child: Icon(
+                    fallbackIcon,
+                    size: 48,
+                    color: Colors.grey,
+                  ),
+                ),
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Close'),
+              ),
+            ],
+          ),
+        );
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 3),
+        child: Text(
+          'SS',
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+            color: Colors.blue,
+            decoration: TextDecoration.underline,
+            decorationColor: Colors.blue,
+          ),
+        ),
+      ),
     );
   }
 
@@ -275,28 +330,8 @@ class _GCashDoneWidgetState extends State<_GCashDoneWidget> {
                   ),
                 ),
                 const SizedBox(width: 6),
-                // SS Link - view only
-                Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: () {
-                      showUploadedImage(context, gRepo);
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 3),
-                      child: Text(
-                        'SS',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.blue,
-                          decoration: TextDecoration.underline,
-                          decorationColor: Colors.blue,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
+                // SS Link - view only image display
+                _buildImageViewer(context, gRepo),
               ],
             ),
           ],
