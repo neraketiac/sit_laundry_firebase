@@ -100,7 +100,7 @@ class ProjectVersionManager {
     }
   }
 
-  /// Show version outdated message - user must refresh to continue
+  /// Show version outdated message - user must logout to continue
   void _showVersionMessage(BuildContext context, String remoteVersion) {
     showDialog(
       context: context,
@@ -110,15 +110,15 @@ class ProjectVersionManager {
           title: const Text('New Version Available'),
           content: Text(
             'You are using the old version, new version $remoteVersion is available.\n\n'
-            'Please refresh the page to load the latest version.',
+            'Please logout and login again to load the latest version.',
           ),
           actions: [
             ElevatedButton(
               onPressed: () {
-                // Refresh the page
-                _refreshPage();
+                // Force logout
+                _forceLogout(context);
               },
-              child: const Text('Refresh Now'),
+              child: const Text('Logout Now'),
             ),
           ],
         );
@@ -126,8 +126,15 @@ class ProjectVersionManager {
     );
   }
 
-  /// Refresh the browser page
-  void _refreshPage() {
+  /// Force logout by clearing local storage and reloading
+  void _forceLogout(BuildContext context) {
+    // Clear saved login details from localStorage
+    html.window.localStorage.remove('customer_code');
+
+    // Close the dialog
+    Navigator.of(context).pop();
+
+    // Reload page to return to login screen
     html.window.location.reload();
   }
 }
