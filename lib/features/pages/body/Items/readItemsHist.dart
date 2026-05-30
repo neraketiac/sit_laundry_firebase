@@ -19,7 +19,8 @@ class ReadDataItemsHistoryWidget extends StatefulWidget {
 
 class _ReadDataItemsHistoryWidgetState
     extends State<ReadDataItemsHistoryWidget> {
-  final List<SuppliesModelHist> _items = [];
+  final List<SuppliesModelHist> _liveItems = []; // Real-time first page items
+  final List<SuppliesModelHist> _paginatedItems = []; // Older paginated items
   final Set<String> _loadedIds = {};
   DocumentSnapshot? _lastDoc;
   bool _loading = false;
@@ -61,20 +62,16 @@ class _ReadDataItemsHistoryWidgetState
         .snapshots()
         .listen((snap) {
       if (!mounted) return;
-      final liveDocs =
-          snap.docs.map((d) => SuppliesModelHist.fromJson(d.data())).toList();
-      final liveIds = snap.docs.map((d) => d.id).toSet();
+
       setState(() {
-        final olderItems = _items.length > _pageSize
-            ? _items.sublist(_pageSize)
-            : <SuppliesModelHist>[];
-        _items
-          ..clear()
-          ..addAll(liveDocs)
-          ..addAll(olderItems);
-        _loadedIds
-          ..removeWhere((id) => !liveIds.contains(id))
-          ..addAll(liveIds);
+        // Only keep items that are NOT in the paginated list (avoid duplicates)
+        _liveItems.clear();
+        for (var doc in snap.docs) {
+          if (!_loadedIds.contains(doc.id)) {
+            _liveItems.add(SuppliesModelHist.fromJson(doc.data()));
+          }
+        }
+
         if (snap.docs.isNotEmpty) {
           _newestLogDate = snap.docs.first.data()['LogDate'] as Timestamp?;
         }
@@ -85,7 +82,8 @@ class _ReadDataItemsHistoryWidgetState
   Future<void> _refresh() async {
     _newDocSub?.cancel();
     setState(() {
-      _items.clear();
+      _liveItems.clear();
+      _paginatedItems.clear();
       _loadedIds.clear();
       _lastDoc = null;
       _hasMore = true;
@@ -106,12 +104,16 @@ class _ReadDataItemsHistoryWidgetState
       _loading = false;
       if (newItems.length < _pageSize) _hasMore = false;
       if (snap.docs.isNotEmpty) _lastDoc = snap.docs.last;
+
+      // Add only new items to paginated list
       for (int i = 0; i < snap.docs.length; i++) {
         if (!_loadedIds.contains(snap.docs[i].id)) {
           _loadedIds.add(snap.docs[i].id);
-          _items.add(newItems[i]);
+          _paginatedItems.add(newItems[i]);
         }
       }
+
+      // Start real-time listener on first load
       if (_newestLogDate == null && snap.docs.isNotEmpty) {
         final firstData = snap.docs.first.data() as SuppliesModelHist;
         _newestLogDate = firstData.logDate;
@@ -278,6 +280,9 @@ class _ReadDataItemsHistoryWidgetState
 
   @override
   Widget build(BuildContext context) {
+    // Combine live items (top) with paginated items (bottom)
+    final allItems = [..._liveItems, ..._paginatedItems];
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -289,18 +294,18 @@ class _ReadDataItemsHistoryWidgetState
         ),
         SizedBox(
           height: MediaQuery.of(context).size.height * 0.9,
-          child: _items.isEmpty && _loading
+          child: allItems.isEmpty && _loading
               ? const Center(child: CircularProgressIndicator())
-              : _items.isEmpty
+              : allItems.isEmpty
                   ? const Center(child: Text('No items history'))
                   : RefreshIndicator(
                       onRefresh: _refresh,
                       child: ListView.builder(
                         controller: _scrollController,
                         physics: const AlwaysScrollableScrollPhysics(),
-                        itemCount: _items.length + (_hasMore ? 1 : 0),
+                        itemCount: allItems.length + (_hasMore ? 1 : 0),
                         itemBuilder: (context, index) {
-                          if (index == _items.length) {
+                          if (index == allItems.length) {
                             if (!_loading) {
                               WidgetsBinding.instance
                                   .addPostFrameCallback((_) => _loadMore());
@@ -319,7 +324,7 @@ class _ReadDataItemsHistoryWidgetState
                           }
                           return SizedBox(
                             height: 24,
-                            child: _buildItemRow(_items[index]),
+                            child: _buildItemRow(allItems[index]),
                           );
                         },
                       ),
