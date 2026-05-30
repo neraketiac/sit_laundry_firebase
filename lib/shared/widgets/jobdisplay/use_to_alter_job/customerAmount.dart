@@ -77,12 +77,13 @@ Widget customerAmount(
                   child: TextFormField(
                     controller: valueController,
                     textAlign: TextAlign.center,
-                    keyboardType:
-                        const TextInputType.numberWithOptions(decimal: true),
+                    keyboardType: const TextInputType.numberWithOptions(
+                      signed: false,
+                      decimal: false,
+                    ),
                     inputFormatters: [
-                      FilteringTextInputFormatter.allow(
-                        RegExp(r'\d+(\.\d{0,2})?'),
-                      ),
+                      FilteringTextInputFormatter.digitsOnly,
+                      _NumericInputFormatter(),
                     ],
                     style: const TextStyle(
                       fontSize: 20,
@@ -90,7 +91,7 @@ Widget customerAmount(
                       color: Colors.white,
                     ),
                     decoration: const InputDecoration(
-                      hintText: "0.00",
+                      hintText: "0",
                       hintStyle: TextStyle(
                         color: Colors.white54,
                         fontSize: 18,
@@ -106,4 +107,32 @@ Widget customerAmount(
       ),
     ),
   );
+}
+
+/// Custom formatter to ensure only numeric input
+class _NumericInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    // Only allow digits
+    if (newValue.text.isEmpty) {
+      return newValue;
+    }
+
+    // Remove any non-digit characters
+    final filtered = newValue.text.replaceAll(RegExp(r'[^0-9]'), '');
+
+    // If the filtered text is the same as new value text, return as-is
+    if (filtered == newValue.text) {
+      return newValue;
+    }
+
+    // Otherwise return filtered version
+    return TextEditingValue(
+      text: filtered,
+      selection: TextSelection.collapsed(offset: filtered.length),
+    );
+  }
 }

@@ -78,11 +78,15 @@ Widget customerNumber(
                   child: TextFormField(
                     controller: valueController,
                     textAlign: TextAlign.center,
-                    keyboardType: TextInputType.phone,
+                    keyboardType: const TextInputType.numberWithOptions(
+                      signed: false,
+                      decimal: false,
+                    ),
                     inputFormatters: [
                       FilteringTextInputFormatter.digitsOnly,
                       LengthLimitingTextInputFormatter(11),
                       PHPhoneFormatter(),
+                      _NumericPhoneFormatter(),
                     ],
                     style: const TextStyle(
                       fontSize: 14,
@@ -106,4 +110,32 @@ Widget customerNumber(
       ),
     ),
   );
+}
+
+/// Custom formatter to ensure only numeric input for phone
+class _NumericPhoneFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    // Only allow digits and spaces (for formatting)
+    if (newValue.text.isEmpty) {
+      return newValue;
+    }
+
+    // Remove any non-digit characters
+    final filtered = newValue.text.replaceAll(RegExp(r'[^0-9]'), '');
+
+    // If the filtered text is the same as new value text, return as-is
+    if (filtered == newValue.text) {
+      return newValue;
+    }
+
+    // Otherwise return filtered version
+    return TextEditingValue(
+      text: filtered,
+      selection: TextSelection.collapsed(offset: filtered.length),
+    );
+  }
 }
