@@ -106,20 +106,35 @@ void showOnGoingStatus(BuildContext context, JobModelRepository jobRepo) {
                         },
                       );
 
-                      if (confirm == true) {
-                        jobRepo.syncSelectedToRepoAll(jobRepo);
-                        await moveOngoingToDone(
-                          jobRepo.docId,
-                          jobRepo.riderPickup,
-                          jobRepo.customerId,
-                          //later when isPromoCounter is fix
-                          // (jobRepo.isPromoCounter
-                          //     ? jobRepo.promoCounter
-                          //     : 0)
-                          jobRepo.promoCounter,
-                        );
+                      if (confirm == true && context.mounted) {
+                        try {
+                          jobRepo.syncSelectedToRepoAll(jobRepo);
+                          await moveOngoingToDone(
+                            jobRepo.docId,
+                            jobRepo.riderPickup,
+                            jobRepo.customerId,
+                            jobRepo.promoCounter,
+                          );
 
-                        Navigator.pop(context, false);
+                          if (context.mounted) {
+                            Navigator.pop(context, false);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                    'Job #${jobRepo.selectedJobId} moved to Jobs Done'),
+                              ),
+                            );
+                          }
+                        } catch (e) {
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Error: $e'),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                          }
+                        }
                       }
                     },
                     child: const Text('Move to Jobs Done?'),

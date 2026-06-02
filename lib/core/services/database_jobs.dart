@@ -370,6 +370,7 @@ Future<void> moveQueueToOngoing(String docId) async {
 }
 
 /// ▶ Ongoing → Done
+/// Now uses atomic transaction to prevent race conditions
 Future<void> moveOngoingToDone(
     String docId, bool forDelivery, int customerId, int promoCounter) async {
   final primaryFirestore = FirebaseFirestore.instance;
@@ -382,50 +383,68 @@ Future<void> moveOngoingToDone(
   final effectivePromoCounter = promoEnabled ? promoCounter : 0;
 
   try {
-    // Step 1: Read from Jobs_ongoing (primary database)
-    final ongoingRef = primaryFirestore.collection(JOBS_ONGOING_REF).doc(docId);
-    final snapshot = await ongoingRef.get();
+    // Use atomic transaction to prevent two users from completing the same job
+    await primaryFirestore.runTransaction((tx) async {
+      // Step 1: Read from Jobs_ongoing (primary database) - THIS ACQUIRES A LOCK
+      final ongoingRef =
+          primaryFirestore.collection(JOBS_ONGOING_REF).doc(docId);
+      final snapshot = await tx.get(ongoingRef);
 
-    if (!snapshot.exists) {
-      print("❌ Job not found in Jobs_ongoing: $docId");
-      return;
-    }
+      // Safety check: ensure job hasn't been completed already
+      if (!snapshot.exists) {
+        throw Exception('Job not found in Jobs_ongoing: $docId');
+      }
 
-    if (!useAdminTimestampDateD) {
-      adminTimestampDateD = Timestamp.now();
-    }
+      // Additional safety: check if already in done state (shouldn't happen but good to check)
+      final currentStatus = snapshot.get('O01_AllStatus') ?? 0.0;
+      if (currentStatus >= 0.7) {
+        throw Exception('Job already completed (status: $currentStatus)');
+      }
 
-    final jobData = withPendingDb2Sync({
-      ...snapshot.data()!,
-      if (forDelivery) ...{
-        'Q00_ForSorting': false,
-        'Q01_RiderPickup': true,
-      },
-      'O00_ProcessStep': 'done',
-      'O01_AllStatus': 0.7,
-      'A05_DateD': adminTimestampDateD,
-      'Q06_PromoCounter': effectivePromoCounter,
+      if (!useAdminTimestampDateD) {
+        adminTimestampDateD = Timestamp.now();
+      }
+
+      final jobData = withPendingDb2Sync({
+        ...snapshot.data()!,
+        if (forDelivery) ...{
+          'Q00_ForSorting': false,
+          'Q01_RiderPickup': true,
+        },
+        'O00_ProcessStep': 'done',
+        'O01_AllStatus': 0.7,
+        'A05_DateD': adminTimestampDateD,
+        'Q06_PromoCounter': effectivePromoCounter,
+      });
+
+      // Step 2: Write to Jobs_done in jobsDoneDb using transaction
+      // Note: jobsDoneFirestore is a different database instance, so we can't include it in the transaction
+      // We'll do this after the primary transaction commits
+
+      // Step 3: Delete from Jobs_ongoing in primary database (INSIDE transaction)
+      tx.delete(ongoingRef);
+
+      // Return jobData so we can use it after transaction succeeds
+      return jobData;
+    }).then((jobData) async {
+      // After transaction succeeds, write to Jobs_done (separate database)
+      print("📝 Writing to Jobs_done in jobsDoneDb...");
+      await jobsDoneFirestore.collection(JOBS_DONE_REF).doc(docId).set(jobData);
+      print("✅ Successfully wrote to Jobs_done");
+
+      // Step 4: Update loyalty counter
+      print("📊 Updating loyalty counter...");
+      DatabaseLoyalty loyalty = DatabaseLoyalty();
+      loyalty.addCountByCardNumber(customerId, effectivePromoCounter);
+      print("✅ Loyalty counter updated");
+
+      print("✅ Job $docId successfully moved to Jobs_done!");
+    }).catchError((e) {
+      print("❌ Error moving job to Jobs_done: $e");
+      throw Exception('Failed to complete job move: $e');
     });
-
-    // Step 2: Write to Jobs_done in jobsDoneDb FIRST
-    print("📝 Writing to Jobs_done in jobsDoneDb...");
-    await jobsDoneFirestore.collection(JOBS_DONE_REF).doc(docId).set(jobData);
-    print("✅ Successfully wrote to Jobs_done");
-
-    // Step 3: Delete from Jobs_ongoing in primary database
-    print("🗑️ Deleting from Jobs_ongoing in primary database...");
-    await ongoingRef.delete();
-    print("✅ Successfully deleted from Jobs_ongoing");
-
-    // Step 4: Update loyalty counter
-    print("📊 Updating loyalty counter...");
-    DatabaseLoyalty loyalty = DatabaseLoyalty();
-    loyalty.addCountByCardNumber(customerId, effectivePromoCounter);
-    print("✅ Loyalty counter updated");
-
-    print("✅ Job $docId successfully moved to Jobs_done!");
   } catch (e) {
-    print("❌ Error moving job to Jobs_done: $e");
+    print("❌ Exception in moveOngoingToDone: $e");
     rethrow;
   }
 }
