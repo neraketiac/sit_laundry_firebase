@@ -358,10 +358,21 @@ String textJobStatus(JobModel jM) {
     if (jM.riderPickup) return 'Rider Pickup';
   } else {
     if (jM.processStep == 'done' || jM.processStep == 'completed') {
-      if (jM.riderPickup) {
-        return jM.isDeliveredToCustomer ? '🚲 delivered' : '🚲 for delivery';
+      // Priority: Check what actually happened (pickup or delivery)
+      // instead of just what was originally planned (riderPickup flag)
+
+      if (jM.isDeliveredToCustomer) {
+        // Customer received via rider/delivery
+        return '🚲 delivered';
+      } else if (jM.isCustomerPickedUp) {
+        // Customer picked up themselves
+        return '🛒 pickedup';
+      } else if (jM.riderPickup) {
+        // Originally marked for delivery but not completed yet
+        return '🚲 for delivery';
       } else {
-        return jM.isCustomerPickedUp ? '🛒 pickedup' : '🛒 wait customer';
+        // Originally marked for customer pickup but not completed yet
+        return '🛒 wait customer';
       }
     } else {
       return jM.processStep;
