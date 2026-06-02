@@ -8,6 +8,7 @@ import 'package:laundry_firebase/core/global/variables.dart';
 import 'package:laundry_firebase/features/payments/models/gcashmodel.dart';
 import 'package:laundry_firebase/core/utils/sharedMethods.dart';
 import 'package:laundry_firebase/core/utils/sharedmethodsdatabase.dart';
+import 'package:laundry_firebase/features/items/repository/supplies_hist_repository.dart';
 import 'package:laundry_firebase/core/services/firebase_service.dart';
 
 /// 🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦
@@ -229,9 +230,19 @@ Future<void> moveToNext(String docId,
   }).then((_) async {
     // After successful transaction, generate supplies records if needed
     if (generateCashOutSupplies) {
-      await _generateCashOutSuppliesRecordsAfterCompletion(docId);
+      try {
+        await _generateCashOutSuppliesRecordsAfterCompletion(docId);
+      } catch (e) {
+        // Transaction succeeded but supplies generation failed
+        // Log it so we know about it
+        debugPrint(
+            '⚠️ WARNING: GCash completed but supplies records failed: $e');
+        // Don't re-throw here - the main transaction already succeeded
+        // User will see warning in logs/console
+      }
     }
   }).catchError((e) {
+    debugPrint('❌ moveToNext failed: $e');
     throw Exception('Failed to complete GCash record: $e');
   });
 }
@@ -244,46 +255,47 @@ Future<void> _generateCashOutSuppliesRecordsAfterCompletion(
     final doneRef = firestore.collection(GCASH_DONE_REF).doc(docId);
 
     final snapshot = await doneRef.get();
-    if (!snapshot.exists) return;
+    if (!snapshot.exists) {
+      debugPrint(
+          '❌ GCash Done record not found for supplies generation: $docId');
+      throw Exception('GCash Done record not found: $docId');
+    }
 
     final data = snapshot.data()!;
 
     // Only generate for Cash-Out
     if ((data['ItemUniqueId'] ?? 0) != menuOthUniqIdCashOut) {
+      debugPrint('ℹ️ Not a Cash-Out record, skipping supplies generation');
       return;
     }
 
-    // Import SuppliesHistRepository if not already imported
-    final suppliesRef = firestore.collection('Supplies_Current');
+    // Use SuppliesHistRepository to properly create the record
+    // This ensures all the proper database calls and employee updates happen
+    SuppliesHistRepository.instance.reset();
+    SuppliesHistRepository.instance.setItemName(
+        getItemNameOnly(menuOthCashInOutFunds, menuOthUniqIdCashOut));
+    SuppliesHistRepository.instance.setItemId(menuOthCashInOutFunds);
+    SuppliesHistRepository.instance.setItemUniqueId(menuOthUniqIdCashOut);
+    SuppliesHistRepository.instance
+        .setCurrentCounter(data['CustomerAmount'] ?? 0);
+    SuppliesHistRepository.instance.setCustomerName(data['CustomerName'] ?? '');
+    SuppliesHistRepository.instance.setCustomerId(0);
+    SuppliesHistRepository.instance
+        .setRemarks('GCash ${data['ItemName'] ?? ''} ${data['Remarks'] ?? ''}');
+    SuppliesHistRepository.instance.setLogDate(Timestamp.now());
 
-    // Create the supplies record with same data structure
-    await suppliesRef.add({
-      'ItemId': menuOthCashInOutFunds,
-      'ItemUniqueId': menuOthUniqIdCashOut,
-      'ItemName': getItemNameOnly(menuOthCashInOutFunds, menuOthUniqIdCashOut),
-      'CurrentCounter': -(data['CustomerAmount'] ?? 0), // Negative for cash out
-      'CustomerName': data['CustomerName'] ?? '',
-      'CustomerId': 0,
-      'Remarks': 'GCash ${data['ItemName'] ?? ''} ${data['Remarks'] ?? ''}',
-      'LogDate': Timestamp.now(),
-      'LogBy': data['LogBy'] ?? '',
-    });
+    debugPrint(
+        '📝 Generating supplies records for Cash-Out: ${data['CustomerName']} - ₱${data['CustomerAmount']}');
 
-    // Also add to Supplies_History
-    final historyRef = firestore.collection('Supplies_History');
-    await historyRef.add({
-      'ItemId': menuOthCashInOutFunds,
-      'ItemUniqueId': menuOthUniqIdCashOut,
-      'ItemName': getItemNameOnly(menuOthCashInOutFunds, menuOthUniqIdCashOut),
-      'CurrentCounter': -(data['CustomerAmount'] ?? 0), // Negative for cash out
-      'CustomerName': data['CustomerName'] ?? '',
-      'CustomerId': 0,
-      'Remarks': 'GCash ${data['ItemName'] ?? ''} ${data['Remarks'] ?? ''}',
-      'LogDate': Timestamp.now(),
-      'LogBy': data['LogBy'] ?? '',
-    });
+    // Call the proper database function to add supplies records
+    // This applies negation for cash-out and handles all employee updates
+    await callDatabaseSuppliesCurrentAdd(
+        SuppliesHistRepository.instance.suppliesModelHist!);
+
+    debugPrint('✅ Cash-Out supplies records generated successfully for $docId');
   } catch (e) {
-    // Log error but don't throw - transaction already succeeded
-    debugPrint('Error generating supplies records: $e');
+    // Log error and re-throw so caller can show to user
+    debugPrint('❌ ERROR generating supplies records for $docId: $e');
+    rethrow; // ← Important: Pass error back to caller
   }
 }
