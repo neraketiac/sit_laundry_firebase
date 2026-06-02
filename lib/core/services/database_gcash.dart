@@ -1,8 +1,10 @@
 import 'dart:typed_data';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:laundry_firebase/core/utils/firestore_timeout.dart';
 import 'package:laundry_firebase/core/global/variables_all_codes.dart';
+import 'package:laundry_firebase/core/global/variables.dart';
 import 'package:laundry_firebase/features/payments/models/gcashmodel.dart';
 import 'package:laundry_firebase/core/utils/sharedMethods.dart';
 import 'package:laundry_firebase/core/utils/sharedmethodsdatabase.dart';
@@ -191,7 +193,9 @@ class DatabaseGCashDone {
 /// 🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥
 
 /// ▶ Queue → Ongoing (start washing)
-Future<void> moveToNext(String docId) async {
+/// With optional supplies record generation for Cash-Out
+Future<void> moveToNext(String docId,
+    {bool generateCashOutSupplies = false}) async {
   final firestore = FirebaseService.gcashPendingDoneFirestore;
 
   await firestore.runTransaction((tx) async {
@@ -199,9 +203,16 @@ Future<void> moveToNext(String docId) async {
     final ongoingRef = firestore.collection(GCASH_DONE_REF).doc(docId);
 
     final snapshot = await tx.get(queueRef);
-    if (!snapshot.exists) return;
+    if (!snapshot.exists) {
+      throw Exception('GCash record not found');
+    }
 
     final data = snapshot.data()!;
+
+    // Safety check: ensure status is not already 1.0 (completed)
+    if ((data['GCashStatus'] ?? 0) >= 1.0) {
+      throw Exception('Record already completed');
+    }
 
     // final currentRemarks = (data['Remarks'] ?? '').toString().trim();
     // final updatedRemarks =
@@ -215,5 +226,64 @@ Future<void> moveToNext(String docId) async {
     });
 
     tx.delete(queueRef);
+  }).then((_) async {
+    // After successful transaction, generate supplies records if needed
+    if (generateCashOutSupplies) {
+      await _generateCashOutSuppliesRecordsAfterCompletion(docId);
+    }
+  }).catchError((e) {
+    throw Exception('Failed to complete GCash record: $e');
   });
+}
+
+/// Generate supplies records for Cash-Out after transaction completion
+Future<void> _generateCashOutSuppliesRecordsAfterCompletion(
+    String docId) async {
+  try {
+    final firestore = FirebaseService.gcashPendingDoneFirestore;
+    final doneRef = firestore.collection(GCASH_DONE_REF).doc(docId);
+
+    final snapshot = await doneRef.get();
+    if (!snapshot.exists) return;
+
+    final data = snapshot.data()!;
+
+    // Only generate for Cash-Out
+    if ((data['ItemUniqueId'] ?? 0) != menuOthUniqIdCashOut) {
+      return;
+    }
+
+    // Import SuppliesHistRepository if not already imported
+    final suppliesRef = firestore.collection('Supplies_Current');
+
+    // Create the supplies record with same data structure
+    await suppliesRef.add({
+      'ItemId': menuOthCashInOutFunds,
+      'ItemUniqueId': menuOthUniqIdCashOut,
+      'ItemName': getItemNameOnly(menuOthCashInOutFunds, menuOthUniqIdCashOut),
+      'CurrentCounter': -(data['CustomerAmount'] ?? 0), // Negative for cash out
+      'CustomerName': data['CustomerName'] ?? '',
+      'CustomerId': 0,
+      'Remarks': 'GCash ${data['ItemName'] ?? ''} ${data['Remarks'] ?? ''}',
+      'LogDate': Timestamp.now(),
+      'LogBy': data['LogBy'] ?? '',
+    });
+
+    // Also add to Supplies_History
+    final historyRef = firestore.collection('Supplies_History');
+    await historyRef.add({
+      'ItemId': menuOthCashInOutFunds,
+      'ItemUniqueId': menuOthUniqIdCashOut,
+      'ItemName': getItemNameOnly(menuOthCashInOutFunds, menuOthUniqIdCashOut),
+      'CurrentCounter': -(data['CustomerAmount'] ?? 0), // Negative for cash out
+      'CustomerName': data['CustomerName'] ?? '',
+      'CustomerId': 0,
+      'Remarks': 'GCash ${data['ItemName'] ?? ''} ${data['Remarks'] ?? ''}',
+      'LogDate': Timestamp.now(),
+      'LogBy': data['LogBy'] ?? '',
+    });
+  } catch (e) {
+    // Log error but don't throw - transaction already succeeded
+    debugPrint('Error generating supplies records: $e');
+  }
 }

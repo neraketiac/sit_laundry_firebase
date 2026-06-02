@@ -602,7 +602,20 @@ class JobModelRepository {
     selectedRemarksVar.text = jobRepo.remarks;
 
     /// 🟢 Items
-    selectedItems = jobRepo.items;
+    // Create a deep copy of items to avoid reference sharing
+    selectedItems = jobRepo.items
+        .map((item) => OtherItemModel(
+              docId: item.docId,
+              itemId: item.itemId,
+              itemUniqueId: item.itemUniqueId,
+              itemGroup: item.itemGroup,
+              itemName: item.itemName,
+              itemPrice: item.itemPrice,
+              stocksAlert: item.stocksAlert,
+              stocksType: item.stocksType,
+              logDate: item.logDate,
+            ))
+        .toList();
 
     /// 🟠 Workflow Step
     selectedProcessStep = jobRepo.processStep;

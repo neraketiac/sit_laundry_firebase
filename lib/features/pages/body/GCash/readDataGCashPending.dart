@@ -15,31 +15,6 @@ import 'package:laundry_firebase/core/utils/fs_usage_tracker.dart';
 import 'package:laundry_firebase/features/items/repository/supplies_hist_repository.dart';
 import 'package:laundry_firebase/core/utils/sharedmethodsdatabase.dart';
 
-/// Generate Supplies Hist/Curr records for Cash-Out when status >= 0.75
-Future<void> _generateCashOutSuppliesRecords(GCashRepository gRepo) async {
-  // Only generate for Cash-Out
-  if (gRepo.itemUniqueId != menuOthUniqIdCashOut) {
-    return;
-  }
-
-  // Follow the same pattern as showFundsInFundsOut.dart
-  SuppliesHistRepository.instance.setItemName(
-      getItemNameOnly(menuOthCashInOutFunds, menuOthUniqIdCashOut));
-  SuppliesHistRepository.instance.setItemId(menuOthCashInOutFunds);
-  SuppliesHistRepository.instance.setItemUniqueId(menuOthUniqIdCashOut);
-  SuppliesHistRepository.instance.setCurrentCounter(gRepo.customerAmount);
-  SuppliesHistRepository.instance.setCustomerName(gRepo.customerName);
-  SuppliesHistRepository.instance.setCustomerId(0);
-  SuppliesHistRepository.instance
-      .setRemarks('GCash ${gRepo.itemName} ${gRepo.remarks}');
-  // Ensure LogDate uses current timestamp
-  SuppliesHistRepository.instance.setLogDate(Timestamp.now());
-
-  // This will go through callDatabaseSuppliesCurrentAdd which applies negation
-  await callDatabaseSuppliesCurrentAdd(
-      SuppliesHistRepository.instance.suppliesModelHist!);
-}
-
 Widget readDataGCashPending() {
   DatabaseGCashPending dbGCashPending = DatabaseGCashPending();
   int? selectedIndex;
@@ -276,9 +251,26 @@ Widget readDataGCashPending() {
                                   if (confirmComplete == true &&
                                       context.mounted) {
                                     // Generate Cash-Out supplies records and move to done
-                                    await _generateCashOutSuppliesRecords(
-                                        gRepo);
-                                    await moveToNext(gRepo.docId);
+                                    // Pass generateCashOutSupplies=true so the function generates records atomically
+                                    try {
+                                      await moveToNext(gRepo.docId,
+                                          generateCashOutSupplies: true);
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          const SnackBar(
+                                              content: Text(
+                                                  'Cash-Out completed successfully')),
+                                        );
+                                      }
+                                    } catch (e) {
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          SnackBar(content: Text('Error: $e')),
+                                        );
+                                      }
+                                    }
                                   }
                                   return;
                                 }
