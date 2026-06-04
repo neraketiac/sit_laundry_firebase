@@ -22,16 +22,8 @@ class _W extends StatelessWidget {
   Widget build(BuildContext context) {
     return Expanded(
       child: Center(
-        child: Text(
-          t,
-          style: TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.bold,
-            color: Theme.of(context).brightness == Brightness.dark
-                ? Colors.white
-                : Colors.black,
-          ),
-        ),
+        child: Text(t,
+            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
       ),
     );
   }
@@ -62,16 +54,8 @@ Widget _buildDayCell(
     ),
     child: Column(
       children: [
-        Text(
-          '$day',
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.bold,
-            color: isPastWeek || overrideColor != null
-                ? Colors.white
-                : Colors.black,
-          ),
-        ),
+        Text('$day',
+            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -91,26 +75,12 @@ Widget _buildDayCell(
             ),
           ],
         ),
-        Row(
+        const Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
-              'am',
-              style: TextStyle(
-                color: isPastWeek || overrideColor != null
-                    ? Colors.white
-                    : Colors.black,
-              ),
-            ),
-            const SizedBox(width: 5),
-            Text(
-              'pm',
-              style: TextStyle(
-                color: isPastWeek || overrideColor != null
-                    ? Colors.white
-                    : Colors.black,
-              ),
-            ),
+            Text('am'),
+            SizedBox(width: 5),
+            Text('pm'),
           ],
         ),
       ],
@@ -201,14 +171,8 @@ Future<Map<DateTime, DaySelection>?> showCalendarDialog(BuildContext context) {
                         child: Center(
                           child: Text(
                             DateFormat('MMMM yyyy').format(month),
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Theme.of(sfContext).brightness ==
-                                      Brightness.dark
-                                  ? Colors.white
-                                  : Colors.black,
-                            ),
+                            style: const TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.bold),
                           ),
                         ),
                       ),
@@ -248,25 +212,17 @@ Future<Map<DateTime, DaySelection>?> showCalendarDialog(BuildContext context) {
                         childAspectRatio: 0.85,
                       ),
                       itemBuilder: (_, i) {
-                        final now = DateTime.now();
-                        // Calculate start of current week (Monday)
-                        final startOfWeek =
-                            DateTime(now.year, now.month, now.day)
-                                .subtract(Duration(days: now.weekday - 1));
-                        // Calculate end of current week (Sunday)
-                        final endOfWeek =
-                            startOfWeek.add(const Duration(days: 6));
-
                         if (i < offset) {
                           final daysInPrevMonth =
                               DateTime(month.year, month.month, 0).day;
                           final day = daysInPrevMonth - offset + i + 1;
                           final date =
                               DateTime(month.year, month.month - 1, day);
-                          // Check if date is within current week
-                          final isInCurrentWeek = !date.isBefore(startOfWeek) &&
-                              !date.isAfter(endOfWeek);
-                          final isPastWeek = !isInCurrentWeek;
+                          final now = DateTime.now();
+                          final startOfWeek =
+                              DateTime(now.year, now.month, now.day)
+                                  .subtract(Duration(days: now.weekday - 1));
+                          final isPastWeek = date.isBefore(startOfWeek);
                           final isLocked = !isAdmin && isPastWeek;
                           selections.putIfAbsent(date, () => DaySelection());
                           return _buildDayCell(
@@ -286,10 +242,11 @@ Future<Map<DateTime, DaySelection>?> showCalendarDialog(BuildContext context) {
                           final nextDay = day - daysInMonth;
                           final date =
                               DateTime(month.year, month.month + 1, nextDay);
-                          // Check if date is within current week
-                          final isInCurrentWeek = !date.isBefore(startOfWeek) &&
-                              !date.isAfter(endOfWeek);
-                          final isPastWeek = !isInCurrentWeek;
+                          final now = DateTime.now();
+                          final startOfWeek =
+                              DateTime(now.year, now.month, now.day)
+                                  .subtract(Duration(days: now.weekday - 1));
+                          final isPastWeek = date.isBefore(startOfWeek);
                           final isLocked = !isAdmin && isPastWeek;
                           selections.putIfAbsent(date, () => DaySelection());
                           return _buildDayCell(
@@ -304,10 +261,11 @@ Future<Map<DateTime, DaySelection>?> showCalendarDialog(BuildContext context) {
                         }
 
                         final date = DateTime(month.year, month.month, day);
-                        // Check if date is within current week
-                        final isInCurrentWeek = !date.isBefore(startOfWeek) &&
-                            !date.isAfter(endOfWeek);
-                        final isPastWeek = !isInCurrentWeek;
+                        final now = DateTime.now();
+                        final startOfWeek =
+                            DateTime(now.year, now.month, now.day)
+                                .subtract(Duration(days: now.weekday - 1));
+                        final isPastWeek = date.isBefore(startOfWeek);
                         final isLocked = !isAdmin && isPastWeek;
                         final today = DateTime.now();
                         final isToday = date.year == today.year &&
@@ -336,45 +294,16 @@ Future<Map<DateTime, DaySelection>?> showCalendarDialog(BuildContext context) {
                                         .contains(selectedEmp))
                                 ? null
                                 : selectedEmp,
-                            hint: Text(
-                              'Select Employee',
-                              style: TextStyle(
-                                color: Theme.of(sfContext).brightness ==
-                                        Brightness.dark
-                                    ? Colors.white70
-                                    : Colors.black54,
-                              ),
-                            ),
+                            hint: const Text('Select Employee'),
                             items: [
                               if (isAdmin)
-                                DropdownMenuItem(
-                                  value: 'ALL',
-                                  child: Text(
-                                    'All',
-                                    style: TextStyle(
-                                      color: Theme.of(sfContext).brightness ==
-                                              Brightness.dark
-                                          ? Colors.white
-                                          : Colors.black,
-                                    ),
-                                  ),
-                                ),
+                                const DropdownMenuItem(
+                                    value: 'ALL', child: Text('All')),
                               ...mapEmpId.entries
                                   .where((e) =>
                                       e.key != '1313#' && e.key != '1616#')
                                   .map((e) => DropdownMenuItem(
-                                        value: e.key,
-                                        child: Text(
-                                          e.value,
-                                          style: TextStyle(
-                                            color: Theme.of(sfContext)
-                                                        .brightness ==
-                                                    Brightness.dark
-                                                ? Colors.white
-                                                : Colors.black,
-                                          ),
-                                        ),
-                                      )),
+                                      value: e.key, child: Text(e.value))),
                             ],
                             onChanged: (v) async {
                               if (v == 'ALL') {
@@ -406,27 +335,18 @@ Future<Map<DateTime, DaySelection>?> showCalendarDialog(BuildContext context) {
                                     showDialog(
                                       context: context,
                                       barrierDismissible: false,
-                                      builder: (dialogCtx) => PopScope(
+                                      builder: (_) => const PopScope(
                                         canPop: false,
                                         child: Center(
                                           child: Card(
                                             child: Padding(
-                                              padding: const EdgeInsets.all(24),
+                                              padding: EdgeInsets.all(24),
                                               child: Column(
                                                 mainAxisSize: MainAxisSize.min,
                                                 children: [
-                                                  const CircularProgressIndicator(),
-                                                  const SizedBox(height: 12),
-                                                  Text(
-                                                    'Generating...',
-                                                    style: TextStyle(
-                                                      color: Theme.of(dialogCtx)
-                                                                  .brightness ==
-                                                              Brightness.dark
-                                                          ? Colors.white
-                                                          : Colors.black,
-                                                    ),
-                                                  ),
+                                                  CircularProgressIndicator(),
+                                                  SizedBox(height: 12),
+                                                  Text('Generating...'),
                                                 ],
                                               ),
                                             ),
@@ -592,6 +512,12 @@ Future<Map<DateTime, DaySelection>?> showCalendarDialog(BuildContext context) {
                                                 autoSalaryDate:
                                                     Timestamp.fromDate(
                                                         coverageDateTime));
+
+                                            // Compute and record bonus for the employee
+                                            await computeBonus(
+                                                empNameToId[r.empId]!,
+                                                r.coverageDate.toString(),
+                                                coverageDateTime);
                                           }
                                         }
                                         allChangedDays.addAll(changedDays);
@@ -627,28 +553,11 @@ Future<Map<DateTime, DaySelection>?> showCalendarDialog(BuildContext context) {
 
                                     showDialog(
                                       context: context,
-                                      builder: (alertCtx) => AlertDialog(
-                                        title: Text(
-                                          'Done',
-                                          style: TextStyle(
-                                            color:
-                                                Theme.of(alertCtx).brightness ==
-                                                        Brightness.dark
-                                                    ? Colors.white
-                                                    : Colors.black,
-                                          ),
-                                        ),
+                                      builder: (_) => AlertDialog(
+                                        title: const Text('Done'),
                                         content: SingleChildScrollView(
                                           child: Text(
-                                            'Updated ${affectedDays.length} day(s):\n$formattedDays',
-                                            style: TextStyle(
-                                              color: Theme.of(alertCtx)
-                                                          .brightness ==
-                                                      Brightness.dark
-                                                  ? Colors.white
-                                                  : Colors.black,
-                                            ),
-                                          ),
+                                              'Updated ${affectedDays.length} day(s):\n$formattedDays'),
                                         ),
                                         actions: [
                                           TextButton(

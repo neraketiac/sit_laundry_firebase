@@ -1,6 +1,7 @@
 import 'package:laundry_firebase/features/jobs/repository/jobmodel_repository.dart';
 
 /// Processes weekly revenue data from completed jobs.
+/// Excludes jobs where customer is staff: Rowell, Lorie, Seiji, Analyn, Ket, DonF
 class WeeklyData {
   /// Keys per week: paid, paidCash, paidGCash, unpaid, expense
   final Map<int, Map<String, int>> data = {
@@ -9,6 +10,16 @@ class WeeklyData {
   };
 
   int totalLoads = 0;
+
+  // Staff customer names to exclude from load calculations
+  static const Set<String> _staffCustomerNames = {
+    'Rowell',
+    'Lorie',
+    'Seiji',
+    'Analyn',
+    'Ket',
+    'DonF'
+  };
 
   void process(
     List<JobModelRepository> jobs,
@@ -32,13 +43,23 @@ class WeeklyData {
       final totalPaid = paidCash + paidGCash;
       final unpaid = job.finalPrice - totalPaid;
 
-      totalLoads += job.finalLoad;
-      if (totalPaid > 0) data[week]!['paid'] = data[week]!['paid']! + totalPaid;
-      if (paidCash > 0)
+      // Only count loads if customer is not staff
+      if (!_staffCustomerNames.contains(job.customerName)) {
+        totalLoads += job.finalLoad;
+      }
+
+      if (totalPaid > 0) {
+        data[week]!['paid'] = data[week]!['paid']! + totalPaid;
+      }
+      if (paidCash > 0) {
         data[week]!['paidCash'] = data[week]!['paidCash']! + paidCash;
-      if (paidGCash > 0)
+      }
+      if (paidGCash > 0) {
         data[week]!['paidGCash'] = data[week]!['paidGCash']! + paidGCash;
-      if (unpaid > 0) data[week]!['unpaid'] = data[week]!['unpaid']! + unpaid;
+      }
+      if (unpaid > 0) {
+        data[week]!['unpaid'] = data[week]!['unpaid']! + unpaid;
+      }
     }
   }
 

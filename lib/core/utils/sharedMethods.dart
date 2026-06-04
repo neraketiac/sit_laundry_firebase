@@ -14,6 +14,10 @@ import 'package:laundry_firebase/core/utils/sharedmethodsdatabase.dart';
 import 'package:laundry_firebase/features/jobs/repository/jobmodel_repository.dart';
 import 'package:laundry_firebase/features/items/repository/supplies_hist_repository.dart';
 import 'package:laundry_firebase/core/utils/firestore_handler.dart';
+import 'package:laundry_firebase/core/services/firebase_service.dart';
+import 'package:laundry_firebase/core/services/database_jobs.dart';
+import 'package:laundry_firebase/features/employees/models/employeemodel.dart';
+import 'package:laundry_firebase/core/services/database_employee_current.dart';
 
 import 'package:flutter/foundation.dart';
 // ignore: avoid_web_libraries_in_flutter
@@ -999,4 +1003,128 @@ bool addOtherItemBundle(JobModelRepository jobRepo, List<OtherItemModel> items,
 void removeOtherItem(JobModelRepository jobRepo, OtherItemModel item) {
   jobRepo.selectedItems.remove(item);
   jobRepo.repoVarTotalPriceOthers -= item.itemPrice;
+}
+
+/// Compute bonus based on total loads for the given employee and coverage date
+/// Compute bonus based on total loads for the given employee and coverage date
+/// Queries both Jobs_done and Jobs_completed tables to sum finalLoad values for the coverage date
+/// Excludes jobs where customer is staff: Rowell, Lorie, Seiji, Analyn, Ket, DonF
+/// Records multiple bonus tiers: 50php per 10 loads starting at 20
+/// Each tier is recorded directly to EmployeeHist/Curr (NOT to SuppliesHist/Curr)
+Future<void> computeBonus(
+    String empId, String coverageDate, DateTime coverageDateTime) async {
+  try {
+    // Staff customer names to exclude
+    const staffCustomerNames = {
+      'Rowell',
+      'Lorie',
+      'Seiji',
+      'Analyn',
+      'Ket',
+      'DonF'
+    };
+
+    // Query both Jobs_done and Jobs_completed databases for jobs on the coverage date
+    final jobsDoneDb = FirebaseService.jobsDoneFirestore;
+    final primaryDb = FirebaseFirestore.instance;
+
+    // Parse coverage date from format YYYYMMDD
+    final year = int.parse(coverageDate.substring(0, 4));
+    final month = int.parse(coverageDate.substring(4, 6));
+    final day = int.parse(coverageDate.substring(6, 8));
+
+    final coverageDateStart = DateTime(year, month, day);
+    final coverageDateEnd = DateTime(year, month, day, 23, 59, 59);
+
+    final timestampStart = Timestamp.fromDate(coverageDateStart);
+    final timestampEnd = Timestamp.fromDate(coverageDateEnd);
+
+    // Query Jobs_done collection for jobs on coverage date
+    final jobsDoneSnapshot = await jobsDoneDb
+        .collection(JOBS_DONE_REF)
+        .where('A05_DateD', isGreaterThanOrEqualTo: timestampStart)
+        .where('A05_DateD', isLessThanOrEqualTo: timestampEnd)
+        .get();
+
+    // Query Jobs_completed collection for jobs on coverage date
+    final jobsCompletedSnapshot = await primaryDb
+        .collection(JOBS_COMPLETED_REF)
+        .where('A05_DateD', isGreaterThanOrEqualTo: timestampStart)
+        .where('A05_DateD', isLessThanOrEqualTo: timestampEnd)
+        .get();
+
+    // Sum up the Q05_FinalLoad values from both collections (excluding staff customer jobs)
+    int totalLoadPerDay = 0;
+
+    // Sum from Jobs_done
+    for (var doc in jobsDoneSnapshot.docs) {
+      final data = doc.data();
+      final customerName = (data['C01_CustomerName'] as String?)?.trim() ?? '';
+
+      // Skip if customer is staff
+      if (staffCustomerNames.contains(customerName)) {
+        continue;
+      }
+
+      final finalLoad = data['Q05_FinalLoad'] as int? ?? 0;
+      totalLoadPerDay += finalLoad;
+    }
+
+    // Sum from Jobs_completed
+    for (var doc in jobsCompletedSnapshot.docs) {
+      final data = doc.data();
+      final customerName = (data['C01_CustomerName'] as String?)?.trim() ?? '';
+
+      // Skip if customer is staff
+      if (staffCustomerNames.contains(customerName)) {
+        continue;
+      }
+
+      final finalLoad = data['Q05_FinalLoad'] as int? ?? 0;
+      totalLoadPerDay += finalLoad;
+    }
+
+    // Record bonus tiers: 50php per 10 loads starting at 20
+    // Each tier is recorded directly to EmployeeHist/Curr
+    if (totalLoadPerDay >= 20) {
+      // Calculate number of tiers (each tier = 10 loads, starts at 20)
+      int tiers = ((totalLoadPerDay - 20) ~/ 10) + 1;
+
+      // Get employee name from mapEmpId
+      final empName = mapEmpId[empId] ?? empId;
+
+      // Record each tier
+      for (int tier = 1; tier <= tiers; tier++) {
+        // Format date as "June 02"
+        final year = int.parse(coverageDate.substring(0, 4));
+        final month = int.parse(coverageDate.substring(4, 6));
+        final day = int.parse(coverageDate.substring(6, 8));
+        final dateObj = DateTime(year, month, day);
+        final formattedDate = DateFormat('MMMM dd').format(dateObj);
+
+        final employeeModel = EmployeeModel(
+          empId: empId,
+          docId: "",
+          countId: 0,
+          currentCounter: 50, // 50php per tier
+          currentStocks: 0,
+          itemId: menuOthCashInOutFunds,
+          itemUniqueId:
+              menuOthSalaryPayment, // Using salary payment code for bonus
+          itemName: 'Bonus Payment',
+          logDate: Timestamp.now(),
+          logBy: empIdGlobal,
+          empName: empName,
+          remarks: '$totalLoadPerDay Loads last $formattedDate +P50.00',
+          autoSalaryDate: Timestamp.fromDate(coverageDateTime),
+        );
+
+        // Insert directly to EmployeeCurrent (which also creates EmployeeHist entry)
+        final databaseEmployeeCurrent = DatabaseEmployeeCurrent();
+        await databaseEmployeeCurrent.addEmployeeCurr(employeeModel);
+      }
+    }
+  } catch (e) {
+    debugPrint('Error computing bonus: $e');
+  }
 }
