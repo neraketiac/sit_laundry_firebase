@@ -25,6 +25,16 @@ class _MonthlyLoadsHeatmapState extends State<MonthlyLoadsHeatmap> {
   Map<int, int> dailyLoads = {};
   bool isLoading = true;
 
+  // Staff customer names to exclude from load calculations
+  static const Set<String> _staffCustomerNames = {
+    'Rowell',
+    'Lorie',
+    'Seiji',
+    'Analyn',
+    'Ket',
+    'DonF'
+  };
+
   @override
   void initState() {
     super.initState();
@@ -69,7 +79,10 @@ class _MonthlyLoadsHeatmapState extends State<MonthlyLoadsHeatmap> {
             final day = jobDate.day;
             final finalLoad = jobModel.finalLoad ?? 0;
 
-            dailyLoads[day] = (dailyLoads[day] ?? 0) + finalLoad;
+            // Only count loads if customer is not staff
+            if (!_staffCustomerNames.contains(jobModel.customerName)) {
+              dailyLoads[day] = (dailyLoads[day] ?? 0) + finalLoad;
+            }
           }
         } catch (e) {
           debugPrint('Error processing job: $e');
