@@ -290,7 +290,7 @@ Widget readDataGCashPending() {
                                       style: TextStyle(fontSize: 12),
                                     ),
                                     actions: [
-                                      if (gRepo.gCashStatus <= 0.5)
+                                      if (isAdmin && gRepo.gCashStatus <= 0.5)
                                         TextButton(
                                           onPressed: () async {
                                             final confirmDelete =
