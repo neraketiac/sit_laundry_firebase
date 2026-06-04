@@ -1014,6 +1014,13 @@ void removeOtherItem(JobModelRepository jobRepo, OtherItemModel item) {
 Future<void> computeBonus(
     String empId, String coverageDate, DateTime coverageDateTime) async {
   try {
+    // Skip bonus for Lorie, Ket, DonF
+    const staffNoBonus = {'#1919', '1313#', '1616#'};
+    if (staffNoBonus.contains(empId)) {
+      debugPrint('Employee $empId is excluded from bonus - skipping');
+      return;
+    }
+
     // Staff customer names to exclude
     const staffCustomerNames = {
       'Rowell',
