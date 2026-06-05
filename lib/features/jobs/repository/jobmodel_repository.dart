@@ -857,7 +857,7 @@ class JobModelRepository {
             bonusLoad += 2; // menuOth165 = 2 loads
           } else if (item.itemId == menuOth225) {
             bonusLoad +=
-                1; // menuOth225 = 1 load (includes menuOth125 + extra, only count additional 1)
+                2; // menuOth225 = 1 load (includes menuOth125 + extra, only count additional 1)
           } else if (item.itemId == menuOthW9t10) {
             bonusLoad += 1; // menuOthW9t10 = 1 load (includes menuOth155 + 105)
           } else {
