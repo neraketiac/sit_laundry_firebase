@@ -322,6 +322,34 @@ Future<Map<DateTime, DaySelection>?> showCalendarDialog(BuildContext context) {
                                 ? null
                                 : () async {
                                     if (selectedEmp == null) return;
+
+                                    // Show confirmation dialog
+                                    final confirmed = await showDialog<bool>(
+                                      context: context,
+                                      builder: (dialogCtx) => AlertDialog(
+                                        title: const Text('Generate Salary?'),
+                                        content: const Text(
+                                          'Are you sure you want to generate?\n\n'
+                                          'Please note: You need to move all ongoing jobs to done first. '
+                                          'If not, they will not be counted for loads bonus.',
+                                        ),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () =>
+                                                Navigator.pop(dialogCtx, false),
+                                            child: const Text('No'),
+                                          ),
+                                          TextButton(
+                                            onPressed: () =>
+                                                Navigator.pop(dialogCtx, true),
+                                            child: const Text('Yes'),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+
+                                    if (confirmed != true) return;
+
                                     final empKeys = selectedEmp == 'ALL'
                                         ? mapEmpId.keys
                                             .where((k) =>

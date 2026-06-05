@@ -1015,6 +1015,9 @@ void removeOtherItem(JobModelRepository jobRepo, OtherItemModel item) {
 Future<void> computeBonus(
     String empId, String coverageDate, DateTime coverageDateTime) async {
   try {
+    // Add 1 second delay to ensure timestamp is different from job creation
+    await Future.delayed(const Duration(seconds: 1));
+
     // Skip bonus for Lorie, Ket, DonF
     const staffNoBonus = {'#1919', '1313#', '1616#'};
     if (staffNoBonus.contains(empId)) {
