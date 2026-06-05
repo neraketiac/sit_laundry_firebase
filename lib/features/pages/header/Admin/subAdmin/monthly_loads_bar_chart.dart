@@ -79,14 +79,19 @@ class _MonthlyLoadsBarChartState extends State<MonthlyLoadsBarChart> {
                 : (dateD as DateTime);
 
             final day = jobDate.day;
+            final finalLoadForBonus = jobModel.finalLoadForBonus ?? 0;
             final finalLoad = jobModel.finalLoad ?? 0;
+
+            // Use Q15_FinalLoadForBonus if > 0, otherwise fall back to Q05_FinalLoad
+            final loadForAnalytics =
+                finalLoadForBonus > 0 ? finalLoadForBonus : finalLoad;
 
             // Only count loads if customer is not staff
             if (!_staffCustomerNames.contains(jobModel.customerName)) {
-              dailyLoads[day] = (dailyLoads[day] ?? 0) + finalLoad;
+              dailyLoads[day] = (dailyLoads[day] ?? 0) + loadForAnalytics;
 
               final week = _getWeekNumber(jobDate);
-              weeklyLoads[week] = (weeklyLoads[week] ?? 0) + finalLoad;
+              weeklyLoads[week] = (weeklyLoads[week] ?? 0) + loadForAnalytics;
             }
           }
         } catch (e) {

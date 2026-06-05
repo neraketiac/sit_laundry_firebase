@@ -1060,7 +1060,8 @@ Future<void> computeBonus(
         .where('A05_DateD', isLessThanOrEqualTo: timestampEnd)
         .get();
 
-    // Sum up the Q05_FinalLoad values from both collections (excluding staff customer jobs)
+    // Sum up the Q15_FinalLoadForBonus and Q05_FinalLoad values from both collections (excluding staff customer jobs)
+    int totalLoadForBonus = 0;
     int totalLoadPerDay = 0;
 
     // Sum from Jobs_done
@@ -1072,6 +1073,9 @@ Future<void> computeBonus(
       if (staffCustomerNames.contains(customerName)) {
         continue;
       }
+
+      final finalLoadForBonus = data['Q15_FinalLoadForBonus'] as int? ?? 0;
+      totalLoadForBonus += finalLoadForBonus;
 
       final finalLoad = data['Q05_FinalLoad'] as int? ?? 0;
       totalLoadPerDay += finalLoad;
@@ -1087,15 +1091,23 @@ Future<void> computeBonus(
         continue;
       }
 
+      final finalLoadForBonus = data['Q15_FinalLoadForBonus'] as int? ?? 0;
+      totalLoadForBonus += finalLoadForBonus;
+
       final finalLoad = data['Q05_FinalLoad'] as int? ?? 0;
       totalLoadPerDay += finalLoad;
     }
 
+    // Use Q15_FinalLoadForBonus if available (sum > 0), otherwise fall back to Q05_FinalLoad
+    // This ensures backward compatibility: new records use the new field, old records use the old field
+    int finalLoadReference =
+        totalLoadForBonus > 0 ? totalLoadForBonus : totalLoadPerDay;
+
     // Record bonus tiers: 50php per 10 loads starting at 20
     // Each tier is recorded directly to EmployeeHist/Curr
-    if (totalLoadPerDay >= 20) {
+    if (finalLoadReference > 20) {
       // Calculate number of tiers (each tier = 10 loads, starts at 20)
-      int tiers = ((totalLoadPerDay - 20) ~/ 10) + 1;
+      int tiers = ((finalLoadReference - 20) ~/ 10) + 1;
 
       // Get employee name from mapEmpId
       final empName = mapEmpId[empId] ?? empId;
@@ -1122,7 +1134,7 @@ Future<void> computeBonus(
           logDate: Timestamp.now(),
           logBy: empIdGlobal,
           empName: empName,
-          remarks: '$totalLoadPerDay Loads last $formattedDate +P50.00',
+          remarks: '$finalLoadReference Loads last $formattedDate +P50.00',
           autoSalaryDate: Timestamp.fromDate(coverageDateTime),
         );
 

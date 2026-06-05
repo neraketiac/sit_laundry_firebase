@@ -72,6 +72,7 @@ class JobModel {
   bool perLoad;
   double finalKilo;
   int finalLoad;
+  int finalLoadForBonus; // Q15_FinalLoadForBonus
   int finalPrice;
   int promoCounter;
   String pricingSetup;
@@ -237,6 +238,7 @@ class JobModel {
     required this.perLoad,
     required this.finalKilo,
     required this.finalLoad,
+    required this.finalLoadForBonus,
     required this.finalPrice,
     required this.promoCounter,
     required this.pricingSetup,
@@ -292,6 +294,7 @@ class JobModel {
       perLoad: false,
       finalKilo: 0,
       finalLoad: 0,
+      finalLoadForBonus: 0,
       finalPrice: 0,
       promoCounter: 0,
       pricingSetup: '',
@@ -348,6 +351,7 @@ class JobModel {
     bool? perLoad,
     double? finalKilo,
     int? finalLoad,
+    int? finalLoadForBonus,
     int? finalPrice,
     int? promoCounter,
     String? pricingSetup,
@@ -402,6 +406,7 @@ class JobModel {
       perLoad: perLoad ?? this.perLoad,
       finalKilo: finalKilo ?? this.finalKilo,
       finalLoad: finalLoad ?? this.finalLoad,
+      finalLoadForBonus: finalLoadForBonus ?? this.finalLoadForBonus,
       finalPrice: finalPrice ?? this.finalPrice,
       promoCounter: promoCounter ?? this.promoCounter,
       pricingSetup: pricingSetup ?? this.pricingSetup,
@@ -451,6 +456,7 @@ class JobModel {
         perLoad: json['Q03_PerLoad'],
         finalKilo: json['Q04_FinalKilo'],
         finalLoad: json['Q05_FinalLoad'],
+        finalLoadForBonus: json['Q15_FinalLoadForBonus'] ?? 0,
         finalPrice: json['Q06_FinalPrice'],
         promoCounter: json['Q06_PromoCounter'],
         pricingSetup: json['Q06_PricingSetup'],
@@ -516,6 +522,7 @@ class JobModel {
         'Q03_PerLoad': perLoad,
         'Q04_FinalKilo': finalKilo,
         'Q05_FinalLoad': finalLoad,
+        'Q15_FinalLoadForBonus': finalLoadForBonus,
         'Q06_FinalPrice': finalPrice,
         'Q06_PromoCounter': promoCounter,
         'Q06_PricingSetup': pricingSetup,

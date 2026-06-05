@@ -43,6 +43,7 @@ class JobModelRepository {
       perLoad: true,
       finalKilo: 0,
       finalLoad: 0,
+      finalLoadForBonus: 0,
       finalPrice: 0,
       promoCounter: 0,
       pricingSetup: '',
@@ -140,6 +141,7 @@ class JobModelRepository {
   bool get perLoad => jobModel.perLoad;
   double get finalKilo => jobModel.finalKilo;
   int get finalLoad => jobModel.finalLoad;
+  int get finalLoadForBonus => jobModel.finalLoadForBonus;
   int get finalPrice => jobModel.finalPrice;
   int get promoCounter => jobModel.promoCounter;
   String get pricingSetup => jobModel.pricingSetup;
@@ -203,6 +205,7 @@ class JobModelRepository {
   set perLoad(bool value) => jobModel.perLoad = value;
   set finalKilo(double value) => jobModel.finalKilo = value;
   set finalLoad(int value) => jobModel.finalLoad = value;
+  set finalLoadForBonus(int value) => jobModel.finalLoadForBonus = value;
   set finalPrice(int value) => jobModel.finalPrice = value;
   set promoCounter(int value) => jobModel.promoCounter = value;
   set pricingSetup(String value) => jobModel.pricingSetup = value;
@@ -299,6 +302,11 @@ class JobModelRepository {
   int get selectedFinalLoad => jobselectedRepository.selectedFinalLoad;
   set selectedFinalLoad(int value) =>
       jobselectedRepository.selectedFinalLoad = value;
+
+  int get selectedFinalLoadForBonus =>
+      jobselectedRepository.selectedFinalLoadForBonus;
+  set selectedFinalLoadForBonus(int value) =>
+      jobselectedRepository.selectedFinalLoadForBonus = value;
 
   int get selectedFinalPrice => jobselectedRepository.selectedFinalPrice;
   set selectedFinalPrice(int value) =>
@@ -786,6 +794,7 @@ class JobModelRepository {
     if (selectedPackage == intRegularPackage) {
       if (selectedPerKilo) {
         jobRepo.finalLoad = computeLoadForKg(selectedFinalKilo);
+        jobRepo.finalLoadForBonus = computeLoadForKg(selectedFinalKilo);
         debugPrint('jobRepo.promoCounter=${jobRepo.promoCounter}');
         jobRepo.promoCounter = computePromoCounter;
         debugPrint('after jobRepo.promoCounter=${jobRepo.promoCounter}');
@@ -793,6 +802,7 @@ class JobModelRepository {
             computeTotalPrice(selectedFinalKilo, jobRepo), false, jobRepo);
       } else {
         jobRepo.finalLoad = selectedFinalLoad;
+        jobRepo.finalLoadForBonus = selectedFinalLoad;
         jobRepo.promoCounter = selectedFinalLoad;
         jobRepo.pricingSetup = 'Load(s): $selectedFinalLoad';
       }
@@ -819,6 +829,32 @@ class JobModelRepository {
           (selectedItems
               .where((v) => v.itemId == menuOth150)
               .length); // menuOth150 (425) - ₱150 = 1 load (solo item)
+
+      // Check if customer is not staff AND has specific items for bonus calculation
+      const staffCustomerNames = {
+        'Rowell',
+        'Lorie',
+        'Seiji',
+        'Analyn',
+        'Ket',
+        'DonF'
+      };
+      final isStaffCustomer = staffCustomerNames.contains(jobRepo.customerName);
+      final hasEligibleItems = selectedItems.any((item) => [
+            menuOth155,
+            menuOth195,
+            menuOth165,
+            menuOth125,
+            menuOth225,
+            menuOth150
+          ].contains(item.itemId));
+
+      if (!isStaffCustomer && hasEligibleItems) {
+        jobRepo.finalLoadForBonus = jobRepo.finalLoad;
+      } else {
+        jobRepo.finalLoadForBonus = 0;
+      }
+
       // menuOthW8t9 (418) - ₱190 = 0 loads (₱155 + ₱35, already counted in onlyPromo)
       // TODO: Add wash49 = 1 load (need constant name)
       jobRepo.promoCounter = onlyPromo;

@@ -31,6 +31,7 @@ class _AdminJobRepoViewerState extends State<AdminJobRepoViewer> {
     jobRepo.perLoad = jobRepo.selectedPerLoad;
     jobRepo.finalKilo = jobRepo.selectedFinalKilo;
     jobRepo.finalLoad = jobRepo.selectedFinalLoad;
+    jobRepo.finalLoadForBonus = jobRepo.selectedFinalLoadForBonus;
     jobRepo.finalPrice = jobRepo.selectedFinalPrice;
     jobRepo.promoCounter = jobRepo.selectedPromoCounter;
     jobRepo.fold = jobRepo.selectedFold;
@@ -255,6 +256,8 @@ class _AdminJobRepoViewerState extends State<AdminJobRepoViewer> {
         jobRepo.selectedFinalKilo = double.tryParse(value.toString()) ?? 0;
       case "finalLoad":
         jobRepo.selectedFinalLoad = int.tryParse(value.toString()) ?? 0;
+      case "finalLoadForBonus":
+        jobRepo.selectedFinalLoadForBonus = int.tryParse(value.toString()) ?? 0;
       case "finalPrice":
         jobRepo.selectedFinalPrice = int.tryParse(value.toString()) ?? 0;
       case "promoCounter":
@@ -540,6 +543,8 @@ class _AdminJobRepoViewerState extends State<AdminJobRepoViewer> {
                     "finalKilo", jobRepo.finalKilo, jobRepo.selectedFinalKilo),
                 _buildFieldRow(
                     "finalLoad", jobRepo.finalLoad, jobRepo.selectedFinalLoad),
+                _buildFieldRow("finalLoadForBonus", jobRepo.finalLoadForBonus,
+                    jobRepo.selectedFinalLoadForBonus),
                 _buildFieldRow("finalPrice", jobRepo.finalPrice,
                     jobRepo.selectedFinalPrice),
                 _buildFieldRow("promoCounter", jobRepo.promoCounter,
