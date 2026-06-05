@@ -40,7 +40,7 @@ class JobselectedRepository {
   //       finalLoad: 0,
   int _selectedFinalLoad = 1;
   //       finalLoadForBonus: 0,
-  int _selectedFinalLoadForBonus = 1;
+  int _selectedFinalLoadForBonus = 0;
   //       finalPrice: 0,
   int _selectedFinalPrice = 0;
   //       promoCounter: 0,
@@ -265,7 +265,7 @@ class JobselectedRepository {
     selectedPerLoad = true;
     selectedFinalKilo = 8;
     selectedFinalLoad = 1;
-    selectedFinalLoadForBonus = 1;
+    selectedFinalLoadForBonus = 0;
     selectedFinalPrice = 0;
     selectedPromoCounter = 0;
     selectedPackage = intOthersPackage;

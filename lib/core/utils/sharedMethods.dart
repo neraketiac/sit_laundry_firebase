@@ -1005,10 +1005,11 @@ void removeOtherItem(JobModelRepository jobRepo, OtherItemModel item) {
   jobRepo.repoVarTotalPriceOthers -= item.itemPrice;
 }
 
-/// Compute bonus based on total loads for the given employee and coverage date
-/// Compute bonus based on total loads for the given employee and coverage date
-/// Queries both Jobs_done and Jobs_completed tables to sum finalLoad values for the coverage date
-/// Excludes jobs where customer is staff: Rowell, Lorie, Seiji, Analyn, Ket, DonF
+/// Compute bonus based on eligible item loads for the given employee and coverage date
+/// Queries both Jobs_done and Jobs_completed tables
+/// Uses Q15_FinalLoadForBonus if available (already calculated from eligible items)
+/// Falls back to calculating from eligible items only if Q15_FinalLoadForBonus is 0
+/// Eligible items: menuOth155, menuOth195, menuOth165, menuOth125, menuOth225, menuOth150, menuOthW9t10
 /// Records multiple bonus tiers: 50php per 10 loads starting at 20
 /// Each tier is recorded directly to EmployeeHist/Curr (NOT to SuppliesHist/Curr)
 Future<void> computeBonus(
@@ -1020,16 +1021,6 @@ Future<void> computeBonus(
       debugPrint('Employee $empId is excluded from bonus - skipping');
       return;
     }
-
-    // Staff customer names to exclude
-    const staffCustomerNames = {
-      'Rowell',
-      'Lorie',
-      'Seiji',
-      'Analyn',
-      'Ket',
-      'DonF'
-    };
 
     // Query both Jobs_done and Jobs_completed databases for jobs on the coverage date
     final jobsDoneDb = FirebaseService.jobsDoneFirestore;
@@ -1060,72 +1051,101 @@ Future<void> computeBonus(
         .where('A05_DateD', isLessThanOrEqualTo: timestampEnd)
         .get();
 
-    // Sum up the Q15_FinalLoadForBonus and Q05_FinalLoad values from both collections (excluding staff customer jobs)
+    // Eligible item IDs for bonus calculation
+    const Set<int> eligibleItemIds = {
+      menuOth155,
+      menuOth195,
+      menuOth165,
+      menuOth125,
+      menuOth225,
+      menuOth150,
+      menuOthW9t10
+    };
+
+    // Sum up Q15_FinalLoadForBonus from both collections
     int totalLoadForBonus = 0;
-    int totalLoadPerDay = 0;
 
     // Sum from Jobs_done
     for (var doc in jobsDoneSnapshot.docs) {
       final data = doc.data();
-      final customerName = (data['C01_CustomerName'] as String?)?.trim() ?? '';
-
-      // Skip if customer is staff
-      if (staffCustomerNames.contains(customerName)) {
-        continue;
-      }
-
       final finalLoadForBonus = data['Q15_FinalLoadForBonus'] as int? ?? 0;
       totalLoadForBonus += finalLoadForBonus;
-
-      final finalLoad = data['Q05_FinalLoad'] as int? ?? 0;
-      totalLoadPerDay += finalLoad;
     }
 
     // Sum from Jobs_completed
     for (var doc in jobsCompletedSnapshot.docs) {
       final data = doc.data();
-      final customerName = (data['C01_CustomerName'] as String?)?.trim() ?? '';
-
-      // Skip if customer is staff
-      if (staffCustomerNames.contains(customerName)) {
-        continue;
-      }
-
       final finalLoadForBonus = data['Q15_FinalLoadForBonus'] as int? ?? 0;
       totalLoadForBonus += finalLoadForBonus;
-
-      final finalLoad = data['Q05_FinalLoad'] as int? ?? 0;
-      totalLoadPerDay += finalLoad;
     }
 
-    // Use Q15_FinalLoadForBonus if available (sum > 0), otherwise fall back to Q05_FinalLoad
-    // This ensures backward compatibility: new records use the new field, old records use the old field
-    int finalLoadReference =
-        totalLoadForBonus > 0 ? totalLoadForBonus : totalLoadPerDay;
+    // Calculate sumFinalLoad: sum of finalLoad filtered by eligible items only
+    int sumFinalLoad = 0;
 
-    // Record bonus tiers: 50php per 10 loads starting at 20
+    // Sum finalLoad from eligible items in Jobs_done
+    for (var doc in jobsDoneSnapshot.docs) {
+      final data = doc.data();
+      final items = (data['items'] as List<dynamic>?) ?? [];
+
+      int jobEligibleLoad = 0;
+      for (var itemData in items) {
+        final itemId = itemData['ItemId'] as int?;
+        if (itemId != null && eligibleItemIds.contains(itemId)) {
+          // Count each eligible item as 1 or 2 loads
+          if ([menuOth195, menuOth165].contains(itemId)) {
+            jobEligibleLoad += 2;
+          } else {
+            jobEligibleLoad += 1;
+          }
+        }
+      }
+
+      sumFinalLoad += jobEligibleLoad;
+    }
+
+    // Sum finalLoad from eligible items in Jobs_completed
+    for (var doc in jobsCompletedSnapshot.docs) {
+      final data = doc.data();
+      final items = (data['items'] as List<dynamic>?) ?? [];
+
+      int jobEligibleLoad = 0;
+      for (var itemData in items) {
+        final itemId = itemData['ItemId'] as int?;
+        if (itemId != null && eligibleItemIds.contains(itemId)) {
+          // Count each eligible item as 1 or 2 loads
+          if ([menuOth195, menuOth165].contains(itemId)) {
+            jobEligibleLoad += 2;
+          } else {
+            jobEligibleLoad += 1;
+          }
+        }
+      }
+
+      sumFinalLoad += jobEligibleLoad;
+    }
+
+    // Determine finalLoadReference: use totalLoadForBonus if available, else use sumFinalLoad
+    int finalLoadReference =
+        totalLoadForBonus > 0 ? totalLoadForBonus : sumFinalLoad;
+
+    // Record bonus: ONE entry per 10-load bracket above 20
+    // 21-30 = +50, 31-40 = +50, 41-50 = +50, etc.
     // Each tier is recorded directly to EmployeeHist/Curr
     if (finalLoadReference > 20) {
-      // Calculate number of tiers (each tier = 10 loads, starts at 20)
-      int tiers = ((finalLoadReference - 20) ~/ 10) + 1;
+      // Calculate which brackets we've crossed into
+      // 21-30 = bracket 1, 31-40 = bracket 2, 41-50 = bracket 3, etc.
+      int bracketCount = ((finalLoadReference - 20) / 10).ceil();
 
       // Get employee name from mapEmpId
       final empName = mapEmpId[empId] ?? empId;
 
-      // Record each tier
-      for (int tier = 1; tier <= tiers; tier++) {
-        // Format date as "June 02"
-        final year = int.parse(coverageDate.substring(0, 4));
-        final month = int.parse(coverageDate.substring(4, 6));
-        final day = int.parse(coverageDate.substring(6, 8));
-        final dateObj = DateTime(year, month, day);
-        final formattedDate = DateFormat('MMMM dd').format(dateObj);
-
+      // Record ONE +50 entry for each bracket crossed
+      for (int bracket = 1; bracket <= bracketCount; bracket++) {
         final employeeModel = EmployeeModel(
           empId: empId,
           docId: "",
           countId: 0,
-          currentCounter: 50, // 50php per tier
+          currentCounter: 50, // 50php per bracket
           currentStocks: 0,
           itemId: menuOthCashInOutFunds,
           itemUniqueId:
@@ -1134,7 +1154,8 @@ Future<void> computeBonus(
           logDate: Timestamp.now(),
           logBy: empIdGlobal,
           empName: empName,
-          remarks: '$finalLoadReference Loads last $formattedDate +P50.00',
+          remarks:
+              'Auto generated $coverageDate $finalLoadReference Loads +P50.00',
           autoSalaryDate: Timestamp.fromDate(coverageDateTime),
         );
 

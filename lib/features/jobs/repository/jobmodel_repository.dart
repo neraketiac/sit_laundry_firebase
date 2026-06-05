@@ -567,6 +567,7 @@ class JobModelRepository {
     selectedPerLoad = jobRepo.perLoad;
     selectedFinalKilo = jobRepo.finalKilo;
     selectedFinalLoad = jobRepo.finalLoad;
+    selectedFinalLoadForBonus = jobRepo.finalLoadForBonus;
     // debugPrint(
     //     'jobSyncRepoToSelectAll jobRepo.addOn=${jobRepo.addOn} repoVarTotalPriceOthers=$repoVarTotalPriceOthers');
     if (jobRepo.addOn) {
@@ -809,48 +810,62 @@ class JobModelRepository {
     }
     if (selectedPackage == intOthersPackage) {
       final count155 =
-          selectedItems.where((v) => v.itemId == menuOth155).length;
+          jobRepo.selectedItems.where((v) => v.itemId == menuOth155).length;
       final count195 =
-          selectedItems.where((v) => v.itemId == menuOth195).length;
+          jobRepo.selectedItems.where((v) => v.itemId == menuOth195).length;
       final onlyPromo = count155 + count195;
 
       jobRepo.finalLoad = onlyPromo +
           count195 * 2 + // menuOth195 (405) - ₱260 = 2 loads
-          (selectedItems.where((v) => v.itemId == menuOth165).length) *
+          (jobRepo.selectedItems.where((v) => v.itemId == menuOth165).length) *
               2 + // ₱165 = 2 loads
-          (selectedItems.where((v) => v.itemId == menuOth125).length) +
-          (selectedItems.where((v) => v.itemId == menuOth225).length) *
+          (jobRepo.selectedItems.where((v) => v.itemId == menuOth125).length) +
+          (jobRepo.selectedItems.where((v) => v.itemId == menuOth225).length) *
               2 + // menuOth225 (427) - ₱225 = 2 loads (solo item, no bundle)
-          (selectedItems.where((v) => v.itemId == menuOthWD98).length) +
-          (selectedItems.where((v) => v.itemId == menuOthNF125).length) +
-          (selectedItems
+          (jobRepo.selectedItems.where((v) => v.itemId == menuOthWD98).length) +
+          (jobRepo.selectedItems
+              .where((v) => v.itemId == menuOthNF125)
+              .length) +
+          (jobRepo.selectedItems
               .where((v) => v.itemId == menuOthW9t10)
               .length) + // menuOthW9t10 (419) - ₱260 = 1 load (₱155 + ₱105)
-          (selectedItems
+          (jobRepo.selectedItems
               .where((v) => v.itemId == menuOth150)
               .length); // menuOth150 (425) - ₱150 = 1 load (solo item)
 
-      // Check if customer is not staff AND has specific items for bonus calculation
-      const staffCustomerNames = {
-        'Rowell',
-        'Lorie',
-        'Seiji',
-        'Analyn',
-        'Ket',
-        'DonF'
-      };
-      final isStaffCustomer = staffCustomerNames.contains(jobRepo.customerName);
-      final hasEligibleItems = selectedItems.any((item) => [
-            menuOth155,
-            menuOth195,
-            menuOth165,
-            menuOth125,
-            menuOth225,
-            menuOth150
-          ].contains(item.itemId));
+      // Only these items qualify for bonus: menuOth155, menuOth195, menuOth165, menuOth125, menuOth225, menuOth150
+      final eligibleItems = jobRepo.selectedItems
+          .where((item) => [
+                menuOth155,
+                menuOth195,
+                menuOth165,
+                menuOth125,
+                menuOth225,
+                menuOth150,
+                menuOthW9t10
+              ].contains(item.itemId))
+          .toList();
 
-      if (!isStaffCustomer && hasEligibleItems) {
-        jobRepo.finalLoadForBonus = jobRepo.finalLoad;
+      if (eligibleItems.isNotEmpty) {
+        // Calculate bonus loads only from eligible items
+        int bonusLoad = 0;
+
+        for (var item in eligibleItems) {
+          if (item.itemId == menuOth195) {
+            bonusLoad += 2; // menuOth195 = 2 loads
+          } else if (item.itemId == menuOth165) {
+            bonusLoad += 2; // menuOth165 = 2 loads
+          } else if (item.itemId == menuOth225) {
+            bonusLoad +=
+                1; // menuOth225 = 1 load (includes menuOth125 + extra, only count additional 1)
+          } else if (item.itemId == menuOthW9t10) {
+            bonusLoad += 1; // menuOthW9t10 = 1 load (includes menuOth155 + 105)
+          } else {
+            bonusLoad += 1; // menuOth155, menuOth125, menuOth150 = 1 load each
+          }
+        }
+
+        jobRepo.finalLoadForBonus = bonusLoad;
       } else {
         jobRepo.finalLoadForBonus = 0;
       }

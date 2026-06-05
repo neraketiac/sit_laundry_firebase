@@ -28,16 +28,6 @@ class _MonthlyLoadsLineChartPerDayState
   Map<int, int> dailyLoads = {}; // day -> total loads
   bool isLoading = true;
 
-  // Staff customer names to exclude from load calculations
-  static const Set<String> _staffCustomerNames = {
-    'Rowell',
-    'Lorie',
-    'Seiji',
-    'Analyn',
-    'Ket',
-    'DonF'
-  };
-
   // Day of week: 0=Sunday, 1=Monday, ..., 6=Saturday
   static const List<String> dayNames = [
     'Sunday',
@@ -101,17 +91,12 @@ class _MonthlyLoadsLineChartPerDayState
                 : (dateD as DateTime);
 
             final day = jobDate.day;
-            final finalLoadForBonus = jobModel.finalLoadForBonus ?? 0;
             final finalLoad = jobModel.finalLoad ?? 0;
 
-            // Use Q15_FinalLoadForBonus if > 0, otherwise fall back to Q05_FinalLoad
-            final loadForAnalytics =
-                finalLoadForBonus > 0 ? finalLoadForBonus : finalLoad;
+            // Use Q05_FinalLoad only
+            final loadForAnalytics = finalLoad;
 
-            // Only count loads if customer is not staff
-            if (!_staffCustomerNames.contains(jobModel.customerName)) {
-              dailyLoads[day] = (dailyLoads[day] ?? 0) + loadForAnalytics;
-            }
+            dailyLoads[day] = (dailyLoads[day] ?? 0) + loadForAnalytics;
           }
         } catch (e) {
           debugPrint('Error processing job: $e');

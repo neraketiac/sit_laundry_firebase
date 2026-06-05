@@ -26,16 +26,6 @@ class _MonthlyLoadsLineChartState extends State<MonthlyLoadsLineChart> {
   Map<int, int> dailyLoads = {};
   bool isLoading = true;
 
-  // Staff customer names to exclude from load calculations
-  static const Set<String> _staffCustomerNames = {
-    'Rowell',
-    'Lorie',
-    'Seiji',
-    'Analyn',
-    'Ket',
-    'DonF'
-  };
-
   @override
   void initState() {
     super.initState();
@@ -78,17 +68,12 @@ class _MonthlyLoadsLineChartState extends State<MonthlyLoadsLineChart> {
                 : (dateD as DateTime);
 
             final day = jobDate.day;
-            final finalLoadForBonus = jobModel.finalLoadForBonus ?? 0;
             final finalLoad = jobModel.finalLoad ?? 0;
 
-            // Use Q15_FinalLoadForBonus if > 0, otherwise fall back to Q05_FinalLoad
-            final loadForAnalytics =
-                finalLoadForBonus > 0 ? finalLoadForBonus : finalLoad;
+            // Use Q05_FinalLoad only
+            final loadForAnalytics = finalLoad;
 
-            // Only count loads if customer is not staff
-            if (!_staffCustomerNames.contains(jobModel.customerName)) {
-              dailyLoads[day] = (dailyLoads[day] ?? 0) + loadForAnalytics;
-            }
+            dailyLoads[day] = (dailyLoads[day] ?? 0) + loadForAnalytics;
           }
         } catch (e) {
           debugPrint('Error processing job: $e');

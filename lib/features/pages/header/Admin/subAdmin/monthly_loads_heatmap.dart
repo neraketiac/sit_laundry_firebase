@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:laundry_firebase/features/jobs/models/jobmodel.dart';
 import 'package:laundry_firebase/core/services/firebase_service.dart';
+import 'package:laundry_firebase/core/global/variables_all_codes.dart';
 
 class MonthlyLoadsHeatmap extends StatefulWidget {
   final DateTime currentMonth;
@@ -22,18 +23,9 @@ class MonthlyLoadsHeatmap extends StatefulWidget {
 
 class _MonthlyLoadsHeatmapState extends State<MonthlyLoadsHeatmap> {
   late DateTime currentMonth;
-  Map<int, int> dailyLoads = {};
+  Map<int, Map<String, int>> dailyLoads =
+      {}; // day -> {finalLoadOuter, finalLoadInner, finalLoadForBonus}
   bool isLoading = true;
-
-  // Staff customer names to exclude from load calculations
-  static const Set<String> _staffCustomerNames = {
-    'Rowell',
-    'Lorie',
-    'Seiji',
-    'Analyn',
-    'Ket',
-    'DonF'
-  };
 
   @override
   void initState() {
@@ -66,6 +58,17 @@ class _MonthlyLoadsHeatmapState extends State<MonthlyLoadsHeatmap> {
 
       final allDocs = [...doneSnap.docs, ...completedSnap.docs];
 
+      // Eligible item IDs for inner calculation
+      const Set<int> eligibleItemIds = {
+        menuOth155,
+        menuOth195,
+        menuOth165,
+        menuOth125,
+        menuOth225,
+        menuOth150,
+        menuOthW9t10
+      };
+
       dailyLoads.clear();
       for (var doc in allDocs) {
         try {
@@ -80,14 +83,39 @@ class _MonthlyLoadsHeatmapState extends State<MonthlyLoadsHeatmap> {
             final finalLoadForBonus = jobModel.finalLoadForBonus ?? 0;
             final finalLoad = jobModel.finalLoad ?? 0;
 
-            // Use Q15_FinalLoadForBonus if > 0, otherwise fall back to Q05_FinalLoad
-            final loadForAnalytics =
-                finalLoadForBonus > 0 ? finalLoadForBonus : finalLoad;
-
-            // Only count loads if customer is not staff
-            if (!_staffCustomerNames.contains(jobModel.customerName)) {
-              dailyLoads[day] = (dailyLoads[day] ?? 0) + loadForAnalytics;
+            if (!dailyLoads.containsKey(day)) {
+              dailyLoads[day] = {
+                'finalLoadOuter': 0,
+                'finalLoadInner': 0,
+                'finalLoadForBonus': 0
+              };
             }
+
+            // Add to outer (no filter - sum of all finalLoad)
+            dailyLoads[day]!['finalLoadOuter'] =
+                (dailyLoads[day]!['finalLoadOuter'] ?? 0) + finalLoad;
+
+            // Add to inner (filter by eligible items only)
+            int eligibleItemsLoad = 0;
+            for (var item in jobModel.items) {
+              if (eligibleItemIds.contains(item.itemId)) {
+                // Items that count as 2 loads
+                if ([menuOth195, menuOth165].contains(item.itemId)) {
+                  eligibleItemsLoad += 2;
+                } else {
+                  // All others = 1 load each
+                  eligibleItemsLoad += 1;
+                }
+              }
+            }
+
+            dailyLoads[day]!['finalLoadInner'] =
+                (dailyLoads[day]!['finalLoadInner'] ?? 0) + eligibleItemsLoad;
+
+            // Track finalLoadForBonus (no filter)
+            dailyLoads[day]!['finalLoadForBonus'] =
+                (dailyLoads[day]!['finalLoadForBonus'] ?? 0) +
+                    finalLoadForBonus;
           }
         } catch (e) {
           debugPrint('Error processing job: $e');
@@ -218,14 +246,22 @@ class _MonthlyLoadsHeatmapState extends State<MonthlyLoadsHeatmap> {
       for (int i = (weekNumber == 1 ? firstDayOfWeek : 0);
           i < 7 && day <= daysInMonth;
           i++) {
-        final loads = dailyLoads[day] ?? 0;
-        final cellColor = _getHeatmapColor(loads, maxLoads);
+        final dayData = dailyLoads[day];
+        final finalLoadOuter = dayData?['finalLoadOuter'] ?? 0;
+        final finalLoadInner = dayData?['finalLoadInner'] ?? 0;
+        final finalLoadForBonus = dayData?['finalLoadForBonus'] ?? 0;
+
+        // Display: finalLoadOuter(innerValue) where innerValue is finalLoadInner or finalLoadForBonus if =0
+        final displayInner =
+            finalLoadForBonus == 0 ? finalLoadInner : finalLoadForBonus;
+
+        final cellColor = _getHeatmapColor(finalLoadOuter, maxLoads);
         final isWeekend = i == 0 || i == 6;
 
         weekDays.add(
           Expanded(
             child: Tooltip(
-              message: 'Day $day: $loads loads',
+              message: 'Day $day: $finalLoadOuter($displayInner)',
               child: Container(
                 height: cellSize,
                 margin: const EdgeInsets.all(2),
@@ -247,15 +283,15 @@ class _MonthlyLoadsHeatmapState extends State<MonthlyLoadsHeatmap> {
                       style: TextStyle(
                         fontSize: fontSize - 1,
                         fontWeight: FontWeight.w600,
-                        color: loads > maxLoads * 0.5
+                        color: finalLoadOuter > maxLoads * 0.5
                             ? Colors.white
                             : Colors.grey.shade700,
                       ),
                     ),
-                    if (loads > 0) ...[
+                    if (finalLoadOuter > 0 || displayInner > 0) ...[
                       const SizedBox(height: 1),
                       Text(
-                        loads.toString(),
+                        '$finalLoadOuter($displayInner)',
                         style: TextStyle(
                           fontSize:
                               widget.isMobile ? fontSize - 4 : fontSize - 3,
@@ -307,7 +343,12 @@ class _MonthlyLoadsHeatmapState extends State<MonthlyLoadsHeatmap> {
 
   int _getMaxLoads() {
     if (dailyLoads.isEmpty) return 0;
-    return dailyLoads.values.reduce((a, b) => a > b ? a : b);
+    int maxLoad = 0;
+    for (var dayData in dailyLoads.values) {
+      final finalLoadOuter = dayData['finalLoadOuter'] ?? 0;
+      if (finalLoadOuter > maxLoad) maxLoad = finalLoadOuter;
+    }
+    return maxLoad;
   }
 
   Color _getHeatmapColor(int loads, int maxLoads) {
