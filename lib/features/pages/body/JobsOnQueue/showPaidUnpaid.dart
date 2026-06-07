@@ -34,13 +34,96 @@ void showPaidUnpaid(BuildContext context, JobModelRepository jobRepo) {
       jobRepo.requestForAdmin = false;
     }
 
-    await callDatabaseUpdateJob(context, jobRepo.jobModelData);
+    try {
+      await callDatabaseUpdateJob(context, jobRepo.jobModelData);
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Failed to update job payment'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      rethrow;
+    }
 
     // Auto-record cash payment DELTA to Supplies
     // Skipped when global skipSuppliesOnPaid OR per-job skipSuppliesThisJob is enabled
     if (jobRepo.paidCash && !skipSuppliesOnPaid && !skipSuppliesThisJob) {
       final delta = jobRepo.paidCashAmount - previousPaidCash;
-      await recordCashPaymentToSupplies(context, jobRepo, delta);
+
+      // Retry logic: max 3 attempts with exponential backoff
+      int retryCount = 0;
+      const maxRetries = 3;
+      bool recordingSucceeded = false;
+
+      while (retryCount < maxRetries && !recordingSucceeded) {
+        try {
+          await recordCashPaymentToSupplies(context, jobRepo, delta);
+          recordingSucceeded = true;
+
+          // Success! Remove failure marker if it exists
+          jobRepo.selectedRemarksVar.text = jobRepo.selectedRemarksVar.text
+              .replaceAll('[Failed to insert record]', '')
+              .trim();
+          jobRepo.remarks = jobRepo.selectedRemarksVar.text;
+
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Payment recorded successfully'),
+                backgroundColor: Colors.green,
+                duration: Duration(seconds: 2),
+              ),
+            );
+          }
+        } catch (e) {
+          retryCount++;
+          debugPrint(
+              'Error recording cash payment (attempt $retryCount/$maxRetries): $e');
+
+          if (retryCount < maxRetries) {
+            // Exponential backoff: 2s, 4s, 8s
+            final delaySeconds = 2 * retryCount;
+
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    'Failed to record payment. Retrying in ${delaySeconds}s... (Attempt $retryCount/$maxRetries)',
+                  ),
+                  backgroundColor: Colors.orange,
+                  duration: Duration(seconds: delaySeconds + 1),
+                ),
+              );
+            }
+
+            await Future.delayed(Duration(seconds: delaySeconds));
+          } else {
+            // All retries failed - mark in remarks
+            final failureMarker = '[Failed to insert record]';
+            if (!jobRepo.selectedRemarksVar.text.contains(failureMarker)) {
+              jobRepo.selectedRemarksVar.text =
+                  '${jobRepo.selectedRemarksVar.text} $failureMarker'.trim();
+              jobRepo.remarks = jobRepo.selectedRemarksVar.text;
+            }
+
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: const Text(
+                    'Failed to record payment after 3 attempts. '
+                    'Job has been marked. Please check supplies manually.',
+                  ),
+                  backgroundColor: Colors.red,
+                  duration: const Duration(seconds: 5),
+                ),
+              );
+            }
+          }
+        }
+      }
     }
   }
 

@@ -148,27 +148,102 @@ Widget readDataGCashPending() {
                                   // Record funds now as regular Funds In/Cash In/Load
                                   isGcashCredit = false;
 
-                                  SuppliesHistRepository.instance.setItemName(
-                                      getItemNameOnly(menuOthCashInOutFunds,
-                                          gRepo.itemUniqueId));
-                                  SuppliesHistRepository.instance
-                                      .setItemId(menuOthCashInOutFunds);
-                                  SuppliesHistRepository.instance
-                                      .setItemUniqueId(gRepo.itemUniqueId);
-                                  SuppliesHistRepository.instance
-                                      .setCurrentCounter(gRepo.customerAmount);
-                                  SuppliesHistRepository.instance
-                                      .setCustomerName(gRepo.customerName);
-                                  SuppliesHistRepository.instance
-                                      .setCustomerId(0);
-                                  SuppliesHistRepository.instance.setRemarks(
-                                      'GCash ${gRepo.itemName} ${gRepo.remarks}');
-                                  await setSuppliesRepository(context);
+                                  // Retry logic: max 3 attempts with exponential backoff
+                                  int retryCount = 0;
+                                  const maxRetries = 3;
+                                  bool recordingSucceeded = false;
 
-                                  // Set status to 0.85 (Payment done)
-                                  gRepo.gCashStatus = 0.85;
-                                  await dbGCashPending
-                                      .updateVoid(gRepo.getModel()!);
+                                  while (retryCount < maxRetries &&
+                                      !recordingSucceeded) {
+                                    try {
+                                      SuppliesHistRepository.instance
+                                          .setItemName(getItemNameOnly(
+                                              menuOthCashInOutFunds,
+                                              gRepo.itemUniqueId));
+                                      SuppliesHistRepository.instance
+                                          .setItemId(menuOthCashInOutFunds);
+                                      SuppliesHistRepository.instance
+                                          .setItemUniqueId(gRepo.itemUniqueId);
+                                      SuppliesHistRepository.instance
+                                          .setCurrentCounter(
+                                              gRepo.customerAmount);
+                                      SuppliesHistRepository.instance
+                                          .setCustomerName(gRepo.customerName);
+                                      SuppliesHistRepository.instance
+                                          .setCustomerId(0);
+                                      SuppliesHistRepository.instance.setRemarks(
+                                          'GCash ${gRepo.itemName} ${gRepo.remarks}');
+                                      await setSuppliesRepository(context);
+                                      recordingSucceeded = true;
+
+                                      // Set status to 0.85 (Payment done)
+                                      gRepo.gCashStatus = 0.85;
+                                      await dbGCashPending
+                                          .updateVoid(gRepo.getModel()!);
+
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                                'GCash payment recorded successfully'),
+                                            backgroundColor: Colors.green,
+                                            duration: Duration(seconds: 2),
+                                          ),
+                                        );
+                                      }
+                                    } catch (e) {
+                                      retryCount++;
+                                      debugPrint(
+                                          'Error recording pending GCash payment (attempt $retryCount/$maxRetries): $e');
+
+                                      if (retryCount < maxRetries) {
+                                        // Exponential backoff: 2s, 4s, 8s
+                                        final delaySeconds = 2 * retryCount;
+
+                                        if (context.mounted) {
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            SnackBar(
+                                              content: Text(
+                                                'Failed to record GCash. Retrying in ${delaySeconds}s... (Attempt $retryCount/$maxRetries)',
+                                              ),
+                                              backgroundColor: Colors.orange,
+                                              duration: Duration(
+                                                  seconds: delaySeconds + 1),
+                                            ),
+                                          );
+                                        }
+
+                                        await Future.delayed(
+                                            Duration(seconds: delaySeconds));
+                                      } else {
+                                        // All retries failed - mark in remarks
+                                        final failureMarker =
+                                            '[Failed to insert record]';
+                                        if (!gRepo.remarks
+                                            .contains(failureMarker)) {
+                                          gRepo.remarks =
+                                              '${gRepo.remarks} $failureMarker'
+                                                  .trim();
+                                        }
+
+                                        if (context.mounted) {
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            SnackBar(
+                                              content: const Text(
+                                                'Failed to record GCash after 3 attempts. Please check supplies manually.',
+                                              ),
+                                              backgroundColor: Colors.red,
+                                              duration:
+                                                  const Duration(seconds: 5),
+                                            ),
+                                          );
+                                        }
+                                      }
+                                    }
+                                  }
                                 }
                                 return;
                               }
