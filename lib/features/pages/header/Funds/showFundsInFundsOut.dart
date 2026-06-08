@@ -98,9 +98,25 @@ void showFundsInFundsOut(BuildContext context) async {
               ),
               onPressed: (index) {
                 selectedFundCode = fundTypeCodes3rdLayer[index];
-                // reset category when switching
-                fundsOutCategory = 'Others';
-                remarksSuppliesVar.text = '';
+
+                // When switching to Funds In, auto-set name to Ket
+                if (selectedFundCode == menuOthUniqIdFundsIn) {
+                  autocompleteSelected = CustomerModel(
+                    customerId: 123,
+                    name: 'Ket',
+                    address: '',
+                    contact: '',
+                    remarks: '',
+                    loyaltyCount: 0,
+                  );
+                  jobRepo.selectedCustomerId = 123;
+                  jobRepo.selectedCustomerNameVar.text = '123# Ket';
+                  remarksSuppliesVar.text = '';
+                } else {
+                  // reset category when switching to Funds Out
+                  fundsOutCategory = 'Others';
+                  remarksSuppliesVar.text = '';
+                }
                 dialogSetState();
               },
               borderRadius: BorderRadius.circular(8),
@@ -159,8 +175,27 @@ void showFundsInFundsOut(BuildContext context) async {
               padding: const EdgeInsets.only(left: 4, bottom: 4),
               child: Row(children: []),
             ),
-            // When a category is pre-selected, show the fixed name instead of autocomplete
-            if (selectedFundCode == menuOthUniqIdFundsOut &&
+            // When Funds In is selected, show fixed "Ket" name (cannot change)
+            if (selectedFundCode == menuOthUniqIdFundsIn)
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                child: Row(
+                  children: [
+                    const Icon(Icons.person, color: Colors.black54, size: 16),
+                    const SizedBox(width: 8),
+                    const Text(
+                      'Ket',
+                      style: TextStyle(
+                          color: Colors.black87,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 13),
+                    ),
+                  ],
+                ),
+              )
+            // When a category is pre-selected for Funds Out, show the fixed name instead of autocomplete
+            else if (selectedFundCode == menuOthUniqIdFundsOut &&
                 fundsOutCategory != 'Others')
               Padding(
                 padding:
