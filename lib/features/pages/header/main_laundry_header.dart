@@ -146,37 +146,37 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader>
           clipBehavior: Clip.none,
           children: [
             /// Laundry Payment
-            if (_isOpen && isAdmin && empIdGlobal == 'DonF')
-              _fab(
-                hero: 'Laundry Payment',
-                icon: Icons.payments_outlined,
-                label: 'Laundry Payment',
-                bottom: base + step * 3,
-                right: base,
-                onTap: () {
-                  setState(() => _isOpen = false);
-                  showLaundryPayment(context, jobRepoNonJob);
-                },
-                backgroundColor: Colors.teal,
-              ),
+            // if (_isOpen && isAdmin && empIdGlobal == 'DonF')
+            //   _fab(
+            //     hero: 'Laundry Payment',
+            //     icon: Icons.payments_outlined,
+            //     label: 'Laundry Payment',
+            //     bottom: base + step * 3,
+            //     right: base,
+            //     onTap: () {
+            //       setState(() => _isOpen = false);
+            //       showLaundryPayment(context, jobRepoNonJob);
+            //     },
+            //     backgroundColor: Colors.teal,
+            //   ),
 
             /// Cash In/Out
-            if (_isOpen && isAdmin && empIdGlobal == 'DonF')
-              _fab(
-                hero: 'Gcash Funds',
-                icon: Icons.attach_money_sharp,
-                label: 'Cash In/Out',
-                bottom: base + step * 2,
-                right: base,
-                onTap: () {
-                  setState(() => _isOpen = false);
-                  showGCashOnly(context, jobRepoNonJob);
-                },
-                backgroundColor: Colors.green,
-                iconSize: iconSize,
-                labelFontSize: labelSize,
-                mini: mini,
-              ),
+            // if (_isOpen && isAdmin && empIdGlobal == 'DonF')
+            //   _fab(
+            //     hero: 'Gcash Funds',
+            //     icon: Icons.attach_money_sharp,
+            //     label: 'Cash In/Out',
+            //     bottom: base + step * 2,
+            //     right: base,
+            //     onTap: () {
+            //       setState(() => _isOpen = false);
+            //       showGCashOnly(context, jobRepoNonJob);
+            //     },
+            //     backgroundColor: Colors.green,
+            //     iconSize: iconSize,
+            //     labelFontSize: labelSize,
+            //     mini: mini,
+            //   ),
 
             /// Funds In/Out
             if (_isOpen)
