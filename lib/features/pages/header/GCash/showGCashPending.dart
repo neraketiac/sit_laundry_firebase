@@ -140,20 +140,25 @@ void showGCashPending(BuildContext context) async {
         return;
       } else if (!skipSuppliesThisSave) {
         // Normal funds recording for Cash-In and Load
-        // Uses Firestore Transaction for atomic GCash + supplies update
+        // Uses Firestore Transaction for atomic supplies update
         try {
-          await recordCashPaymentAtomicTransaction(
-            context,
-            gRepo.getModel()!,
-            gRepo.itemName,
-            gRepo.customerAmount,
-            gRepo.customerName,
-            gRepo.remarks,
-          );
+          // For new GCash creation, we just record supplies
+          // (GCash record is already created in callDatabaseGCashPendingAdd)
+          SuppliesHistRepository.instance.setItemName(
+              getItemNameOnly(menuOthCashInOutFunds, gRepo.selectedFundCode));
+          SuppliesHistRepository.instance.setItemId(menuOthCashInOutFunds);
+          SuppliesHistRepository.instance
+              .setItemUniqueId(gRepo.selectedFundCode);
+          SuppliesHistRepository.instance
+              .setCurrentCounter(gRepo.customerAmount);
+          SuppliesHistRepository.instance.setCustomerName(gRepo.customerName);
+          SuppliesHistRepository.instance.setCustomerId(0);
+          SuppliesHistRepository.instance
+              .setRemarks('GCash ${gRepo.itemName} ${gRepo.remarks}');
+          await setSuppliesRepository(context);
         } catch (e) {
-          // Transaction failed - failure marker already added in the transaction function
-          debugPrint('Error in GCash atomic transaction: $e');
-          // Mark in remarks
+          // Transaction failed - mark in remarks
+          debugPrint('Error recording GCash supplies: $e');
           final failureMarker = '[Failed to insert record]';
           if (!gRepo.remarksVar.text.contains(failureMarker)) {
             gRepo.remarksVar.text =
