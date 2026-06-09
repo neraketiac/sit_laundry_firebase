@@ -1,27 +1,38 @@
 import 'package:flutter/material.dart';
 import 'package:laundry_firebase/core/global/variables_all_codes.dart';
-import 'package:laundry_firebase/core/global/variables.dart';
 import 'package:laundry_firebase/core/utils/sharedMethods.dart';
 import 'package:laundry_firebase/core/utils/sharedmethodsdatabase.dart';
 import 'package:laundry_firebase/features/payments/repository/gcash_repository.dart';
 import 'package:laundry_firebase/shared/widgets/actions/uploadPlaceholder.dart';
 
 Widget showUploadedImage(BuildContext context, GCashRepository gRepo,
-    {VoidCallback? onImageUploaded}) {
+    {VoidCallback? onImageUploaded, bool readOnly = false}) {
   // Use selectedFundCode for new records (showGCashPending), itemUniqueId for existing records (readDataGCashPending)
   final fundCode =
       gRepo.docId.isEmpty ? gRepo.selectedFundCode : gRepo.itemUniqueId;
   final bool isCashOut = fundCode == menuOthUniqIdCashOut;
 
-  final String imageUrl =
-      isCashOut ? gRepo.cashOutImageUrl : gRepo.cashInImageUrl;
-
-  final IconData fallbackIcon = isCashOut ? Icons.logout : Icons.login;
+  // Prioritize whichever image URL is not empty
+  final String imageUrl = gRepo.cashInImageUrl.isNotEmpty
+      ? gRepo.cashInImageUrl
+      : gRepo.cashOutImageUrl;
+  final IconData fallbackIcon =
+      gRepo.cashOutImageUrl.isNotEmpty && gRepo.cashInImageUrl.isEmpty
+          ? Icons.logout
+          : Icons.login;
 
   return Visibility(
     visible: true,
     child: GestureDetector(
       onTap: () async {
+        // Read-only mode: only allow viewing
+        if (readOnly) {
+          if (imageUrl.isNotEmpty) {
+            showImagePreview(context, imageUrl);
+          }
+          return;
+        }
+
         debugPrint(
             'itemUniqueId: ${gRepo.itemUniqueId} / ${gRepo.cashInImageUrl} / ${gRepo.cashOutImageUrl}');
 
@@ -38,81 +49,26 @@ Widget showUploadedImage(BuildContext context, GCashRepository gRepo,
             onImageUploaded?.call();
           }
         } else {
-          // Image exists — show options
-          final action = await showDialog<String>(
+          // Image exists — show view only option
+          await showDialog<String>(
             context: context,
             builder: (_) => AlertDialog(
               title: const Text('GCash Receipt'),
-              content:
-                  const Text('What would you like to do with the receipt?'),
+              content: const Text('View the receipt'),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context, 'view'),
                   child: const Text('View'),
                 ),
                 TextButton(
-                  onPressed: () => Navigator.pop(context, 'replace'),
-                  child: const Text('Replace',
-                      style: TextStyle(color: Colors.orange)),
-                ),
-                TextButton(
                   onPressed: () => Navigator.pop(context, null),
-                  child: const Text('Cancel'),
+                  child: const Text('Close'),
                 ),
               ],
             ),
           );
 
-          if (action == 'view') {
-            showImagePreview(context, imageUrl);
-          } else if (action == 'replace') {
-            // Only admin can replace existing images
-            if (!isAdmin) {
-              if (!context.mounted) return;
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Only admin can replace existing receipts'),
-                  duration: Duration(seconds: 2),
-                ),
-              );
-              return;
-            }
-
-            if (!context.mounted) return;
-            final confirm = await showDialog<bool>(
-              context: context,
-              builder: (_) => AlertDialog(
-                title: const Text('Replace Receipt?'),
-                content: const Text(
-                    'This will replace the existing receipt image. Continue?'),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context, false),
-                    child: const Text('Cancel'),
-                  ),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.orange),
-                    onPressed: () => Navigator.pop(context, true),
-                    child: const Text('Replace',
-                        style: TextStyle(color: Colors.white)),
-                  ),
-                ],
-              ),
-            );
-            if (confirm == true && context.mounted) {
-              final uploadedUrl = await callPickImageUniversal(
-                  context, gRepo.getModel()!, !isCashOut);
-              if (uploadedUrl != null) {
-                if (isCashOut) {
-                  gRepo.cashOutImageUrl = uploadedUrl;
-                } else {
-                  gRepo.cashInImageUrl = uploadedUrl;
-                }
-                onImageUploaded?.call();
-              }
-            }
-          }
+          showImagePreview(context, imageUrl);
         }
       },
       child: Container(

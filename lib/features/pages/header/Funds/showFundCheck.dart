@@ -151,13 +151,15 @@ void showFundCheck(BuildContext context) {
 
             const Divider(height: 10),
 
-            // 🔹 TOTAL
+            // 🔹 TOTAL and Current Funds (Admin only)
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                    'Current Funds:\n₱ ${pesoFormat.format(alwaysTheLatestFunds)}',
-                    style: TextStyle(fontSize: s.tiny + 1, color: textColor)),
+                // Current Funds - Admin only
+                if (isAdmin)
+                  Text(
+                      'Current Funds:\n₱ ${pesoFormat.format(alwaysTheLatestFunds)}',
+                      style: TextStyle(fontSize: s.tiny + 1, color: textColor)),
                 Text(
                   'TOTAL: ',
                   style: TextStyle(
@@ -176,24 +178,26 @@ void showFundCheck(BuildContext context) {
                 ),
               ],
             ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Text(
-                    ((alwaysTheLatestFunds - grandTotal) == 0
-                        ? ('sakto: ₱ ${pesoFormat.format(alwaysTheLatestFunds - grandTotal)}')
-                        : ((alwaysTheLatestFunds - grandTotal) < 0)
-                            ? ('sobra: ₱ ${pesoFormat.format((alwaysTheLatestFunds - grandTotal) * -1)}')
-                            : ('kulang: ₱ ${pesoFormat.format((alwaysTheLatestFunds - grandTotal) * -1)}')),
-                    style: TextStyle(
-                        fontSize: s.tiny + 1,
-                        color: ((alwaysTheLatestFunds - grandTotal) == 0
-                            ? Colors.green
-                            : ((alwaysTheLatestFunds - grandTotal) < 0)
-                                ? (isDarkMode ? Colors.white70 : Colors.black)
-                                : Colors.red))),
-              ],
-            ),
+            // 🔹 Sakto/Kulang status (Admin only)
+            if (isAdmin)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Text(
+                      ((alwaysTheLatestFunds - grandTotal) == 0
+                          ? ('sakto: ₱ ${pesoFormat.format(alwaysTheLatestFunds - grandTotal)}')
+                          : ((alwaysTheLatestFunds - grandTotal) < 0)
+                              ? ('sobra: ₱ ${pesoFormat.format((alwaysTheLatestFunds - grandTotal) * -1)}')
+                              : ('kulang: ₱ ${pesoFormat.format((alwaysTheLatestFunds - grandTotal) * -1)}')),
+                      style: TextStyle(
+                          fontSize: s.tiny + 1,
+                          color: ((alwaysTheLatestFunds - grandTotal) == 0
+                              ? Colors.green
+                              : ((alwaysTheLatestFunds - grandTotal) < 0)
+                                  ? (isDarkMode ? Colors.white70 : Colors.black)
+                                  : Colors.red))),
+                ],
+              ),
           ],
         ),
       ),

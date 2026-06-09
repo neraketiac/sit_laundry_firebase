@@ -35,6 +35,23 @@ class _ReadDataSuppliesCurrentState extends State<ReadDataSuppliesCurrent> {
 
   @override
   Widget build(BuildContext context) {
+    // Admin-only visibility check
+    if (!isAdmin) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Text(
+            'This page is for admin only',
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.grey[600],
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+      );
+    }
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [

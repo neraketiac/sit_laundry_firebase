@@ -383,66 +383,80 @@ Future<void> moveOngoingToDone(
   final effectivePromoCounter = promoEnabled ? promoCounter : 0;
 
   try {
-    // Use atomic transaction to prevent two users from completing the same job
-    await primaryFirestore.runTransaction((tx) async {
-      // Step 1: Read from Jobs_ongoing (primary database) - THIS ACQUIRES A LOCK
-      final ongoingRef =
-          primaryFirestore.collection(JOBS_ONGOING_REF).doc(docId);
-      final snapshot = await tx.get(ongoingRef);
+    // Step 1: Read from Jobs_ongoing to get job data
+    print("🔍 Reading job from Jobs_ongoing...");
+    final ongoingRef = primaryFirestore.collection(JOBS_ONGOING_REF).doc(docId);
+    final ongoingSnap = await ongoingRef.get();
 
-      // Safety check: ensure job hasn't been completed already
-      if (!snapshot.exists) {
-        throw Exception('Job not found in Jobs_ongoing: $docId');
-      }
+    if (!ongoingSnap.exists) {
+      throw Exception('Job not found in Jobs_ongoing: $docId');
+    }
 
-      // Additional safety: check if already in done state (shouldn't happen but good to check)
-      final currentStatus = snapshot.get('O01_AllStatus') ?? 0.0;
-      if (currentStatus >= 0.7) {
-        throw Exception('Job already completed (status: $currentStatus)');
-      }
+    // Safety check: ensure not already completed
+    final currentStatus = ongoingSnap.get('O01_AllStatus') ?? 0.0;
+    if (currentStatus >= 0.7) {
+      throw Exception('Job already completed (status: $currentStatus)');
+    }
 
-      if (!useAdminTimestampDateD) {
-        adminTimestampDateD = Timestamp.now();
-      }
+    if (!useAdminTimestampDateD) {
+      adminTimestampDateD = Timestamp.now();
+    }
 
-      final jobData = withPendingDb2Sync({
-        ...snapshot.data()!,
-        if (forDelivery) ...{
-          'Q00_ForSorting': false,
-          'Q01_RiderPickup': true,
-        },
-        'O00_ProcessStep': 'done',
-        'O01_AllStatus': 0.7,
-        'A05_DateD': adminTimestampDateD,
-        'Q06_PromoCounter': effectivePromoCounter,
-      });
+    final jobData = {
+      ...ongoingSnap.data()!,
+      if (forDelivery) ...{
+        'Q00_ForSorting': false,
+        'Q01_RiderPickup': true,
+      },
+      'O00_ProcessStep': 'done',
+      'O01_AllStatus': 0.7,
+      'A05_DateD': adminTimestampDateD,
+      'Q06_PromoCounter': effectivePromoCounter,
+    };
 
-      // Step 2: Write to Jobs_done in jobsDoneDb using transaction
-      // Note: jobsDoneFirestore is a different database instance, so we can't include it in the transaction
-      // We'll do this after the primary transaction commits
+    // Step 2: Write to Jobs_done FIRST (separate database)
+    print("📝 Writing to Jobs_done in jobsDoneDb...");
+    await jobsDoneFirestore.collection(JOBS_DONE_REF).doc(docId).set(jobData);
+    print("✅ Successfully wrote to Jobs_done");
 
-      // Step 3: Delete from Jobs_ongoing in primary database (INSIDE transaction)
-      tx.delete(ongoingRef);
+    // Step 3: Update loyalty counter
+    print("📊 Updating loyalty counter...");
+    DatabaseLoyalty loyalty = DatabaseLoyalty();
+    loyalty.addCountByCardNumber(customerId, effectivePromoCounter);
+    print("✅ Loyalty counter updated");
 
-      // Return jobData so we can use it after transaction succeeds
-      return jobData;
-    }).then((jobData) async {
-      // After transaction succeeds, write to Jobs_done (separate database)
-      print("📝 Writing to Jobs_done in jobsDoneDb...");
-      await jobsDoneFirestore.collection(JOBS_DONE_REF).doc(docId).set(jobData);
-      print("✅ Successfully wrote to Jobs_done");
+    // Step 4: Mark for deletion in sync_delete_queue (will retry on network recovery)
+    print("🔄 Marking job for deletion from Jobs_ongoing...");
+    final deleteQueue = primaryFirestore.collection(SYNC_DELETE_QUEUE_REF);
+    final deleteQueueRef =
+        deleteQueue.doc(syncDeleteQueueDocId(JOBS_ONGOING_REF, docId));
 
-      // Step 4: Update loyalty counter
-      print("📊 Updating loyalty counter...");
-      DatabaseLoyalty loyalty = DatabaseLoyalty();
-      loyalty.addCountByCardNumber(customerId, effectivePromoCounter);
-      print("✅ Loyalty counter updated");
+    await deleteQueue.doc(deleteQueueRef.id).set(
+          buildSyncDeleteQueuePayload(
+            sourceCollection: JOBS_ONGOING_REF,
+            docId: docId,
+            reason: 'Job moved to Jobs_done',
+          ),
+        );
+    print("✅ Marked for deletion in queue");
 
-      print("✅ Job $docId successfully moved to Jobs_done!");
-    }).catchError((e) {
-      print("❌ Error moving job to Jobs_done: $e");
-      throw Exception('Failed to complete job move: $e');
-    });
+    // Step 5: Now delete from Jobs_ongoing (with retry on failure)
+    print("🗑️ Deleting from Jobs_ongoing...");
+    try {
+      await ongoingRef.delete();
+      print("✅ Successfully deleted from Jobs_ongoing");
+
+      // If delete succeeds, remove from sync queue
+      await deleteQueueRef.delete();
+      print("✅ Removed from sync queue");
+    } catch (deleteError) {
+      print("⚠️ Failed to delete from Jobs_ongoing immediately: $deleteError");
+      print(
+          "📌 Job will be retried via sync_delete_queue when network recovers");
+      // Don't rethrow - the sync queue will handle retry
+    }
+
+    print("✅ Job $docId successfully moved to Jobs_done!");
   } catch (e) {
     print("❌ Exception in moveOngoingToDone: $e");
     rethrow;
@@ -450,6 +464,7 @@ Future<void> moveOngoingToDone(
 }
 
 /// ▶ Done → Completed
+/// Uses sync_delete_queue for safe deletion on slow internet
 Future<void> moveAllDoneToCompleted() async {
   final jobsDoneDb = FirebaseService.jobsDoneFirestore;
   final primaryDb = FirebaseFirestore.instance;
@@ -467,41 +482,109 @@ Future<void> moveAllDoneToCompleted() async {
     return;
   }
 
-  final primaryBatch = primaryDb.batch(); // ✅ for writes to primaryDb
-  final doneBatch = jobsDoneDb.batch(); // ✅ for deletes on jobsDoneDb
   final deleteQueue = primaryDb.collection(SYNC_DELETE_QUEUE_REF);
 
   for (final doc in snapshot.docs) {
-    final completedRef = completedCollection.doc(doc.id);
-    final deleteQueueRef =
-        deleteQueue.doc(syncDeleteQueueDocId(JOBS_DONE_REF, doc.id));
+    try {
+      final docId = doc.id;
+      print("📝 Moving job $docId to Jobs_completed...");
 
-    primaryBatch.set(
-      completedRef,
-      withPendingDb2Sync({
+      // Step 1: Write to Jobs_completed FIRST (primary DB)
+      final completedRef = completedCollection.doc(docId);
+      final completedData = {
         ...doc.data(),
         'O00_ProcessStep': 'completed',
         'A06_DateC': Timestamp.now(),
-      }),
-    );
+      };
 
-    primaryBatch.set(
-      deleteQueueRef,
-      buildSyncDeleteQueuePayload(
-        sourceCollection: JOBS_DONE_REF,
-        docId: doc.id,
-        reason: 'moved_to_jobs_completed',
-      ),
-    );
+      await completedRef.set(completedData);
+      print("✅ Written to Jobs_completed");
 
-    doneBatch.delete(doc.reference); // ✅ same instance as jobsDoneDb
+      // Step 2: Mark for deletion in sync_delete_queue
+      final deleteQueueRef =
+          deleteQueue.doc(syncDeleteQueueDocId(JOBS_DONE_REF, docId));
+
+      await deleteQueue.doc(deleteQueueRef.id).set(
+            buildSyncDeleteQueuePayload(
+              sourceCollection: JOBS_DONE_REF,
+              docId: docId,
+              reason: 'moved_to_jobs_completed',
+            ),
+          );
+      print("🔄 Marked for deletion in queue");
+
+      // Step 3: Delete from Jobs_done with retry on failure
+      try {
+        await doneCollection.doc(docId).delete();
+        print("✅ Deleted from Jobs_done");
+
+        // If delete succeeds, remove from sync queue
+        await deleteQueueRef.delete();
+        print("✅ Removed from sync queue");
+      } catch (deleteError) {
+        print(
+            "⚠️ Failed to delete $docId from Jobs_done immediately: $deleteError");
+        print(
+            "📌 Job will be retried via sync_delete_queue when network recovers");
+        // Don't rethrow - sync queue will handle retry
+      }
+    } catch (e) {
+      print("❌ Error processing job ${doc.id}: $e");
+      // Continue with next doc instead of stopping
+    }
   }
 
-  // Commit primary first, then clean up source
-  await primaryBatch.commit();
-  await doneBatch.commit();
+  print("✅ Completed documents moved successfully.");
+}
 
-  print("Paid documents moved successfully.");
+/// 🔄 Background Sync: Process Delete Queue with Retries
+/// Called periodically or on network recovery to retry failed deletions
+/// from Jobs_ongoing that were marked but not immediately deleted
+Future<void> processSyncDeleteQueue() async {
+  final primaryDb = FirebaseFirestore.instance;
+  final deleteQueue = primaryDb.collection(SYNC_DELETE_QUEUE_REF);
+
+  try {
+    print("🔄 Processing sync_delete_queue for pending deletions...");
+    final queueDocs = await deleteQueue.get().withFsTimeout();
+
+    if (queueDocs.docs.isEmpty) {
+      print("✅ No pending deletions in queue");
+      return;
+    }
+
+    int successCount = 0;
+    int failureCount = 0;
+
+    for (final queueDoc in queueDocs.docs) {
+      try {
+        final sourceCollection = queueDoc.get('sourceCollection') as String;
+        final docId = queueDoc.get('docId') as String;
+
+        print("🔄 Processing deletion: $sourceCollection / $docId");
+
+        // Get the actual reference to delete
+        final sourceRef = primaryDb.collection(sourceCollection).doc(docId);
+
+        // Try to delete
+        await sourceRef.delete();
+        print("✅ Successfully deleted $docId from $sourceCollection");
+
+        // Remove from sync queue
+        await deleteQueue.doc(queueDoc.id).delete();
+        successCount++;
+      } catch (e) {
+        print("⚠️ Failed to delete ${queueDoc.id}: $e");
+        failureCount++;
+        // Leave in queue for next retry
+      }
+    }
+
+    print(
+        "🔄 Sync queue processing complete: $successCount succeeded, $failureCount failed");
+  } catch (e) {
+    print("❌ Error processing sync_delete_queue: $e");
+  }
 }
 
 /// 🟥🟥🟥🟥🟥🟥🟥🟥🟥🟥

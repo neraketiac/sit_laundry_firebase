@@ -21,11 +21,18 @@ Widget _buildSupplyRow(SuppliesModelHist sMH) {
   final isFundsIn = sMH.itemUniqueId == 4403;
 
   if (ifMenuUniqueIsEOD(sMH)) {
+    // Determine if fund check was done in morning (before 12nn) or afternoon
+    final logTime = sMH.logDate.toDate();
+    final isMorning = logTime.hour < 12;
+    final rowColor = isMorning
+        ? Colors.purple.shade200 // Light purple for morning
+        : cFundsEOD; // Original color for afternoon
+
     return Container(
       height: 22,
       padding: const EdgeInsets.symmetric(horizontal: 4),
       decoration: BoxDecoration(
-        color: cFundsEOD,
+        color: rowColor,
         border: Border(
           bottom: BorderSide(
             color: const Color.fromARGB(255, 89, 89, 89),
@@ -95,59 +102,95 @@ Widget _buildSupplyRow(SuppliesModelHist sMH) {
         ),
       ),
     ),
-    child: Row(
-      children: [
-        Text(
-          DateFormat('MM/dd hh:mm a').format(sMH.logDate.toDate()),
-          style: TextStyle(
-            fontSize: 9,
-            color: const Color.fromARGB(255, 68, 68, 68),
+    child: isAdmin
+        ? Row(
+            children: [
+              Text(
+                DateFormat('MM/dd hh:mm a').format(sMH.logDate.toDate()),
+                style: TextStyle(
+                  fontSize: 9,
+                  color: const Color.fromARGB(255, 68, 68, 68),
+                ),
+              ),
+              const SizedBox(width: 4),
+              Text(
+                "₱${value.format(sMH.currentCounter)}",
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                  color: isFundsIn
+                      ? const Color(0xFF0D47A1) // Blue for Funds In
+                      : (bNegative
+                          ? const Color.fromARGB(
+                              255, 185, 57, 48) // Red for negative
+                          : const Color(0xFF0D47A1)), // Blue for positive
+                ),
+              ),
+              const SizedBox(width: 4),
+              Expanded(
+                child: Text(
+                  "${sMH.itemName} ${ifMenuUniqueIsCashIn(sMH) ? 'to' : 'by'} ${sMH.customerName} : ${sMH.remarks}",
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF263238),
+                  ),
+                ),
+              ),
+              Text(
+                sMH.empId,
+                style: TextStyle(
+                    fontSize: 8,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey[800]),
+              ),
+              Text(
+                "pCF ₱${value.format(sMH.currentStocks)}",
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                  color: (bNegativePCF
+                      ? Color.fromARGB(255, 185, 57, 48)
+                      : Color(0xFF0D47A1)),
+                ),
+              ),
+            ],
+          )
+        : Row(
+            children: [
+              Text(
+                DateFormat('MM/dd hh:mm a').format(sMH.logDate.toDate()),
+                style: TextStyle(
+                  fontSize: 9,
+                  color: const Color.fromARGB(255, 68, 68, 68),
+                ),
+              ),
+              const SizedBox(width: 4),
+              Expanded(
+                child: Text(
+                  "${sMH.itemName} ${ifMenuUniqueIsCashIn(sMH) ? 'to' : 'by'} ${sMH.empId}: ${sMH.remarks}",
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF263238),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                "pCF ₱${value.format(sMH.currentStocks)}",
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                  color: (bNegativePCF
+                      ? Color.fromARGB(255, 185, 57, 48)
+                      : Color(0xFF0D47A1)),
+                ),
+              ),
+            ],
           ),
-        ),
-        const SizedBox(width: 4),
-        Text(
-          "₱${value.format(sMH.currentCounter)}",
-          style: TextStyle(
-            fontSize: 10,
-            fontWeight: FontWeight.w600,
-            color: isFundsIn
-                ? const Color(0xFF0D47A1) // Blue for Funds In
-                : (bNegative
-                    ? const Color.fromARGB(255, 185, 57, 48) // Red for negative
-                    : const Color(0xFF0D47A1)), // Blue for positive
-          ),
-        ),
-        const SizedBox(width: 4),
-        Expanded(
-          child: Text(
-            "${sMH.itemName} ${ifMenuUniqueIsCashIn(sMH) ? 'to' : 'by'} ${sMH.customerName} : ${sMH.remarks}",
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF263238),
-            ),
-          ),
-        ),
-        Text(
-          sMH.empId,
-          style: TextStyle(
-              fontSize: 8,
-              fontWeight: FontWeight.w600,
-              color: Colors.grey[800]),
-        ),
-        Text(
-          "pCF ₱${value.format(sMH.currentStocks)}",
-          style: TextStyle(
-            fontSize: 10,
-            fontWeight: FontWeight.w600,
-            color: (bNegativePCF
-                ? Color.fromARGB(255, 185, 57, 48)
-                : Color(0xFF0D47A1)),
-          ),
-        ),
-      ],
-    ),
   );
 }
 

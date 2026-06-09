@@ -183,6 +183,61 @@ void showReceipt(BuildContext context, JobModelRepository jobRepo,
                     "Remarks: ${jobRepo.remarks}",
                     style: TextStyle(fontFamily: "Courier", color: textColor),
                   ),
+                // GCash Receipt Screenshot - if available
+                if (jobRepo.gcashReceiptUrl.isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  Center(
+                    child: Text(
+                      "GCash Receipt Screenshot",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: textColor,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    constraints: const BoxConstraints(
+                      maxHeight: 200,
+                      maxWidth: 280,
+                    ),
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: isDark
+                            ? Colors.grey.shade700
+                            : Colors.grey.shade300,
+                      ),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.network(
+                        jobRepo.gcashReceiptUrl,
+                        fit: BoxFit.contain,
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return Center(
+                            child: CircularProgressIndicator(
+                              value: loadingProgress.expectedTotalBytes != null
+                                  ? loadingProgress.cumulativeBytesLoaded /
+                                      loadingProgress.expectedTotalBytes!
+                                  : null,
+                            ),
+                          );
+                        },
+                        errorBuilder: (context, error, stackTrace) {
+                          return Center(
+                            child: Text(
+                              'Failed to load image',
+                              style: TextStyle(color: Colors.red.shade400),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 8),
                 receiptCenterDark("Thank you for choosing"),
                 receiptCenterDark("WASH KO LANG"),

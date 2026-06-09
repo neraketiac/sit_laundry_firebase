@@ -163,13 +163,16 @@ class _GCashDoneWidgetState extends State<_GCashDoneWidget> {
     );
   }
 
-  Widget _buildImageViewer(BuildContext context, GCashRepository gRepo) {
-    // Determine which image to show based on fund type
-    final fundCode = gRepo.itemUniqueId;
-    final bool isCashOut = fundCode == 4407; // menuOthUniqIdCashOut
-    final String imageUrl =
-        isCashOut ? gRepo.cashOutImageUrl : gRepo.cashInImageUrl;
-    final IconData fallbackIcon = isCashOut ? Icons.logout : Icons.login;
+  Widget _buildReadOnlyImageViewer(
+      BuildContext context, GCashRepository gRepo) {
+    // Determine which image to show - prioritize whichever URL is not empty
+    final String imageUrl = gRepo.cashInImageUrl.isNotEmpty
+        ? gRepo.cashInImageUrl
+        : gRepo.cashOutImageUrl;
+    final IconData fallbackIcon =
+        gRepo.cashOutImageUrl.isNotEmpty && gRepo.cashInImageUrl.isEmpty
+            ? Icons.logout
+            : Icons.login;
 
     // Only show SS link if image exists
     if (imageUrl.isEmpty) {
@@ -331,7 +334,7 @@ class _GCashDoneWidgetState extends State<_GCashDoneWidget> {
                 ),
                 const SizedBox(width: 6),
                 // SS Link - view only image display
-                _buildImageViewer(context, gRepo),
+                _buildReadOnlyImageViewer(context, gRepo),
               ],
             ),
           ],
