@@ -100,6 +100,9 @@ void showGCashPending(BuildContext context) async {
   // Toggle state for staff buttons visibility — must be outside StatefulBuilder
   bool showStaffButtons = false;
 
+  // CashOut fee recording toggle — local only, resets every time dialog opens
+  bool recordCashOutFeeInFunds = false;
+
   /// Returns true if the typed name is a staff (excluding Ket and DonF)
   bool isStaffSelected() {
     final name = gRepo.customerNameVar.text.trim();
@@ -131,6 +134,7 @@ void showGCashPending(BuildContext context) async {
     await callDatabaseGCashPendingAdd(context, gRepo.getModel()!);
 
     // Only generate Supplies Hist/Curr for Cash-In and Load, NOT for Cash-Out
+    // EXCEPT: if Cash-Out and recordCashOutFeeInFunds is true, then record fee
     final isCashOutTransaction = gRepo.selectedFundCode == menuOthUniqIdCashOut;
 
     if (!isCashOutTransaction) {
@@ -185,6 +189,30 @@ void showGCashPending(BuildContext context) async {
             remarks: gRepo.remarksVar.text,
           );
           await DatabaseSuppliesCurrent().addSuppliesCurr(feeSMH);
+        }
+      }
+    } else if (isCashOut && recordCashOutFeeInFunds) {
+      // Cash-Out with fee recording enabled: record fee in Funds In
+      final fee = int.tryParse(feeController.text.replaceAll(',', '')) ?? 0;
+      if (fee > 0) {
+        try {
+          final feeSMH = SuppliesModelHist(
+            docId: '',
+            countId: 0,
+            itemId: menuOthCashInOutFunds,
+            itemUniqueId: menuOthUniqIdFee,
+            itemName: 'Gcash Fee',
+            currentCounter: fee,
+            currentStocks: 0,
+            logDate: Timestamp.now(),
+            empId: empIdGlobal,
+            customerId: 0,
+            customerName: gRepo.customerName,
+            remarks: 'GCash ${gRepo.itemName} ${gRepo.remarks}',
+          );
+          await DatabaseSuppliesCurrent().addSuppliesCurr(feeSMH);
+        } catch (e) {
+          debugPrint('Error recording CashOut fee in Funds In: $e');
         }
       }
     }
@@ -653,17 +681,44 @@ void showGCashPending(BuildContext context) async {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  // Warning message for Cash-Out only
+                                  // Checkbox for Cash-Out fee recording
                                   if (isCashOut)
                                     Padding(
                                       padding: const EdgeInsets.only(bottom: 8),
-                                      child: Text(
-                                        'Cash-Out: Enter the exact amount to give to customer. Fee is only a guide.',
-                                        style: TextStyle(
-                                          fontSize: s.small,
-                                          fontWeight: FontWeight.w500,
-                                          color: Colors.red.shade400,
-                                        ),
+                                      child: Row(
+                                        children: [
+                                          Checkbox(
+                                            value: recordCashOutFeeInFunds,
+                                            onChanged: (v) => setState(() {
+                                              recordCashOutFeeInFunds =
+                                                  v ?? false;
+                                            }),
+                                            activeColor: Colors.deepOrange,
+                                            fillColor: MaterialStateProperty
+                                                .resolveWith((states) {
+                                              if (states.contains(
+                                                  MaterialState.selected)) {
+                                                return Colors.deepOrange;
+                                              }
+                                              return Colors.white
+                                                  .withOpacity(0.3);
+                                            }),
+                                          ),
+                                          Expanded(
+                                            child: Text(
+                                              recordCashOutFeeInFunds
+                                                  ? 'Fee will be recorded in Funds In as Fee, you can also change the value.'
+                                                  : 'Fee is guide only, it will not record in Funds In as Fee.',
+                                              style: TextStyle(
+                                                fontSize: s.small,
+                                                fontWeight: FontWeight.w500,
+                                                color: recordCashOutFeeInFunds
+                                                    ? Colors.green.shade300
+                                                    : Colors.red.shade400,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
                                   Row(
