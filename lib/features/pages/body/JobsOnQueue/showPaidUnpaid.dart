@@ -50,8 +50,11 @@ void showPaidUnpaid(BuildContext context, JobModelRepository jobRepo) {
 
     // Auto-record cash payment DELTA to Supplies
     // Skipped when global skipSuppliesOnPaid OR per-job skipSuppliesThisJob is enabled
+    // For non-admin: always record supplies (skipSuppliesOnPaid only affects admin)
     // Uses Firestore Transaction for atomic job + supplies update
-    if (jobRepo.paidCash && !skipSuppliesOnPaid && !skipSuppliesThisJob) {
+    final shouldSkipSupplies =
+        (isAdmin && skipSuppliesOnPaid) || skipSuppliesThisJob;
+    if (jobRepo.paidCash && !shouldSkipSupplies) {
       final delta = jobRepo.paidCashAmount - previousPaidCash;
       if (delta > 0) {
         try {

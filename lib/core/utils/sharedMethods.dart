@@ -14,6 +14,7 @@ import 'package:laundry_firebase/core/constants/sharedConstantsFinal.dart';
 import 'package:laundry_firebase/core/utils/sharedmethodsdatabase.dart';
 import 'package:laundry_firebase/features/jobs/repository/jobmodel_repository.dart';
 import 'package:laundry_firebase/features/items/repository/supplies_hist_repository.dart';
+import 'package:laundry_firebase/features/items/models/suppliesmodelhist.dart';
 import 'package:laundry_firebase/core/utils/firestore_handler.dart';
 import 'package:laundry_firebase/core/services/firebase_service.dart';
 import 'package:laundry_firebase/core/services/database_jobs.dart';
@@ -831,7 +832,8 @@ Future<void> revertLaundryPaymentSuppliesHistory(
 }
 
 /// Atomically update job payment and record supplies using Firestore Transaction
-/// Ensures both operations succeed or both fail - no inconsistent data
+/// Record cash payment to supplies history and current
+/// Directly uses callDatabaseSuppliesCurrentAdd to preserve all fields
 Future<void> recordCashPaymentAtomicTransaction(
   BuildContext context,
   JobModelRepository jobRepo,
@@ -840,101 +842,65 @@ Future<void> recordCashPaymentAtomicTransaction(
   if (!jobRepo.paidCash || delta <= 0) return;
 
   try {
-    final FirebaseFirestore firestore = FirebaseFirestore.instance;
+    // Create the SuppliesModelHist with all proper fields
+    final sMH = SuppliesModelHist(
+      docId: '',
+      countId: 0,
+      itemId: menuOthCashInOutFunds,
+      itemUniqueId: menuOthLaundryPayment,
+      itemName: getItemNameOnly(menuOthCashInOutFunds, menuOthLaundryPayment),
+      currentCounter: delta,
+      currentStocks: 0,
+      logDate: Timestamp.now(),
+      empId: empIdGlobal,
+      customerId: jobRepo.customerId,
+      customerName: jobRepo.customerName,
+      remarks: 'auto via paid ${jobRepo.remarks}',
+      expenseAmount: 0,
+    );
 
-    await firestore.runTransaction((transaction) async {
-      // Get the current job document reference
-      late DocumentReference jobDocRef;
-      if (jobRepo.jobModelData.processStep == 'completed') {
-        jobDocRef = firestore
-            .collection('Jobs_completed')
-            .doc(jobRepo.jobModelData.docId);
-      } else if (jobRepo.jobModelData.processStep == 'done') {
-        jobDocRef =
-            firestore.collection('Jobs_done').doc(jobRepo.jobModelData.docId);
-      } else if (jobRepo.jobModelData.processStep == 'waiting' ||
-          jobRepo.jobModelData.processStep == 'washing' ||
-          jobRepo.jobModelData.processStep == 'drying' ||
-          jobRepo.jobModelData.processStep == 'folding') {
-        jobDocRef = firestore
-            .collection('Jobs_ongoing')
-            .doc(jobRepo.jobModelData.docId);
-      } else {
-        jobDocRef =
-            firestore.collection('jobs_queue').doc(jobRepo.jobModelData.docId);
-      }
+    // Call directly without going through setSuppliesRepository which overwrites fields
+    await callDatabaseSuppliesCurrentAdd(sMH);
 
-      // Step 1: Update job payment in transaction
-      transaction.update(jobDocRef, {
-        'paidCashAmount': jobRepo.paidCashAmount,
-        'paidD': jobRepo.paidD,
-        'paymentReceivedBy': jobRepo.paymentReceivedBy,
-        'remarks': jobRepo.remarks,
-      });
-
-      // Step 2: Create supplies record in same transaction
-      final suppliesRef =
-          firestore.collection('SuppliesCurrent').doc(); // Auto-generate ID
-
-      final suppliesData = {
-        'ItemId': menuOthCashInOutFunds,
-        'ItemUniqueId': menuOthLaundryPayment,
-        'ItemName':
-            getItemNameOnly(menuOthCashInOutFunds, menuOthLaundryPayment),
-        'CurrentCounter': delta,
-        'CurrentStocks': 0,
-        'LogDate': Timestamp.now(),
-        'EmpId': empIdGlobal,
-        'CustomerId': jobRepo.customerId,
-        'CustomerName': jobRepo.customerName,
-        'Remarks': 'auto via paid ${jobRepo.remarks}',
-      };
-
-      transaction.set(suppliesRef, suppliesData);
-
-      // If we get here, both operations will be committed atomically
-    }).then((_) {
-      // Success - show snackbar
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Payment recorded successfully'),
-            backgroundColor: Colors.green,
-            duration: Duration(seconds: 2),
-          ),
-        );
-      }
-    }).catchError((e) {
-      // Transaction failed - both operations are rolled back
-      debugPrint('Transaction failed: $e');
-
-      // Mark in remarks that it failed
-      final failureMarker = '[Failed to insert record]';
-      if (!jobRepo.selectedRemarksVar.text.contains(failureMarker)) {
-        jobRepo.selectedRemarksVar.text =
-            '${jobRepo.selectedRemarksVar.text} $failureMarker'.trim();
-        jobRepo.remarks = jobRepo.selectedRemarksVar.text;
-      }
-
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text(
-              'Failed to record payment. Job marked for manual review.',
-            ),
-            backgroundColor: Colors.red,
-            duration: const Duration(seconds: 5),
-          ),
-        );
-      }
-    });
+    // Success - show snackbar
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Supplies recorded successfully'),
+          backgroundColor: Colors.green,
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
   } catch (e) {
-    debugPrint('Error in atomic transaction: $e');
+    debugPrint('Supplies recording failed: $e');
+
+    // Mark in remarks that it failed
+    final failureMarker = '[Failed to insert record]';
+    if (!jobRepo.selectedRemarksVar.text.contains(failureMarker)) {
+      jobRepo.selectedRemarksVar.text =
+          '${jobRepo.selectedRemarksVar.text} $failureMarker'.trim();
+      jobRepo.remarks = jobRepo.selectedRemarksVar.text;
+    }
+
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Failed to record supplies: $e',
+          ),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 5),
+        ),
+      );
+    }
   }
 }
 
 /// Atomically update GCash record and record supplies using Firestore Transaction
-/// Ensures both operations succeed or both fail - no inconsistent data
+/// Record GCash payment to supplies history and current
+/// Record GCash payment to supplies history and current
+/// Directly uses callDatabaseSuppliesCurrentAdd to preserve all fields
 Future<void> recordGCashPaymentAtomicTransaction(
   BuildContext context,
   GCashModel gCashModel,
@@ -944,67 +910,50 @@ Future<void> recordGCashPaymentAtomicTransaction(
   String remarks,
 ) async {
   try {
-    final FirebaseFirestore firestore = FirebaseFirestore.instance;
+    // Create the SuppliesModelHist with all proper fields
+    final sMH = SuppliesModelHist(
+      docId: '',
+      countId: 0,
+      itemId: menuOthCashInOutFunds,
+      itemUniqueId: gCashModel.itemUniqueId,
+      itemName: itemName,
+      currentCounter: customerAmount,
+      currentStocks: 0,
+      logDate: Timestamp.now(),
+      empId: empIdGlobal,
+      customerId: 0,
+      customerName: customerName,
+      remarks: 'GCash $itemName $remarks',
+      expenseAmount: 0,
+    );
 
-    await firestore.runTransaction((transaction) async {
-      // Get GCash document reference
-      final gCashDocRef =
-          firestore.collection('GCash_Pending').doc(gCashModel.docId);
+    // Call directly without going through setSuppliesRepository which overwrites fields
+    await callDatabaseSuppliesCurrentAdd(sMH);
 
-      // Step 1: Update GCash status to 0.85 (Payment done)
-      transaction.update(gCashDocRef, {
-        'gCashStatus': 0.85,
-      });
-
-      // Step 2: Create supplies record in same transaction
-      final suppliesRef =
-          firestore.collection('SuppliesCurrent').doc(); // Auto-generate ID
-
-      final suppliesData = {
-        'ItemId': menuOthCashInOutFunds,
-        'ItemUniqueId': gCashModel.itemUniqueId,
-        'ItemName': itemName,
-        'CurrentCounter': customerAmount,
-        'CurrentStocks': 0,
-        'LogDate': Timestamp.now(),
-        'EmpId': empIdGlobal,
-        'CustomerId': 0,
-        'CustomerName': customerName,
-        'Remarks': 'GCash $itemName $remarks',
-      };
-
-      transaction.set(suppliesRef, suppliesData);
-
-      // If we get here, both operations will be committed atomically
-    }).then((_) {
-      // Success - show snackbar
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('GCash payment recorded successfully'),
-            backgroundColor: Colors.green,
-            duration: Duration(seconds: 2),
-          ),
-        );
-      }
-    }).catchError((e) {
-      // Transaction failed - both operations are rolled back
-      debugPrint('GCash Transaction failed: $e');
-
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text(
-              'Failed to record GCash payment. Please check supplies manually.',
-            ),
-            backgroundColor: Colors.red,
-            duration: const Duration(seconds: 5),
-          ),
-        );
-      }
-    });
+    // Success - show snackbar
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('GCash supplies recorded successfully'),
+          backgroundColor: Colors.green,
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
   } catch (e) {
-    debugPrint('Error in GCash atomic transaction: $e');
+    debugPrint('GCash supplies recording failed: $e');
+
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Failed to record GCash supplies: $e',
+          ),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 5),
+        ),
+      );
+    }
   }
 }
 

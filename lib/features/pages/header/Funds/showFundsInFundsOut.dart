@@ -22,6 +22,20 @@ void showFundsInFundsOut(BuildContext context) async {
   // Initialize selectedFundCode to Funds In by default
   selectedFundCode = menuOthUniqIdFundsIn;
 
+  // 🔴 CLEAR any previously selected customer when opening this dialog
+  autocompleteSelected = CustomerModel(
+    customerId: 0,
+    name: '',
+    address: '',
+    contact: '',
+    remarks: '',
+    loyaltyCount: 0,
+  );
+  jobRepo.selectedCustomerId = 0;
+  jobRepo.selectedCustomerNameVar.text = '';
+  customerAmountVar.text = '';
+  remarksSuppliesVar.text = '';
+
   final List<int> fundTypeCodes3rdLayer = [
     menuOthUniqIdFundsIn,
     menuOthUniqIdFundsOut,
@@ -287,6 +301,20 @@ void showFundsInFundsOut(BuildContext context) async {
                       const SnackBar(content: Text('Please enter amount.')),
                     );
                     return false;
+                  } else if (selectedFundCode == menuOthUniqIdFundsIn) {
+                    // 🔴 For Funds In, ONLY "Ket" is allowed
+                    if (jobRepo.selectedCustomerId != 123 ||
+                        jobRepo.selectedCustomerNameVar.text != '123# Ket') {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                            content: Text(
+                                'Only "Ket" can receive Funds In. Please select Funds In again.')),
+                      );
+                      return false;
+                    }
+                    // Funds In validation passed, save and return true
+                    await saveButtonSetRepository();
+                    return true;
                   } else if (ifMenuUniqueIsFundsOut(
                           SuppliesHistRepository.instance.suppliesModelHist!) &&
                       remarksSuppliesVar.text.isEmpty) {

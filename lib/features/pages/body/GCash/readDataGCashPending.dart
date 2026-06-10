@@ -995,7 +995,8 @@ Widget readDataGCashPending() {
                               showUploadedImage(
                                 context,
                                 gRepo,
-                                readOnly: true,
+                                readOnly: gRepo.cashInImageUrl.isNotEmpty ||
+                                    gRepo.cashOutImageUrl.isNotEmpty,
                               ),
                             ],
                           ),

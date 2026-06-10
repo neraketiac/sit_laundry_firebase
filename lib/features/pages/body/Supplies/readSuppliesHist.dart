@@ -40,53 +40,86 @@ Widget _buildSupplyRow(SuppliesModelHist sMH) {
           ),
         ),
       ),
-      child: Row(
-        children: [
-          Text(
-            DateFormat('MM/dd hh:mm a').format(sMH.logDate.toDate()),
-            style: TextStyle(
-              fontSize: 9,
-              color: const Color.fromARGB(255, 68, 68, 68),
+      child: isAdmin
+          ? Row(
+              children: [
+                Text(
+                  DateFormat('MM/dd hh:mm a').format(sMH.logDate.toDate()),
+                  style: TextStyle(
+                    fontSize: 9,
+                    color: const Color.fromARGB(255, 68, 68, 68),
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  "₱${value.format(sMH.currentCounter)}",
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                    color: isFundsIn
+                        ? const Color(0xFF0D47A1) // Blue for Funds In
+                        : (bNegative
+                            ? const Color.fromARGB(
+                                255, 185, 57, 48) // Red for negative
+                            : const Color(0xFF0D47A1)), // Blue for positive
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: Text(
+                    "${sMH.itemName} by ${sMH.empId} : ${sMH.remarks}",
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF263238),
+                    ),
+                  ),
+                ),
+                Text(
+                  " pCF ₱${value.format(sMH.currentStocks)}",
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                    color: (bNegativePCF
+                        ? Color.fromARGB(255, 185, 57, 48)
+                        : Color(0xFF0D47A1)),
+                  ),
+                ),
+              ],
+            )
+          : Row(
+              children: [
+                Text(
+                  DateFormat('MM/dd hh:mm a').format(sMH.logDate.toDate()),
+                  style: TextStyle(
+                    fontSize: 9,
+                    color: const Color.fromARGB(255, 68, 68, 68),
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: Text(
+                    "Fund Check by ${sMH.empId} : ${sMH.remarks}",
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF263238),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  "₱${value.format(sMH.currentStocks + sMH.currentCounter)}",
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF0D47A1),
+                  ),
+                ),
+              ],
             ),
-          ),
-          const SizedBox(width: 4),
-          Text(
-            "₱${value.format(sMH.currentCounter)}",
-            style: TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.w600,
-              color: isFundsIn
-                  ? const Color(0xFF0D47A1) // Blue for Funds In
-                  : (bNegative
-                      ? const Color.fromARGB(
-                          255, 185, 57, 48) // Red for negative
-                      : const Color(0xFF0D47A1)), // Blue for positive
-            ),
-          ),
-          const SizedBox(width: 4),
-          Expanded(
-            child: Text(
-              "${sMH.itemName} by ${sMH.empId} : ${sMH.remarks}",
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF263238),
-              ),
-            ),
-          ),
-          Text(
-            " pCF ₱${value.format(sMH.currentStocks)}",
-            style: TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.w600,
-              color: (bNegativePCF
-                  ? Color.fromARGB(255, 185, 57, 48)
-                  : Color(0xFF0D47A1)),
-            ),
-          ),
-        ],
-      ),
     );
   }
 
@@ -167,26 +200,29 @@ Widget _buildSupplyRow(SuppliesModelHist sMH) {
                 ),
               ),
               const SizedBox(width: 4),
+              Text(
+                "₱${value.format(sMH.currentCounter)}",
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                  color: isFundsIn
+                      ? const Color(0xFF0D47A1) // Blue for Funds In
+                      : (bNegative
+                          ? const Color.fromARGB(
+                              255, 185, 57, 48) // Red for negative
+                          : const Color(0xFF0D47A1)), // Blue for positive
+                ),
+              ),
+              const SizedBox(width: 4),
               Expanded(
                 child: Text(
-                  "${sMH.itemName} ${ifMenuUniqueIsCashIn(sMH) ? 'to' : 'by'} ${sMH.empId}: ${sMH.remarks}",
+                  "${sMH.itemName} ${ifMenuUniqueIsCashIn(sMH) ? 'to' : 'by'} ${sMH.customerName} : ${sMH.remarks}",
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
                     color: Color(0xFF263238),
                   ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                "pCF ₱${value.format(sMH.currentStocks)}",
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w600,
-                  color: (bNegativePCF
-                      ? Color.fromARGB(255, 185, 57, 48)
-                      : Color(0xFF0D47A1)),
                 ),
               ),
             ],
