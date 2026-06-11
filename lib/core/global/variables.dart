@@ -155,6 +155,7 @@ const Map<String, String> nameMap = {
 
 const Map<String, String> mapEmpId = {
   '#0707': 'Rowell',
+  '#2929': 'Tonie',
   //'#151515': 'Jeng',
   //'#121212': 'Abby',
   '#1919': 'Lorie',
@@ -166,6 +167,7 @@ const Map<String, String> mapEmpId = {
 
 const Map<String, int> mapEmpIdRates = {
   '#0707': 400,
+  '#2929': 400,
   '#151515': 400,
   '#121212': 450,
   '#1919': 500,

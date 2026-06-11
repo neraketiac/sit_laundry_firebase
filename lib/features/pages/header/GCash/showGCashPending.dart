@@ -133,20 +133,81 @@ void showGCashPending(BuildContext context) async {
 
     await callDatabaseGCashPendingAdd(context, gRepo.getModel()!);
 
+    // Check if staff is selected for Cash-In
+    final isCashIn = gRepo.selectedFundCode == menuOthUniqIdCashIn;
+    final staffSelected = isCashIn && isStaffSelected();
+
     // Only generate Supplies Hist/Curr for Cash-In and Load, NOT for Cash-Out
     // EXCEPT: if Cash-Out and recordCashOutFeeInFunds is true, then record fee
+    // ALSO: if Cash-In with staff selected, skip supplies recording (only employee recording)
     final isCashOutTransaction = gRepo.selectedFundCode == menuOthUniqIdCashOut;
 
     if (!isCashOutTransaction) {
+      // If staff is selected for Cash-In: salary deduction only (no supplies recording)
+      if (staffSelected) {
+        // Set flag for employee deduction via salary maintenance pattern
+        isGcashCredit = true;
+
+        // Record as employee salary deduction only
+        // Uses cross-database pattern with insertion marker
+        const insertingMarker = '[Inserting to Supplies]';
+
+        try {
+          // Step 1: Mark GCash as inserting to supplies
+          gRepo.remarks = '${gRepo.remarks} $insertingMarker'.trim();
+          await callDatabaseGCashPendingAdd(context, gRepo.getModel()!);
+
+          // Step 2: Record supplies
+          SuppliesHistRepository.instance.setItemName(
+              getItemNameOnly(menuOthCashInOutFunds, gRepo.selectedFundCode));
+          SuppliesHistRepository.instance.setItemId(menuOthCashInOutFunds);
+          SuppliesHistRepository.instance
+              .setItemUniqueId(gRepo.selectedFundCode);
+          SuppliesHistRepository.instance
+              .setCurrentCounter(gRepo.customerAmount);
+          SuppliesHistRepository.instance.setCustomerName(gRepo.customerName);
+          SuppliesHistRepository.instance.setCustomerId(0);
+          SuppliesHistRepository.instance
+              .setRemarks('GCash ${gRepo.itemName} ${gRepo.remarks}');
+          await setSuppliesRepository(context);
+
+          // Step 3: Remove insertion marker
+          gRepo.remarks = gRepo.remarks.replaceAll(insertingMarker, '').trim();
+          await callDatabaseGCashPendingAdd(context, gRepo.getModel()!);
+
+          isGcashCredit = false;
+        } catch (e) {
+          debugPrint('Error recording staff salary deduction: $e');
+          isGcashCredit = false;
+
+          // Try to mark with insertion marker if not already done
+          try {
+            gRepo.remarks = '${gRepo.remarks} $insertingMarker'.trim();
+            await callDatabaseGCashPendingAdd(context, gRepo.getModel()!);
+          } catch (updateError) {
+            debugPrint(
+                'Failed to mark staff GCash with insertion marker: $updateError');
+          }
+        }
+        // Note: No fee recording for staff salary deductions
+        return;
+      }
+
       // If Pending Funds In, skip funds recording (will be done in readDataGCashPending)
       if (pendingFundsUntilPaid && isStaffSelected()) {
         // Skip funds recording - will be done when status moves to next and user confirms "Pay Now?"
         return;
       } else if (!skipSuppliesThisSave) {
         // Normal funds recording for Cash-In and Load
-        // Uses Firestore Transaction for atomic supplies update
+        // Uses cross-database pattern with insertion marker
+        const insertingMarker = '[Inserting to Supplies]';
+
         try {
-          // For new GCash creation, we just record supplies
+          // Step 1: Mark GCash as inserting to supplies (cross-database operation)
+          gRepo.remarks = '${gRepo.remarks} $insertingMarker'.trim();
+          await callDatabaseGCashPendingAdd(context, gRepo.getModel()!);
+
+          // Step 2: For new GCash creation, we just record supplies
           // (GCash record is already created in callDatabaseGCashPendingAdd)
           SuppliesHistRepository.instance.setItemName(
               getItemNameOnly(menuOthCashInOutFunds, gRepo.selectedFundCode));
@@ -160,20 +221,48 @@ void showGCashPending(BuildContext context) async {
           SuppliesHistRepository.instance
               .setRemarks('GCash ${gRepo.itemName} ${gRepo.remarks}');
           await setSuppliesRepository(context);
+
+          // Step 3: Remove insertion marker after successful supplies insert
+          gRepo.remarks = gRepo.remarks.replaceAll(insertingMarker, '').trim();
+          await callDatabaseGCashPendingAdd(context, gRepo.getModel()!);
+
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('GCash and supplies recorded successfully'),
+                backgroundColor: Colors.green,
+                duration: Duration(seconds: 2),
+              ),
+            );
+          }
         } catch (e) {
-          // Transaction failed - mark in remarks
-          debugPrint('Error recording GCash supplies: $e');
-          final failureMarker = '[Failed to insert record]';
-          if (!gRepo.remarksVar.text.contains(failureMarker)) {
-            gRepo.remarksVar.text =
-                '${gRepo.remarksVar.text} $failureMarker'.trim();
-            gRepo.remarks = gRepo.remarksVar.text;
+          // If supplies insert fails, GCash retains the insertion marker for manual retry
+          debugPrint('Error in cross-database GCash operation: $e');
+
+          // Try to update GCash with marker if not already done
+          try {
+            gRepo.remarks = '${gRepo.remarks} $insertingMarker'.trim();
+            await callDatabaseGCashPendingAdd(context, gRepo.getModel()!);
+          } catch (updateError) {
+            debugPrint(
+                'Failed to mark GCash with insertion marker: $updateError');
+          }
+
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Failed to record supplies: $e'),
+                backgroundColor: Colors.red,
+                duration: const Duration(seconds: 5),
+              ),
+            );
           }
         }
 
-        // Fee record (only if main recording succeeded)
+        // Fee record (only if main recording succeeded and NOT staff selected)
+        // Staff selections should never have fees recorded in SuppliesHist/Curr
         final fee = int.tryParse(feeController.text.replaceAll(',', '')) ?? 0;
-        if (fee > 0) {
+        if (fee > 0 && !staffSelected) {
           final feeSMH = SuppliesModelHist(
             docId: '',
             countId: 0,
@@ -237,9 +326,12 @@ void showGCashPending(BuildContext context) async {
         // Remove old listener if exists
         gRepo.customerAmountVar.removeListener(() {});
 
-        // Add new listener that respects pendingFundsUntilPaid
+        // Add new listener that respects pendingFundsUntilPaid and staff selection
         gRepo.customerAmountVar.addListener(() {
-          if (!pendingFundsUntilPaid) {
+          // If staff is selected or pending funds, set fee to 0
+          if (nameIsStaff || pendingFundsUntilPaid) {
+            feeController.text = '0';
+          } else {
             final amount = int.tryParse(
                     gRepo.customerAmountVar.text.replaceAll(',', '')) ??
                 0;
@@ -247,9 +339,6 @@ void showGCashPending(BuildContext context) async {
               final calculatedFee = calculateFeeFromAmount(amount);
               feeController.text = calculatedFee.toString();
             }
-          } else {
-            // If pending funds, set fee to 0
-            feeController.text = '0';
           }
         });
 
@@ -286,6 +375,13 @@ void showGCashPending(BuildContext context) async {
                         child: InkWell(
                           onTap: () => setState(() {
                             showStaffButtons = !showStaffButtons;
+                            // If closing the staff buttons (eye icon closed)
+                            if (!showStaffButtons) {
+                              // Clear the staff name and reset related state
+                              gRepo.customerNameVar.text = '';
+                              pendingFundsUntilPaid = false;
+                              // Fee will be recalculated based on amount
+                            }
                           }),
                           borderRadius: BorderRadius.circular(20),
                           child: Padding(
@@ -495,6 +591,34 @@ void showGCashPending(BuildContext context) async {
                                       ),
                                     ],
                                   ],
+                                ),
+                              ),
+
+                            // 5.5 Staff Salary Deduction Message (only for Cash-In when staff selected)
+                            if (!isCashOut && nameIsStaff)
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 8),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 12, vertical: 10),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(6),
+                                    color: Colors.red.withOpacity(0.15),
+                                    border: Border.all(
+                                      color: Colors.red.shade300,
+                                      width: 1.5,
+                                    ),
+                                  ),
+                                  child: Text(
+                                    'Walang pambayad, ibawas sa sweldo',
+                                    style: TextStyle(
+                                      fontSize: s.body,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.red.shade700,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
                                 ),
                               ),
 
@@ -883,64 +1007,12 @@ void showGCashPending(BuildContext context) async {
                               ),
                             ),
 
-                            // 9. Pending Funds In toggle (only visible if NOT Cash-out AND name is staff)
-                            if (!isCashOut && nameIsStaff)
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 8, vertical: 4),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        const Text(
-                                          'Enable, wala munang Funds In',
-                                          style: TextStyle(
-                                              fontSize: 14,
-                                              color: Colors.black87,
-                                              fontWeight: FontWeight.w600),
-                                        ),
-                                        Text(
-                                          'Pending ni ${gRepo.customerNameVar.text} ang Funds In(Staff Only).',
-                                          style: const TextStyle(
-                                              fontSize: 12,
-                                              color: Colors.black54),
-                                        ),
-                                      ],
-                                    ),
-                                    Switch(
-                                      value: pendingFundsUntilPaid,
-                                      activeThumbColor: Colors.deepOrange,
-                                      onChanged: (v) => setState(() {
-                                        pendingFundsUntilPaid = v;
-                                        if (v) {
-                                          skipSuppliesThisSave = false;
-                                          // If pending funds, set fee to 0
-                                          feeController.text = '0';
-                                        } else {
-                                          // If not pending, recalculate fee based on amount
-                                          final amount = int.tryParse(gRepo
-                                                  .customerAmountVar.text
-                                                  .replaceAll(',', '')) ??
-                                              0;
-                                          if (amount > 0) {
-                                            final calculatedFee =
-                                                calculateFeeFromAmount(amount);
-                                            feeController.text =
-                                                calculatedFee.toString();
-                                          }
-                                        }
-                                      }),
-                                    ),
-                                  ],
-                                ),
-                              ),
+                            // 9. Pending Funds In toggle - REMOVED
+                            // NOTE: When staff is selected, it's a salary deduction (ibawas sa sweldo), not pending funds in
+                            // The feature is now mutually exclusive: either staff salary deduction OR pending funds in
 
-                            // 10. Skip Funds Recording toggle (only visible if admin AND NOT pendingFundsUntilPaid AND NOT Cash-out)
-                            if (isAdmin && !pendingFundsUntilPaid && !isCashOut)
+                            // 10. Skip Funds Recording toggle (only visible if admin AND NOT Cash-out AND NOT staff selected)
+                            if (isAdmin && !isCashOut && !nameIsStaff)
                               Padding(
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 8, vertical: 4),

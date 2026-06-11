@@ -148,8 +148,18 @@ Widget readDataGCashPending() {
                                   // Record funds now as regular Funds In/Cash In/Load
                                   isGcashCredit = false;
 
-                                  // Use Firestore Transaction for atomic GCash + supplies update
+                                  const insertingMarker =
+                                      '[Inserting to Supplies]';
+
                                   try {
+                                    // Step 1: Mark GCash as inserting to supplies (cross-database operation)
+                                    gRepo.remarks =
+                                        '${gRepo.remarks} $insertingMarker'
+                                            .trim();
+                                    await DatabaseGCashPending()
+                                        .updateVoid(gRepo.getModel()!);
+
+                                    // Step 2: Insert to supplies in DB-B
                                     await recordGCashPaymentAtomicTransaction(
                                       context,
                                       gRepo.getModel()!,
@@ -158,17 +168,49 @@ Widget readDataGCashPending() {
                                       gRepo.customerName,
                                       gRepo.remarks,
                                     );
+
+                                    // Step 3: Remove insertion marker after successful supplies insert
+                                    gRepo.remarks = gRepo.remarks
+                                        .replaceAll(insertingMarker, '')
+                                        .trim();
+                                    await DatabaseGCashPending()
+                                        .updateVoid(gRepo.getModel()!);
+
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        const SnackBar(
+                                          content: Text(
+                                              'GCash payment and supplies recorded successfully'),
+                                          backgroundColor: Colors.green,
+                                          duration: Duration(seconds: 2),
+                                        ),
+                                      );
+                                    }
                                   } catch (e) {
-                                    // Transaction failed - failure marker already added in transaction
+                                    // If supplies insert fails, GCash retains the insertion marker for manual retry
                                     debugPrint(
-                                        'Error in GCash atomic transaction: $e');
-                                    final failureMarker =
-                                        '[Failed to insert record]';
-                                    if (!gRepo.remarks
-                                        .contains(failureMarker)) {
-                                      gRepo.remarks =
-                                          '${gRepo.remarks} $failureMarker'
-                                              .trim();
+                                        'Error in cross-database GCash operation: $e');
+
+                                    // Try to update GCash with marker if not already done
+                                    try {
+                                      await DatabaseGCashPending()
+                                          .updateVoid(gRepo.getModel()!);
+                                    } catch (updateError) {
+                                      debugPrint(
+                                          'Failed to mark GCash with insertion marker: $updateError');
+                                    }
+
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                              'Failed to record supplies: $e'),
+                                          backgroundColor: Colors.red,
+                                          duration: const Duration(seconds: 5),
+                                        ),
+                                      );
                                     }
                                   }
                                 }
