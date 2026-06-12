@@ -167,6 +167,9 @@ Widget readDataGCashPending() {
                                       gRepo.customerAmount,
                                       gRepo.customerName,
                                       gRepo.remarks,
+                                      gRepo.remarks
+                                          .replaceAll(insertingMarker, '')
+                                          .trim(),
                                     );
 
                                     // Step 3: Remove insertion marker after successful supplies insert

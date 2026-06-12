@@ -833,15 +833,19 @@ Future<void> revertLaundryPaymentSuppliesHistory(
 
 /// Atomically update job payment and record supplies using Firestore Transaction
 /// Record cash payment to supplies history and current
-/// Directly uses callDatabaseSuppliesCurrentAdd to preserve all fields
+/// Record cash payment to supplies after checking markers
 Future<void> recordCashPaymentAtomicTransaction(
   BuildContext context,
   JobModelRepository jobRepo,
-  int delta,
-) async {
+  int delta, [
+  String? cleanRemarks,
+]) async {
   if (!jobRepo.paidCash || delta <= 0) return;
 
   try {
+    // Use cleanRemarks if provided, otherwise use jobRepo.remarks
+    final suppliersRemarks = cleanRemarks ?? jobRepo.remarks;
+
     // Create the SuppliesModelHist with all proper fields
     final sMH = SuppliesModelHist(
       docId: '',
@@ -855,7 +859,7 @@ Future<void> recordCashPaymentAtomicTransaction(
       empId: empIdGlobal,
       customerId: jobRepo.customerId,
       customerName: jobRepo.customerName,
-      remarks: 'auto via paid ${jobRepo.remarks}',
+      remarks: 'auto via paid $suppliersRemarks',
       expenseAmount: 0,
     );
 
@@ -897,19 +901,20 @@ Future<void> recordCashPaymentAtomicTransaction(
   }
 }
 
-/// Atomically update GCash record and record supplies using Firestore Transaction
-/// Record GCash payment to supplies history and current
-/// Record GCash payment to supplies history and current
-/// Directly uses callDatabaseSuppliesCurrentAdd to preserve all fields
+/// Record GCash payment to supplies after checking markers
 Future<void> recordGCashPaymentAtomicTransaction(
   BuildContext context,
   GCashModel gCashModel,
   String itemName,
   int customerAmount,
   String customerName,
-  String remarks,
-) async {
+  String remarks, [
+  String? cleanRemarks,
+]) async {
   try {
+    // Use cleanRemarks if provided, otherwise use remarks
+    final suppliersRemarks = cleanRemarks ?? remarks;
+
     // Create the SuppliesModelHist with all proper fields
     final sMH = SuppliesModelHist(
       docId: '',
@@ -923,7 +928,7 @@ Future<void> recordGCashPaymentAtomicTransaction(
       empId: empIdGlobal,
       customerId: 0,
       customerName: customerName,
-      remarks: 'GCash $itemName $remarks',
+      remarks: 'GCash $itemName $suppliersRemarks',
       expenseAmount: 0,
     );
 

@@ -52,8 +52,16 @@ void showPaidUnpaid(BuildContext context, JobModelRepository jobRepo) {
           // Update job in DB-A with insertion marker
           await callDatabaseUpdateJob(context, jobRepo.jobModelData);
 
-          // Step 2: Insert to supplies in DB-B
-          await recordCashPaymentAtomicTransaction(context, jobRepo, delta);
+          // Step 2: Insert to supplies in DB-B (pass clean remarks without marker)
+          final cleanRemarks = jobRepo.selectedRemarksVar.text
+              .replaceAll(insertingMarker, '')
+              .trim();
+          await recordCashPaymentAtomicTransaction(
+            context,
+            jobRepo,
+            delta,
+            cleanRemarks,
+          );
 
           // Step 3: Remove insertion marker after successful supplies insert
           jobRepo.selectedRemarksVar.text = jobRepo.selectedRemarksVar.text

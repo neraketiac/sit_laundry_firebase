@@ -209,6 +209,10 @@ void showGCashPending(BuildContext context) async {
 
           // Step 2: For new GCash creation, we just record supplies
           // (GCash record is already created in callDatabaseGCashPendingAdd)
+          // Use clean remarks without the marker for supplies
+          final cleanRemarks =
+              gRepo.remarks.replaceAll(insertingMarker, '').trim();
+
           SuppliesHistRepository.instance.setItemName(
               getItemNameOnly(menuOthCashInOutFunds, gRepo.selectedFundCode));
           SuppliesHistRepository.instance.setItemId(menuOthCashInOutFunds);
@@ -219,7 +223,7 @@ void showGCashPending(BuildContext context) async {
           SuppliesHistRepository.instance.setCustomerName(gRepo.customerName);
           SuppliesHistRepository.instance.setCustomerId(0);
           SuppliesHistRepository.instance
-              .setRemarks('GCash ${gRepo.itemName} ${gRepo.remarks}');
+              .setRemarks('GCash ${gRepo.itemName} $cleanRemarks');
           await setSuppliesRepository(context);
 
           // Step 3: Remove insertion marker after successful supplies insert
