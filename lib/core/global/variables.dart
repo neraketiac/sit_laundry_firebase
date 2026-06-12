@@ -144,6 +144,7 @@ void putEntries() {
 
 const Map<String, String> nameMap = {
   'rowell': 'Rowell',
+  'tonie': 'Tonie',
   //'jeng': 'Jeng',
   'lorie': 'Lorie',
   //'abby': 'Abby',

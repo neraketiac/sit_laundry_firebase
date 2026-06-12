@@ -3,9 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:laundry_firebase/core/global/variables_all_codes.dart';
 import 'package:laundry_firebase/features/employees/models/coveragerecordmodel.dart';
+import 'package:laundry_firebase/features/employees/models/employeemodel.dart';
 import 'package:laundry_firebase/core/utils/sharedMethods.dart';
 import 'package:laundry_firebase/core/services/database_coverage.dart';
-import 'package:laundry_firebase/features/items/repository/supplies_hist_repository.dart';
+import 'package:laundry_firebase/core/services/database_employee_current.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
 
 class DaySelection {
@@ -513,33 +514,35 @@ Future<Map<DateTime, DaySelection>?> showCalendarDialog(BuildContext context) {
                                               int.parse(ds.substring(4, 6)),
                                               int.parse(ds.substring(6, 8)),
                                             );
-                                            SuppliesHistRepository.instance
-                                                .clear();
-                                            SuppliesHistRepository.instance
-                                                .setItemName(getItemNameOnly(
-                                                    menuOthCashInOutFunds,
-                                                    menuOthSalaryPayment));
-                                            SuppliesHistRepository.instance
-                                                .setItemId(
-                                                    menuOthCashInOutFunds);
-                                            SuppliesHistRepository.instance
-                                                .setItemUniqueId(
-                                                    menuOthSalaryPayment);
-                                            SuppliesHistRepository.instance
-                                                .setRemarks(
-                                                    'Auto generated ${r.coverageDate}${r.amountEarned < 0 ? ' reverted' : ''}');
-                                            SuppliesHistRepository.instance
-                                                .setCurrentCounter(
-                                                    r.amountEarned);
-                                            SuppliesHistRepository.instance
-                                                .setCustomerName(r.empId);
-                                            SuppliesHistRepository.instance
-                                                .setEmpId(
-                                                    empNameToId[r.empId]!);
-                                            await setSuppliesRepository(context,
-                                                autoSalaryDate:
-                                                    Timestamp.fromDate(
-                                                        coverageDateTime));
+
+                                            // Create EmployeeHist record (not SuppliesHist)
+                                            final employeeModel = EmployeeModel(
+                                              docId: '',
+                                              countId: 0,
+                                              empId: empNameToId[r.empId]!,
+                                              empName: r.empId,
+                                              itemId: menuOthCashInOutFunds,
+                                              itemUniqueId:
+                                                  menuOthSalaryPayment,
+                                              itemName: getItemNameOnly(
+                                                  menuOthCashInOutFunds,
+                                                  menuOthSalaryPayment),
+                                              currentCounter: r.amountEarned,
+                                              currentStocks: 0,
+                                              logDate: Timestamp.now(),
+                                              logBy: empIdGlobal,
+                                              remarks:
+                                                  'Auto generated ${r.coverageDate}${r.amountEarned < 0 ? ' reverted' : ''}',
+                                              autoSalaryDate:
+                                                  Timestamp.fromDate(
+                                                      coverageDateTime),
+                                            );
+
+                                            // Add to EmployeeCurr (which also creates EmployeeHist internally)
+                                            final dbEmployeeCurrent =
+                                                DatabaseEmployeeCurrent();
+                                            await dbEmployeeCurrent
+                                                .addEmployeeCurr(employeeModel);
 
                                             // Compute and record bonus for the employee
                                             await computeBonus(
