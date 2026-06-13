@@ -12,6 +12,7 @@ import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_alter_job/cust
 import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_alter_job/customerNumber.dart';
 import 'package:laundry_firebase/shared/widgets/actions/fundTypeToggle.dart';
 import 'package:laundry_firebase/core/utils/sharedmethodsdatabase.dart';
+import 'package:laundry_firebase/core/services/database_gcash.dart';
 import 'package:laundry_firebase/features/payments/repository/gcash_repository.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
 import 'package:laundry_firebase/shared/widgets/actions/showUploadedImage.dart';
@@ -131,7 +132,38 @@ void showGCashPending(BuildContext context) async {
       gRepo.gCashStatus = 0.75;
     }
 
-    await callDatabaseGCashPendingAdd(context, gRepo.getModel()!);
+    // Initial insert — this creates the Firestore document with a new ID
+    final initialModel = gRepo.getModel()!;
+    DatabaseGCashPending databaseGCashPending = DatabaseGCashPending();
+    if (!await databaseGCashPending.addBool(initialModel)) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Error insert GCash Pending.')),
+        );
+      }
+      return;
+    }
+
+    // Store the docId for subsequent updates
+    gRepo.docId = initialModel.docId;
+
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('GCash record created successfully'),
+          backgroundColor: Colors.green,
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
+
+    notifyAllUsers(
+      title: initialModel.itemName,
+      body: "${initialModel.customerName} ₱${initialModel.customerAmount}",
+      url:
+          "https://wash-ko-lang-sit.web.app/#/scan?empId=${initialModel.logBy}",
+      sound: 'gcash-pending',
+    );
 
     // Check if staff is selected for Cash-In
     final isCashIn = gRepo.selectedFundCode == menuOthUniqIdCashIn;
@@ -155,7 +187,8 @@ void showGCashPending(BuildContext context) async {
         try {
           // Step 1: Mark GCash as inserting to supplies
           gRepo.remarks = '${gRepo.remarks} $insertingMarker'.trim();
-          await callDatabaseGCashPendingAdd(context, gRepo.getModel()!);
+          DatabaseGCashPending databaseGCashPending = DatabaseGCashPending();
+          await databaseGCashPending.updateBool(gRepo.getModel()!);
 
           // Step 2: Record supplies
           SuppliesHistRepository.instance.setItemName(
@@ -173,7 +206,7 @@ void showGCashPending(BuildContext context) async {
 
           // Step 3: Remove insertion marker
           gRepo.remarks = gRepo.remarks.replaceAll(insertingMarker, '').trim();
-          await callDatabaseGCashPendingAdd(context, gRepo.getModel()!);
+          await databaseGCashPending.updateBool(gRepo.getModel()!);
 
           isGcashCredit = false;
         } catch (e) {
@@ -183,7 +216,8 @@ void showGCashPending(BuildContext context) async {
           // Try to mark with insertion marker if not already done
           try {
             gRepo.remarks = '${gRepo.remarks} $insertingMarker'.trim();
-            await callDatabaseGCashPendingAdd(context, gRepo.getModel()!);
+            DatabaseGCashPending databaseGCashPending = DatabaseGCashPending();
+            await databaseGCashPending.updateBool(gRepo.getModel()!);
           } catch (updateError) {
             debugPrint(
                 'Failed to mark staff GCash with insertion marker: $updateError');
@@ -205,10 +239,11 @@ void showGCashPending(BuildContext context) async {
         try {
           // Step 1: Mark GCash as inserting to supplies (cross-database operation)
           gRepo.remarks = '${gRepo.remarks} $insertingMarker'.trim();
-          await callDatabaseGCashPendingAdd(context, gRepo.getModel()!);
+          DatabaseGCashPending databaseGCashPending = DatabaseGCashPending();
+          await databaseGCashPending.updateBool(gRepo.getModel()!);
 
           // Step 2: For new GCash creation, we just record supplies
-          // (GCash record is already created in callDatabaseGCashPendingAdd)
+          // (GCash record is already created in initial insert)
           // Use clean remarks without the marker for supplies
           final cleanRemarks =
               gRepo.remarks.replaceAll(insertingMarker, '').trim();
@@ -228,7 +263,7 @@ void showGCashPending(BuildContext context) async {
 
           // Step 3: Remove insertion marker after successful supplies insert
           gRepo.remarks = gRepo.remarks.replaceAll(insertingMarker, '').trim();
-          await callDatabaseGCashPendingAdd(context, gRepo.getModel()!);
+          await databaseGCashPending.updateBool(gRepo.getModel()!);
 
           if (context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -246,7 +281,8 @@ void showGCashPending(BuildContext context) async {
           // Try to update GCash with marker if not already done
           try {
             gRepo.remarks = '${gRepo.remarks} $insertingMarker'.trim();
-            await callDatabaseGCashPendingAdd(context, gRepo.getModel()!);
+            DatabaseGCashPending databaseGCashPending = DatabaseGCashPending();
+            await databaseGCashPending.updateBool(gRepo.getModel()!);
           } catch (updateError) {
             debugPrint(
                 'Failed to mark GCash with insertion marker: $updateError');

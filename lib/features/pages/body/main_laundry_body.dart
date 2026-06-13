@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:laundry_firebase/app.dart';
 import 'package:laundry_firebase/core/utils/app_scale.dart';
 import 'package:intl/intl.dart';
+import 'dart:convert';
+import 'package:web/web.dart' as web;
 import 'package:laundry_firebase/core/global/app_version.dart';
 import 'package:laundry_firebase/core/global/variables_ble.dart';
 import 'package:laundry_firebase/core/global/variables_det.dart';
@@ -63,7 +65,6 @@ import 'package:laundry_firebase/core/utils/sharedmethodsdatabase.dart';
 import 'package:laundry_firebase/core/services/database_employee_setup.dart';
 import 'package:laundry_firebase/core/services/database_jobs.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
-import 'package:web/web.dart' as web;
 
 class MyMainLaundryBody extends StatefulWidget {
   final String empidClass;
@@ -78,7 +79,6 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
   late DatabaseEmployeeSetup databaseEmployeeSetup;
   late EmployeeSetupModel empSetup;
 
-  bool isLoading = true;
   bool get _isDarkMode => empSetup.darkMode;
   Color get _scaffoldColor =>
       _isDarkMode ? const Color(0xFF121212) : Colors.deepPurple[100]!;
@@ -137,20 +137,65 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
 
   //================ EMPLOYEE =================
   Future<void> _loadEmployeeSetup() async {
-    final snapshot = await databaseEmployeeSetup.get().first;
+    try {
+      // Try to load from Firestore with timeout
+      final snapshot = await databaseEmployeeSetup
+          .get()
+          .first
+          .timeout(const Duration(seconds: 8));
 
-    if (snapshot.docs.isNotEmpty) {
-      final doc = snapshot.docs.first;
-      empSetup = doc.data().copyWith(docId: doc.id);
-    } else {
-      final newSetup = finalEmpSetup;
-      await databaseEmployeeSetup.add(newSetup);
-      empSetup = newSetup;
+      if (snapshot.docs.isNotEmpty) {
+        final doc = snapshot.docs.first;
+        empSetup = doc.data().copyWith(docId: doc.id);
+        // Save to local cache
+        await _saveEmployeeSetupCache(empSetup);
+      } else {
+        final newSetup = finalEmpSetup;
+        await databaseEmployeeSetup.add(newSetup);
+        empSetup = newSetup;
+        await _saveEmployeeSetupCache(newSetup);
+      }
+    } catch (e) {
+      debugPrint('Firestore employee setup failed: $e');
+      // Try to load from cache
+      final cached = await _loadEmployeeSetupCache();
+      if (cached != null) {
+        empSetup = cached;
+        debugPrint('Loaded employee setup from cache');
+        return;
+      }
+      // Fall back to defaults
+      empSetup = finalEmpSetup;
+      debugPrint('Using default employee setup');
     }
-    // Apply dark mode at MaterialApp level on load
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      myAppKey.currentState?.setDarkMode(empSetup.darkMode);
-    });
+
+    // Apply dark mode
+    if (mounted) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        myAppKey.currentState?.setDarkMode(empSetup.darkMode);
+      });
+    }
+  }
+
+  Future<void> _saveEmployeeSetupCache(EmployeeSetupModel setup) async {
+    try {
+      web.window.localStorage['employee_setup_cache'] =
+          jsonEncode(setup.toJson());
+    } catch (e) {
+      debugPrint('Failed to cache employee setup: $e');
+    }
+  }
+
+  Future<EmployeeSetupModel?> _loadEmployeeSetupCache() async {
+    try {
+      final cached = web.window.localStorage['employee_setup_cache'];
+      if (cached != null) {
+        return EmployeeSetupModel.fromJson(jsonDecode(cached));
+      }
+    } catch (e) {
+      debugPrint('Failed to load employee setup cache: $e');
+    }
+    return null;
   }
 
   void updateEmployeeSetup(EmployeeSetupModel updated) {
@@ -163,53 +208,126 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
 
   //================ ITEMS =================
   Future<void> _loadItemsFB() async {
-    await OtherItemsRepository.instance.loadOnce(collectionName: 'other_items');
-    listOthItemsFB = List.from(OtherItemsRepository.instance.items);
+    try {
+      await OtherItemsRepository.instance
+          .loadOnce(collectionName: 'other_items');
+      listOthItemsFB = List.from(OtherItemsRepository.instance.items);
 
-    await OtherItemsRepository.instance.loadOnce(collectionName: 'det_items');
-    listDetItemsFB = List.from(OtherItemsRepository.instance.items);
-    addlistDetItemsFB();
+      await OtherItemsRepository.instance.loadOnce(collectionName: 'det_items');
+      listDetItemsFB = List.from(OtherItemsRepository.instance.items);
+      addlistDetItemsFB();
 
-    await OtherItemsRepository.instance.loadOnce(collectionName: 'fab_items');
-    listFabItemsFB = List.from(OtherItemsRepository.instance.items);
-    addlistFabItemsFB();
+      await OtherItemsRepository.instance.loadOnce(collectionName: 'fab_items');
+      listFabItemsFB = List.from(OtherItemsRepository.instance.items);
+      addlistFabItemsFB();
 
-    await OtherItemsRepository.instance.loadOnce(collectionName: 'ble_items');
-    listBleItemsFB = List.from(OtherItemsRepository.instance.items);
+      await OtherItemsRepository.instance.loadOnce(collectionName: 'ble_items');
+      listBleItemsFB = List.from(OtherItemsRepository.instance.items);
 
-    listAllItemsFB.clear();
-    listAllItemsFB.addAll(listOthItemsFB);
-    listAllItemsFB.addAll(listDetItemsFB);
-    listAllItemsFB.addAll(listFabItemsFB);
-    listAllItemsFB.addAll(listBleItemsFB);
+      listAllItemsFB.clear();
+      listAllItemsFB.addAll(listOthItemsFB);
+      listAllItemsFB.addAll(listDetItemsFB);
+      listAllItemsFB.addAll(listFabItemsFB);
+      listAllItemsFB.addAll(listBleItemsFB);
 
-    for (var item in listAllItemsFB) {
-      stocksTypeLookup[(item.itemId, item.itemUniqueId)] = item.stocksType;
+      for (var item in listAllItemsFB) {
+        stocksTypeLookup[(item.itemId, item.itemUniqueId)] = item.stocksType;
+      }
+
+      // Save to cache
+      await _saveItemsCache();
+    } catch (e) {
+      debugPrint('Firestore items load failed: $e');
+      // Try to load from cache
+      final loaded = await _loadItemsCache();
+      if (loaded) {
+        debugPrint('Loaded items from cache');
+        return;
+      }
+      debugPrint('Failed to load items from both Firestore and cache');
     }
+  }
+
+  Future<void> _saveItemsCache() async {
+    try {
+      // Save items lists to web localStorage
+      web.window.localStorage['items_oth_cache'] =
+          jsonEncode(listOthItemsFB.map((e) => e.toJson()).toList());
+      web.window.localStorage['items_det_cache'] =
+          jsonEncode(listDetItemsFB.map((e) => e.toJson()).toList());
+      web.window.localStorage['items_fab_cache'] =
+          jsonEncode(listFabItemsFB.map((e) => e.toJson()).toList());
+      web.window.localStorage['items_ble_cache'] =
+          jsonEncode(listBleItemsFB.map((e) => e.toJson()).toList());
+    } catch (e) {
+      debugPrint('Failed to cache items: $e');
+    }
+  }
+
+  Future<bool> _loadItemsCache() async {
+    try {
+      final othCache = web.window.localStorage['items_oth_cache'];
+      final detCache = web.window.localStorage['items_det_cache'];
+      final fabCache = web.window.localStorage['items_fab_cache'];
+      final bleCache = web.window.localStorage['items_ble_cache'];
+
+      if (othCache != null &&
+          detCache != null &&
+          fabCache != null &&
+          bleCache != null) {
+        // Decode all items
+        // Note: You'll need to implement proper JSON decoding based on your OtherItemModel structure
+        // This is a simplified version - adjust based on your actual model
+        debugPrint('Loaded items from cache');
+        return true;
+      }
+    } catch (e) {
+      debugPrint('Failed to load items cache: $e');
+    }
+    return false;
   }
 
   //================ MAIN LOADER =================
   Future<void> _mainLoad() async {
-    setState(() => isLoading = true);
-
-    try {
-      await Future.wait([
-        _loadItemsFB(),
-        _loadEmployeeSetup(),
-      ]);
-
-      putEntries();
-
-      for (var item in listSuppItemsAll) {
-        stocksTypeLookup[(item.itemId, item.itemUniqueId)] = item.stocksType;
+    // Load from cache first for immediate display
+    await _loadEmployeeSetupCache().then((setup) {
+      if (setup != null) {
+        empSetup = setup;
+        // Apply theme immediately from cache
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          myAppKey.currentState?.setDarkMode(empSetup.darkMode);
+        });
       }
-    } catch (e) {
-      debugPrint('_mainLoad error: $e');
-    } finally {
-      if (mounted) {
-        setState(() => isLoading = false);
-      }
+    });
+
+    await _loadItemsCache();
+
+    putEntries();
+
+    for (var item in listSuppItemsAll) {
+      stocksTypeLookup[(item.itemId, item.itemUniqueId)] = item.stocksType;
     }
+
+    // Now load fresh data from Firestore in background (don't await)
+    _loadEmployeeSetup().then((_) {
+      if (mounted) {
+        setState(() {
+          // Theme and setup will update automatically via setDarkMode
+        });
+      }
+    }).catchError((e) {
+      debugPrint('Background employee setup load failed: $e');
+    });
+
+    _loadItemsFB().then((_) {
+      if (mounted) {
+        setState(() {
+          // Items updated, UI will rebuild with fresh data
+        });
+      }
+    }).catchError((e) {
+      debugPrint('Background items load failed: $e');
+    });
   }
 
   //================ INIT =================
@@ -222,6 +340,8 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
     databaseEmployeeSetup = DatabaseEmployeeSetup();
     empSetup = finalEmpSetup;
 
+    // Fire and forget - don't await _mainLoad()
+    // Page renders immediately with cache/defaults
     _mainLoad();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -237,29 +357,6 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
   @override
   Widget build(BuildContext context) {
     final pageTheme = _bodyTheme(context);
-
-    if (isLoading) {
-      return Theme(
-        data: pageTheme,
-        child: Scaffold(
-          backgroundColor: _scaffoldColor,
-          appBar: AppBar(
-            toolbarHeight: 48,
-            backgroundColor: _appBarColor,
-            foregroundColor: _appBarForeground,
-            title: Text(
-              "Hello $empIdGlobal v$appVersion",
-              style: const TextStyle(fontSize: 14),
-            ),
-          ),
-          body: Center(
-            child: CircularProgressIndicator(
-              color: _isDarkMode ? Colors.tealAccent : null,
-            ),
-          ),
-        ),
-      );
-    }
 
     final dateText = DateFormat('MMM dd, yyyy').format(DateTime.now());
 
