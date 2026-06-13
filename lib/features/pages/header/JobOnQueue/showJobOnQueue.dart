@@ -53,18 +53,61 @@ void showJobOnQueue(BuildContext context, JobModelRepository jobRepo) async {
     }
 
     if (jobRepo.paidCash && jobRepo.paidCashAmount > 0 && !skipSuppliesOnPaid) {
-      // Use Firestore Transaction for atomic job + supplies update
+      // Step 1: Mark job as inserting to supplies (cross-database operation)
+      const insertingMarker = '[Inserting to Supplies]';
+      jobRepo.selectedRemarksVar.text =
+          '${jobRepo.selectedRemarksVar.text} $insertingMarker'.trim();
+      jobRepo.remarks = jobRepo.selectedRemarksVar.text;
+
       try {
+        // Update job in DB-A with insertion marker
+        await callDatabaseUpdateJob(context, jobRepo.jobModelData);
+
+        // Step 2: Insert to supplies in DB-B (pass clean remarks without marker)
+        final cleanRemarks = jobRepo.selectedRemarksVar.text
+            .replaceAll(insertingMarker, '')
+            .trim();
         await recordCashPaymentAtomicTransaction(
-            context, jobRepo, jobRepo.paidCashAmount);
-        // Success! Remove failure marker if it exists
+            context, jobRepo, jobRepo.paidCashAmount, cleanRemarks);
+
+        // Step 3: Remove insertion marker after successful supplies insert
         jobRepo.selectedRemarksVar.text = jobRepo.selectedRemarksVar.text
-            .replaceAll('[Failed to insert record]', '')
+            .replaceAll(insertingMarker, '')
             .trim();
         jobRepo.remarks = jobRepo.selectedRemarksVar.text;
+
+        // Final update to job without marker
+        await callDatabaseUpdateJob(context, jobRepo.jobModelData);
+
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Job and supplies recorded successfully'),
+              backgroundColor: Colors.green,
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
       } catch (e) {
-        // Transaction failed - failure marker already added in the transaction function
-        debugPrint('Error in atomic payment transaction: $e');
+        // If supplies insert fails, job retains the insertion marker for manual retry
+        debugPrint('Error in cross-database job operation: $e');
+
+        // Try to update job with marker if not already done
+        try {
+          await callDatabaseUpdateJob(context, jobRepo.jobModelData);
+        } catch (updateError) {
+          debugPrint('Failed to mark job with insertion marker: $updateError');
+        }
+
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to record supplies: $e'),
+              backgroundColor: Colors.red,
+              duration: const Duration(seconds: 5),
+            ),
+          );
+        }
       }
     }
   }
