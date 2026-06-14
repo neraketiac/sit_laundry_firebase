@@ -52,33 +52,51 @@ void showJobOnQueue(BuildContext context, JobModelRepository jobRepo) async {
       rethrow;
     }
 
-    if (jobRepo.paidCash && jobRepo.paidCashAmount > 0 && !skipSuppliesOnPaid) {
-      // Step 1: Mark job as inserting to supplies (cross-database operation)
-      const insertingMarker = '[Inserting to Supplies]';
-      jobRepo.selectedRemarksVar.text =
-          '${jobRepo.selectedRemarksVar.text} $insertingMarker'.trim();
+    const insertingMarker = '[Inserting to Supplies]';
+
+    if (jobRepo.paidCash && jobRepo.paidCashAmount > 0) {
+      // Step 1: Add marker to remarks
+      if (!jobRepo.remarks.contains(insertingMarker)) {
+        jobRepo.selectedRemarksVar.text =
+            '${jobRepo.selectedRemarksVar.text} $insertingMarker'.trim();
+        jobRepo.remarks = jobRepo.selectedRemarksVar.text;
+      }
+
+      // Step 2: Save job with marker to Firestore
+      try {
+        await callDatabaseUpdateJob(context, jobRepo.jobModelData);
+      } catch (e) {
+        debugPrint('Failed to mark job with insertion marker: $e');
+        return;
+      }
+
+      // Step 3: Record to SuppliesHist/Curr
+      try {
+        await recordCashPaymentAtomicTransaction(
+            context, jobRepo, jobRepo.paidCashAmount, jobRepo.remarks);
+      } catch (e) {
+        debugPrint('Error recording supplies: $e');
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to record supplies: $e'),
+              backgroundColor: Colors.red,
+              duration: const Duration(seconds: 5),
+            ),
+          );
+        }
+        return;
+      }
+
+      // Step 4: Remove marker from remarks
+      jobRepo.selectedRemarksVar.text = jobRepo.selectedRemarksVar.text
+          .replaceAll(insertingMarker, '')
+          .trim();
       jobRepo.remarks = jobRepo.selectedRemarksVar.text;
 
+      // Step 5: Save job without marker to Firestore
       try {
-        // Update job in DB-A with insertion marker
         await callDatabaseUpdateJob(context, jobRepo.jobModelData);
-
-        // Step 2: Insert to supplies in DB-B (pass clean remarks without marker)
-        final cleanRemarks = jobRepo.selectedRemarksVar.text
-            .replaceAll(insertingMarker, '')
-            .trim();
-        await recordCashPaymentAtomicTransaction(
-            context, jobRepo, jobRepo.paidCashAmount, cleanRemarks);
-
-        // Step 3: Remove insertion marker after successful supplies insert
-        jobRepo.selectedRemarksVar.text = jobRepo.selectedRemarksVar.text
-            .replaceAll(insertingMarker, '')
-            .trim();
-        jobRepo.remarks = jobRepo.selectedRemarksVar.text;
-
-        // Final update to job without marker
-        await callDatabaseUpdateJob(context, jobRepo.jobModelData);
-
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -89,24 +107,19 @@ void showJobOnQueue(BuildContext context, JobModelRepository jobRepo) async {
           );
         }
       } catch (e) {
-        // If supplies insert fails, job retains the insertion marker for manual retry
-        debugPrint('Error in cross-database job operation: $e');
+        debugPrint('Failed to update job after supplies recording: $e');
+      }
+    } else if (jobRepo.paidCash) {
+      // Add marker if paidCash is true
+      if (!jobRepo.remarks.contains(insertingMarker)) {
+        jobRepo.selectedRemarksVar.text =
+            '${jobRepo.selectedRemarksVar.text} $insertingMarker'.trim();
+        jobRepo.remarks = jobRepo.selectedRemarksVar.text;
 
-        // Try to update job with marker if not already done
         try {
           await callDatabaseUpdateJob(context, jobRepo.jobModelData);
-        } catch (updateError) {
-          debugPrint('Failed to mark job with insertion marker: $updateError');
-        }
-
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Failed to record supplies: $e'),
-              backgroundColor: Colors.red,
-              duration: const Duration(seconds: 5),
-            ),
-          );
+        } catch (e) {
+          debugPrint('Failed to mark job with insertion marker: $e');
         }
       }
     }
