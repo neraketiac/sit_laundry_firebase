@@ -172,19 +172,19 @@ InkWell visPaidUnpaidArea(
               // > 14 days: override confirm
               final confirm = await showDialog<bool>(
                 context: context,
-                builder: (_) => AlertDialog(
+                builder: (dialogContext) => AlertDialog(
                   title: const Text('Over Two Weeks'),
                   content: const Text(
                       'This payment is over 2 weeks old. Admin override — are you sure?'),
                   actions: [
                     TextButton(
-                      onPressed: () => Navigator.pop(context, false),
+                      onPressed: () => Navigator.pop(dialogContext, false),
                       child: const Text('Cancel'),
                     ),
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.orange),
-                      onPressed: () => Navigator.pop(context, true),
+                      onPressed: () => Navigator.pop(dialogContext, true),
                       child: const Text('Override',
                           style: TextStyle(color: Colors.white)),
                     ),
@@ -196,17 +196,17 @@ InkWell visPaidUnpaidArea(
               // 7-14 days: warn and confirm
               final confirm = await showDialog<bool>(
                 context: context,
-                builder: (_) => AlertDialog(
+                builder: (dialogContext) => AlertDialog(
                   title: const Text('Warning'),
                   content: const Text(
                       'This payment is over a week old. Are you sure you want to update it?'),
                   actions: [
                     TextButton(
-                      onPressed: () => Navigator.pop(context, false),
+                      onPressed: () => Navigator.pop(dialogContext, false),
                       child: const Text('No'),
                     ),
                     ElevatedButton(
-                      onPressed: () => Navigator.pop(context, true),
+                      onPressed: () => Navigator.pop(dialogContext, true),
                       child: const Text('Yes'),
                     ),
                   ],
@@ -240,19 +240,19 @@ InkWell visPaidUnpaidArea(
               // Admin > 14 days: override confirm
               final confirm = await showDialog<bool>(
                 context: context,
-                builder: (_) => AlertDialog(
+                builder: (dialogContext) => AlertDialog(
                   title: const Text('Over Two Weeks Unpaid'),
                   content: const Text(
                       'This item is more than two weeks unpaid. Admin override — are you sure?'),
                   actions: [
                     TextButton(
-                      onPressed: () => Navigator.pop(context, false),
+                      onPressed: () => Navigator.pop(dialogContext, false),
                       child: const Text('Cancel'),
                     ),
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.orange),
-                      onPressed: () => Navigator.pop(context, true),
+                      onPressed: () => Navigator.pop(dialogContext, true),
                       child: const Text('Override',
                           style: TextStyle(color: Colors.white)),
                     ),
@@ -264,17 +264,17 @@ InkWell visPaidUnpaidArea(
               // 7-14 days: warn and confirm
               final confirm = await showDialog<bool>(
                 context: context,
-                builder: (_) => AlertDialog(
+                builder: (dialogContext) => AlertDialog(
                   title: const Text('Warning'),
                   content: const Text(
                       'This item is already over a week unpaid. Are you sure you want to update the payment?'),
                   actions: [
                     TextButton(
-                      onPressed: () => Navigator.pop(context, false),
+                      onPressed: () => Navigator.pop(dialogContext, false),
                       child: const Text('No'),
                     ),
                     ElevatedButton(
-                      onPressed: () => Navigator.pop(context, true),
+                      onPressed: () => Navigator.pop(dialogContext, true),
                       child: const Text('Yes'),
                     ),
                   ],
@@ -286,19 +286,19 @@ InkWell visPaidUnpaidArea(
           }
         }
 
-        if (context.mounted) {
-          // For admin override on already-paid job: keep current selected state
-          // so admin can freely change it. Only reset for unpaid→paid flow.
-          if (jobRepo.selectedUnpaid) {
-            jobRepo.selectedUnpaid = jobRepo.unpaid;
-            jobRepo.selectedPaidCash = jobRepo.paidCash;
-            jobRepo.selectedPaidGCash = jobRepo.paidGCash;
-            jobRepo.selectedPaidGCashVerified = jobRepo.paidGCashVerified;
-            jobRepo.selectedPaidCashAmount = jobRepo.paidCashAmount;
-            jobRepo.selectedPaidGCashAmount = jobRepo.paidGCashAmount;
-          }
-          showPaidUnpaid(context, jobRepo);
+        if (!context.mounted) return;
+
+        // For admin override on already-paid job: keep current selected state
+        // so admin can freely change it. Only reset for unpaid→paid flow.
+        if (jobRepo.selectedUnpaid) {
+          jobRepo.selectedUnpaid = jobRepo.unpaid;
+          jobRepo.selectedPaidCash = jobRepo.paidCash;
+          jobRepo.selectedPaidGCash = jobRepo.paidGCash;
+          jobRepo.selectedPaidGCashVerified = jobRepo.paidGCashVerified;
+          jobRepo.selectedPaidCashAmount = jobRepo.paidCashAmount;
+          jobRepo.selectedPaidGCashAmount = jobRepo.paidGCashAmount;
         }
+        showPaidUnpaid(context, jobRepo);
       },
       child: Builder(builder: (ctx) {
         final s = AppScale.of(ctx);

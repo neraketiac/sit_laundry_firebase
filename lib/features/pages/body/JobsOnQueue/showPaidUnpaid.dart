@@ -126,8 +126,31 @@ void showPaidUnpaid(BuildContext context, JobModelRepository jobRepo) {
           );
         }
       }
+    } else {
+      // No paidCash, but might have paidGCash verified - just save the job
+      try {
+        await callDatabaseUpdateJob(context, jobRepo.jobModelData);
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Payment updated successfully'),
+              backgroundColor: Colors.green,
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
+      } catch (e) {
+        debugPrint('Failed to update job: $e');
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('Failed to update payment'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
     }
-  }
 
   jobRepo.syncRepoToSelectedMin(jobRepo);
   showDialog(
