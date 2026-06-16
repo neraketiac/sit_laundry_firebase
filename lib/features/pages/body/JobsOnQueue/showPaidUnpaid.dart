@@ -151,6 +151,7 @@ void showPaidUnpaid(BuildContext context, JobModelRepository jobRepo) {
         }
       }
     }
+  }
 
   jobRepo.syncRepoToSelectedMin(jobRepo);
   showDialog(
