@@ -73,6 +73,8 @@ class GCashRepository {
   String get cashInImageUrl => gM.cashInImageUrl;
   String get cashOutImageUrl => gM.cashOutImageUrl;
   bool get isPendingFundsUntilPaid => gM.isPendingFundsUntilPaid;
+  bool get recordCashOutFeeInFunds => gM.recordCashOutFeeInFunds;
+  int get cashOutFeeAmount => gM.cashOutFeeAmount;
 
   /////////////////////////////////////////////////////////////
   //                          SETTER                         //
@@ -106,6 +108,8 @@ class GCashRepository {
   set cashInImageUrl(String value) => gM.cashInImageUrl = value;
   set cashOutImageUrl(String value) => gM.cashOutImageUrl = value;
   set isPendingFundsUntilPaid(bool value) => gM.isPendingFundsUntilPaid = value;
+  set recordCashOutFeeInFunds(bool value) => gM.recordCashOutFeeInFunds = value;
+  set cashOutFeeAmount(int value) => gM.cashOutFeeAmount = value;
 
   /////////////////////////////////////////////////////////////
   //                          SETTER                         //

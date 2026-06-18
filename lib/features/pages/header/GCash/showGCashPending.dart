@@ -125,6 +125,9 @@ void showGCashPending(BuildContext context) async {
     gRepo.logDate = Timestamp.now();
     gRepo.logBy = empIdGlobal;
     gRepo.isPendingFundsUntilPaid = pendingFundsUntilPaid;
+    gRepo.recordCashOutFeeInFunds = recordCashOutFeeInFunds;
+    gRepo.cashOutFeeAmount =
+        int.tryParse(feeController.text.replaceAll(',', '')) ?? 0;
 
     // If CashOut and picture is uploaded, set status to 0.75
     final isCashOut = gRepo.selectedFundCode == menuOthUniqIdCashOut;

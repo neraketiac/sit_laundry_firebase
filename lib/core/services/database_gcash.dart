@@ -292,6 +292,39 @@ Future<void> _generateCashOutSuppliesRecordsAfterCompletion(
     await callDatabaseSuppliesCurrentAdd(
         SuppliesHistRepository.instance.suppliesModelHist!);
 
+    // Check if fee should be recorded in Funds In (backward compatible - defaults to false)
+    final recordFee = (data['RecordCashOutFeeInFunds'] as bool?) ?? false;
+    if (recordFee) {
+      // Use the stored fee amount
+      final feeAmount = (data['CashOutFeeAmount'] as int?) ?? 0;
+
+      if (feeAmount > 0) {
+        try {
+          debugPrint('💰 Recording Cash-Out fee in Funds In: ₱$feeAmount');
+
+          SuppliesHistRepository.instance.reset();
+          SuppliesHistRepository.instance.setItemName('Gcash Fee');
+          SuppliesHistRepository.instance.setItemId(menuOthCashInOutFunds);
+          SuppliesHistRepository.instance.setItemUniqueId(menuOthUniqIdFee);
+          SuppliesHistRepository.instance.setCurrentCounter(feeAmount);
+          SuppliesHistRepository.instance
+              .setCustomerName(data['CustomerName'] ?? '');
+          SuppliesHistRepository.instance.setCustomerId(0);
+          SuppliesHistRepository.instance.setRemarks(
+              'GCash ${data['ItemName'] ?? ''} ${data['Remarks'] ?? ''}');
+          SuppliesHistRepository.instance.setLogDate(Timestamp.now());
+
+          await callDatabaseSuppliesCurrentAdd(
+              SuppliesHistRepository.instance.suppliesModelHist!);
+
+          debugPrint('✅ Cash-Out fee (₱$feeAmount) recorded successfully');
+        } catch (e) {
+          debugPrint('⚠️ WARNING: Failed to record Cash-Out fee: $e');
+          // Don't fail the entire transaction - fee recording is secondary
+        }
+      }
+    }
+
     debugPrint('✅ Cash-Out supplies records generated successfully for $docId');
   } catch (e) {
     // Log error and re-throw so caller can show to user

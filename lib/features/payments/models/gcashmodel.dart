@@ -20,6 +20,8 @@ class GCashModel {
   String cashInImageUrl;
   String cashOutImageUrl;
   bool isPendingFundsUntilPaid; // true = pause funds recording until paid
+  bool recordCashOutFeeInFunds; // true = record cash out fee in Funds In
+  int cashOutFeeAmount; // amount of fee if recordCashOutFeeInFunds is true
 
   GCashModel(
       {required this.docId,
@@ -38,7 +40,9 @@ class GCashModel {
       required this.remarks,
       required this.cashInImageUrl,
       required this.cashOutImageUrl,
-      this.isPendingFundsUntilPaid = false});
+      this.isPendingFundsUntilPaid = false,
+      this.recordCashOutFeeInFunds = false,
+      this.cashOutFeeAmount = 0});
 
   GCashModel.fromJson(Map<String, dynamic> json)
       : this(
@@ -60,6 +64,9 @@ class GCashModel {
           cashOutImageUrl: (json['CashOutImageUrl'] as String?) ?? '',
           isPendingFundsUntilPaid:
               (json['IsPendingFundsUntilPaid'] as bool?) ?? false,
+          recordCashOutFeeInFunds:
+              (json['RecordCashOutFeeInFunds'] as bool?) ?? false,
+          cashOutFeeAmount: (json['CashOutFeeAmount'] as int?) ?? 0,
         );
 
   GCashModel copyWith({
@@ -80,6 +87,8 @@ class GCashModel {
     String? cashInImageUrl,
     String? cashOutImageUrl,
     bool? isPendingFundsUntilPaid,
+    bool? recordCashOutFeeInFunds,
+    int? cashOutFeeAmount,
   }) {
     return GCashModel(
       docId: docId ?? this.docId,
@@ -100,6 +109,9 @@ class GCashModel {
       cashOutImageUrl: cashOutImageUrl ?? this.cashOutImageUrl,
       isPendingFundsUntilPaid:
           isPendingFundsUntilPaid ?? this.isPendingFundsUntilPaid,
+      recordCashOutFeeInFunds:
+          recordCashOutFeeInFunds ?? this.recordCashOutFeeInFunds,
+      cashOutFeeAmount: cashOutFeeAmount ?? this.cashOutFeeAmount,
     );
   }
 
@@ -121,5 +133,7 @@ class GCashModel {
         'CashInImageUrl': cashInImageUrl,
         'CashOutImageUrl': cashOutImageUrl,
         'IsPendingFundsUntilPaid': isPendingFundsUntilPaid,
+        'RecordCashOutFeeInFunds': recordCashOutFeeInFunds,
+        'CashOutFeeAmount': cashOutFeeAmount,
       };
 }
