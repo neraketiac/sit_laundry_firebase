@@ -1036,6 +1036,21 @@ Widget readDataGCashPending() {
                                   color: amountText,
                                 ),
                               ),
+                              // Show fee for cash out if included
+                              if (gRepo.itemUniqueId == menuOthUniqIdCashOut &&
+                                  gRepo.recordCashOutFeeInFunds &&
+                                  gRepo.cashOutFeeAmount > 0)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 4),
+                                  child: Text(
+                                    'fee: ₱${NumberFormat('#,##0').format(gRepo.cashOutFeeAmount)}',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.orange.shade400,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
                               const SizedBox(height: 8),
                               showUploadedImage(
                                 context,

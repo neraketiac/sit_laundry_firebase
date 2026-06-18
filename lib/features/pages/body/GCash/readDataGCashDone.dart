@@ -7,6 +7,7 @@ import 'package:laundry_firebase/features/payments/models/gcashmodel.dart';
 import 'package:laundry_firebase/core/services/database_gcash.dart';
 import 'package:laundry_firebase/features/payments/repository/gcash_repository.dart';
 import 'package:laundry_firebase/core/utils/fs_usage_tracker.dart';
+import 'package:laundry_firebase/core/global/variables_all_codes.dart';
 
 Widget readDataGCashDone() => const _GCashDoneWidget();
 
@@ -307,13 +308,30 @@ class _GCashDoneWidgetState extends State<_GCashDoneWidget> {
                   ),
                 ),
                 const SizedBox(width: 8),
-                Text(
-                  '₱${NumberFormat('#,##0').format(gRepo.customerAmount)}',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 12,
-                    color: amountText,
-                  ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      '₱${NumberFormat('#,##0').format(gRepo.customerAmount)}',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                        color: amountText,
+                      ),
+                    ),
+                    // Show fee for cash out if included
+                    if (gRepo.itemUniqueId == menuOthUniqIdCashOut &&
+                        gRepo.recordCashOutFeeInFunds &&
+                        gRepo.cashOutFeeAmount > 0)
+                      Text(
+                        'fee: ₱${NumberFormat('#,##0').format(gRepo.cashOutFeeAmount)}',
+                        style: TextStyle(
+                          fontSize: 9,
+                          color: Colors.orange.shade400,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                  ],
                 ),
               ],
             ),

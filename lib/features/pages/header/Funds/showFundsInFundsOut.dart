@@ -302,15 +302,20 @@ void showFundsInFundsOut(BuildContext context) async {
                     );
                     return false;
                   } else if (selectedFundCode == menuOthUniqIdFundsIn) {
-                    // 🔴 For Funds In, ONLY "Ket" is allowed
-                    if (jobRepo.selectedCustomerId != 123 ||
-                        jobRepo.selectedCustomerNameVar.text != '123# Ket') {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                            content: Text(
-                                'Only "Ket" can receive Funds In. Please select Funds In again.')),
+                    // 🔴 For Funds In, verify Ket is selected (auto-set, so just verify it's set)
+                    // Since Ket is auto-set when Funds In is selected, verify the ID matches
+                    if (jobRepo.selectedCustomerId != 123) {
+                      // Reset to Ket automatically
+                      autocompleteSelected = CustomerModel(
+                        customerId: 123,
+                        name: 'Ket',
+                        address: '',
+                        contact: '',
+                        remarks: '',
+                        loyaltyCount: 0,
                       );
-                      return false;
+                      jobRepo.selectedCustomerId = 123;
+                      jobRepo.selectedCustomerNameVar.text = '123# Ket';
                     }
                     // Funds In validation passed, save and return true
                     await saveButtonSetRepository();
