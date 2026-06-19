@@ -182,7 +182,10 @@ class _AdminJobRepoViewerState extends State<AdminJobRepoViewer> {
           contentPadding:
               const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
         ),
-        onChanged: (v) => _updateField(label, v),
+        onChanged: (v) {
+          // Don't call setState - just update the field directly
+          _updateField(label, v);
+        },
       );
     }
     return TextFormField(
@@ -200,105 +203,152 @@ class _AdminJobRepoViewerState extends State<AdminJobRepoViewer> {
     switch (label) {
       case "jobId":
         jobRepo.selectedJobId = int.tryParse(value.toString()) ?? 0;
+        setState(() {});
       case "customerId":
         jobRepo.selectedCustomerId = int.tryParse(value.toString()) ?? 0;
+        setState(() {});
       case "customerName":
         jobRepo.selectedCustomerNameVar.text = value;
+        setState(() {});
       case "address":
         jobRepo.address = value;
+        setState(() {});
       case "forSorting":
         jobRepo.forSorting = value;
+        setState(() {});
       case "riderPickup":
         jobRepo.riderPickup = value;
+        setState(() {});
       case "isCustomerPickedUp":
         jobRepo.selectedIsCustomerPickedUp = value;
+        setState(() {});
       case "isDeliveredToCustomer":
         jobRepo.selectedIsDeliveredToCustomer = value;
+        setState(() {});
       case "fold":
         jobRepo.selectedFold = value;
+        setState(() {});
       case "mix":
         jobRepo.selectedMix = value;
+        setState(() {});
       case "regular":
         jobRepo.regular = value;
+        setState(() {});
       case "sayosabon":
         jobRepo.sayosabon = value;
+        setState(() {});
       case "addOn":
         jobRepo.addOn = value;
+        setState(() {});
       case "pricingSetup":
         jobRepo.pricingSetup = value;
+        setState(() {});
       case "unpaid":
         jobRepo.selectedUnpaid = value;
+        setState(() {});
       case "paidCash":
         jobRepo.selectedPaidCash = value;
+        setState(() {});
       case "paidGCash":
         jobRepo.selectedPaidGCash = value;
+        setState(() {});
       case "paidGCashVerified":
         jobRepo.selectedPaidGCashVerified = value;
+        setState(() {});
       case "forDisposal":
         jobRepo.selectedForDisposal = value;
+        setState(() {});
       case "disposed":
         jobRepo.selectedDisposed = value;
+        setState(() {});
       case "isSyncToDB2":
         jobRepo.isSyncToDB2 = value;
+        setState(() {});
       case "requestForAdmin":
         jobRepo.requestForAdmin = value;
+        setState(() {});
       case "paidCashAmount":
         jobRepo.selectedPaidCashAmount = int.tryParse(value.toString()) ?? 0;
+        setState(() {});
       case "paidGCashAmount":
         jobRepo.selectedPaidGCashAmount = int.tryParse(value.toString()) ?? 0;
+        setState(() {});
+      // TextEditingController fields — NO setState to avoid text selection
       case "remarks":
         jobRepo.selectedRemarksVar.text = value;
+      case "gcashReceiptUrl":
+        jobRepo.gcashReceiptUrl = value;
       case "createdBy":
         jobRepo.createdBy = value;
       case "currentEmpId":
         jobRepo.currentEmpId = value;
       case "perKilo":
         jobRepo.selectedPerKilo = value == "true";
+        setState(() {});
       case "perLoad":
         jobRepo.selectedPerLoad = value == "true";
+        setState(() {});
       case "finalKilo":
         jobRepo.selectedFinalKilo = double.tryParse(value.toString()) ?? 0;
+        setState(() {});
       case "finalLoad":
         jobRepo.selectedFinalLoad = int.tryParse(value.toString()) ?? 0;
+        setState(() {});
       case "finalLoadForBonus":
         jobRepo.selectedFinalLoadForBonus = int.tryParse(value.toString()) ?? 0;
+        setState(() {});
       case "finalPrice":
         jobRepo.selectedFinalPrice = int.tryParse(value.toString()) ?? 0;
+        setState(() {});
       case "promoCounter":
         jobRepo.selectedPromoCounter = int.tryParse(value.toString()) ?? 0;
+        setState(() {});
       case "basket":
         jobRepo.selectedBasket = int.tryParse(value.toString()) ?? 0;
+        setState(() {});
       case "ebag":
         jobRepo.selectedEbag = int.tryParse(value.toString()) ?? 0;
+        setState(() {});
       case "sako":
         jobRepo.selectedSako = int.tryParse(value.toString()) ?? 0;
+        setState(() {});
       case "paymentReceivedBy":
         jobRepo.selectedPaymentReceivedBy = value;
-      case "gcashReceiptUrl":
-        jobRepo.gcashReceiptUrl = value;
+        setState(() {});
       case "processStep":
         jobRepo.selectedProcessStep = value;
+        setState(() {});
       case "allStatus":
         jobRepo.selectedAllStatus = double.tryParse(value.toString()) ?? 0;
+        setState(() {});
       case "PromoErrorCode":
         jobRepo.selectedPromoErrorCode = int.tryParse(value.toString()) ?? 0;
+        setState(() {});
       // Date fields
       case "dateQ":
         if (value is Timestamp) jobRepo.dateQ = value;
+        setState(() {});
       case "needOn":
         if (value is Timestamp) jobRepo.needOn = value;
+        setState(() {});
       case "dateO":
         if (value is Timestamp) jobRepo.dateO = value;
+        setState(() {});
       case "paidD":
         if (value is Timestamp) jobRepo.paidD = value;
+        setState(() {});
       case "dateD":
         if (value is Timestamp) jobRepo.dateD = value;
+        setState(() {});
       case "dateC":
         if (value is Timestamp) jobRepo.dateC = value;
+        setState(() {});
       case "customerPickupDate":
         if (value is Timestamp) jobRepo.customerPickupDate = value;
+        setState(() {});
       case "riderDeliveryDate":
         if (value is Timestamp) jobRepo.riderDeliveryDate = value;
+        setState(() {});
     }
   }
 

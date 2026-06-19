@@ -52,6 +52,7 @@ import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/migrateToR
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/sit_vs_loyalty.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/sit_vs_loyalty_jobs.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/showAdminDateDPage.dart';
+import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/show_jobs_done_today.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/other_item_admin/showOtherItemsMaintenance.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/other_item_admin/showDetItemsMaintenance.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/other_item_admin/showFabItemsMaintenance.dart';
@@ -564,6 +565,13 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                                     builder: (_) =>
                                         const MonthlyAnalyticsPage())),
                             child: const Text('📊 Monthly Analytics'),
+                          ),
+                          MenuItemButton(
+                            onPressed: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (_) => const ShowJobsDoneToday())),
+                            child: const Text('📅 Jobs Done Today'),
                           ),
                           MenuItemButton(
                             onPressed: () => Navigator.push(
