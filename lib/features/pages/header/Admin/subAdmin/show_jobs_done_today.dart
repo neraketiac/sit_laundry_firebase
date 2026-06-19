@@ -71,7 +71,7 @@ class _ShowJobsDoneTodayState extends State<ShowJobsDoneToday> {
       child: ListTile(
         dense: true,
         title: Text(
-          '${job.customerName} (₱${job.finalPrice})',
+          '${job.customerName} (₱${job.paidCashAmount})',
           style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
         ),
         subtitle: Text(
@@ -145,7 +145,7 @@ class _ShowJobsDoneTodayState extends State<ShowJobsDoneToday> {
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
-                      'Total: ${jobs.length} jobs | Total Amount: ₱${jobs.fold<int>(0, (sum, job) => sum + job.finalPrice)}',
+                      'Total: ${jobs.length} jobs | Total Amount: ₱${jobs.fold<int>(0, (sum, job) => sum + job.paidCashAmount)}',
                       style: TextStyle(
                         fontWeight: FontWeight.w600,
                         fontSize: 12,
