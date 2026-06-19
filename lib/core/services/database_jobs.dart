@@ -471,6 +471,7 @@ Future<void> moveAllDoneToCompleted() async {
 
   final doneCollection = jobsDoneDb.collection(JOBS_DONE_REF);
   final completedCollection = primaryDb.collection(JOBS_COMPLETED_REF);
+  final loyaltyCollection = primaryDb.collection('Loyalty');
 
   final snapshot = await doneCollection
       .where('O01_AllStatus', isEqualTo: 1)
@@ -487,12 +488,42 @@ Future<void> moveAllDoneToCompleted() async {
   for (final doc in snapshot.docs) {
     try {
       final docId = doc.id;
+      final jobData = doc.data();
       print("📝 Moving job $docId to Jobs_completed...");
 
-      // Step 1: Write to Jobs_completed FIRST (primary DB)
+      // Step 1.1: Update loyalty lastDateOfService for this customer
+      final customerId = jobData['C00_CustomerId'] as int?;
+      if (customerId != null && customerId > 0) {
+        try {
+          print("🔍 Updating loyalty record for customer $customerId");
+
+          // Query loyalty collection for the matching cardNumber
+          final loyaltyQuery = await loyaltyCollection
+              .where('cardNumber', isEqualTo: customerId)
+              .get()
+              .withFsTimeout();
+
+          if (loyaltyQuery.docs.isNotEmpty) {
+            // Update the first matching loyalty record (should be only one)
+            final loyaltyDoc = loyaltyQuery.docs.first;
+            await loyaltyDoc.reference.update({
+              'lastDateOfService': Timestamp.now(),
+            });
+            print("✅ Updated loyalty.lastDateOfService for card# $customerId");
+          } else {
+            print("ℹ️ No loyalty record found for card# $customerId");
+          }
+        } catch (loyaltyError) {
+          print(
+              "⚠️ Error updating loyalty for customer $customerId: $loyaltyError");
+          // Continue anyway - loyalty update is secondary
+        }
+      }
+
+      // Step 2: Write to Jobs_completed FIRST (primary DB)
       final completedRef = completedCollection.doc(docId);
       final completedData = {
-        ...doc.data(),
+        ...jobData,
         'O00_ProcessStep': 'completed',
         'A06_DateC': Timestamp.now(),
       };
@@ -500,7 +531,7 @@ Future<void> moveAllDoneToCompleted() async {
       await completedRef.set(completedData);
       print("✅ Written to Jobs_completed");
 
-      // Step 2: Mark for deletion in sync_delete_queue
+      // Step 3: Mark for deletion in sync_delete_queue
       final deleteQueueRef =
           deleteQueue.doc(syncDeleteQueueDocId(JOBS_DONE_REF, docId));
 
@@ -513,12 +544,12 @@ Future<void> moveAllDoneToCompleted() async {
           );
       print("🔄 Marked for deletion in queue");
 
-      // Step 3: Delete from Jobs_done with retry on failure
+      // Step 4: Delete from Jobs_done with retry on failure
       try {
         await doneCollection.doc(docId).delete();
         print("✅ Deleted from Jobs_done");
 
-        // If delete succeeds, remove from sync queue
+        // Step 5: If delete succeeds, remove from sync queue
         await deleteQueueRef.delete();
         print("✅ Removed from sync queue");
       } catch (deleteError) {

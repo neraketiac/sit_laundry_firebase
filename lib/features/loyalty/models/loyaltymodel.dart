@@ -12,6 +12,7 @@ class LoyaltyModel {
   //then repeat the process again how to add count = count + promoCounter(jobs_done)
   final int cardNumber;
   final Timestamp logDate;
+  final Timestamp? lastDateOfService; // Last date customer received service
 
   // 🔥 NOT final anymore
   List<JobModel> jobs;
@@ -24,6 +25,7 @@ class LoyaltyModel {
     required this.count,
     required this.cardNumber,
     required this.logDate,
+    this.lastDateOfService,
     this.jobs = const [],
   });
 
@@ -36,6 +38,7 @@ class LoyaltyModel {
           count: json['Count'] as int,
           cardNumber: json['cardNumber'] as int,
           logDate: json['logDate'] as Timestamp,
+          lastDateOfService: (json['lastDateOfService'] as Timestamp?),
           jobs: [],
         );
 
@@ -47,6 +50,7 @@ class LoyaltyModel {
     int? count,
     int? cardNumber,
     Timestamp? logDate,
+    Timestamp? lastDateOfService,
   }) {
     return LoyaltyModel(
       name: name ?? this.name,
@@ -56,6 +60,7 @@ class LoyaltyModel {
       count: count ?? this.count,
       cardNumber: cardNumber ?? this.cardNumber,
       logDate: logDate ?? this.logDate,
+      lastDateOfService: lastDateOfService ?? this.lastDateOfService,
     );
   }
 
@@ -67,5 +72,6 @@ class LoyaltyModel {
         'Count': count,
         'cardNumber': cardNumber,
         'logDate': logDate,
+        'lastDateOfService': lastDateOfService,
       };
 }
