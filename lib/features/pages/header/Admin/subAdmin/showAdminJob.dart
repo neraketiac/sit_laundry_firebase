@@ -55,6 +55,8 @@ class _AdminJobRepoViewerState extends State<AdminJobRepoViewer> {
     jobRepo.promoErrorCode = jobRepo.selectedPromoErrorCode;
     jobRepo.isCustomerPickedUp = jobRepo.selectedIsCustomerPickedUp;
     jobRepo.isDeliveredToCustomer = jobRepo.selectedIsDeliveredToCustomer;
+    jobRepo.gcashReceiptUrl = jobRepo.gcashReceiptUrl;
+    jobRepo.requestForAdmin = jobRepo.requestForAdmin;
     // Dates are updated directly on jobRepo via _updateField — no selected mirror needed
     await callDatabaseUpdateJob(context, jobRepo.getJobsModel()!);
   }
@@ -180,7 +182,7 @@ class _AdminJobRepoViewerState extends State<AdminJobRepoViewer> {
           contentPadding:
               const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
         ),
-        onChanged: (v) => setState(() => _updateField(label, v)),
+        onChanged: (v) => _updateField(label, v),
       );
     }
     return TextFormField(
@@ -238,6 +240,8 @@ class _AdminJobRepoViewerState extends State<AdminJobRepoViewer> {
         jobRepo.selectedDisposed = value;
       case "isSyncToDB2":
         jobRepo.isSyncToDB2 = value;
+      case "requestForAdmin":
+        jobRepo.requestForAdmin = value;
       case "paidCashAmount":
         jobRepo.selectedPaidCashAmount = int.tryParse(value.toString()) ?? 0;
       case "paidGCashAmount":
@@ -270,6 +274,8 @@ class _AdminJobRepoViewerState extends State<AdminJobRepoViewer> {
         jobRepo.selectedSako = int.tryParse(value.toString()) ?? 0;
       case "paymentReceivedBy":
         jobRepo.selectedPaymentReceivedBy = value;
+      case "gcashReceiptUrl":
+        jobRepo.gcashReceiptUrl = value;
       case "processStep":
         jobRepo.selectedProcessStep = value;
       case "allStatus":
@@ -584,6 +590,8 @@ class _AdminJobRepoViewerState extends State<AdminJobRepoViewer> {
                     jobRepo.repoVarGCashAmountVar),
                 _buildFieldRow("paymentReceivedBy", jobRepo.paymentReceivedBy,
                     jobRepo.selectedPaymentReceivedBy),
+                _buildFieldRow("gcashReceiptUrl", jobRepo.gcashReceiptUrl,
+                    jobRepo.gcashReceiptUrl),
               ]),
               _buildSection("Remarks", [
                 _buildFieldRow(
@@ -624,6 +632,8 @@ class _AdminJobRepoViewerState extends State<AdminJobRepoViewer> {
                     "disposed", jobRepo.disposed, jobRepo.selectedDisposed),
                 _buildFieldRow(
                     "isSyncToDB2", jobRepo.isSyncToDB2, jobRepo.isSyncToDB2),
+                _buildFieldRow("requestForAdmin", jobRepo.requestForAdmin,
+                    jobRepo.requestForAdmin),
               ]),
               const SizedBox(height: 20),
             ],
