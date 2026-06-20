@@ -142,6 +142,7 @@ void putEntries() {
 
 const Map<String, String> nameMap = {
   'rowell': 'Rowell',
+  'ella': 'Ella',
   'tonie': 'Tonie',
   //'jeng': 'Jeng',
   'lorie': 'Lorie',
@@ -154,6 +155,7 @@ const Map<String, String> nameMap = {
 
 const Map<String, String> mapEmpId = {
   '#0707': 'Rowell',
+  '#0808': 'Ella',
   '#2929': 'Tonie',
   //'#151515': 'Jeng',
   //'#121212': 'Abby',
@@ -166,6 +168,7 @@ const Map<String, String> mapEmpId = {
 
 const Map<String, int> mapEmpIdRates = {
   '#0707': 400,
+  '#0808': 400,
   '#2929': 400,
   '#151515': 400,
   '#121212': 450,

@@ -110,6 +110,12 @@ Future<void> callDatabaseSuppliesCurrentAdd(SuppliesModelHist sMH,
   //this will insert to Supplies History first then Supplies Current
   //if exists in Supplies Current, it will update
   //if not exists, it will add new record in Supplies Current
+
+  // Force CustomerName to 'Ket' if Funds In
+  if (sMH.itemUniqueId == menuOthUniqIdFundsIn) {
+    sMH.customerName = 'Ket';
+  }
+
   DatabaseSuppliesCurrent databaseSuppliesCurrent = DatabaseSuppliesCurrent();
   await databaseSuppliesCurrent.addSuppliesCurr(sMH);
 }
