@@ -19,6 +19,7 @@ class _EmployeeCurrWidgetState extends State<_EmployeeCurrWidget> {
   Widget _buildRow(BuildContext context, EmployeeModel eM) {
     final bNegative = eM.currentStocks < 0;
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isMobile = MediaQuery.of(context).size.width < 600;
 
     // Theme-aware colors
     final rowBg = isDark ? const Color(0xFF2A2A3E) : cSalaryCurrent;
@@ -34,29 +35,41 @@ class _EmployeeCurrWidgetState extends State<_EmployeeCurrWidget> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            ' ${eM.empName}',
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-              color: textColor,
-            ),
-          ),
-          if (isAdmin)
-            Text(
-              eM.empId,
+          Flexible(
+            flex: isMobile ? 1 : 2,
+            child: Text(
+              ' ${eM.empName}',
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
                 color: textColor,
               ),
+              overflow: TextOverflow.ellipsis,
             ),
-          Text(
-            '₱ ${value.format(eM.currentStocks)}  ',
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-              color: bNegative ? amountColorNegative : amountColorPositive,
+          ),
+          if (isAdmin && !isMobile)
+            Flexible(
+              flex: 1,
+              child: Text(
+                eM.empId,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: textColor,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          Flexible(
+            flex: isMobile ? 1 : 1,
+            child: Text(
+              '₱ ${value.format(eM.currentStocks)}  ',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: bNegative ? amountColorNegative : amountColorPositive,
+              ),
+              overflow: TextOverflow.ellipsis,
             ),
           ),
         ],
