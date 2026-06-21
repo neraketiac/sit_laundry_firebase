@@ -4,26 +4,35 @@ import 'package:intl/intl.dart';
 import 'package:laundry_firebase/features/jobs/models/jobmodel.dart';
 import 'package:laundry_firebase/core/services/firebase_service.dart';
 
-class ShowJobsDoneToday extends StatefulWidget {
-  const ShowJobsDoneToday({super.key});
+class ShowJobsPaid extends StatefulWidget {
+  const ShowJobsPaid({super.key});
 
   @override
-  State<ShowJobsDoneToday> createState() => _ShowJobsDoneTodayState();
+  State<ShowJobsPaid> createState() => _ShowJobsPaidState();
 }
 
-class _ShowJobsDoneTodayState extends State<ShowJobsDoneToday> {
-  /// Get today's date range for Firestore queries
-  DateTimeRange getTodayRange() {
-    final now = DateTime.now();
-    final todayStart = DateTime(now.year, now.month, now.day, 0, 0, 0);
-    final todayEnd = DateTime(now.year, now.month, now.day, 23, 59, 59);
+class _ShowJobsPaidState extends State<ShowJobsPaid> {
+  late DateTime _selectedDate;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedDate = DateTime.now();
+  }
+
+  /// Get date range for selected date
+  DateTimeRange getSelectedDateRange() {
+    final todayStart = DateTime(
+        _selectedDate.year, _selectedDate.month, _selectedDate.day, 0, 0, 0);
+    final todayEnd = DateTime(
+        _selectedDate.year, _selectedDate.month, _selectedDate.day, 23, 59, 59);
     return DateTimeRange(start: todayStart, end: todayEnd);
   }
 
-  /// Fetch Jobs_done where paidD is today (from jobsDoneFirestore)
-  Future<List<JobModel>> fetchJobsPaidToday() async {
+  /// Fetch Jobs_done where paidD matches selected date
+  Future<List<JobModel>> fetchJobsPaidOnDate() async {
     try {
-      final range = getTodayRange();
+      final range = getSelectedDateRange();
       final startOfDay = Timestamp.fromDate(range.start);
       final endOfDay = Timestamp.fromDate(range.end);
 
@@ -37,15 +46,15 @@ class _ShowJobsDoneTodayState extends State<ShowJobsDoneToday> {
           .map((doc) => JobModel.fromJson({...doc.data(), 'A00_DocId': doc.id}))
           .toList();
     } catch (e) {
-      debugPrint('Error fetching jobs paid today: $e');
+      debugPrint('Error fetching jobs paid on date: $e');
       return [];
     }
   }
 
-  /// Fetch Jobs_done where dateQ is today AND paidCash is true (from jobsDoneFirestore)
-  Future<List<JobModel>> fetchJobsQueueTodayPaidCash() async {
+  /// Fetch Jobs_done where dateQ matches selected date AND paidCash is true
+  Future<List<JobModel>> fetchJobsQueueOnDatePaidCash() async {
     try {
-      final range = getTodayRange();
+      final range = getSelectedDateRange();
       final startOfDay = Timestamp.fromDate(range.start);
       final endOfDay = Timestamp.fromDate(range.end);
 
@@ -60,7 +69,7 @@ class _ShowJobsDoneTodayState extends State<ShowJobsDoneToday> {
           .map((doc) => JobModel.fromJson({...doc.data(), 'A00_DocId': doc.id}))
           .toList();
     } catch (e) {
-      debugPrint('Error fetching queue jobs paid cash today: $e');
+      debugPrint('Error fetching queue jobs paid cash on date: $e');
       return [];
     }
   }
@@ -165,50 +174,97 @@ class _ShowJobsDoneTodayState extends State<ShowJobsDoneToday> {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Title and date info
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'Jobs Done Today',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.deepPurple,
+    return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: const Text('Jobs Paid'),
+        centerTitle: true,
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Date Selection Row
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Select Date:',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.deepPurple,
+                  ),
                 ),
-              ),
-              Text(
-                DateFormat('MMM dd, yyyy').format(DateTime.now()),
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey.shade600,
+                Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () async {
+                      final picked = await showDatePicker(
+                        context: context,
+                        initialDate: _selectedDate,
+                        firstDate: DateTime(2020),
+                        lastDate: DateTime.now(),
+                      );
+                      if (picked != null) {
+                        setState(() {
+                          _selectedDate = picked;
+                        });
+                      }
+                    },
+                    borderRadius: BorderRadius.circular(8),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.deepPurple.shade50,
+                        border:
+                            Border.all(color: Colors.deepPurple, width: 1.5),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.calendar_today,
+                              color: Colors.deepPurple, size: 18),
+                          const SizedBox(width: 8),
+                          Text(
+                            DateFormat('MMM dd, yyyy').format(_selectedDate),
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.deepPurple,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
+              ],
+            ),
+            const SizedBox(height: 20),
 
-          // Section 1: Jobs where paidD is today
-          _buildSection(
-            '1️⃣ Jobs Paid Today (paidD = today)',
-            fetchJobsPaidToday(),
-          ),
+            // Section 1: Jobs Paid on Selected Date
+            _buildSection(
+              '1️⃣ Jobs Paid (paidD = ${DateFormat('MMM dd').format(_selectedDate)})',
+              fetchJobsPaidOnDate(),
+            ),
 
-          const SizedBox(height: 30),
+            const SizedBox(height: 30),
 
-          // Section 2: Jobs where dateQ is today and paidCash is true
-          _buildSection(
-            '2️⃣ Jobs Queued Today + Paid Cash (dateQ = today, paidCash = true)',
-            fetchJobsQueueTodayPaidCash(),
-          ),
+            // Section 2: Jobs Queued on Selected Date + Paid Cash
+            _buildSection(
+              '2️⃣ Jobs Queued + Paid Cash (dateQ = ${DateFormat('MMM dd').format(_selectedDate)}, paidCash = true)',
+              fetchJobsQueueOnDatePaidCash(),
+            ),
 
-          const SizedBox(height: 20),
-        ],
+            const SizedBox(height: 20),
+          ],
+        ),
       ),
     );
   }

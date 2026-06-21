@@ -52,7 +52,7 @@ import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/migrateToR
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/sit_vs_loyalty.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/sit_vs_loyalty_jobs.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/showAdminDateDPage.dart';
-import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/show_jobs_done_today.dart';
+import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/show_jobs_paid.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/other_item_admin/showOtherItemsMaintenance.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/other_item_admin/showDetItemsMaintenance.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/other_item_admin/showFabItemsMaintenance.dart';
@@ -570,8 +570,8 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                             onPressed: () => Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                    builder: (_) => const ShowJobsDoneToday())),
-                            child: const Text('📅 Jobs Done Today'),
+                                    builder: (_) => const ShowJobsPaid())),
+                            child: const Text('� Jobs Paid'),
                           ),
                           MenuItemButton(
                             onPressed: () => Navigator.push(
