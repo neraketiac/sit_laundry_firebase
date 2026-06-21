@@ -239,7 +239,7 @@ class _EmployeeHistWidgetState extends State<_EmployeeHistWidget> {
         SizedBox(
           height: MediaQuery.of(context).size.height * 0.9,
           width: MediaQuery.of(context).size.width < 600
-              ? MediaQuery.of(context).size.width / 2
+              ? MediaQuery.of(context).size.width
               : null,
           child: _items.isEmpty && _loading
               ? const Center(child: CircularProgressIndicator())

@@ -108,12 +108,7 @@ class _EmployeeCurrWidgetState extends State<_EmployeeCurrWidget> {
                   children: [
                     Padding(
                       padding: const EdgeInsets.all(2),
-                      child: SizedBox(
-                        width: isMobile
-                            ? MediaQuery.of(context).size.width / 2
-                            : null,
-                        child: _buildRow(context, eM),
-                      ),
+                      child: _buildRow(context, eM),
                     ),
                   ],
                 );
@@ -121,7 +116,7 @@ class _EmployeeCurrWidgetState extends State<_EmployeeCurrWidget> {
             ];
 
             return SizedBox(
-              width: isMobile ? MediaQuery.of(context).size.width / 2 : null,
+              width: isMobile ? MediaQuery.of(context).size.width : null,
               child: Table(children: rows),
             );
           },

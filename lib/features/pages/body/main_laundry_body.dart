@@ -805,6 +805,9 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                 absorbing: isProcessing,
                 child: Builder(builder: (context) {
                   final isTablet = AppScale.of(context).isTablet;
+                  final isMobile = MediaQuery.of(context).size.width < 600;
+                  final screenWidth = MediaQuery.of(context).size.width;
+                  final isTablet = AppScale.of(context).isTablet;
                   // iPad gets ~25% wider panels
                   double pw(double base) => isTablet ? base * 1.25 : base;
 
@@ -903,7 +906,7 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                         ),
                         animatedPanel(
                           visible: empSetup.showEmployee,
-                          width: pw(600),
+                          width: isMobile ? screenWidth : pw(600),
                           child: Column(
                             children: [
                               const SizedBox(height: 1),
