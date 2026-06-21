@@ -19,7 +19,6 @@ class _EmployeeCurrWidgetState extends State<_EmployeeCurrWidget> {
   Widget _buildRow(BuildContext context, EmployeeModel eM) {
     final bNegative = eM.currentStocks < 0;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final isMobile = MediaQuery.of(context).size.width < 600;
 
     // Theme-aware colors
     final rowBg = isDark ? const Color(0xFF2A2A3E) : cSalaryCurrent;
@@ -35,41 +34,29 @@ class _EmployeeCurrWidgetState extends State<_EmployeeCurrWidget> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Flexible(
-            flex: isMobile ? 1 : 2,
-            child: Text(
-              ' ${eM.empName}',
+          Text(
+            ' ${eM.empName}',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              color: textColor,
+            ),
+          ),
+          if (isAdmin)
+            Text(
+              eM.empId,
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
                 color: textColor,
               ),
-              overflow: TextOverflow.ellipsis,
             ),
-          ),
-          if (isAdmin && !isMobile)
-            Flexible(
-              flex: 1,
-              child: Text(
-                eM.empId,
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  color: textColor,
-                ),
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          Flexible(
-            flex: isMobile ? 1 : 1,
-            child: Text(
-              '₱ ${value.format(eM.currentStocks)}  ',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-                color: bNegative ? amountColorNegative : amountColorPositive,
-              ),
-              overflow: TextOverflow.ellipsis,
+          Text(
+            '₱ ${value.format(eM.currentStocks)}  ',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              color: bNegative ? amountColorNegative : amountColorPositive,
             ),
           ),
         ],
@@ -81,6 +68,7 @@ class _EmployeeCurrWidgetState extends State<_EmployeeCurrWidget> {
   Widget build(BuildContext context) {
     final db = DatabaseEmployeeCurrent();
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isMobile = MediaQuery.of(context).size.width < 600;
 
     // Theme-aware colors
     final headerBg =
@@ -120,14 +108,22 @@ class _EmployeeCurrWidgetState extends State<_EmployeeCurrWidget> {
                   children: [
                     Padding(
                       padding: const EdgeInsets.all(2),
-                      child: _buildRow(context, eM),
+                      child: SizedBox(
+                        width: isMobile
+                            ? MediaQuery.of(context).size.width / 2
+                            : null,
+                        child: _buildRow(context, eM),
+                      ),
                     ),
                   ],
                 );
               }),
             ];
 
-            return Table(children: rows);
+            return SizedBox(
+              width: isMobile ? MediaQuery.of(context).size.width / 2 : null,
+              child: Table(children: rows),
+            );
           },
         ),
       ],

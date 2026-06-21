@@ -125,6 +125,12 @@ class _EmployeeHistWidgetState extends State<_EmployeeHistWidget> {
     // Determine if this is Funds In transaction
     final isFundsIn = eM.itemUniqueId == 4403;
 
+    // Truncate remarks if on mobile and remarks is long
+    String displayRemarks = eM.remarks;
+    if (isMobile && displayRemarks.length > 20) {
+      displayRemarks = '${displayRemarks.substring(0, 17)}...';
+    }
+
     return Container(
       height: 22,
       padding: const EdgeInsets.symmetric(horizontal: 4),
@@ -137,80 +143,51 @@ class _EmployeeHistWidgetState extends State<_EmployeeHistWidget> {
       ),
       child: Row(
         children: [
-          SizedBox(
-            width: isMobile ? 100 : 160,
+          Text(
+            DateFormat('MM/dd hh:mm a').format(eM.logDate.toDate()),
+            style: const TextStyle(
+                fontSize: 9, color: Color.fromARGB(255, 68, 68, 68)),
+          ),
+          const SizedBox(width: 4),
+          Text(
+            '₱${value.format(eM.currentCounter)}',
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+              color: isFundsIn
+                  ? const Color(0xFF0D47A1) // Blue for Funds In
+                  : (bNegative
+                      ? const Color.fromARGB(
+                          255, 185, 57, 48) // Red for negative
+                      : const Color(0xFF0D47A1)), // Blue for positive
+            ),
+          ),
+          const SizedBox(width: 4),
+          Expanded(
             child: Text(
-              DateFormat('MM/dd hh:mm a').format(eM.logDate.toDate()),
+              '${eM.itemName} ${ifMenuUniqueIsCashInEmp(eM) ? 'to' : 'by'} ${eM.empName} : $displayRemarks',
+              overflow: TextOverflow.ellipsis,
               style: const TextStyle(
-                  fontSize: 9, color: Color.fromARGB(255, 68, 68, 68)),
-              overflow: TextOverflow.ellipsis,
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF263238)),
             ),
           ),
-          const SizedBox(width: 4),
-          SizedBox(
-            width: isMobile ? 80 : 120,
-            child: Text(
-              '₱${value.format(eM.currentCounter)}',
-              style: TextStyle(
-                fontSize: 10,
+          Text(
+            eM.logBy,
+            style: TextStyle(
+                fontSize: 8,
                 fontWeight: FontWeight.w600,
-                color: isFundsIn
-                    ? const Color(0xFF0D47A1) // Blue for Funds In
-                    : (bNegative
-                        ? const Color.fromARGB(
-                            255, 185, 57, 48) // Red for negative
-                        : const Color(0xFF0D47A1)), // Blue for positive
-              ),
-              overflow: TextOverflow.ellipsis,
-            ),
+                color: Colors.grey[800]),
           ),
-          const SizedBox(width: 4),
-          // Hide remarks if mobile to save space
-          if (!isMobile)
-            Expanded(
-              child: Text(
-                '${eM.itemName} ${ifMenuUniqueIsCashInEmp(eM) ? 'to' : 'by'} ${eM.empName} : ${eM.remarks}',
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF263238)),
-              ),
-            )
-          else
-            Expanded(
-              child: Text(
-                '${eM.itemName} ${ifMenuUniqueIsCashInEmp(eM) ? 'to' : 'by'} ${eM.empName}',
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF263238)),
-              ),
-            ),
-          SizedBox(
-            width: isMobile ? 50 : 80,
-            child: Text(
-              eM.logBy,
-              style: TextStyle(
-                  fontSize: 8,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.grey[800]),
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-          SizedBox(
-            width: isMobile ? 80 : 120,
-            child: Text(
-              'pCF ₱${value.format(eM.currentStocks)}',
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.w600,
-                color: bNegativePCF
-                    ? const Color.fromARGB(255, 185, 57, 48)
-                    : const Color(0xFF0D47A1),
-              ),
-              overflow: TextOverflow.ellipsis,
+          Text(
+            'pCF ₱${value.format(eM.currentStocks)}',
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+              color: bNegativePCF
+                  ? const Color.fromARGB(255, 185, 57, 48)
+                  : const Color(0xFF0D47A1),
             ),
           ),
         ],
@@ -261,6 +238,9 @@ class _EmployeeHistWidgetState extends State<_EmployeeHistWidget> {
           ),
         SizedBox(
           height: MediaQuery.of(context).size.height * 0.9,
+          width: MediaQuery.of(context).size.width < 600
+              ? MediaQuery.of(context).size.width / 2
+              : null,
           child: _items.isEmpty && _loading
               ? const Center(child: CircularProgressIndicator())
               : _items.isEmpty
