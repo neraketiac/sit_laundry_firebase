@@ -128,6 +128,7 @@ void showPaidUnpaid(BuildContext context, JobModelRepository jobRepo) {
 
             // Mark job as fully paid
             jobRepo.paidCashAmount = jobRepo.selectedFinalPrice;
+            jobRepo.unpaid = false; // Mark as paid
 
             // AUTO-SKIP funds recording for staff salary deduction
             skipSuppliesThisJob = true;

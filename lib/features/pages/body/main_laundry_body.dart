@@ -604,8 +604,58 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                         );
                         if (confirm != true) return;
                         setState(() => isProcessing = true);
+
+                        // Show loading dialog
+                        if (context.mounted) {
+                          showDialog(
+                            context: context,
+                            barrierDismissible: false,
+                            builder: (context) {
+                              return AlertDialog(
+                                content: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const CircularProgressIndicator(),
+                                    const SizedBox(height: 16),
+                                    const Text(
+                                      'Moving jobs to Completed...',
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(fontSize: 14),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          );
+                        }
+
                         try {
                           await moveAllDoneToCompleted();
+
+                          // Close loading dialog
+                          if (context.mounted) {
+                            Navigator.pop(context);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                    'Jobs successfully moved to Completed'),
+                                backgroundColor: Colors.green,
+                                duration: Duration(seconds: 3),
+                              ),
+                            );
+                          }
+                        } catch (e) {
+                          // Close loading dialog
+                          if (context.mounted) {
+                            Navigator.pop(context);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Error moving jobs: $e'),
+                                backgroundColor: Colors.red,
+                                duration: const Duration(seconds: 5),
+                              ),
+                            );
+                          }
                         } finally {
                           if (mounted) setState(() => isProcessing = false);
                         }
