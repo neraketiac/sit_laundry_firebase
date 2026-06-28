@@ -8,9 +8,38 @@ import 'package:laundry_firebase/core/global/variables.dart';
 import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_display_job/visCustomerNameNoAutoComplete.dart';
 import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_alter_job/visPaidUnPaid.dart';
 
+// ============ HELPER FUNCTION: Create Salary Correction ============
+Future<void> recordSalaryCorrection({
+  required BuildContext context,
+  required String empName,
+  required String empId,
+  required int amount, // Negative for deduction
+  required String remarks,
+  required int jobId,
+}) async {
+  try {
+    await FirebaseFirestore.instance.collection('supplies_hist').add({
+      'EmpId': empId,
+      'EmpName': empName,
+      'LogDate': Timestamp.now(),
+      'LogBy': empIdGlobal,
+      'ItemId': 4, // Funds code
+      'ItemUniqueId': 3, // Salary correction code
+      'ItemName': 'Salary Correction',
+      'CurrentCounter': amount,
+      'Remarks': '$remarks | JobId: $jobId',
+      'Type': 'SalaryCorrection',
+    });
+  } catch (e) {
+    debugPrint('Error recording salary correction: $e');
+    rethrow;
+  }
+}
+
 void showPaidUnpaid(BuildContext context, JobModelRepository jobRepo) {
   // Per-job skip toggle — local only, resets every time dialog opens
   bool skipSuppliesThisJob = false;
+  bool useStaffSalaryDeduction = false;
 
   Future<void> saveButtonSetRepository() async {
     jobRepo.currentEmpId = empIdGlobal;
@@ -37,6 +66,64 @@ void showPaidUnpaid(BuildContext context, JobModelRepository jobRepo) {
     const insertingMarker = '[Inserting to Supplies]';
 
     if (jobRepo.paidCash) {
+      // ============ STAFF SALARY DEDUCTION LOGIC ============
+      if (useStaffSalaryDeduction &&
+          isAdmin &&
+          jobRepo.customerName.isNotEmpty &&
+          empNameToId.containsKey(jobRepo.customerName)) {
+        // Check if customer is actually a staff/employee
+        final staffEmpId = empNameToId[jobRepo.customerName];
+        if (staffEmpId != null) {
+          // Calculate remaining unpaid amount
+          final currentPaidCash = int.tryParse(
+                  jobRepo.repoVarCashAmountVar.text.replaceAll(',', '')) ??
+              0;
+          final unpaidAmount = jobRepo.selectedFinalPrice - currentPaidCash;
+
+          if (unpaidAmount > 0) {
+            // Add remarks to job
+            final salaryDeductionRemark =
+                'Paid=${currentPaidCash}, SalaryDeduct=${unpaidAmount}';
+            if (!jobRepo.remarks.contains(salaryDeductionRemark)) {
+              jobRepo.selectedRemarksVar.text =
+                  '${jobRepo.selectedRemarksVar.text} $salaryDeductionRemark'
+                      .trim();
+              jobRepo.remarks = jobRepo.selectedRemarksVar.text;
+            }
+
+            // Create salary correction with negative value (deduction)
+            try {
+              await recordSalaryCorrection(
+                context: context,
+                empName: jobRepo.customerName,
+                empId: staffEmpId,
+                amount: -unpaidAmount, // Negative for deduction
+                remarks: 'Job deduction: $salaryDeductionRemark',
+                jobId: jobRepo.jobId,
+              );
+              debugPrint(
+                  'Salary correction created: -$unpaidAmount for ${jobRepo.customerName}');
+            } catch (e) {
+              debugPrint('Error creating salary correction: $e');
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Failed to create salary deduction: $e'),
+                    backgroundColor: Colors.red,
+                    duration: const Duration(seconds: 5),
+                  ),
+                );
+              }
+              return;
+            }
+
+            // Mark job as fully paid
+            jobRepo.paidCashAmount = jobRepo.selectedFinalPrice;
+          }
+        }
+      }
+      // ============ END STAFF SALARY DEDUCTION LOGIC ============
+
       // Step 1: Add marker to remarks
       if (!jobRepo.remarks.contains(insertingMarker)) {
         jobRepo.selectedRemarksVar.text =
@@ -189,6 +276,55 @@ void showPaidUnpaid(BuildContext context, JobModelRepository jobRepo) {
                     visPaidUnPaid(context, () => setState(() {}), jobRepo),
                     conRemarks(context, () => setState(() {}),
                         jobRepo.selectedRemarksVar),
+                    // Admin-only: staff salary deduction toggle (only if CUSTOMER is a staff)
+                    if (isAdmin &&
+                        jobRepo.selectedCustomerId > 0 &&
+                        empNameToId.containsKey(jobRepo.customerName))
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.red, width: 1.5),
+                            borderRadius: BorderRadius.circular(4),
+                            color: Colors.red.withValues(alpha: 0.1),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 6),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      'Staff Salary Deduction',
+                                      style: TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.red),
+                                    ),
+                                    Text(
+                                      'Deduct ₱${jobRepo.selectedFinalPrice - (int.tryParse(jobRepo.repoVarCashAmountVar.text.replaceAll(',', '')) ?? 0)} from ${jobRepo.customerName}\'s salary',
+                                      style: const TextStyle(
+                                          fontSize: 10, color: Colors.black54),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Switch(
+                                value: useStaffSalaryDeduction,
+                                activeThumbColor: Colors.red,
+                                activeTrackColor:
+                                    Colors.red.withValues(alpha: 0.5),
+                                onChanged: (v) =>
+                                    setState(() => useStaffSalaryDeduction = v),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                     // Admin-only: per-job skip supplies toggle
                     if (isAdmin)
                       Padding(
