@@ -7,6 +7,8 @@ import 'package:laundry_firebase/features/jobs/repository/jobmodel_repository.da
 import 'package:laundry_firebase/core/global/variables.dart';
 import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_display_job/visCustomerNameNoAutoComplete.dart';
 import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_alter_job/visPaidUnPaid.dart';
+import 'package:laundry_firebase/features/employees/models/employeemodel.dart';
+import 'package:laundry_firebase/core/services/database_employee_current.dart';
 
 // ============ HELPER FUNCTION: Create Salary Correction ============
 Future<void> recordSalaryCorrection({
@@ -18,18 +20,25 @@ Future<void> recordSalaryCorrection({
   required int jobId,
 }) async {
   try {
-    await FirebaseFirestore.instance.collection('supplies_hist').add({
-      'EmpId': empId,
-      'EmpName': empName,
-      'LogDate': Timestamp.now(),
-      'LogBy': empIdGlobal,
-      'ItemId': 4, // Funds code
-      'ItemUniqueId': 3, // Salary correction code
-      'ItemName': 'Salary Correction',
-      'CurrentCounter': amount,
-      'Remarks': '$remarks | JobId: $jobId',
-      'Type': 'SalaryCorrection',
-    });
+    final employeeModel = EmployeeModel(
+      empId: empId,
+      empName: empName,
+      docId: '',
+      countId: 0,
+      currentCounter: amount, // Negative for deduction
+      currentStocks: 0,
+      itemId: 1, // Salary code
+      itemUniqueId: 1, // Salary payment/deduction
+      itemName: 'Salary Correction',
+      logDate: Timestamp.now(),
+      logBy: empIdGlobal,
+      remarks: '$remarks | JobId: $jobId',
+      autoSalaryDate: null,
+    );
+
+    // Write to BOTH employee_curr and employee_hist (tandem)
+    final databaseEmployeeCurrent = DatabaseEmployeeCurrent();
+    await databaseEmployeeCurrent.addEmployeeCurr(employeeModel);
   } catch (e) {
     debugPrint('Error recording salary correction: $e');
     rethrow;
@@ -119,6 +128,9 @@ void showPaidUnpaid(BuildContext context, JobModelRepository jobRepo) {
 
             // Mark job as fully paid
             jobRepo.paidCashAmount = jobRepo.selectedFinalPrice;
+
+            // AUTO-SKIP funds recording for staff salary deduction
+            skipSuppliesThisJob = true;
           }
         }
       }
