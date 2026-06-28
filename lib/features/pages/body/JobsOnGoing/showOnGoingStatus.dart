@@ -84,6 +84,21 @@ void showOnGoingStatus(BuildContext context, JobModelRepository jobRepo) {
                       foregroundColor: Colors.black,
                     ),
                     onPressed: () async {
+                      // Validate finalPrice > 0
+                      if (jobRepo.selectedFinalPrice <= 0) {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                'Cannot move to Jobs Done: Final price must be greater than 0',
+                              ),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                        }
+                        return;
+                      }
+
                       final confirm = await showDialog<bool>(
                         context: context,
                         builder: (context) {
