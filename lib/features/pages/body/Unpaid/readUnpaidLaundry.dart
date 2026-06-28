@@ -6,6 +6,7 @@ import 'package:laundry_firebase/features/jobs/models/jobmodel.dart';
 import 'package:laundry_firebase/features/jobs/repository/jobmodel_repository.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/reports/monthly_analytics/widgets/unpaid_customers_card.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/reports/monthly_analytics/widgets/unpaid_data.dart';
+import 'package:laundry_firebase/core/utils/fs_usage_tracker.dart';
 
 Widget readUnpaidLaundry() => const _UnpaidLaundryPanel();
 
@@ -95,6 +96,9 @@ class _UnpaidLaundryPanelState extends State<_UnpaidLaundryPanel> {
       _jobs = filteredJobs;
 
       _unpaid.process(_jobs, _weekNumber);
+
+      // Track memory usage
+      FsUsageTracker.instance.track('readUnpaidLaundry', _jobs.length);
     } catch (e) {
       debugPrint('Error loading unpaid data: $e');
     }

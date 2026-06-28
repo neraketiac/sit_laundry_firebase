@@ -3,6 +3,7 @@ import 'package:laundry_firebase/app.dart';
 import 'package:laundry_firebase/core/utils/app_scale.dart';
 import 'package:intl/intl.dart';
 import 'dart:convert';
+import 'dart:async';
 import 'package:web/web.dart' as web;
 import 'package:laundry_firebase/core/global/app_version.dart';
 import 'package:laundry_firebase/core/global/variables_ble.dart';
@@ -79,6 +80,8 @@ class MyMainLaundryBody extends StatefulWidget {
 class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
   late DatabaseEmployeeSetup databaseEmployeeSetup;
   late EmployeeSetupModel empSetup;
+  String _memoryUsage = "0MB";
+  late Timer _memoryUpdateTimer;
 
   bool get _isDarkMode => empSetup.darkMode;
   Color get _scaffoldColor =>
@@ -134,6 +137,112 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
         ),
       ),
     );
+  }
+
+  //================ MEMORY TRACKING =================
+  String _getMemoryUsageString() {
+    try {
+      // Calculate memory based ONLY on tracked Firestore reads
+      // Each document record ≈ 0.5KB average
+      const double bytesPerRecord = 0.5; // KB per document
+
+      double estimatedMB = 0;
+
+      // Debug: Show all tracked data
+      final allTracked = FsUsageTracker.instance.getAllTracked();
+      debugPrint('=== TRACKER DEBUG ===');
+      debugPrint('All tracked sources: $allTracked');
+      debugPrint(
+          'empSetup state - showLaundry: ${empSetup.showLaundry}, showFunds: ${empSetup.showFunds}, showFundsHistory: ${empSetup.showFundsHistory}, showEmployee: ${empSetup.showEmployee}');
+
+      // ============ showFundsHistory ============
+      // Includes: readDataGCashPending, readDataGCashDoneNewFormat
+      if (empSetup.showFundsHistory) {
+        final gcashPendingCount =
+            FsUsageTracker.instance.getTrackedCount('readDataGCashPending');
+        final gcashDoneCount = FsUsageTracker.instance
+            .getTrackedCount('readDataGCashDoneNewFormat');
+        final gcashTotalRecords = gcashPendingCount + gcashDoneCount;
+        estimatedMB +=
+            (gcashTotalRecords * bytesPerRecord / 1024); // Convert KB to MB
+        debugPrint(
+            'GCash records: $gcashTotalRecords (Pending: $gcashPendingCount, Done: $gcashDoneCount)');
+      }
+
+      // ============ showLaundry ============
+      // Includes: readDataJobsOnQueue, readDataJobsOnGoing, readDataJobsDone,
+      //           readDataJobsCompleted, readUnpaidLaundry, ShowRiderOrders
+      if (empSetup.showLaundry) {
+        final jobsQueueCount =
+            FsUsageTracker.instance.getTrackedCount('readDataJobsOnQueue');
+        final jobsOnGoingCount =
+            FsUsageTracker.instance.getTrackedCount('readDataJobsOnGoing');
+        final jobsDoneCount =
+            FsUsageTracker.instance.getTrackedCount('readDataJobsDone');
+        final jobsCompletedCount =
+            FsUsageTracker.instance.getTrackedCount('readDataJobsCompleted');
+        final unpaidLaundryCount =
+            FsUsageTracker.instance.getTrackedCount('readUnpaidLaundry');
+        final riderOrdersCount =
+            FsUsageTracker.instance.getTrackedCount('ShowRiderOrders');
+
+        final laundryTotalRecords = jobsQueueCount +
+            jobsOnGoingCount +
+            jobsDoneCount +
+            jobsCompletedCount +
+            unpaidLaundryCount +
+            riderOrdersCount;
+        estimatedMB +=
+            (laundryTotalRecords * bytesPerRecord / 1024); // Convert KB to MB
+        debugPrint(
+            'Laundry records: $laundryTotalRecords (Queue: $jobsQueueCount, OnGoing: $jobsOnGoingCount, Done: $jobsDoneCount, Completed: $jobsCompletedCount, Unpaid: $unpaidLaundryCount, Rider: $riderOrdersCount)');
+      }
+
+      // ============ showFunds ============
+      // Includes: readSuppliesCurrent, readSuppliesHist, readItemsHist
+      if (empSetup.showFunds) {
+        final suppliesCurrentCount =
+            FsUsageTracker.instance.getTrackedCount('readSuppliesCurrent');
+        final suppliesHistoryCount =
+            FsUsageTracker.instance.getTrackedCount('readSuppliesHist');
+        final itemsHistoryCount =
+            FsUsageTracker.instance.getTrackedCount('readItemsHist');
+
+        final fundsTotalRecords =
+            suppliesCurrentCount + suppliesHistoryCount + itemsHistoryCount;
+        estimatedMB +=
+            (fundsTotalRecords * bytesPerRecord / 1024); // Convert KB to MB
+        debugPrint(
+            'Funds records: $fundsTotalRecords (Current: $suppliesCurrentCount, History: $suppliesHistoryCount, Items: $itemsHistoryCount)');
+      }
+
+      // ============ showEmployee ============
+      // Includes: readDataEmployeeCurr, readDataEmployeeHist
+      if (empSetup.showEmployee) {
+        final employeeCurrCount =
+            FsUsageTracker.instance.getTrackedCount('readDataEmployeeCurr');
+        final employeeHistCount =
+            FsUsageTracker.instance.getTrackedCount('readDataEmployeeHist');
+
+        final employeeTotalRecords = employeeCurrCount + employeeHistCount;
+        estimatedMB +=
+            (employeeTotalRecords * bytesPerRecord / 1024); // Convert KB to MB
+        debugPrint(
+            'Employee records: $employeeTotalRecords (Current: $employeeCurrCount, History: $employeeHistCount)');
+      }
+
+      debugPrint('Total estimated memory: ${estimatedMB.toStringAsFixed(2)}MB');
+      debugPrint('=====================');
+
+      // Format output
+      if (estimatedMB > 1024) {
+        return "${(estimatedMB / 1024).toStringAsFixed(1)}GB";
+      }
+      return estimatedMB > 0 ? "${estimatedMB.toStringAsFixed(1)}MB" : "0MB";
+    } catch (e) {
+      debugPrint('Memory calculation error: $e');
+      return "0MB";
+    }
   }
 
   //================ EMPLOYEE =================
@@ -204,6 +313,8 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
     myAppKey.currentState?.setDarkMode(updated.darkMode);
     setState(() {
       empSetup = updated;
+      // Update memory usage immediately when toggles change
+      _memoryUsage = _getMemoryUsageString();
     });
   }
 
@@ -352,6 +463,19 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
     messaging.onTokenRefresh.listen((newToken) async {
       await saveTokenToFirestore(empIdGlobal, newToken);
     });
+
+    // Initialize memory update timer - updates every 2 seconds
+    _memoryUpdateTimer = Timer.periodic(const Duration(seconds: 2), (_) {
+      setState(() {
+        _memoryUsage = _getMemoryUsageString();
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _memoryUpdateTimer.cancel();
+    super.dispose();
   }
 
   //########################### MAIN ###############################
@@ -687,7 +811,14 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
 
             /// TITLE
             title: Text(
-              "$dateText. Hello ${empSetup.empName} (v$appVersion)",
+              () {
+                final memoryValue = double.tryParse(
+                    _memoryUsage.replaceAll('MB', '').replaceAll('GB', ''));
+                if (memoryValue != null && memoryValue >= 1.0) {
+                  return "$dateText. Hello ${empSetup.empName} (v$appVersion) High Memory usage $_memoryUsage. Please refresh browser to clear cache.";
+                }
+                return "$dateText. Hello ${empSetup.empName} (v$appVersion) Memory used $_memoryUsage";
+              }(),
               style: const TextStyle(fontSize: 14),
               overflow: TextOverflow.ellipsis,
             ),
@@ -816,32 +947,35 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        animatedPanel(
-                          visible: empSetup.showFundsHistory,
-                          width: pw(350),
-                          child: Column(
-                            children: [
-                              const SizedBox(height: 1),
-                              readDataGCashPending(),
-                              readDataGCashDone(),
-                            ],
+                        if (empSetup.showFundsHistory)
+                          animatedPanel(
+                            visible: empSetup.showFundsHistory,
+                            width: pw(350),
+                            child: Column(
+                              children: [
+                                const SizedBox(height: 1),
+                                readDataGCashPending(),
+                                readDataGCashDone(),
+                              ],
+                            ),
+                            color: _isDarkMode
+                                ? const Color(0xFF102A43)
+                                : Colors.blue,
                           ),
-                          color: _isDarkMode
-                              ? const Color(0xFF102A43)
-                              : Colors.blue,
-                        ),
-                        readDataJobsOnQueue(
-                          empSetup.showLaundry,
-                          _isDarkMode
-                              ? const Color(0xFF7A5C00)
-                              : LaundryColors.onQueue,
-                        ),
-                        readDataJobsOnGoing(
-                          empSetup.showLaundry,
-                          _isDarkMode
-                              ? const Color(0xFF0D3A57)
-                              : LaundryColors.ongoing,
-                        ),
+                        if (empSetup.showLaundry)
+                          readDataJobsOnQueue(
+                            empSetup.showLaundry,
+                            _isDarkMode
+                                ? const Color(0xFF7A5C00)
+                                : LaundryColors.onQueue,
+                          ),
+                        if (empSetup.showLaundry)
+                          readDataJobsOnGoing(
+                            empSetup.showLaundry,
+                            _isDarkMode
+                                ? const Color(0xFF0D3A57)
+                                : LaundryColors.ongoing,
+                          ),
                         animatedPanel(
                           visible: empSetup.showLaundry,
                           width: pw(320),
@@ -871,52 +1005,57 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                               child: readUnpaidLaundry(),
                             ),
                           ),
-                        animatedPanel(
-                          visible: empSetup.showLaundry,
-                          width: pw(400),
-                          child: const ShowRiderOrders(),
-                          color: _isDarkMode
-                              ? const Color(0xFF123C3C)
-                              : Colors.teal.shade100,
-                        ),
-                        animatedPanel(
-                          visible: empSetup.showFunds && isAdmin,
-                          width: pw(400),
-                          child: readDataSuppliesCurrent(),
-                          color: _isDarkMode
-                              ? const Color(0xFF3B2F12)
-                              : cFundsInFundsOut,
-                        ),
-                        animatedPanel(
-                          visible: empSetup.showFunds,
-                          width: pw(550),
-                          child: readDataSuppliesHistory(),
-                          color: _isDarkMode
-                              ? const Color(0xFF3B2F12)
-                              : cFundsInFundsOut,
-                        ),
-                        animatedPanel(
-                          visible: empSetup.showFunds,
-                          width: pw(400),
-                          child: readDataItemsHistory(),
-                          color: _isDarkMode
-                              ? const Color(0xFF3B2F12)
-                              : cFundsInFundsOut,
-                        ),
-                        animatedPanel(
-                          visible: empSetup.showEmployee,
-                          width: isMobile ? screenWidth : pw(600),
-                          child: Column(
-                            children: [
-                              const SizedBox(height: 1),
-                              readDataEmployeeCurr(),
-                              readDataEmployeeHist(),
-                            ],
+                        if (empSetup.showLaundry)
+                          animatedPanel(
+                            visible: empSetup.showLaundry,
+                            width: pw(400),
+                            child: const ShowRiderOrders(),
+                            color: _isDarkMode
+                                ? const Color(0xFF123C3C)
+                                : Colors.teal.shade100,
                           ),
-                          color: _isDarkMode
-                              ? const Color(0xFF4A2517)
-                              : cEmployeeMaintenance,
-                        ),
+                        if (empSetup.showFunds && isAdmin)
+                          animatedPanel(
+                            visible: empSetup.showFunds && isAdmin,
+                            width: pw(400),
+                            child: readDataSuppliesCurrent(),
+                            color: _isDarkMode
+                                ? const Color(0xFF3B2F12)
+                                : cFundsInFundsOut,
+                          ),
+                        if (empSetup.showFunds)
+                          animatedPanel(
+                            visible: empSetup.showFunds,
+                            width: pw(550),
+                            child: readDataSuppliesHistory(),
+                            color: _isDarkMode
+                                ? const Color(0xFF3B2F12)
+                                : cFundsInFundsOut,
+                          ),
+                        if (empSetup.showFunds)
+                          animatedPanel(
+                            visible: empSetup.showFunds,
+                            width: pw(400),
+                            child: readDataItemsHistory(),
+                            color: _isDarkMode
+                                ? const Color(0xFF3B2F12)
+                                : cFundsInFundsOut,
+                          ),
+                        if (empSetup.showEmployee)
+                          animatedPanel(
+                            visible: empSetup.showEmployee,
+                            width: isMobile ? screenWidth : pw(600),
+                            child: Column(
+                              children: [
+                                const SizedBox(height: 1),
+                                readDataEmployeeCurr(),
+                                readDataEmployeeHist(),
+                              ],
+                            ),
+                            color: _isDarkMode
+                                ? const Color(0xFF4A2517)
+                                : cEmployeeMaintenance,
+                          ),
                       ],
                     ),
                   );

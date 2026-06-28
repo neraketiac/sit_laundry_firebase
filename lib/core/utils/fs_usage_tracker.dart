@@ -13,6 +13,8 @@ class FsUsageTracker {
   static const String _collection = 'fs_usage_log';
 
   final Map<String, int> _reads = {};
+  final Map<String, int> _lastSnapshot =
+      {}; // Keep last flushed data for display
   int _totalReads = 0;
 
   /// Call this after every paginated load.
@@ -26,6 +28,17 @@ class FsUsageTracker {
     }
   }
 
+  /// Get current tracked count for a source (includes unflushed data)
+  int getTrackedCount(String source) {
+    // First try current reads, fallback to last snapshot
+    return _reads[source] ?? _lastSnapshot[source] ?? 0;
+  }
+
+  /// Get all current tracked data
+  Map<String, int> getAllTracked() {
+    return Map<String, int>.from(_reads);
+  }
+
   /// Saves current counts to Firestore and resets.
   /// [trigger] = 'threshold' | 'logout'
   Future<void> flush({String trigger = 'logout'}) async {
@@ -33,6 +46,10 @@ class FsUsageTracker {
 
     final snapshot = Map<String, int>.from(_reads);
     final total = _totalReads;
+
+    // Keep snapshot for display purposes
+    _lastSnapshot.clear();
+    _lastSnapshot.addAll(snapshot);
 
     // Reset immediately so new reads start fresh
     _reads.clear();

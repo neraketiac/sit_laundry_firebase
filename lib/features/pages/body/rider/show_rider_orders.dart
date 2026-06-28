@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:laundry_firebase/core/services/firebase_service.dart';
+import 'package:laundry_firebase/core/utils/fs_usage_tracker.dart';
 import 'loyalty_order_online_model.dart';
 
 /// Standalone page (with Scaffold) — use when navigating directly
@@ -119,6 +120,9 @@ class _ShowRiderOrdersState extends State<ShowRiderOrders> {
             }
 
             final orders = _applyFilters(snap.data?.docs ?? []);
+
+            // Track memory usage
+            FsUsageTracker.instance.track('ShowRiderOrders', orders.length);
 
             if (orders.isEmpty) {
               return const Padding(
