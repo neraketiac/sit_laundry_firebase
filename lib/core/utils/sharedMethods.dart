@@ -1152,15 +1152,7 @@ Future<void> computeBonus(
     await Future.delayed(const Duration(seconds: 1));
 
     // Skip bonus for Lorie, Ket, DonF
-    const staffNoBonus = {
-      '#0707',
-      '#0808',
-      '#2929',
-      '#2020',
-      '#1919',
-      '1313#',
-      '1616#'
-    };
+    const staffNoBonus = {'#1919', '1313#', '1616#'};
 
     if (staffNoBonus.contains(empId)) {
       debugPrint('Employee $empId is excluded from bonus - skipping');
