@@ -246,13 +246,16 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader>
                     elevation: 12,
                     onPressed: () async {
                       // Check version on main button click
-                      await ProjectVersionManager.instance
+                      // Returns false if version is outdated or fund check fails
+                      final canProceed = await ProjectVersionManager.instance
                           .checkVersionOnMainButton(context);
 
-                      if (_isOpen) {
-                        setState(() => _isOpen = false);
-                      } else {
-                        setState(() => _isOpen = true);
+                      if (canProceed) {
+                        if (_isOpen) {
+                          setState(() => _isOpen = false);
+                        } else {
+                          setState(() => _isOpen = true);
+                        }
                       }
                     },
                     child: AnimatedRotation(

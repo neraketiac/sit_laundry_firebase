@@ -1,5 +1,6 @@
 //floating button done jobs  ###########################################################
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:laundry_firebase/core/constants/sharedConstantsFinal.dart';
 import 'package:laundry_firebase/core/global/variables_all_codes.dart';
 import 'package:laundry_firebase/core/utils/app_scale.dart';
@@ -7,6 +8,7 @@ import 'package:laundry_firebase/core/utils/sharedMethods.dart';
 import 'package:laundry_firebase/features/items/repository/supplies_hist_repository.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
 import 'package:laundry_firebase/core/global/variables_supplies.dart';
+import 'package:laundry_firebase/features/fund_check/services/fund_check_service.dart';
 
 void showFundCheck(BuildContext context) {
   final s = AppScale.of(context);
@@ -33,6 +35,129 @@ void showFundCheck(BuildContext context) {
 
   void resetAllQty() {
     qtyMap.updateAll((key, value) => 0);
+  }
+
+  /// Save fund check with time-based flag
+  /// Morning (< 12:00): Set morningCheck = true
+  /// Lunch (12:00 - 16:00): Set lunchCheck = true
+  /// Dinner (>= 16:00): Set dinnerCheck = true
+  Future<void> _saveFundCheck() async {
+    try {
+      final now = DateTime.now();
+      final currentHour = now.hour;
+      final today = DateTime(now.year, now.month, now.day);
+      final todayStart = Timestamp.fromDate(today);
+      final todayEnd = Timestamp.fromDate(today.add(const Duration(days: 1)));
+
+      // Determine which check to set based on current time
+      bool morningCheck = false;
+      bool lunchCheck = false;
+      bool dinnerCheck = false;
+
+      if (currentHour < 12) {
+        morningCheck = true;
+      } else if (currentHour >= 12 && currentHour < 16) {
+        lunchCheck = true;
+      } else if (currentHour >= 16) {
+        dinnerCheck = true;
+      }
+
+      // Check if today's fund check record exists
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('fund_checks')
+          .where('logDate', isGreaterThanOrEqualTo: todayStart)
+          .where('logDate', isLessThan: todayEnd)
+          .limit(1)
+          .get();
+
+      if (querySnapshot.docs.isEmpty) {
+        // Create new fund check record for today
+        // All checks start as false at the beginning of the day
+        await FirebaseFirestore.instance.collection('fund_checks').add({
+          'morningCheck': morningCheck,
+          'lunchCheck': lunchCheck,
+          'dinnerCheck': dinnerCheck,
+          'morningEnable': true,
+          'lunchEnable': true,
+          'dinnerEnable': true,
+          'logDate': Timestamp.now(),
+        });
+      } else {
+        // Update existing fund check record
+        final docId = querySnapshot.docs.first.id;
+
+        // Update only the current period's check, preserve others
+        await FirebaseFirestore.instance
+            .collection('fund_checks')
+            .doc(docId)
+            .update({
+          if (currentHour < 12) 'morningCheck': true,
+          if (currentHour >= 12 && currentHour < 16) 'lunchCheck': true,
+          if (currentHour >= 16) 'dinnerCheck': true,
+        });
+      }
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              '✅ Fund check saved - ${FundCheckService.getCurrentTimePeriod().toUpperCase()}',
+            ),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('Error saving fund check: $e');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error saving fund check: $e'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    }
+  }
+
+  /// Reset all checks to false at midnight for a new day
+  /// Called automatically when a new day is detected
+  Future<void> _resetDailyChecks() async {
+    try {
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      final todayStart = Timestamp.fromDate(today);
+      final todayEnd = Timestamp.fromDate(today.add(const Duration(days: 1)));
+
+      // Check if today's fund check record exists
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('fund_checks')
+          .where('logDate', isGreaterThanOrEqualTo: todayStart)
+          .where('logDate', isLessThan: todayEnd)
+          .limit(1)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        final docId = querySnapshot.docs.first.id;
+
+        // Reset all checks to false for the new day
+        await FirebaseFirestore.instance
+            .collection('fund_checks')
+            .doc(docId)
+            .update({
+          'morningCheck': false,
+          'lunchCheck': false,
+          'dinnerCheck': false,
+          'logDate': Timestamp.now(),
+        });
+
+        debugPrint('Daily fund checks reset to false');
+      }
+    } catch (e) {
+      debugPrint('Error resetting daily checks: $e');
+    }
   }
 
   Visibility countBills(
@@ -236,6 +361,9 @@ void showFundCheck(BuildContext context) {
     SuppliesHistRepository.instance.setCurrentCounter(grandTotal);
 
     await setSuppliesRepository(context);
+
+    // Save fund check based on current time
+    await _saveFundCheck();
   }
 
   showDialog(

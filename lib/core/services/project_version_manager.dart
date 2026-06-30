@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:laundry_firebase/core/global/app_version.dart';
+import 'package:laundry_firebase/features/fund_check/services/fund_check_service.dart';
+import 'package:laundry_firebase/features/fund_check/models/fund_check_model.dart';
 import 'dart:html' as html;
 
 /// Global variable that captures the app version when page loads
@@ -40,17 +42,190 @@ class ProjectVersionManager {
   /// Check version when main button is clicked
   /// Fetches fresh version from Firestore every time
   /// Shows message if outdated
-  Future<void> checkVersionOnMainButton(BuildContext context) async {
+  /// If version is updated, checks fund requirements before allowing action
+  Future<bool> checkVersionOnMainButton(BuildContext context) async {
     try {
       final remoteVersion = await _fetchVersionFromFirestore();
       if (remoteVersion != null) {
         if (_isOutdated(remoteVersion)) {
           _showVersionMessage(context, remoteVersion);
+          return false; // Block action if version outdated
+        }
+      }
+
+      // Version is good, check if it's a new day and reset checks if needed
+      await _checkAndResetDailyFundChecks();
+
+      // Now check fund check requirements
+      final fundCheckPassed = await _validateFundCheck(context);
+      return fundCheckPassed;
+    } catch (e) {
+      // Fail silently - allow action to proceed
+      debugPrint('Version check failed: $e');
+      return true;
+    }
+  }
+
+  /// Check if it's a new day and reset fund checks if needed
+  /// Called after version check passes
+  Future<void> _checkAndResetDailyFundChecks() async {
+    try {
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      final todayStart = Timestamp.fromDate(today);
+      final todayEnd = Timestamp.fromDate(today.add(const Duration(days: 1)));
+
+      // Check if today's fund check record exists
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('fund_checks')
+          .where('logDate', isGreaterThanOrEqualTo: todayStart)
+          .where('logDate', isLessThan: todayEnd)
+          .limit(1)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        final fundCheckDoc = querySnapshot.docs.first;
+        final logDate = fundCheckDoc['logDate'] as Timestamp;
+
+        // Check if logDate is from a previous day
+        final logDateTime = logDate.toDate();
+        if (logDateTime.year != now.year ||
+            logDateTime.month != now.month ||
+            logDateTime.day != now.day) {
+          // New day detected - reset all checks to false
+          await FirebaseFirestore.instance
+              .collection('fund_checks')
+              .doc(fundCheckDoc.id)
+              .update({
+            'morningCheck': false,
+            'lunchCheck': false,
+            'dinnerCheck': false,
+            'logDate': Timestamp.now(),
+          });
+
+          debugPrint('🔄 New day detected - Fund checks reset to false');
         }
       }
     } catch (e) {
+      debugPrint('Error checking/resetting daily fund checks: $e');
       // Fail silently - don't block main button
-      debugPrint('Version check failed: $e');
+    }
+  }
+
+  /// Validate fund check requirements
+  /// Returns true if all requirements are met
+  /// Returns false if fund check is required but not completed
+  Future<bool> _validateFundCheck(BuildContext context) async {
+    try {
+      // Fetch current fund check from Firestore
+      final fundCheck = await _fetchFundCheck();
+
+      if (fundCheck == null) {
+        // No fund check record found, allow to proceed
+        return true;
+      }
+
+      // Validate time-based fund check
+      final errorMessage =
+          FundCheckService.validateTimeBasedFundCheck(fundCheck);
+
+      if (errorMessage != null) {
+        // Show validation failure dialog
+        if (context.mounted) {
+          final result = await showDialog<bool>(
+            context: context,
+            barrierDismissible: false,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: const Text('Fund Check Required'),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.warning_rounded,
+                      color: Colors.orange.shade700,
+                      size: 48,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      errorMessage,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Period: ${FundCheckService.getCurrentTimePeriod().toUpperCase()}',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.grey.shade700,
+                      ),
+                    ),
+                  ],
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context, false),
+                    child: const Text('Cancel'),
+                  ),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.orange,
+                    ),
+                    onPressed: () => Navigator.pop(context, true),
+                    child: const Text('Go to Fund Check'),
+                  ),
+                ],
+              );
+            },
+          );
+
+          return result == null ? false : !result;
+        }
+        return false;
+      }
+
+      // All checks passed
+      return true;
+    } catch (e) {
+      debugPrint('Fund check validation failed: $e');
+      // Fail silently - allow action to proceed
+      return true;
+    }
+  }
+
+  /// Fetch today's fund check record from Firestore
+  Future<FundCheckModel?> _fetchFundCheck() async {
+    try {
+      final today = DateTime.now();
+      final todayStr =
+          '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
+
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('fund_checks')
+          .where('logDate',
+              isGreaterThanOrEqualTo: Timestamp.fromDate(
+                DateTime(today.year, today.month, today.day, 0, 0, 0),
+              ))
+          .where('logDate',
+              isLessThan: Timestamp.fromDate(
+                DateTime(today.year, today.month, today.day, 23, 59, 59),
+              ))
+          .limit(1)
+          .get();
+
+      if (querySnapshot.docs.isEmpty) {
+        return null;
+      }
+
+      final doc = querySnapshot.docs.first;
+      return FundCheckModel.fromJson(doc.data(), doc.id);
+    } catch (e) {
+      debugPrint('Failed to fetch fund check: $e');
+      return null;
     }
   }
 
