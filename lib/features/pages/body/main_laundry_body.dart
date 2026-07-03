@@ -1066,9 +1066,9 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                                 ? const Color(0xFF123C3C)
                                 : Colors.teal.shade100,
                           ),
-                        if (empSetup.showFunds && isAdmin)
+                        if (empSetup.showFunds)
                           animatedPanel(
-                            visible: empSetup.showFunds && isAdmin,
+                            visible: empSetup.showFunds,
                             width: pw(400),
                             child: readDataSuppliesCurrent(),
                             color: _isDarkMode
