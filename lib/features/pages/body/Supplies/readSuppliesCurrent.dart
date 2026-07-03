@@ -35,23 +35,6 @@ class _ReadDataSuppliesCurrentState extends State<ReadDataSuppliesCurrent> {
 
   @override
   Widget build(BuildContext context) {
-    // Admin-only visibility check
-    if (!isAdmin) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Text(
-            'This page is for admin only',
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey[600],
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ),
-      );
-    }
-
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -79,16 +62,24 @@ class _ReadDataSuppliesCurrentState extends State<ReadDataSuppliesCurrent> {
               final supplies =
                   docs.map((doc) => doc.data() as SuppliesModelHist).toList();
 
-              if (supplies.isEmpty) {
+              // Filter out Funds records if user is not admin
+              final filteredSupplies = supplies.where((item) {
+                if (item.itemId == menuOthCashInOutFunds && !isAdmin) {
+                  return false; // Hide Funds from non-admin
+                }
+                return true;
+              }).toList();
+
+              if (filteredSupplies.isEmpty) {
                 return const Center(child: Text('No supplies data'));
               }
 
               return ListView.builder(
                 controller: _scrollController,
                 physics: const AlwaysScrollableScrollPhysics(),
-                itemCount: supplies.length,
+                itemCount: filteredSupplies.length,
                 itemBuilder: (context, index) {
-                  final sMH = supplies[index];
+                  final sMH = filteredSupplies[index];
                   if (sMH.itemId == menuOthCashInOutFunds) {
                     alwaysTheLatestFunds = sMH.currentStocks;
                   }
