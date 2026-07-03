@@ -1069,15 +1069,6 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                         if (empSetup.showFunds)
                           animatedPanel(
                             visible: empSetup.showFunds,
-                            width: pw(400),
-                            child: readDataSuppliesCurrent(),
-                            color: _isDarkMode
-                                ? const Color(0xFF3B2F12)
-                                : cFundsInFundsOut,
-                          ),
-                        if (empSetup.showFunds)
-                          animatedPanel(
-                            visible: empSetup.showFunds,
                             width: pw(550),
                             child: readDataSuppliesHistory(),
                             color: _isDarkMode
@@ -1089,6 +1080,15 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                             visible: empSetup.showFunds,
                             width: pw(400),
                             child: readDataItemsHistory(),
+                            color: _isDarkMode
+                                ? const Color(0xFF3B2F12)
+                                : cFundsInFundsOut,
+                          ),
+                        if (empSetup.showFunds)
+                          animatedPanel(
+                            visible: empSetup.showFunds,
+                            width: pw(400),
+                            child: readDataSuppliesCurrent(),
                             color: _isDarkMode
                                 ? const Color(0xFF3B2F12)
                                 : cFundsInFundsOut,
