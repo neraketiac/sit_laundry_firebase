@@ -582,86 +582,88 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                               builder: (_) => const CustomerLocationPage())),
                       child: const Text('📍 Edit Customer Location'),
                     ),
-                    MenuItemButton(
-                      onPressed: () async {
-                        if (isProcessing) return;
-                        final bool? confirm = await showDialog<bool>(
-                          context: context,
-                          builder: (context) => AlertDialog(
-                            title: const Text('Confirm Action'),
-                            content: const Text(
-                                'Move ALL Done jobs to Completed?\n\nThis action cannot be undone.'),
-                            actions: [
-                              TextButton(
-                                  onPressed: () =>
-                                      Navigator.pop(context, false),
-                                  child: const Text('No')),
-                              ElevatedButton(
-                                  onPressed: () => Navigator.pop(context, true),
-                                  child: const Text('Yes')),
-                            ],
-                          ),
-                        );
-                        if (confirm != true) return;
-                        setState(() => isProcessing = true);
-
-                        // Show loading dialog
-                        if (context.mounted) {
-                          showDialog(
+                    if (isAdmin)
+                      MenuItemButton(
+                        onPressed: () async {
+                          if (isProcessing) return;
+                          final bool? confirm = await showDialog<bool>(
                             context: context,
-                            barrierDismissible: false,
-                            builder: (context) {
-                              return AlertDialog(
-                                content: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const CircularProgressIndicator(),
-                                    const SizedBox(height: 16),
-                                    const Text(
-                                      'Moving jobs to Completed...',
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(fontSize: 14),
-                                    ),
-                                  ],
+                            builder: (context) => AlertDialog(
+                              title: const Text('Confirm Action'),
+                              content: const Text(
+                                  'Move ALL Done jobs to Completed?\n\nThis action cannot be undone.'),
+                              actions: [
+                                TextButton(
+                                    onPressed: () =>
+                                        Navigator.pop(context, false),
+                                    child: const Text('No')),
+                                ElevatedButton(
+                                    onPressed: () =>
+                                        Navigator.pop(context, true),
+                                    child: const Text('Yes')),
+                              ],
+                            ),
+                          );
+                          if (confirm != true) return;
+                          setState(() => isProcessing = true);
+
+                          // Show loading dialog
+                          if (context.mounted) {
+                            showDialog(
+                              context: context,
+                              barrierDismissible: false,
+                              builder: (context) {
+                                return AlertDialog(
+                                  content: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const CircularProgressIndicator(),
+                                      const SizedBox(height: 16),
+                                      const Text(
+                                        'Moving jobs to Completed...',
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(fontSize: 14),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            );
+                          }
+
+                          try {
+                            await moveAllDoneToCompleted();
+
+                            // Close loading dialog
+                            if (context.mounted) {
+                              Navigator.pop(context);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                      'Jobs successfully moved to Completed'),
+                                  backgroundColor: Colors.green,
+                                  duration: Duration(seconds: 3),
                                 ),
                               );
-                            },
-                          );
-                        }
-
-                        try {
-                          await moveAllDoneToCompleted();
-
-                          // Close loading dialog
-                          if (context.mounted) {
-                            Navigator.pop(context);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text(
-                                    'Jobs successfully moved to Completed'),
-                                backgroundColor: Colors.green,
-                                duration: Duration(seconds: 3),
-                              ),
-                            );
+                            }
+                          } catch (e) {
+                            // Close loading dialog
+                            if (context.mounted) {
+                              Navigator.pop(context);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Error moving jobs: $e'),
+                                  backgroundColor: Colors.red,
+                                  duration: const Duration(seconds: 5),
+                                ),
+                              );
+                            }
+                          } finally {
+                            if (mounted) setState(() => isProcessing = false);
                           }
-                        } catch (e) {
-                          // Close loading dialog
-                          if (context.mounted) {
-                            Navigator.pop(context);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Error moving jobs: $e'),
-                                backgroundColor: Colors.red,
-                                duration: const Duration(seconds: 5),
-                              ),
-                            );
-                          }
-                        } finally {
-                          if (mounted) setState(() => isProcessing = false);
-                        }
-                      },
-                      child: const Text('🧺 Done → Completed'),
-                    ),
+                        },
+                        child: const Text('🧺 Done → Completed'),
+                      ),
 
                     // ── TOOLS > ADMIN ───────────────────────────────
                     if (isAdmin)
