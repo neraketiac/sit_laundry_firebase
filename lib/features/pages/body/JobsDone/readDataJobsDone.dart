@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:laundry_firebase/features/jobs/models/jobmodel.dart';
 import 'package:laundry_firebase/features/pages/body/JobsCompleted/readDataJobsCompleted.dart';
 import 'package:laundry_firebase/features/pages/body/JobsDone/showDeliverOrCustomerPickup.dart';
@@ -14,7 +15,7 @@ import 'package:laundry_firebase/core/global/variables.dart';
 import 'package:laundry_firebase/core/utils/fs_usage_tracker.dart';
 import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_display_job/visIconArea.dart';
 import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_display_job/visNameArea.dart';
-import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_alter_job/visPaidUnpaidArea.dart';
+import 'package:laundry_firebase/core/services/firebase_service.dart';
 import 'package:laundry_firebase/features/customers/repository/customer_repository.dart';
 
 Widget readDataJobsDone(VoidCallback dialogSetState) {
@@ -513,11 +514,10 @@ Widget readDataJobsDone(VoidCallback dialogSetState) {
                               ),
                               const SizedBox(width: 7),
                               visNameArea(jobRepo.getJobsModel()!, isSelected),
-                              visPaidUnpaidArea(
+                              _visPaidUnpaidAreaJobsDone(
                                 context,
                                 jobRepo,
                                 isSelected,
-                                true,
                               ),
                               const SizedBox(width: 20),
                             ],
@@ -534,6 +534,365 @@ Widget readDataJobsDone(VoidCallback dialogSetState) {
       );
     },
   );
+}
+
+InkWell _visPaidUnpaidAreaJobsDone(
+  BuildContext context,
+  JobModelRepository jobRepo,
+  bool isSelected,
+) {
+  final bool isPaid = !jobRepo.selectedUnpaid;
+
+  final isDark = Theme.of(context).brightness == Brightness.dark;
+
+  final Color paidColor = isSelected
+      ? Colors.deepPurple.shade200
+      : isDark
+          ? Colors.white70
+          : Colors.black87;
+
+  // KULANG = unpaid but has partial CASH payment (not enough cash)
+  final bool isKulang = jobRepo.selectedUnpaid && jobRepo.selectedPaidCash;
+
+  final Color unpaidColor = isKulang ? Colors.purpleAccent : Colors.redAccent;
+
+  final Color statusColor = isPaid ? paidColor : unpaidColor;
+
+  final String statusText = jobRepo.selectedUnpaid
+      ? (jobRepo.selectedPaidGCash ? "GCash Pending" : "Unpaid")
+      : jobRepo.selectedPaidCash
+          ? "Paid • Cash"
+          : jobRepo.selectedPaidGCash
+              ? "Paid • GCash"
+              : "Paid";
+
+  Future<bool> requestAdminApproval({
+    required String title,
+    required String description,
+  }) async {
+    final remarksCtrl = TextEditingController();
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text(title),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              description,
+              style: const TextStyle(fontSize: 13),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: remarksCtrl,
+              autofocus: true,
+              maxLines: 3,
+              decoration: const InputDecoration(
+                labelText: 'Remarks (required)',
+                hintText: 'Reason for admin request...',
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
+            onPressed: () {
+              if (remarksCtrl.text.trim().isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Please enter remarks.')),
+                );
+                return;
+              }
+              Navigator.pop(context, true);
+            },
+            child: const Text('Send Request',
+                style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) return false;
+
+    final appendedRemarks = jobRepo.remarks.isEmpty
+        ? '[Rt] ${remarksCtrl.text.trim()}'
+        : '${jobRepo.remarks} | [R] ${remarksCtrl.text.trim()}';
+
+    const collection = JOBS_DONE_REF;
+
+    final firestore = FirebaseService.jobsDoneFirestore;
+
+    await firestore.collection(collection).doc(jobRepo.docId).update({
+      'Z02_RequestForAdmin': true,
+      'R00_Remarks': appendedRemarks,
+      SYNC_TO_DB2_FIELD: false,
+    });
+
+    jobRepo.requestForAdmin = true;
+    jobRepo.remarks = appendedRemarks;
+
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Request sent. Admin will review.'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+    }
+
+    return true;
+  }
+
+  return InkWell(
+      borderRadius: BorderRadius.circular(14),
+      onTap: () async {
+        // Check if job is fully paid (unpaid = false means fully paid)
+        final isFullyPaid = !jobRepo.unpaid;
+
+        if (isFullyPaid) {
+          // Scenario 2: Job is fully paid (unpaid = false)
+          // Regular users always need admin approval to update
+          if (!isAdmin) {
+            await requestAdminApproval(
+              title: 'Request Payment Update',
+              description:
+                  'This job is fully paid. You need admin approval to update the payment.',
+            );
+            return;
+          }
+
+          // Admin updating fully paid job: apply dateD-based checks
+          final doneDate = jobRepo.dateD;
+          final epoch = DateTime(1900);
+          final doneDt = doneDate.toDate();
+          if (doneDt.isAfter(epoch)) {
+            final now = DateTime.now();
+            final daysDiff = now.difference(doneDt).inDays;
+
+            if (daysDiff > 14) {
+              // > 14 days: override confirm
+              final confirm = await showDialog<bool>(
+                context: context,
+                builder: (dialogContext) => AlertDialog(
+                  title: const Text('Over Two Weeks'),
+                  content: const Text(
+                      'This payment is over 2 weeks old. Admin override — are you sure?'),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(dialogContext, false),
+                      child: const Text('Cancel'),
+                    ),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.orange),
+                      onPressed: () => Navigator.pop(dialogContext, true),
+                      child: const Text('Override',
+                          style: TextStyle(color: Colors.white)),
+                    ),
+                  ],
+                ),
+              );
+              if (confirm != true) return;
+            } else if (daysDiff > 7) {
+              // 7-14 days: warn and confirm
+              final confirm = await showDialog<bool>(
+                context: context,
+                builder: (dialogContext) => AlertDialog(
+                  title: const Text('Warning'),
+                  content: const Text(
+                      'This payment is over a week old. Are you sure you want to update it?'),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(dialogContext, false),
+                      child: const Text('No'),
+                    ),
+                    ElevatedButton(
+                      onPressed: () => Navigator.pop(dialogContext, true),
+                      child: const Text('Yes'),
+                    ),
+                  ],
+                ),
+              );
+              if (confirm != true) return;
+            }
+            // <= 7 days — no message, proceed directly
+          }
+        } else if (jobRepo.selectedUnpaid) {
+          // Scenario 1: Unpaid or Kulang (unpaid = true) trying to change to paid
+          final doneDate = jobRepo.dateD;
+          // Skip check if dateD is the default epoch (not yet set)
+          final epoch = DateTime(1900);
+          final doneDt = doneDate.toDate();
+          if (doneDt.isAfter(epoch)) {
+            final now = DateTime.now();
+            final daysDiff = now.difference(doneDt).inDays;
+
+            if (daysDiff > 14) {
+              // > 14 days: request admin approval
+              if (!isAdmin) {
+                await requestAdminApproval(
+                  title: 'Request Payment Update',
+                  description:
+                      'This job is over 2 weeks unpaid. You can request admin approval to update the payment.',
+                );
+                return;
+              }
+
+              // Admin > 14 days: override confirm
+              final confirm = await showDialog<bool>(
+                context: context,
+                builder: (dialogContext) => AlertDialog(
+                  title: const Text('Over Two Weeks Unpaid'),
+                  content: const Text(
+                      'This item is more than two weeks unpaid. Admin override — are you sure?'),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(dialogContext, false),
+                      child: const Text('Cancel'),
+                    ),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.orange),
+                      onPressed: () => Navigator.pop(dialogContext, true),
+                      child: const Text('Override',
+                          style: TextStyle(color: Colors.white)),
+                    ),
+                  ],
+                ),
+              );
+              if (confirm != true) return;
+            } else if (daysDiff > 7) {
+              // 7-14 days: warn and confirm
+              final confirm = await showDialog<bool>(
+                context: context,
+                builder: (dialogContext) => AlertDialog(
+                  title: const Text('Warning'),
+                  content: const Text(
+                      'This item is already over a week unpaid. Are you sure you want to update the payment?'),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(dialogContext, false),
+                      child: const Text('No'),
+                    ),
+                    ElevatedButton(
+                      onPressed: () => Navigator.pop(dialogContext, true),
+                      child: const Text('Yes'),
+                    ),
+                  ],
+                ),
+              );
+              if (confirm != true) return;
+            }
+            // <= 7 days — no message, proceed directly
+          }
+        }
+
+        if (!context.mounted) return;
+
+        // For admin override on already-paid job: keep current selected state
+        // so admin can freely change it. Only reset for unpaid→paid flow.
+        if (jobRepo.selectedUnpaid) {
+          jobRepo.selectedUnpaid = jobRepo.unpaid;
+          jobRepo.selectedPaidCash = jobRepo.paidCash;
+          jobRepo.selectedPaidGCash = jobRepo.paidGCash;
+          jobRepo.selectedPaidGCashVerified = jobRepo.paidGCashVerified;
+          jobRepo.selectedPaidCashAmount = jobRepo.paidCashAmount;
+          jobRepo.selectedPaidGCashAmount = jobRepo.paidGCashAmount;
+        }
+
+        // Instead of showPaidUnpaid, call showDeliverOrCustomerPickup
+        if (!context.mounted) return;
+        showDeliverOrCustomerPickup(context, jobRepo);
+      },
+      child: Builder(builder: (ctx) {
+        final s = AppScale.of(ctx);
+        return IntrinsicWidth(
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+            decoration: BoxDecoration(
+              color: Colors.grey.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Stack(
+                    clipBehavior: Clip.none,
+                    alignment: Alignment.centerRight,
+                    children: [
+                      if (jobRepo.thisJobHasPromo)
+                        Positioned(
+                          right: 0,
+                          top: -16,
+                          child: Icon(
+                            Icons.star,
+                            size: s.iconLarge,
+                            color: Colors.amber.withValues(alpha: 0.5),
+                          ),
+                        ),
+                      Text(
+                        "₱ ${jobRepo.selectedFinalPrice}",
+                        textAlign: TextAlign.right,
+                        style: TextStyle(
+                          fontSize: s.bodyLarge,
+                          fontWeight: FontWeight.w800,
+                          color: statusColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: s.gapSmall / 2),
+                  Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: s.gap,
+                      vertical: s.gapSmall / 2,
+                    ),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(s.cardRadius - 2),
+                      color: isPaid
+                          ? Colors.greenAccent
+                              .withValues(alpha: isDark ? 0.25 : 0.15)
+                          : Colors.redAccent
+                              .withValues(alpha: isDark ? 0.25 : 0.15),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          statusText,
+                          style: TextStyle(
+                            fontSize: s.tiny,
+                            fontWeight: FontWeight.w600,
+                            color: statusColor,
+                          ),
+                          textAlign: TextAlign.right,
+                        ),
+                        // Show "w/ SS" indicator for GCash Pending with screenshot
+                        if (statusText == "GCash Pending" &&
+                            jobRepo.gcashReceiptUrl.isNotEmpty)
+                          Text(
+                            "w/ SS",
+                            style: TextStyle(
+                              fontSize: s.tiny * 0.8,
+                              fontWeight: FontWeight.w500,
+                              color: statusColor,
+                            ),
+                            textAlign: TextAlign.right,
+                          ),
+                      ],
+                    ),
+                  ),
+                ]),
+          ),
+        );
+      }));
 }
 
 class IconBadgeButton extends StatelessWidget {

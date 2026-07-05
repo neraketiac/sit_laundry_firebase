@@ -41,17 +41,72 @@ void showFundCheck(BuildContext context) {
   /// Morning (< 12:00): Set morningCheck = true
   /// Lunch (12:00 - 16:00): Set lunchCheck = true
   /// Dinner (>= 16:00): Set dinnerCheck = true
-  /// DISABLED - No create/update of fund check records
   Future<void> _saveFundCheck() async {
     try {
-      // DISABLED: Fund check creation and updates disabled
-      debugPrint('🚫 Fund check record creation/update DISABLED');
+      final today = DateTime.now();
+      final todayStr =
+          '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
+
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('fund_checks')
+          .where('logDate',
+              isGreaterThanOrEqualTo: Timestamp.fromDate(
+                DateTime(today.year, today.month, today.day, 0, 0, 0),
+              ))
+          .where('logDate',
+              isLessThan: Timestamp.fromDate(
+                DateTime(today.year, today.month, today.day, 23, 59, 59),
+              ))
+          .limit(1)
+          .get();
+
+      final now = DateTime.now();
+      final currentHour = now.hour;
+
+      // Determine which check to mark as true based on current time
+      bool morningCheck = false;
+      bool lunchCheck = false;
+      bool dinnerCheck = false;
+
+      if (currentHour < 12) {
+        morningCheck = true;
+      } else if (currentHour >= 12 && currentHour < 16) {
+        lunchCheck = true;
+      } else {
+        dinnerCheck = true;
+      }
+
+      if (querySnapshot.docs.isNotEmpty) {
+        // Update existing record
+        final doc = querySnapshot.docs.first;
+        await FirebaseFirestore.instance
+            .collection('fund_checks')
+            .doc(doc.id)
+            .update({
+          if (currentHour < 12) 'morningCheck': true,
+          if (currentHour >= 12 && currentHour < 16) 'lunchCheck': true,
+          if (currentHour >= 16) 'dinnerCheck': true,
+        });
+        debugPrint('✅ Fund check updated for $todayStr');
+      } else {
+        // Create new record
+        await FirebaseFirestore.instance.collection('fund_checks').add({
+          'logDate': Timestamp.now(),
+          'morningEnable': true,
+          'lunchEnable': true,
+          'dinnerEnable': true,
+          'morningCheck': morningCheck,
+          'lunchCheck': lunchCheck,
+          'dinnerCheck': dinnerCheck,
+        });
+        debugPrint('✅ New fund check record created for $todayStr');
+      }
 
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('✅ Fund data recorded (Firestore updates disabled)'),
-            backgroundColor: Colors.blue,
+            content: Text('✅ Fund check saved successfully'),
+            backgroundColor: Colors.green,
             duration: Duration(seconds: 2),
           ),
         );
@@ -72,11 +127,37 @@ void showFundCheck(BuildContext context) {
 
   /// Reset all checks to false at midnight for a new day
   /// Called automatically when a new day is detected
-  /// DISABLED - No automatic reset on new day
   Future<void> _resetDailyChecks() async {
     try {
-      // DISABLED: Reset logic removed
-      debugPrint('🚫 Daily fund checks reset DISABLED');
+      final today = DateTime.now();
+      final todayStr =
+          '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
+
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('fund_checks')
+          .where('logDate',
+              isGreaterThanOrEqualTo: Timestamp.fromDate(
+                DateTime(today.year, today.month, today.day, 0, 0, 0),
+              ))
+          .where('logDate',
+              isLessThan: Timestamp.fromDate(
+                DateTime(today.year, today.month, today.day, 23, 59, 59),
+              ))
+          .limit(1)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        final doc = querySnapshot.docs.first;
+        await FirebaseFirestore.instance
+            .collection('fund_checks')
+            .doc(doc.id)
+            .update({
+          'morningCheck': false,
+          'lunchCheck': false,
+          'dinnerCheck': false,
+        });
+        debugPrint('✅ Daily fund checks reset for new day ($todayStr)');
+      }
     } catch (e) {
       debugPrint('Error resetting daily checks: $e');
     }

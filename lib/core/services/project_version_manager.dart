@@ -52,9 +52,8 @@ class ProjectVersionManager {
         }
       }
 
-      // Version is good, allow action to proceed
-      // Fund check validation DISABLED - only accessible via showFundCheck
-      return true;
+      // Version is good, proceed to fund check validation
+      return await _validateFundCheck(context);
     } catch (e) {
       // Fail silently - allow action to proceed
       debugPrint('Version check failed: $e');
@@ -64,11 +63,36 @@ class ProjectVersionManager {
 
   /// Check if it's a new day and reset fund checks if needed
   /// Called after version check passes
-  /// DISABLED - No automatic reset on new day
   Future<void> _checkAndResetDailyFundChecks() async {
     try {
-      // DISABLED: All reset logic removed
-      debugPrint('🚫 Daily fund check reset DISABLED');
+      final fundCheck = await _fetchFundCheck();
+      if (fundCheck == null) {
+        // No record exists yet, create a new one for today
+        await FirebaseFirestore.instance
+            .collection('fund_checks')
+            .add(FundCheckModel(
+              id: '',
+              logDate: Timestamp.now(),
+              morningEnable: true,
+              lunchEnable: true,
+              dinnerEnable: true,
+              morningCheck: false,
+              lunchCheck: false,
+              dinnerCheck: false,
+            ).toJson());
+        debugPrint('✅ New fund check record created for today');
+        return;
+      }
+
+      // Check if it's a new day
+      if (FundCheckService.isNewDay(fundCheck.logDate)) {
+        // Reset for new day
+        await FirebaseFirestore.instance
+            .collection('fund_checks')
+            .doc(fundCheck.id)
+            .update(FundCheckService.resetChecksForNewDay(fundCheck).toJson());
+        debugPrint('✅ Fund checks reset for new day');
+      }
     } catch (e) {
       debugPrint('Error checking/resetting daily fund checks: $e');
       // Fail silently - don't block main button
@@ -80,6 +104,9 @@ class ProjectVersionManager {
   /// Returns false if fund check is required but not completed
   Future<bool> _validateFundCheck(BuildContext context) async {
     try {
+      // Check and reset daily fund checks if needed
+      await _checkAndResetDailyFundChecks();
+
       // Fetch current fund check from Firestore
       final fundCheck = await _fetchFundCheck();
 
