@@ -42,7 +42,6 @@ class ProjectVersionManager {
   /// Check version when main button is clicked
   /// Fetches fresh version from Firestore every time
   /// Shows message if outdated
-  /// If version is updated, checks fund requirements before allowing action
   Future<bool> checkVersionOnMainButton(BuildContext context) async {
     try {
       final remoteVersion = await _fetchVersionFromFirestore();
@@ -53,12 +52,9 @@ class ProjectVersionManager {
         }
       }
 
-      // Version is good, check if it's a new day and reset checks if needed
-      await _checkAndResetDailyFundChecks();
-
-      // Now check fund check requirements
-      final fundCheckPassed = await _validateFundCheck(context);
-      return fundCheckPassed;
+      // Version is good, allow action to proceed
+      // Fund check validation DISABLED - only accessible via showFundCheck
+      return true;
     } catch (e) {
       // Fail silently - allow action to proceed
       debugPrint('Version check failed: $e');
@@ -68,44 +64,11 @@ class ProjectVersionManager {
 
   /// Check if it's a new day and reset fund checks if needed
   /// Called after version check passes
+  /// DISABLED - No automatic reset on new day
   Future<void> _checkAndResetDailyFundChecks() async {
     try {
-      final now = DateTime.now();
-      final today = DateTime(now.year, now.month, now.day);
-      final todayStart = Timestamp.fromDate(today);
-      final todayEnd = Timestamp.fromDate(today.add(const Duration(days: 1)));
-
-      // Check if today's fund check record exists
-      final querySnapshot = await FirebaseFirestore.instance
-          .collection('fund_checks')
-          .where('logDate', isGreaterThanOrEqualTo: todayStart)
-          .where('logDate', isLessThan: todayEnd)
-          .limit(1)
-          .get();
-
-      if (querySnapshot.docs.isNotEmpty) {
-        final fundCheckDoc = querySnapshot.docs.first;
-        final logDate = fundCheckDoc['logDate'] as Timestamp;
-
-        // Check if logDate is from a previous day
-        final logDateTime = logDate.toDate();
-        if (logDateTime.year != now.year ||
-            logDateTime.month != now.month ||
-            logDateTime.day != now.day) {
-          // New day detected - reset all checks to false
-          await FirebaseFirestore.instance
-              .collection('fund_checks')
-              .doc(fundCheckDoc.id)
-              .update({
-            'morningCheck': false,
-            'lunchCheck': false,
-            'dinnerCheck': false,
-            'logDate': Timestamp.now(),
-          });
-
-          debugPrint('🔄 New day detected - Fund checks reset to false');
-        }
-      }
+      // DISABLED: All reset logic removed
+      debugPrint('🚫 Daily fund check reset DISABLED');
     } catch (e) {
       debugPrint('Error checking/resetting daily fund checks: $e');
       // Fail silently - don't block main button
