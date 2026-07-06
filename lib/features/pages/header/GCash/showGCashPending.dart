@@ -880,9 +880,7 @@ void showGCashPending(BuildContext context) async {
                                               style: TextStyle(
                                                 fontSize: s.small,
                                                 fontWeight: FontWeight.w500,
-                                                color: recordCashOutFeeInFunds
-                                                    ? Colors.green.shade300
-                                                    : Colors.red.shade400,
+                                                color: Colors.white,
                                               ),
                                             ),
                                           ),
