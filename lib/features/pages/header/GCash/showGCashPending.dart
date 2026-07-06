@@ -168,9 +168,10 @@ void showGCashPending(BuildContext context) async {
       sound: 'gcash-pending',
     );
 
-    // Check if staff is selected for Cash-In
+    // Check if staff is selected for Cash-In or Load
     final isCashIn = gRepo.selectedFundCode == menuOthUniqIdCashIn;
-    final staffSelected = isCashIn && isStaffSelected();
+    final isLoad = gRepo.selectedFundCode == menuOthUniqIdLoad;
+    final staffSelected = (isCashIn || isLoad) && isStaffSelected();
 
     // Only generate Supplies Hist/Curr for Cash-In and Load, NOT for Cash-Out
     // EXCEPT: if Cash-Out and recordCashOutFeeInFunds is true, then record fee
@@ -178,7 +179,7 @@ void showGCashPending(BuildContext context) async {
     final isCashOutTransaction = gRepo.selectedFundCode == menuOthUniqIdCashOut;
 
     if (!isCashOutTransaction) {
-      // If staff is selected for Cash-In: salary deduction only (no supplies recording)
+      // If staff is selected for Cash-In or Load: salary deduction only (no supplies recording)
       if (staffSelected) {
         // Set flag for employee deduction via salary maintenance pattern
         isGcashCredit = true;
@@ -235,7 +236,7 @@ void showGCashPending(BuildContext context) async {
         // Skip funds recording - will be done when status moves to next and user confirms "Pay Now?"
         return;
       } else if (!skipSuppliesThisSave) {
-        // Normal funds recording for Cash-In and Load
+        // Normal funds recording for Cash-In and Load (non-staff only)
         // Uses cross-database pattern with insertion marker
         const insertingMarker = '[Inserting to Supplies]';
 
