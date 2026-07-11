@@ -323,6 +323,13 @@ void showDeliverOrCustomerPickup(
                                           fontWeight: FontWeight.bold,
                                           color: Colors.red),
                                     ),
+                                    const SizedBox(height: 4),
+                                    const Text(
+                                      'Only input amount paid (Funds In), autocompute for remaining amount.',
+                                      style: TextStyle(
+                                          fontSize: 10, color: Colors.black54),
+                                    ),
+                                    const SizedBox(height: 6),
                                     Text(
                                       'Deduct ₱${jobRepo.selectedFinalPrice - (int.tryParse(jobRepo.repoVarCashAmountVar.text.replaceAll(',', '')) ?? 0)} from ${jobRepo.customerName}\'s salary',
                                       style: const TextStyle(
