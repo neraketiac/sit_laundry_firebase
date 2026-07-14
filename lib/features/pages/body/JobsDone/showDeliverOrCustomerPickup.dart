@@ -76,69 +76,77 @@ void showDeliverOrCustomerPickup(
 
     const insertingMarker = '[Inserting to Supplies]';
 
-    if (jobRepo.paidCash) {
-      // ============ STAFF SALARY DEDUCTION LOGIC ============
-      if (useStaffSalaryDeduction &&
-          isAdmin &&
-          jobRepo.customerName.isNotEmpty &&
-          empNameToId.containsKey(jobRepo.customerName)) {
-        // Check if customer is actually a staff/employee
-        final staffEmpId = empNameToId[jobRepo.customerName];
-        if (staffEmpId != null) {
-          // Calculate remaining unpaid amount
-          final currentPaidCash = int.tryParse(
-                  jobRepo.repoVarCashAmountVar.text.replaceAll(',', '')) ??
-              0;
-          final unpaidAmount = jobRepo.selectedFinalPrice - currentPaidCash;
+    // ============ STAFF SALARY DEDUCTION LOGIC ============
+    // Handle staff salary deduction if enabled, regardless of payment method
+    if (useStaffSalaryDeduction &&
+        isAdmin &&
+        jobRepo.customerName.isNotEmpty &&
+        empNameToId.containsKey(jobRepo.customerName)) {
+      // Check if customer is actually a staff/employee
+      final staffEmpId = empNameToId[jobRepo.customerName];
+      if (staffEmpId != null) {
+        // If no payment method selected and staff deduction is enabled, treat as cash = 0
+        // Otherwise, use the actual cash amount from input
+        final currentPaidCash = (jobRepo.paidCash ||
+                (useStaffSalaryDeduction &&
+                    !jobRepo.paidCash &&
+                    !jobRepo.paidGCash))
+            ? (int.tryParse(
+                    jobRepo.repoVarCashAmountVar.text.replaceAll(',', '')) ??
+                0)
+            : 0;
 
-          if (unpaidAmount > 0) {
-            // Add remarks to job
-            final salaryDeductionRemark =
-                'Paid=$currentPaidCash, SalaryDeduct=$unpaidAmount';
-            if (!jobRepo.remarks.contains(salaryDeductionRemark)) {
-              jobRepo.selectedRemarksVar.text =
-                  '${jobRepo.selectedRemarksVar.text} $salaryDeductionRemark'
-                      .trim();
-              jobRepo.remarks = jobRepo.selectedRemarksVar.text;
-            }
+        final unpaidAmount = jobRepo.selectedFinalPrice - currentPaidCash;
 
-            // Create salary correction with negative value (deduction)
-            try {
-              await recordSalaryCorrection(
-                context: context,
-                empName: jobRepo.customerName,
-                empId: staffEmpId,
-                amount: -unpaidAmount, // Negative for deduction
-                remarks: 'Job deduction: $salaryDeductionRemark',
-                jobId: jobRepo.jobId,
-              );
-              debugPrint(
-                  'Salary correction created: -$unpaidAmount for ${jobRepo.customerName}');
-            } catch (e) {
-              debugPrint('Error creating salary correction: $e');
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Failed to create salary deduction: $e'),
-                    backgroundColor: Colors.red,
-                    duration: const Duration(seconds: 5),
-                  ),
-                );
-              }
-              return;
-            }
-
-            // Mark job as fully paid
-            jobRepo.paidCashAmount = jobRepo.selectedFinalPrice;
-            jobRepo.unpaid = false; // Mark as paid
-
-            // AUTO-SKIP funds recording for staff salary deduction
-            skipSuppliesThisJob = true;
+        if (unpaidAmount > 0) {
+          // Add remarks to job
+          final salaryDeductionRemark =
+              'Paid=$currentPaidCash, SalaryDeduct=$unpaidAmount';
+          if (!jobRepo.remarks.contains(salaryDeductionRemark)) {
+            jobRepo.selectedRemarksVar.text =
+                '${jobRepo.selectedRemarksVar.text} $salaryDeductionRemark'
+                    .trim();
+            jobRepo.remarks = jobRepo.selectedRemarksVar.text;
           }
+
+          // Create salary correction with negative value (deduction)
+          try {
+            await recordSalaryCorrection(
+              context: context,
+              empName: jobRepo.customerName,
+              empId: staffEmpId,
+              amount: -unpaidAmount, // Negative for deduction
+              remarks: 'Job deduction: $salaryDeductionRemark',
+              jobId: jobRepo.jobId,
+            );
+            debugPrint(
+                'Salary correction created: -$unpaidAmount for ${jobRepo.customerName}');
+          } catch (e) {
+            debugPrint('Error creating salary correction: $e');
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Failed to create salary deduction: $e'),
+                  backgroundColor: Colors.red,
+                  duration: const Duration(seconds: 5),
+                ),
+              );
+            }
+            return;
+          }
+
+          // Mark job as fully paid
+          jobRepo.paidCashAmount = jobRepo.selectedFinalPrice;
+          jobRepo.unpaid = false; // Mark as paid
+
+          // AUTO-SKIP funds recording for staff salary deduction
+          skipSuppliesThisJob = true;
         }
       }
-      // ============ END STAFF SALARY DEDUCTION LOGIC ============
+    }
+    // ============ END STAFF SALARY DEDUCTION LOGIC ============
 
+    if (jobRepo.paidCash) {
       // Step 1: Add marker to remarks
       if (!jobRepo.remarks.contains(insertingMarker)) {
         jobRepo.selectedRemarksVar.text =
@@ -406,8 +414,11 @@ void showDeliverOrCustomerPickup(
                     return false;
                   }
 
-                  // Validate cash amount if selected
-                  if (jobRepo.selectedPaidCash) {
+                  // Validate cash amount if selected OR staff salary deduction is enabled
+                  if (jobRepo.selectedPaidCash ||
+                      (useStaffSalaryDeduction &&
+                          !jobRepo.selectedPaidCash &&
+                          !jobRepo.selectedPaidGCash)) {
                     final currentAmount = int.tryParse(jobRepo
                             .repoVarCashAmountVar.text
                             .replaceAll(',', '')) ??

@@ -220,7 +220,7 @@ BoxDecoration decoLightBlue() {
 }
 
 String getItemNameOnly(int itemId, int itemUniqueId) {
-  String thisItemName = "no data";
+  String thisItemName = "no data(pls logout)";
   for (var thisData in listSuppItemsAll) {
     if (thisData.itemId == itemId && thisData.itemUniqueId == itemUniqueId) {
       thisItemName = thisData.itemName;
