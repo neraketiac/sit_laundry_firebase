@@ -305,8 +305,9 @@ void showGCashPending(BuildContext context) async {
 
         // Fee record (only if main recording succeeded and NOT staff selected)
         // Staff selections should never have fees recorded in SuppliesHist/Curr
+        // Record fee even if it's 0
         final fee = int.tryParse(feeController.text.replaceAll(',', '')) ?? 0;
-        if (fee > 0 && !staffSelected) {
+        if (!staffSelected) {
           final feeSMH = SuppliesModelHist(
             docId: '',
             countId: 0,
@@ -326,27 +327,26 @@ void showGCashPending(BuildContext context) async {
       }
     } else if (isCashOut && recordCashOutFeeInFunds) {
       // Cash-Out with fee recording enabled: record fee in Funds In
+      // Record fee even if it's 0
       final fee = int.tryParse(feeController.text.replaceAll(',', '')) ?? 0;
-      if (fee > 0) {
-        try {
-          final feeSMH = SuppliesModelHist(
-            docId: '',
-            countId: 0,
-            itemId: menuOthCashInOutFunds,
-            itemUniqueId: menuOthUniqIdFee,
-            itemName: 'Gcash Fee',
-            currentCounter: fee,
-            currentStocks: 0,
-            logDate: Timestamp.now(),
-            empId: empIdGlobal,
-            customerId: 0,
-            customerName: gRepo.customerName,
-            remarks: 'GCash ${gRepo.itemName} ${gRepo.remarks}',
-          );
-          await DatabaseSuppliesCurrent().addSuppliesCurr(feeSMH);
-        } catch (e) {
-          debugPrint('Error recording CashOut fee in Funds In: $e');
-        }
+      try {
+        final feeSMH = SuppliesModelHist(
+          docId: '',
+          countId: 0,
+          itemId: menuOthCashInOutFunds,
+          itemUniqueId: menuOthUniqIdFee,
+          itemName: 'Gcash Fee',
+          currentCounter: fee,
+          currentStocks: 0,
+          logDate: Timestamp.now(),
+          empId: empIdGlobal,
+          customerId: 0,
+          customerName: gRepo.customerName,
+          remarks: 'GCash ${gRepo.itemName} ${gRepo.remarks}',
+        );
+        await DatabaseSuppliesCurrent().addSuppliesCurr(feeSMH);
+      } catch (e) {
+        debugPrint('Error recording CashOut fee in Funds In: $e');
       }
     }
   }

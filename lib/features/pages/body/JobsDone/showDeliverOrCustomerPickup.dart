@@ -139,6 +139,9 @@ void showDeliverOrCustomerPickup(
           jobRepo.paidCashAmount = jobRepo.selectedFinalPrice;
           jobRepo.unpaid = false; // Mark as paid
 
+          // Set paidCash to true to trigger proper job save flow
+          jobRepo.paidCash = true;
+
           // AUTO-SKIP funds recording for staff salary deduction
           skipSuppliesThisJob = true;
         }
