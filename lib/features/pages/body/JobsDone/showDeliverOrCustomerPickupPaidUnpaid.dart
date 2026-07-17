@@ -8,7 +8,7 @@ import 'package:laundry_firebase/features/jobs/repository/jobmodel_repository.da
 import 'package:laundry_firebase/core/global/variables.dart';
 import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_display_job/visCustomerNameNoAutoComplete.dart';
 import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_alter_job/visRiderPickup.dart';
-
+import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_alter_job/visPaidUnPaid.dart';
 import 'package:laundry_firebase/features/employees/models/employeemodel.dart';
 import 'package:laundry_firebase/core/services/database_employee_current.dart';
 
@@ -47,7 +47,7 @@ Future<void> recordSalaryCorrection({
   }
 }
 
-void showDeliverOrCustomerPickup(
+void showDeliverOrCustomerPickupPaidUnpaid(
     BuildContext context, JobModelRepository jobRepo) {
   // Per-job skip toggle — local only, resets every time dialog opens
   bool skipSuppliesThisJob = false;
@@ -301,6 +301,7 @@ void showDeliverOrCustomerPickup(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     visCustomerNameNoAutoComplete(context, jobRepo, false),
+                    visPaidUnPaid(context, () => setState(() {}), jobRepo),
                     visRiderPickup(context, () => setState(() {}), jobRepo),
                     conRemarks(context, () => setState(() {}),
                         jobRepo.selectedRemarksVar),

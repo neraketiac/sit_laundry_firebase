@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:laundry_firebase/features/jobs/models/jobmodel.dart';
 import 'package:laundry_firebase/features/pages/body/JobsCompleted/readDataJobsCompleted.dart';
 import 'package:laundry_firebase/features/pages/body/JobsDone/showDeliverOrCustomerPickup.dart';
+import 'package:laundry_firebase/features/pages/body/JobsDone/showDeliverOrCustomerPickupPaidUnpaid.dart';
 import 'package:laundry_firebase/features/pages/body/JobsDone/showReceipt.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/showAdminJob.dart';
 import 'package:laundry_firebase/shared/widgets/jobdisplay/autocompletecustomer.dart';
@@ -509,7 +510,15 @@ Widget readDataJobsDone(VoidCallback dialogSetState) {
                                 isSelected,
                                 false,
                                 () async {
-                                  showDeliverOrCustomerPickup(context, jobRepo);
+                                  // If job is paid, use showDeliverOrCustomerPickup
+                                  // If job is unpaid, use showDeliverOrCustomerPickupPaidUnpaid
+                                  if (jobRepo.unpaid) {
+                                    showDeliverOrCustomerPickupPaidUnpaid(
+                                        context, jobRepo);
+                                  } else {
+                                    showDeliverOrCustomerPickup(
+                                        context, jobRepo);
+                                  }
                                 },
                               ),
                               const SizedBox(width: 7),
@@ -806,9 +815,16 @@ InkWell _visPaidUnpaidAreaJobsDone(
           jobRepo.selectedPaidGCashAmount = jobRepo.paidGCashAmount;
         }
 
-        // Instead of showPaidUnpaid, call showDeliverOrCustomerPickup
+        // Instead of showPaidUnpaid, call appropriate dialog based on payment status
         if (!context.mounted) return;
-        showDeliverOrCustomerPickup(context, jobRepo);
+
+        // If job is paid, use showDeliverOrCustomerPickup
+        // If job is unpaid, use showDeliverOrCustomerPickupPaidUnpaid
+        if (jobRepo.unpaid) {
+          showDeliverOrCustomerPickupPaidUnpaid(context, jobRepo);
+        } else {
+          showDeliverOrCustomerPickup(context, jobRepo);
+        }
       },
       child: Builder(builder: (ctx) {
         final s = AppScale.of(ctx);

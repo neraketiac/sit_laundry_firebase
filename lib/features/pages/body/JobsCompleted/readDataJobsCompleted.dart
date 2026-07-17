@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:laundry_firebase/features/jobs/models/jobmodel.dart';
 import 'package:laundry_firebase/features/pages/body/JobsDone/showDeliverOrCustomerPickup.dart';
+import 'package:laundry_firebase/features/pages/body/JobsDone/showDeliverOrCustomerPickupPaidUnpaid.dart';
 import 'package:laundry_firebase/features/pages/body/JobsDone/showReceipt.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/showAdminJob.dart';
 
@@ -196,10 +197,19 @@ Widget readDataJobsCompleted(
                           false,
                           () async {
                             if (isAdmin) {
-                              showDeliverOrCustomerPickup(
-                                context,
-                                jobRepo,
-                              );
+                              // If job is paid, use showDeliverOrCustomerPickup
+                              // If job is unpaid, use showDeliverOrCustomerPickupPaidUnpaid
+                              if (jobRepo.unpaid) {
+                                showDeliverOrCustomerPickupPaidUnpaid(
+                                  context,
+                                  jobRepo,
+                                );
+                              } else {
+                                showDeliverOrCustomerPickup(
+                                  context,
+                                  jobRepo,
+                                );
+                              }
                             }
                           },
                         ),
