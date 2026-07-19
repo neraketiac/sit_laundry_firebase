@@ -41,7 +41,7 @@ Expanded visNameArea(JobModel job, bool isSelected) {
             children: [
               Flexible(
                 child: Text(
-                  '${displayCustomerName(job.customerName)} (${job.finalLoad})',
+                  '${displayCustomerName(job.customerName)} (${job.finalLoad}|${job.finalDry})',
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     fontSize: s.body,

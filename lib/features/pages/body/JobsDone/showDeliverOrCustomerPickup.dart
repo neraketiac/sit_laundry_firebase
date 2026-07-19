@@ -85,23 +85,22 @@ void showDeliverOrCustomerPickup(
       // Check if customer is actually a staff/employee
       final staffEmpId = empNameToId[jobRepo.customerName];
       if (staffEmpId != null) {
-        // If no payment method selected and staff deduction is enabled, treat as cash = 0
-        // Otherwise, use the actual cash amount from input
-        final currentPaidCash = (jobRepo.paidCash ||
-                (useStaffSalaryDeduction &&
-                    !jobRepo.paidCash &&
-                    !jobRepo.paidGCash))
-            ? (int.tryParse(
-                    jobRepo.repoVarCashAmountVar.text.replaceAll(',', '')) ??
-                0)
-            : 0;
+        // When salary deduction is enabled, automatically set paidCash=true
+        // This ensures the proper save flow is triggered
+        jobRepo.selectedPaidCash = true;
+        jobRepo.paidCash = true;
+
+        // Parse the cash amount if provided, otherwise default to 0
+        final currentPaidCash = int.tryParse(
+                jobRepo.repoVarCashAmountVar.text.replaceAll(',', '')) ??
+            0;
 
         final unpaidAmount = jobRepo.selectedFinalPrice - currentPaidCash;
 
         if (unpaidAmount > 0) {
           // Add remarks to job
           final salaryDeductionRemark =
-              'Paid=$currentPaidCash, SalaryDeduct=$unpaidAmount';
+              'Paid=₱$currentPaidCash, SalaryDeduct=₱$unpaidAmount';
           if (!jobRepo.remarks.contains(salaryDeductionRemark)) {
             jobRepo.selectedRemarksVar.text =
                 '${jobRepo.selectedRemarksVar.text} $salaryDeductionRemark'
@@ -120,7 +119,7 @@ void showDeliverOrCustomerPickup(
               jobId: jobRepo.jobId,
             );
             debugPrint(
-                'Salary correction created: -$unpaidAmount for ${jobRepo.customerName}');
+                'Salary correction created: -₱$unpaidAmount for ${jobRepo.customerName}');
           } catch (e) {
             debugPrint('Error creating salary correction: $e');
             if (context.mounted) {
@@ -138,9 +137,6 @@ void showDeliverOrCustomerPickup(
           // Mark job as fully paid
           jobRepo.paidCashAmount = jobRepo.selectedFinalPrice;
           jobRepo.unpaid = false; // Mark as paid
-
-          // Set paidCash to true to trigger proper job save flow
-          jobRepo.paidCash = true;
 
           // AUTO-SKIP funds recording for staff salary deduction
           skipSuppliesThisJob = true;

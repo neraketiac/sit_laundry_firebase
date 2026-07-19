@@ -72,6 +72,7 @@ class JobModel {
   bool perLoad;
   double finalKilo;
   int finalLoad;
+  int finalDry; // Q05_FinalDry
   int finalLoadForBonus; // Q15_FinalLoadForBonus
   int finalPrice;
   int promoCounter;
@@ -238,6 +239,7 @@ class JobModel {
     required this.perLoad,
     required this.finalKilo,
     required this.finalLoad,
+    required this.finalDry,
     required this.finalLoadForBonus,
     required this.finalPrice,
     required this.promoCounter,
@@ -294,6 +296,7 @@ class JobModel {
       perLoad: false,
       finalKilo: 0,
       finalLoad: 0,
+      finalDry: 0,
       finalLoadForBonus: 0,
       finalPrice: 0,
       promoCounter: 0,
@@ -351,6 +354,7 @@ class JobModel {
     bool? perLoad,
     double? finalKilo,
     int? finalLoad,
+    int? finalDry,
     int? finalLoadForBonus,
     int? finalPrice,
     int? promoCounter,
@@ -406,6 +410,7 @@ class JobModel {
       perLoad: perLoad ?? this.perLoad,
       finalKilo: finalKilo ?? this.finalKilo,
       finalLoad: finalLoad ?? this.finalLoad,
+      finalDry: finalDry ?? this.finalDry,
       finalLoadForBonus: finalLoadForBonus ?? this.finalLoadForBonus,
       finalPrice: finalPrice ?? this.finalPrice,
       promoCounter: promoCounter ?? this.promoCounter,
@@ -456,6 +461,7 @@ class JobModel {
         perLoad: json['Q03_PerLoad'],
         finalKilo: json['Q04_FinalKilo'],
         finalLoad: json['Q05_FinalLoad'],
+        finalDry: json['Q05_FinalDry'] ?? 0,
         finalLoadForBonus: json['Q15_FinalLoadForBonus'] ?? 0,
         finalPrice: json['Q06_FinalPrice'],
         promoCounter: json['Q06_PromoCounter'],
@@ -522,6 +528,7 @@ class JobModel {
         'Q03_PerLoad': perLoad,
         'Q04_FinalKilo': finalKilo,
         'Q05_FinalLoad': finalLoad,
+        'Q05_FinalDry': finalDry,
         'Q15_FinalLoadForBonus': finalLoadForBonus,
         'Q06_FinalPrice': finalPrice,
         'Q06_PromoCounter': promoCounter,

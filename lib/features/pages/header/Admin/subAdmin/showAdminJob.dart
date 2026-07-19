@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:laundry_firebase/core/global/variables_oth.dart';
+import 'package:laundry_firebase/core/global/variables_all_codes.dart';
 import 'package:laundry_firebase/core/utils/sharedmethodsdatabase.dart';
 import 'package:laundry_firebase/core/services/database_loyalty.dart';
 import 'package:laundry_firebase/features/jobs/repository/jobmodel_repository.dart';
@@ -31,6 +32,7 @@ class _AdminJobRepoViewerState extends State<AdminJobRepoViewer> {
     jobRepo.perLoad = jobRepo.selectedPerLoad;
     jobRepo.finalKilo = jobRepo.selectedFinalKilo;
     jobRepo.finalLoad = jobRepo.selectedFinalLoad;
+    jobRepo.finalDry = jobRepo.selectedFinalDry;
     jobRepo.finalLoadForBonus = jobRepo.selectedFinalLoadForBonus;
     jobRepo.finalPrice = jobRepo.selectedFinalPrice;
     jobRepo.promoCounter = jobRepo.selectedPromoCounter;
@@ -68,6 +70,56 @@ class _AdminJobRepoViewerState extends State<AdminJobRepoViewer> {
     jobRepo.syncRepoToSelectedAll(jobRepo);
     if (listOthItems.isEmpty) {
       addListOthItems();
+    }
+  }
+
+  /// Recalculate finalLoad and finalDry based on selectedItems and package
+  void _recalculateLoads() {
+    if (jobRepo.selectedPackage == intOthersPackage) {
+      // Recalculate for Others package based on selectedItems
+      final count155 =
+          jobRepo.selectedItems.where((v) => v.itemId == menuOth155).length;
+      final count195 =
+          jobRepo.selectedItems.where((v) => v.itemId == menuOth195).length;
+      final onlyPromo = count155;
+
+      // Calculate finalLoad
+      jobRepo.selectedFinalLoad = onlyPromo +
+          count195 * 2 +
+          (jobRepo.selectedItems.where((v) => v.itemId == menuOth165).length) *
+              2 +
+          (jobRepo.selectedItems.where((v) => v.itemId == menuOth125).length) +
+          (jobRepo.selectedItems.where((v) => v.itemId == menuOth225).length) *
+              2 +
+          (jobRepo.selectedItems.where((v) => v.itemId == menuOthWD98).length) +
+          (jobRepo.selectedItems
+              .where((v) => v.itemId == menuOthNF125)
+              .length) +
+          (jobRepo.selectedItems
+                  .where((v) => v.itemId == menuOthW9t10)
+                  .length) *
+              2 +
+          (jobRepo.selectedItems.where((v) => v.itemId == menuOth150).length) +
+          (jobRepo.selectedItems.where((v) => v.itemId == menuOthWash).length);
+
+      // Calculate finalDry
+      jobRepo.selectedFinalDry = (jobRepo.selectedItems
+              .where((v) => v.itemId == menuOth155)
+              .length) +
+          (jobRepo.selectedItems.where((v) => v.itemId == menuOth195).length) *
+              2 +
+          (jobRepo.selectedItems.where((v) => v.itemId == menuOth165).length) +
+          (jobRepo.selectedItems.where((v) => v.itemId == menuOth125).length) +
+          (jobRepo.selectedItems.where((v) => v.itemId == menuOth225).length) +
+          (jobRepo.selectedItems
+              .where((v) => v.itemId == menuOthW9t10)
+              .length) +
+          (jobRepo.selectedItems.where((v) => v.itemId == menuOth150).length) +
+          (jobRepo.selectedItems
+              .where((v) => v.itemId == menuOthNF125)
+              .length) +
+          (jobRepo.selectedItems.where((v) => v.itemId == menuOthWD98).length) +
+          (jobRepo.selectedItems.where((v) => v.itemId == menuOthDry).length);
     }
   }
 
@@ -294,6 +346,9 @@ class _AdminJobRepoViewerState extends State<AdminJobRepoViewer> {
       case "finalLoad":
         jobRepo.selectedFinalLoad = int.tryParse(value.toString()) ?? 0;
         setState(() {});
+      case "finalDry":
+        jobRepo.selectedFinalDry = int.tryParse(value.toString()) ?? 0;
+        setState(() {});
       case "finalLoadForBonus":
         jobRepo.selectedFinalLoadForBonus = int.tryParse(value.toString()) ?? 0;
         setState(() {});
@@ -409,8 +464,12 @@ class _AdminJobRepoViewerState extends State<AdminJobRepoViewer> {
                         IconButton(
                           icon: const Icon(Icons.delete,
                               color: Colors.red, size: 18),
-                          onPressed: () => setState(
-                              () => jobRepo.selectedItems.removeAt(index)),
+                          onPressed: () {
+                            setState(() {
+                              jobRepo.selectedItems.removeAt(index);
+                              _recalculateLoads();
+                            });
+                          },
                           padding: EdgeInsets.zero,
                           constraints: const BoxConstraints(),
                         ),
@@ -438,8 +497,12 @@ class _AdminJobRepoViewerState extends State<AdminJobRepoViewer> {
               Row(
                 children: [
                   ElevatedButton.icon(
-                    onPressed: () =>
-                        setState(() => jobRepo.selectedItems.clear()),
+                    onPressed: () {
+                      setState(() {
+                        jobRepo.selectedItems.clear();
+                        _recalculateLoads();
+                      });
+                    },
                     icon: const Icon(Icons.delete_sweep, size: 18),
                     label: const Text('Clear All'),
                     style:
@@ -459,8 +522,12 @@ class _AdminJobRepoViewerState extends State<AdminJobRepoViewer> {
                 runSpacing: 6,
                 children: [
                   ElevatedButton(
-                    onPressed: () =>
-                        setState(() => jobRepo.selectedItems.add(promoFree)),
+                    onPressed: () {
+                      setState(() {
+                        jobRepo.selectedItems.add(promoFree);
+                        _recalculateLoads();
+                      });
+                    },
                     style:
                         ElevatedButton.styleFrom(backgroundColor: Colors.green),
                     child: Text(
@@ -470,8 +537,12 @@ class _AdminJobRepoViewerState extends State<AdminJobRepoViewer> {
                   ...listOthItems
                       .where((item) => item.itemId != promoFree.itemId)
                       .map((item) => ElevatedButton(
-                            onPressed: () =>
-                                setState(() => jobRepo.selectedItems.add(item)),
+                            onPressed: () {
+                              setState(() {
+                                jobRepo.selectedItems.add(item);
+                                _recalculateLoads();
+                              });
+                            },
                             child: Text('${item.itemName} (₱${item.itemPrice})',
                                 style: const TextStyle(fontSize: 11)),
                           )),
@@ -599,6 +670,8 @@ class _AdminJobRepoViewerState extends State<AdminJobRepoViewer> {
                     "finalKilo", jobRepo.finalKilo, jobRepo.selectedFinalKilo),
                 _buildFieldRow(
                     "finalLoad", jobRepo.finalLoad, jobRepo.selectedFinalLoad),
+                _buildFieldRow(
+                    "finalDry", jobRepo.finalDry, jobRepo.selectedFinalDry),
                 _buildFieldRow("finalLoadForBonus", jobRepo.finalLoadForBonus,
                     jobRepo.selectedFinalLoadForBonus),
                 _buildFieldRow("finalPrice", jobRepo.finalPrice,

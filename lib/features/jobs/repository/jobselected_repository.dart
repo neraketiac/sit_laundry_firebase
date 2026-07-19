@@ -39,6 +39,8 @@ class JobselectedRepository {
   double _selectedFinalKilo = 8;
   //       finalLoad: 0,
   int _selectedFinalLoad = 1;
+  //       finalDry: 0,
+  int _selectedFinalDry = 0;
   //       finalLoadForBonus: 0,
   int _selectedFinalLoadForBonus = 0;
   //       finalPrice: 0,
@@ -131,6 +133,7 @@ class JobselectedRepository {
   bool get selectedPerLoad => _selectedPerLoad;
   double get selectedFinalKilo => _selectedFinalKilo;
   int get selectedFinalLoad => _selectedFinalLoad;
+  int get selectedFinalDry => _selectedFinalDry;
   int get selectedFinalLoadForBonus => _selectedFinalLoadForBonus;
   int get selectedFinalPrice => _selectedFinalPrice;
   int get selectedPromoCounter => _selectedPromoCounter;
@@ -192,6 +195,7 @@ class JobselectedRepository {
   set selectedPerLoad(bool v) => _selectedPerLoad = v;
   set selectedFinalKilo(double v) => _selectedFinalKilo = v;
   set selectedFinalLoad(int v) => _selectedFinalLoad = v;
+  set selectedFinalDry(int v) => _selectedFinalDry = v;
   set selectedFinalLoadForBonus(int v) => _selectedFinalLoadForBonus = v;
   set selectedFinalPrice(int v) => _selectedFinalPrice = v;
   set selectedPromoCounter(int v) => _selectedPromoCounter = v;
@@ -265,6 +269,7 @@ class JobselectedRepository {
     selectedPerLoad = true;
     selectedFinalKilo = 8;
     selectedFinalLoad = 1;
+    selectedFinalDry = 0;
     selectedFinalLoadForBonus = 0;
     selectedFinalPrice = 0;
     selectedPromoCounter = 0;

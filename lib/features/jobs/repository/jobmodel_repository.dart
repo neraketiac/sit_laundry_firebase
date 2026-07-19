@@ -43,6 +43,7 @@ class JobModelRepository {
       perLoad: true,
       finalKilo: 0,
       finalLoad: 0,
+      finalDry: 0,
       finalLoadForBonus: 0,
       finalPrice: 0,
       promoCounter: 0,
@@ -141,6 +142,7 @@ class JobModelRepository {
   bool get perLoad => jobModel.perLoad;
   double get finalKilo => jobModel.finalKilo;
   int get finalLoad => jobModel.finalLoad;
+  int get finalDry => jobModel.finalDry;
   int get finalLoadForBonus => jobModel.finalLoadForBonus;
   int get finalPrice => jobModel.finalPrice;
   int get promoCounter => jobModel.promoCounter;
@@ -205,6 +207,7 @@ class JobModelRepository {
   set perLoad(bool value) => jobModel.perLoad = value;
   set finalKilo(double value) => jobModel.finalKilo = value;
   set finalLoad(int value) => jobModel.finalLoad = value;
+  set finalDry(int value) => jobModel.finalDry = value;
   set finalLoadForBonus(int value) => jobModel.finalLoadForBonus = value;
   set finalPrice(int value) => jobModel.finalPrice = value;
   set promoCounter(int value) => jobModel.promoCounter = value;
@@ -302,6 +305,10 @@ class JobModelRepository {
   int get selectedFinalLoad => jobselectedRepository.selectedFinalLoad;
   set selectedFinalLoad(int value) =>
       jobselectedRepository.selectedFinalLoad = value;
+
+  int get selectedFinalDry => jobselectedRepository.selectedFinalDry;
+  set selectedFinalDry(int value) =>
+      jobselectedRepository.selectedFinalDry = value;
 
   int get selectedFinalLoadForBonus =>
       jobselectedRepository.selectedFinalLoadForBonus;
@@ -567,6 +574,7 @@ class JobModelRepository {
     selectedPerLoad = jobRepo.perLoad;
     selectedFinalKilo = jobRepo.finalKilo;
     selectedFinalLoad = jobRepo.finalLoad;
+    selectedFinalDry = jobRepo.finalDry;
     selectedFinalLoadForBonus = jobRepo.finalLoadForBonus;
     // debugPrint(
     //     'jobSyncRepoToSelectAll jobRepo.addOn=${jobRepo.addOn} repoVarTotalPriceOthers=$repoVarTotalPriceOthers');
@@ -679,6 +687,7 @@ class JobModelRepository {
     //selectedPerLoad = jobRepo.perLoad;
     //selectedFinalKilo = jobRepo.finalKilo;
     selectedFinalLoad = jobRepo.finalLoad;
+    selectedFinalDry = jobRepo.finalDry;
     if (selectedPackage == intOthersPackage) {
       selectedFinalPrice = repoVarTotalPriceOthers;
     } else {
@@ -796,6 +805,8 @@ class JobModelRepository {
       if (selectedPerKilo) {
         jobRepo.finalLoad = computeLoadForKg(selectedFinalKilo);
         jobRepo.finalLoadForBonus = computeLoadForKg(selectedFinalKilo);
+        jobRepo.finalDry = computeLoadForKg(
+            selectedFinalKilo); // Same as finalLoad for perKilo
         debugPrint('jobRepo.promoCounter=${jobRepo.promoCounter}');
         jobRepo.promoCounter = computePromoCounter;
         debugPrint('after jobRepo.promoCounter=${jobRepo.promoCounter}');
@@ -804,6 +815,7 @@ class JobModelRepository {
       } else {
         jobRepo.finalLoad = selectedFinalLoad;
         jobRepo.finalLoadForBonus = selectedFinalLoad;
+        jobRepo.finalDry = selectedFinalLoad; // Same as finalLoad for perLoad
         jobRepo.promoCounter = selectedFinalLoad;
         jobRepo.pricingSetup = 'Load(s): $selectedFinalLoad';
       }
@@ -813,9 +825,9 @@ class JobModelRepository {
           jobRepo.selectedItems.where((v) => v.itemId == menuOth155).length;
       final count195 =
           jobRepo.selectedItems.where((v) => v.itemId == menuOth195).length;
-      final onlyPromo = count155 + count195;
+      final onlyPromo = count155; // Only count155 gets 1 load, NOT 195
 
-      jobRepo.finalLoad = onlyPromo +
+      jobRepo.finalLoad = onlyPromo + // count155 = 1 load each
           count195 * 2 + // menuOth195 (405) - ₱260 = 2 loads
           (jobRepo.selectedItems.where((v) => v.itemId == menuOth165).length) *
               2 + // ₱165 = 2 loads
@@ -827,13 +839,17 @@ class JobModelRepository {
               .where((v) => v.itemId == menuOthNF125)
               .length) +
           (jobRepo.selectedItems
-              .where((v) => v.itemId == menuOthW9t10)
-              .length) + // menuOthW9t10 (419) - ₱260 = 1 load (₱155 + ₱105)
+                  .where((v) => v.itemId == menuOthW9t10)
+                  .length) *
+              2 + // menuOthW9t10 (419) - ₱260 = 2 loads (₱155 + ₱105)
           (jobRepo.selectedItems
               .where((v) => v.itemId == menuOth150)
-              .length); // menuOth150 (425) - ₱150 = 1 load (solo item)
+              .length) + // menuOth150 (425) - ₱150 = 1 load (solo item)
+          (jobRepo.selectedItems
+              .where((v) => v.itemId == menuOthWash)
+              .length); // menuOthWash - ₱49 = 1 load (wash only)
 
-      // Only these items qualify for bonus: menuOth155, menuOth195, menuOth165, menuOth125, menuOth225, menuOth150
+      // Only these items qualify for bonus: menuOth155, menuOth195, menuOth165, menuOth125, menuOth225, menuOth150, menuOth2W1DR
       final eligibleItems = jobRepo.selectedItems
           .where((item) => [
                 menuOth155,
@@ -842,7 +858,8 @@ class JobModelRepository {
                 menuOth125,
                 menuOth225,
                 menuOth150,
-                menuOthW9t10
+                menuOthW9t10,
+                menuOth2W1DR
               ].contains(item.itemId))
           .toList();
 
@@ -859,7 +876,10 @@ class JobModelRepository {
             bonusLoad +=
                 2; // menuOth225 = 1 load (includes menuOth125 + extra, only count additional 1)
           } else if (item.itemId == menuOthW9t10) {
-            bonusLoad += 1; // menuOthW9t10 = 1 load (includes menuOth155 + 105)
+            bonusLoad +=
+                2; // menuOthW9t10 = 2 loads (includes menuOth155 + 105)
+          } else if (item.itemId == menuOth2W1DR) {
+            bonusLoad += 1; // menuOth2W1DR (402) - ₱195 = 1 load
           } else {
             bonusLoad += 1; // menuOth155, menuOth125, menuOth150 = 1 load each
           }
@@ -869,6 +889,27 @@ class JobModelRepository {
       } else {
         jobRepo.finalLoadForBonus = 0;
       }
+
+      // Calculate dryLoad
+      jobRepo.finalDry = (jobRepo.selectedItems
+              .where((v) => v.itemId == menuOth155)
+              .length) +
+          (jobRepo.selectedItems.where((v) => v.itemId == menuOth195).length) *
+              2 + // menuOth195 = 2 dryLoads
+          (jobRepo.selectedItems.where((v) => v.itemId == menuOth165).length) +
+          (jobRepo.selectedItems.where((v) => v.itemId == menuOth125).length) +
+          (jobRepo.selectedItems.where((v) => v.itemId == menuOth225).length) +
+          (jobRepo.selectedItems
+              .where((v) => v.itemId == menuOthW9t10)
+              .length) +
+          (jobRepo.selectedItems.where((v) => v.itemId == menuOth150).length) +
+          (jobRepo.selectedItems
+              .where((v) => v.itemId == menuOthNF125)
+              .length) +
+          (jobRepo.selectedItems.where((v) => v.itemId == menuOthWD98).length) +
+          (jobRepo.selectedItems
+              .where((v) => v.itemId == menuOthDry)
+              .length); // All others = 1 dryLoad each
 
       // menuOthW8t9 (418) - ₱190 = 0 loads (₱155 + ₱35, already counted in onlyPromo)
       // TODO: Add wash49 = 1 load (need constant name)
