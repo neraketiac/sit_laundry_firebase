@@ -96,9 +96,8 @@ class _AdminJobRepoViewerState extends State<AdminJobRepoViewer> {
               .where((v) => v.itemId == menuOthNF125)
               .length) +
           (jobRepo.selectedItems
-                  .where((v) => v.itemId == menuOthW9t10)
-                  .length) *
-              2 +
+              .where((v) => v.itemId == menuOthW9t10)
+              .length) + // W9t10 = 1 load (105 part of bundle)
           (jobRepo.selectedItems.where((v) => v.itemId == menuOth150).length) +
           (jobRepo.selectedItems.where((v) => v.itemId == menuOthWash).length);
 
@@ -113,7 +112,7 @@ class _AdminJobRepoViewerState extends State<AdminJobRepoViewer> {
           (jobRepo.selectedItems.where((v) => v.itemId == menuOth225).length) +
           (jobRepo.selectedItems
               .where((v) => v.itemId == menuOthW9t10)
-              .length) +
+              .length) + // W9t10 = 1 dry (105 part of bundle)
           (jobRepo.selectedItems.where((v) => v.itemId == menuOth150).length) +
           (jobRepo.selectedItems
               .where((v) => v.itemId == menuOthNF125)

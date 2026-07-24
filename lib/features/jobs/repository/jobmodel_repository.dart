@@ -828,7 +828,7 @@ class JobModelRepository {
       final onlyPromo = count155; // Only count155 gets 1 load, NOT 195
 
       jobRepo.finalLoad = onlyPromo + // count155 = 1 load each
-          count195 * 2 + // menuOth195 (405) - ₱260 = 2 loads
+          count195 * 2 + // menuOth195 (405) - ₱260 = 2 loads (standalone item)
           (jobRepo.selectedItems.where((v) => v.itemId == menuOth165).length) *
               2 + // ₱165 = 2 loads
           (jobRepo.selectedItems.where((v) => v.itemId == menuOth125).length) +
@@ -839,9 +839,8 @@ class JobModelRepository {
               .where((v) => v.itemId == menuOthNF125)
               .length) +
           (jobRepo.selectedItems
-                  .where((v) => v.itemId == menuOthW9t10)
-                  .length) *
-              2 + // menuOthW9t10 (419) - ₱260 = 2 loads (₱155 + ₱105)
+              .where((v) => v.itemId == menuOthW9t10)
+              .length) + // menuOthW9t10 (419) - ₱105 part of ₱260 bundle = 1 load
           (jobRepo.selectedItems
               .where((v) => v.itemId == menuOth150)
               .length) + // menuOth150 (425) - ₱150 = 1 load (solo item)
@@ -901,7 +900,7 @@ class JobModelRepository {
           (jobRepo.selectedItems.where((v) => v.itemId == menuOth225).length) +
           (jobRepo.selectedItems
               .where((v) => v.itemId == menuOthW9t10)
-              .length) +
+              .length) + // menuOthW9t10 = 1 dry (105 part of bundle)
           (jobRepo.selectedItems.where((v) => v.itemId == menuOth150).length) +
           (jobRepo.selectedItems
               .where((v) => v.itemId == menuOthNF125)
