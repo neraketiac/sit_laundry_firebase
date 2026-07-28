@@ -253,6 +253,8 @@ class _SuppliesHistoryListState extends State<_SuppliesHistoryList> {
   Timestamp? _newestLogDate;
 
   static const int _pageSize = 30;
+  static const int _nonAdminLimit =
+      50; // Non-admin users can only see 50 records
 
   @override
   void initState() {
@@ -314,6 +316,14 @@ class _SuppliesHistoryListState extends State<_SuppliesHistoryList> {
 
   Future<void> _loadMore() async {
     if (_loading || !_hasMore) return;
+
+    // Check if non-admin user has reached the limit
+    if (!isAdmin &&
+        (_liveItems.length + _paginatedItems.length) >= _nonAdminLimit) {
+      setState(() => _hasMore = false);
+      return;
+    }
+
     setState(() => _loading = true);
 
     final snap = await dbFundsHist.getSuppliesHistoryPaginated(
@@ -326,16 +336,30 @@ class _SuppliesHistoryListState extends State<_SuppliesHistoryList> {
 
     setState(() {
       _loading = false;
-      if (newItems.length < _pageSize) _hasMore = false;
-      if (snap.docs.isNotEmpty) _lastDoc = snap.docs.last;
 
       // Add only new items to paginated list
       for (int i = 0; i < snap.docs.length; i++) {
         if (!_loadedIds.contains(snap.docs[i].id)) {
+          // For non-admin users, check if we've reached the limit
+          if (!isAdmin &&
+              (_liveItems.length + _paginatedItems.length) >= _nonAdminLimit) {
+            _hasMore = false;
+            break;
+          }
           _loadedIds.add(snap.docs[i].id);
           _paginatedItems.add(newItems[i]);
         }
       }
+
+      // Determine if there are more items to load
+      if (newItems.length < _pageSize) {
+        _hasMore = false;
+      } else if (!isAdmin &&
+          (_liveItems.length + _paginatedItems.length) >= _nonAdminLimit) {
+        _hasMore = false;
+      }
+
+      if (snap.docs.isNotEmpty) _lastDoc = snap.docs.last;
 
       // Start real-time listener on first load
       if (_newestLogDate == null && snap.docs.isNotEmpty) {

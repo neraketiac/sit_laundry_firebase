@@ -24,7 +24,7 @@ final detAriel15 = OtherItemModel(
   itemUniqueId: menuDetArielDVal,
   itemGroup: groupDet,
   itemName: "Ariel",
-  itemPrice: 15,
+  itemPrice: 18,
   stocksAlert: 5,
   stocksType: "pcs",
   logDate: timestamp1900,
