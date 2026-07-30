@@ -189,8 +189,8 @@ void showPaidUnpaid(BuildContext context, JobModelRepository jobRepo) {
         }
       } else {
         // Step 3b: Add skip recording remark if skip is enabled
-        const skipRecordingRemark = 'Skip funds recording';
-        if (!jobRepo.remarks.contains(skipRecordingRemark)) {
+        final skipRecordingRemark = 'Skip funds recording by $empIdGlobal';
+        if (!jobRepo.remarks.contains('Skip funds recording')) {
           jobRepo.selectedRemarksVar.text =
               '${jobRepo.selectedRemarksVar.text} $skipRecordingRemark'.trim();
           jobRepo.remarks = jobRepo.selectedRemarksVar.text;
