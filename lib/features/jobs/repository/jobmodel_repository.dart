@@ -846,7 +846,11 @@ class JobModelRepository {
               .length) + // menuOth150 (425) - ₱150 = 1 load (solo item)
           (jobRepo.selectedItems
               .where((v) => v.itemId == menuOthWash)
-              .length); // menuOthWash - ₱49 = 1 load (wash only)
+              .length) + // menuOthWash - ₱49 = 1 load (wash only)
+          (jobRepo.selectedItems
+                  .where((v) => v.itemId == menuOth2W1DR)
+                  .length) *
+              2; // menuOth2W1DR (402) - ₱195 = 2 loads
 
       // Only these items qualify for bonus: menuOth155, menuOth195, menuOth165, menuOth125, menuOth225, menuOth150, menuOth2W1DR
       final eligibleItems = jobRepo.selectedItems
@@ -878,7 +882,7 @@ class JobModelRepository {
             bonusLoad +=
                 2; // menuOthW9t10 = 2 loads (includes menuOth155 + 105)
           } else if (item.itemId == menuOth2W1DR) {
-            bonusLoad += 1; // menuOth2W1DR (402) - ₱195 = 1 load
+            bonusLoad += 1; // menuOth2W1DR (402) - ₱195 = 1 bonus load
           } else {
             bonusLoad += 1; // menuOth155, menuOth125, menuOth150 = 1 load each
           }
@@ -906,6 +910,9 @@ class JobModelRepository {
               .where((v) => v.itemId == menuOthNF125)
               .length) +
           (jobRepo.selectedItems.where((v) => v.itemId == menuOthWD98).length) +
+          (jobRepo.selectedItems
+              .where((v) => v.itemId == menuOth2W1DR)
+              .length) + // menuOth2W1DR = 1 dry
           (jobRepo.selectedItems
               .where((v) => v.itemId == menuOthDry)
               .length); // All others = 1 dryLoad each
