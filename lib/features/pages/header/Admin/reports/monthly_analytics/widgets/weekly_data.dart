@@ -12,7 +12,7 @@ class WeeklyData {
 
   void process(
     List<JobModelRepository> jobs,
-    int Function(DateTime) weekNumber,
+    int? Function(DateTime) weekNumber,
   ) {
     for (int w = 1; w <= 5; w++) {
       data[w] = {
@@ -27,6 +27,10 @@ class WeeklyData {
 
     for (final job in jobs) {
       final week = weekNumber(job.dateD.toDate());
+
+      // Only process jobs with valid week numbers (in current month)
+      if (week == null) continue;
+
       final paidCash = job.paidCashAmount;
       final paidGCash = job.paidGCashVerified ? job.paidGCashAmount : 0;
       final totalPaid = paidCash + paidGCash;

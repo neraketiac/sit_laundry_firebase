@@ -19,7 +19,7 @@ class UnpaidData {
 
   void process(
     List<JobModelRepository> jobs,
-    int Function(DateTime) weekNumber,
+    int? Function(DateTime) weekNumber,
   ) {
     byCustomer.clear();
     for (int w = 1; w <= 5; w++) {
@@ -38,9 +38,13 @@ class UnpaidData {
       byCustomer[name] = (byCustomer[name] ?? 0) + unpaid;
 
       final week = weekNumber(job.dateD.toDate());
-      byWeek[week] = (byWeek[week] ?? 0) + unpaid;
-      final weekMap = customersByWeek[week] ??= {};
-      weekMap[name] = (weekMap[name] ?? 0) + unpaid;
+
+      // Only add to week if it's a valid week number (in current month)
+      if (week != null) {
+        byWeek[week] = (byWeek[week] ?? 0) + unpaid;
+        final weekMap = customersByWeek[week] ??= {};
+        weekMap[name] = (weekMap[name] ?? 0) + unpaid;
+      }
     }
   }
 }

@@ -19,7 +19,7 @@ class SalaryData {
 
   void process(
     List<QueryDocumentSnapshot> empDocs,
-    int Function(DateTime) weekNumber, {
+    int? Function(DateTime) weekNumber, {
     DateTime? startDate,
     DateTime? endDate,
   }) {
@@ -69,14 +69,18 @@ class SalaryData {
         }
       }
 
-      totalSalary += amount;
-      byEmployee[label] = (byEmployee[label] ?? 0) + amount;
-
       if (ts != null) {
         final w = weekNumber(ts.toDate());
-        byWeek[w] = (byWeek[w] ?? 0) + amount;
-        final wMap = employeeByWeek[w] ??= {};
-        wMap[label] = (wMap[label] ?? 0) + amount;
+
+        // Only add to totals and weeks if it's a valid week number (dates in current month)
+        if (w != null) {
+          totalSalary += amount;
+          byEmployee[label] = (byEmployee[label] ?? 0) + amount;
+
+          byWeek[w] = (byWeek[w] ?? 0) + amount;
+          final wMap = employeeByWeek[w] ??= {};
+          wMap[label] = (wMap[label] ?? 0) + amount;
+        }
       }
     }
   }

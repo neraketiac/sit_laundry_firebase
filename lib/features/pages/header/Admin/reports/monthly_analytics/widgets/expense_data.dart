@@ -39,7 +39,7 @@ class ExpenseData {
   void process(
     List<QueryDocumentSnapshot> itemsDocs,
     List<QueryDocumentSnapshot> empDocs,
-    int Function(DateTime) weekNumber,
+    int? Function(DateTime) weekNumber,
   ) {
     totalExpense = 0;
     for (int w = 1; w <= 5; w++) {
@@ -97,8 +97,10 @@ class ExpenseData {
       empOnlyByEmployee[label] = (empOnlyByEmployee[label] ?? 0) + amount;
       if (ts != null) {
         final w = weekNumber(ts.toDate());
-        final wMap = empOnlyByWeek[w] ??= {};
-        wMap[label] = (wMap[label] ?? 0) + amount;
+        if (w != null) {
+          final wMap = empOnlyByWeek[w] ??= {};
+          wMap[label] = (wMap[label] ?? 0) + amount;
+        }
       }
     }
   }
@@ -107,16 +109,18 @@ class ExpenseData {
     String label,
     int amount,
     Timestamp? ts,
-    int Function(DateTime) weekNumber,
+    int? Function(DateTime) weekNumber,
   ) {
     totalExpense += amount;
     byEmployee[label] = (byEmployee[label] ?? 0) + amount;
 
     if (ts != null) {
       final w = weekNumber(ts.toDate());
-      byWeek[w] = (byWeek[w] ?? 0) + amount;
-      final wMap = employeeByWeek[w] ??= {};
-      wMap[label] = (wMap[label] ?? 0) + amount;
+      if (w != null) {
+        byWeek[w] = (byWeek[w] ?? 0) + amount;
+        final wMap = employeeByWeek[w] ??= {};
+        wMap[label] = (wMap[label] ?? 0) + amount;
+      }
     }
   }
 }

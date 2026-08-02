@@ -46,7 +46,14 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
   }
 
   /// Calendar weeks: Week 1 = day 1 to first Saturday, then Sun–Sat blocks.
-  int _weekNumber(DateTime date) {
+  /// Only processes dates that belong to the current month.
+  /// Returns null for dates outside the current month (they should be excluded).
+  int? _weekNumber(DateTime date) {
+    // Check if date is in the current month
+    if (date.year != currentMonth.year || date.month != currentMonth.month) {
+      return null; // Exclude dates outside current month
+    }
+
     final firstDay = DateTime(currentMonth.year, currentMonth.month, 1);
     // Mon=1..Sun=7 → convert to Sun=0..Sat=6
     final firstDow = firstDay.weekday % 7;
@@ -56,7 +63,10 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
         1 + daysToSat; // e.g. Apr 2026: Wed→firstDow=3, daysToSat=3, week1End=4
     if (date.day <= week1End) return 1;
     final remaining = date.day - week1End - 1;
-    return 2 + (remaining ~/ 7);
+    final calculatedWeek = 2 + (remaining ~/ 7);
+
+    // Clamp week to valid range (1-5)
+    return calculatedWeek.clamp(1, 5);
   }
 
   String _weekDateRange(int week) {
@@ -172,6 +182,7 @@ class _MonthlyAnalyticsPageState extends State<MonthlyAnalyticsPage> {
           .where('LogDate', isLessThanOrEqualTo: Timestamp.fromDate(endDate))
           .where('ItemUniqueId', isEqualTo: 4406)
           .get();
+
       _salary.process(salarySnap.docs, _weekNumber,
           startDate: startDate, endDate: endDate);
     } catch (e) {

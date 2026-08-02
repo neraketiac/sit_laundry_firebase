@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:laundry_firebase/app.dart';
 import 'package:laundry_firebase/core/utils/app_scale.dart';
 import 'package:intl/intl.dart';
@@ -148,12 +149,14 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
 
       double estimatedMB = 0;
 
-      // Debug: Show all tracked data
-      final allTracked = FsUsageTracker.instance.getAllTracked();
-      debugPrint('=== TRACKER DEBUG ===');
-      debugPrint('All tracked sources: $allTracked');
-      debugPrint(
-          'empSetup state - showLaundry: ${empSetup.showLaundry}, showFunds: ${empSetup.showFunds}, showFundsHistory: ${empSetup.showFundsHistory}, showEmployee: ${empSetup.showEmployee}');
+      // Debug: Show all tracked data (debug mode only)
+      if (kDebugMode) {
+        final allTracked = FsUsageTracker.instance.getAllTracked();
+        debugPrint('=== TRACKER DEBUG ===');
+        debugPrint('All tracked sources: $allTracked');
+        debugPrint(
+            'empSetup state - showLaundry: ${empSetup.showLaundry}, showFunds: ${empSetup.showFunds}, showFundsHistory: ${empSetup.showFundsHistory}, showEmployee: ${empSetup.showEmployee}');
+      }
 
       // ============ showFundsHistory ============
       // Includes: readDataGCashPending, readDataGCashDoneNewFormat
