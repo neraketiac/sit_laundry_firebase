@@ -252,6 +252,13 @@ class _SuppliesHistoryListState extends State<_SuppliesHistoryList> {
   StreamSubscription? _newDocSub;
   Timestamp? _newestLogDate;
 
+  // Auto-reload properties
+  bool _hasError = false;
+  Timer? _autoReloadTimer;
+  int _autoReloadAttempts = 0;
+  static const int _maxAutoReloadAttempts = 5;
+  static const Duration _initialReloadDelay = Duration(seconds: 3);
+
   static const int _pageSize = 30;
   static const int _nonAdminLimit =
       50; // Non-admin users can only see 50 records
@@ -271,6 +278,7 @@ class _SuppliesHistoryListState extends State<_SuppliesHistoryList> {
   void dispose() {
     _scroll.dispose();
     _newDocSub?.cancel();
+    _autoReloadTimer?.cancel();
     super.dispose();
   }
 
@@ -296,8 +304,15 @@ class _SuppliesHistoryListState extends State<_SuppliesHistoryList> {
 
         if (snap.docs.isNotEmpty) {
           _newestLogDate = snap.docs.first.data()['LogDate'] as Timestamp?;
+          _hasError = false; // Clear error on successful load
+          _autoReloadAttempts = 0; // Reset retry attempts
+          _autoReloadTimer?.cancel();
         }
       });
+    }, onError: (e) {
+      if (!mounted) return;
+      // On listener error, trigger auto-reload
+      _scheduleAutoReload();
     });
   }
 
@@ -326,48 +341,78 @@ class _SuppliesHistoryListState extends State<_SuppliesHistoryList> {
 
     setState(() => _loading = true);
 
-    final snap = await dbFundsHist.getSuppliesHistoryPaginated(
-      false,
-      lastDoc: _lastDoc,
-    );
+    try {
+      final snap = await dbFundsHist.getSuppliesHistoryPaginated(
+        false,
+        lastDoc: _lastDoc,
+      );
 
-    final newItems =
-        snap.docs.map((d) => d.data() as SuppliesModelHist).toList();
+      final newItems =
+          snap.docs.map((d) => d.data() as SuppliesModelHist).toList();
 
-    setState(() {
-      _loading = false;
+      setState(() {
+        _loading = false;
+        _hasError = false; // Clear error on successful load
+        _autoReloadAttempts = 0; // Reset retry attempts
+        _autoReloadTimer?.cancel();
 
-      // Add only new items to paginated list
-      for (int i = 0; i < snap.docs.length; i++) {
-        if (!_loadedIds.contains(snap.docs[i].id)) {
-          // For non-admin users, check if we've reached the limit
-          if (!isAdmin &&
-              (_liveItems.length + _paginatedItems.length) >= _nonAdminLimit) {
-            _hasMore = false;
-            break;
+        // Add only new items to paginated list
+        for (int i = 0; i < snap.docs.length; i++) {
+          if (!_loadedIds.contains(snap.docs[i].id)) {
+            // For non-admin users, check if we've reached the limit
+            if (!isAdmin &&
+                (_liveItems.length + _paginatedItems.length) >=
+                    _nonAdminLimit) {
+              _hasMore = false;
+              break;
+            }
+            _loadedIds.add(snap.docs[i].id);
+            _paginatedItems.add(newItems[i]);
           }
-          _loadedIds.add(snap.docs[i].id);
-          _paginatedItems.add(newItems[i]);
         }
-      }
 
-      // Determine if there are more items to load
-      if (newItems.length < _pageSize) {
-        _hasMore = false;
-      } else if (!isAdmin &&
-          (_liveItems.length + _paginatedItems.length) >= _nonAdminLimit) {
-        _hasMore = false;
-      }
+        // Determine if there are more items to load
+        if (newItems.length < _pageSize) {
+          _hasMore = false;
+        } else if (!isAdmin &&
+            (_liveItems.length + _paginatedItems.length) >= _nonAdminLimit) {
+          _hasMore = false;
+        }
 
-      if (snap.docs.isNotEmpty) _lastDoc = snap.docs.last;
+        if (snap.docs.isNotEmpty) _lastDoc = snap.docs.last;
 
-      // Start real-time listener on first load
-      if (_newestLogDate == null && snap.docs.isNotEmpty) {
-        final firstData = snap.docs.first.data() as SuppliesModelHist;
-        _newestLogDate = firstData.logDate;
-        _startNewDocListener();
-      }
-      FsUsageTracker.instance.track('readSuppliesHist', snap.docs.length);
+        // Start real-time listener on first load
+        if (_newestLogDate == null && snap.docs.isNotEmpty) {
+          final firstData = snap.docs.first.data() as SuppliesModelHist;
+          _newestLogDate = firstData.logDate;
+          _startNewDocListener();
+        }
+        FsUsageTracker.instance.track('readSuppliesHist', snap.docs.length);
+      });
+    } catch (e) {
+      setState(() => _loading = false);
+      _scheduleAutoReload();
+    }
+  }
+
+  void _scheduleAutoReload() {
+    if (_autoReloadAttempts >= _maxAutoReloadAttempts) {
+      // Max retries reached, mark as error and show message
+      setState(() => _hasError = true);
+      return;
+    }
+
+    _autoReloadTimer?.cancel();
+
+    // Exponential backoff: 3s, 6s, 12s, 24s, 48s
+    final delaySecs =
+        _initialReloadDelay.inSeconds * (1 << _autoReloadAttempts);
+    final delay = Duration(seconds: delaySecs);
+
+    _autoReloadTimer = Timer(delay, () {
+      if (!mounted) return;
+      _autoReloadAttempts++;
+      _loadMore();
     });
   }
 
@@ -389,38 +434,72 @@ class _SuppliesHistoryListState extends State<_SuppliesHistoryList> {
           height: MediaQuery.of(context).size.height * 0.9,
           child: allItems.isEmpty && _loading
               ? const Center(child: CircularProgressIndicator())
-              : allItems.isEmpty
-                  ? const Center(child: Text('No supplies history'))
-                  : RefreshIndicator(
-                      onRefresh: _refresh,
-                      child: ListView.builder(
-                        controller: _scroll,
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        itemCount: allItems.length + (_hasMore ? 1 : 0),
-                        itemBuilder: (context, index) {
-                          if (index == allItems.length) {
-                            if (!_loading) {
-                              WidgetsBinding.instance
-                                  .addPostFrameCallback((_) => _loadMore());
-                            }
-                            return const Padding(
-                              padding: EdgeInsets.symmetric(vertical: 8),
-                              child: Center(
-                                  child: SizedBox(
-                                width: 20,
-                                height: 20,
-                                child:
-                                    CircularProgressIndicator(strokeWidth: 2),
-                              )),
-                            );
-                          }
-                          return SizedBox(
-                            height: 24,
-                            child: _buildSupplyRow(allItems[index]),
-                          );
-                        },
+              : allItems.isEmpty && _hasError
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(
+                            Icons.cloud_off,
+                            size: 48,
+                            color: Colors.grey,
+                          ),
+                          const SizedBox(height: 16),
+                          const Text(
+                            'No data (auto-retrying...)',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Attempt ${_autoReloadAttempts}/$_maxAutoReloadAttempts',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          ElevatedButton(
+                            onPressed: () => _refresh(),
+                            child: const Text('Refresh Now'),
+                          ),
+                        ],
                       ),
-                    ),
+                    )
+                  : allItems.isEmpty
+                      ? const Center(child: Text('No supplies history'))
+                      : RefreshIndicator(
+                          onRefresh: _refresh,
+                          child: ListView.builder(
+                            controller: _scroll,
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            itemCount: allItems.length + (_hasMore ? 1 : 0),
+                            itemBuilder: (context, index) {
+                              if (index == allItems.length) {
+                                if (!_loading) {
+                                  WidgetsBinding.instance
+                                      .addPostFrameCallback((_) => _loadMore());
+                                }
+                                return const Padding(
+                                  padding: EdgeInsets.symmetric(vertical: 8),
+                                  child: Center(
+                                      child: SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                        strokeWidth: 2),
+                                  )),
+                                );
+                              }
+                              return SizedBox(
+                                height: 24,
+                                child: _buildSupplyRow(allItems[index]),
+                              );
+                            },
+                          ),
+                        ),
         ),
       ],
     );
