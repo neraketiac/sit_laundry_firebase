@@ -842,6 +842,11 @@ Future<void> recordCashPaymentAtomicTransaction(
 ]) async {
   if (!jobRepo.paidCash || delta <= 0) return;
 
+  // Set flag to indicate this function was called
+  jobRepo.requestForAdmin = true;
+  debugPrint(
+      'recordCashPaymentAtomicTransaction called - set requestForAdmin = true');
+
   try {
     // Use cleanRemarks if provided, otherwise use jobRepo.remarks
     final suppliersRemarks = cleanRemarks ?? jobRepo.remarks;
@@ -876,6 +881,11 @@ Future<void> recordCashPaymentAtomicTransaction(
         ),
       );
     }
+
+    // Clear flag on successful completion
+    jobRepo.requestForAdmin = false;
+    debugPrint(
+        'recordCashPaymentAtomicTransaction completed successfully - set requestForAdmin = false');
   } catch (e) {
     debugPrint('Supplies recording failed: $e');
 
@@ -886,6 +896,10 @@ Future<void> recordCashPaymentAtomicTransaction(
           '${jobRepo.selectedRemarksVar.text} $failureMarker'.trim();
       jobRepo.remarks = jobRepo.selectedRemarksVar.text;
     }
+
+    // Flag remains true when there's an error (indicating incomplete operation)
+    debugPrint(
+        'recordCashPaymentAtomicTransaction failed - requestForAdmin remains true');
 
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(

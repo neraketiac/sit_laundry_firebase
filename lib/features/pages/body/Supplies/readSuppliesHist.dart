@@ -266,12 +266,23 @@ class _SuppliesHistoryListState extends State<_SuppliesHistoryList> {
   @override
   void initState() {
     super.initState();
-    _loadMore();
+    _initializeData();
     _scroll.addListener(() {
       if (_scroll.position.pixels >= _scroll.position.maxScrollExtent - 200) {
         _loadMore();
       }
     });
+  }
+
+  void _initializeData() {
+    // Check if supplies items are loaded
+    if (listSuppItemsAll.isEmpty) {
+      // If empty, wait and retry automatically
+      _scheduleAutoReload();
+    } else {
+      // If loaded, start loading history
+      _loadMore();
+    }
   }
 
   @override
@@ -412,7 +423,15 @@ class _SuppliesHistoryListState extends State<_SuppliesHistoryList> {
     _autoReloadTimer = Timer(delay, () {
       if (!mounted) return;
       _autoReloadAttempts++;
-      _loadMore();
+
+      // Check if supplies items are now loaded
+      if (listSuppItemsAll.isEmpty) {
+        // Still empty, retry again
+        _scheduleAutoReload();
+      } else {
+        // Now loaded, proceed with loading history
+        _loadMore();
+      }
     });
   }
 
