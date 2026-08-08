@@ -879,8 +879,7 @@ class JobModelRepository {
             bonusLoad +=
                 2; // menuOth225 = 1 load (includes menuOth125 + extra, only count additional 1)
           } else if (item.itemId == menuOthW9t10) {
-            bonusLoad +=
-                2; // menuOthW9t10 = 2 loads (includes menuOth155 + 105)
+            bonusLoad += 1; // menuOthW9t10 = 1 load (105 part of 260 bundle)
           } else if (item.itemId == menuOth2W1DR) {
             bonusLoad += 1; // menuOth2W1DR (402) - ₱195 = 1 bonus load
           } else {
