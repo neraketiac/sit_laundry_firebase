@@ -62,20 +62,34 @@ void showJobOnQueue(BuildContext context, JobModelRepository jobRepo) async {
         jobRepo.remarks = jobRepo.selectedRemarksVar.text;
       }
 
-      // Step 2: Save job with marker to Firestore
+      // Step 2: Set requestForAdmin = true and save job with marker to Firestore
+      jobRepo.requestForAdmin = true;
       try {
         await callDatabaseUpdateJob(context, jobRepo.jobModelData);
+        debugPrint('Step 2: Job saved with requestForAdmin=true and marker');
       } catch (e) {
-        debugPrint('Failed to mark job with insertion marker: $e');
+        debugPrint('Step 2 failed: $e');
         return;
       }
 
       // Step 3: Record to SuppliesHist/Curr
       try {
-        await recordCashPaymentAtomicTransaction(
+        // Record supplies WITHOUT modifying requestForAdmin (managed in steps 2 & 5)
+        await recordCashPaymentSuppliesOnly(
             context, jobRepo, jobRepo.paidCashAmount, jobRepo.remarks);
+        debugPrint('Step 3: Supplies recorded successfully');
+
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Supplies recorded successfully'),
+              backgroundColor: Colors.green,
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
       } catch (e) {
-        debugPrint('Error recording supplies: $e');
+        debugPrint('Step 3 failed: $e');
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -94,9 +108,12 @@ void showJobOnQueue(BuildContext context, JobModelRepository jobRepo) async {
           .trim();
       jobRepo.remarks = jobRepo.selectedRemarksVar.text;
 
-      // Step 5: Save job without marker to Firestore
+      // Step 5: Set requestForAdmin = false and save job without marker to Firestore
+      jobRepo.requestForAdmin = false;
       try {
         await callDatabaseUpdateJob(context, jobRepo.jobModelData);
+        debugPrint(
+            'Step 5: Job saved with requestForAdmin=false - flow completed');
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -107,10 +124,10 @@ void showJobOnQueue(BuildContext context, JobModelRepository jobRepo) async {
           );
         }
       } catch (e) {
-        debugPrint('Failed to update job after supplies recording: $e');
+        debugPrint('Step 5 failed: $e');
       }
     } else if (jobRepo.paidCash) {
-      // Add marker if paidCash is true
+      // Add marker if paidCash is true but no amount
       if (!jobRepo.remarks.contains(insertingMarker)) {
         jobRepo.selectedRemarksVar.text =
             '${jobRepo.selectedRemarksVar.text} $insertingMarker'.trim();

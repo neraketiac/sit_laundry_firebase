@@ -832,6 +832,70 @@ Future<void> revertLaundryPaymentSuppliesHistory(
 }
 
 /// Atomically update job payment and record supplies using Firestore Transaction
+/// Record cash payment to supplies history and current - WITHOUT modifying requestForAdmin flag
+/// This is used when requestForAdmin is managed externally in 3-step flow
+Future<void> recordCashPaymentSuppliesOnly(
+  BuildContext context,
+  JobModelRepository jobRepo,
+  int delta, [
+  String? cleanRemarks,
+]) async {
+  if (!jobRepo.paidCash || delta <= 0) return;
+
+  try {
+    // Use cleanRemarks if provided, otherwise use jobRepo.remarks
+    final suppliersRemarks = cleanRemarks ?? jobRepo.remarks;
+
+    // Create the SuppliesModelHist with all proper fields
+    final sMH = SuppliesModelHist(
+      docId: '',
+      countId: 0,
+      itemId: menuOthCashInOutFunds,
+      itemUniqueId: menuOthLaundryPayment,
+      itemName: getItemNameOnly(menuOthCashInOutFunds, menuOthLaundryPayment),
+      currentCounter: delta,
+      currentStocks: 0,
+      logDate: Timestamp.now(),
+      empId: empIdGlobal,
+      customerId: jobRepo.customerId,
+      customerName: jobRepo.customerName,
+      remarks: 'auto via paid $suppliersRemarks',
+      expenseAmount: 0,
+    );
+
+    // Call directly without going through setSuppliesRepository which overwrites fields
+    await callDatabaseSuppliesCurrentAdd(sMH);
+
+    // Success - show snackbar
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Supplies recorded successfully'),
+          backgroundColor: Colors.green,
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
+
+    debugPrint('recordCashPaymentSuppliesOnly completed successfully');
+  } catch (e) {
+    debugPrint('Supplies recording failed: $e');
+
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Failed to record supplies: $e',
+          ),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 5),
+        ),
+      );
+    }
+    rethrow;
+  }
+}
+
 /// Record cash payment to supplies history and current
 /// Record cash payment to supplies after checking markers
 Future<void> recordCashPaymentAtomicTransaction(

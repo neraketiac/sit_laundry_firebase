@@ -67,11 +67,6 @@ void showPaidUnpaid(BuildContext context, JobModelRepository jobRepo) {
 
     jobRepo.paymentReceivedBy = empIdGlobal;
 
-    // Clear request flag when admin saves and it was previously requested
-    if (isAdmin && jobRepo.requestForAdmin) {
-      jobRepo.requestForAdmin = false;
-    }
-
     const insertingMarker = '[Inserting to Supplies]';
 
     if (jobRepo.paidCash) {
@@ -92,7 +87,7 @@ void showPaidUnpaid(BuildContext context, JobModelRepository jobRepo) {
           if (unpaidAmount > 0) {
             // Add remarks to job
             final salaryDeductionRemark =
-                'Paid=${currentPaidCash}, SalaryDeduct=${unpaidAmount}';
+                'Paid=$currentPaidCash, SalaryDeduct=$unpaidAmount';
             if (!jobRepo.remarks.contains(salaryDeductionRemark)) {
               jobRepo.selectedRemarksVar.text =
                   '${jobRepo.selectedRemarksVar.text} $salaryDeductionRemark'
@@ -144,10 +139,13 @@ void showPaidUnpaid(BuildContext context, JobModelRepository jobRepo) {
         jobRepo.remarks = jobRepo.selectedRemarksVar.text;
       }
 
-      // Step 2: Save job with marker to Firestore
+      // Step 2: Set requestForAdmin = true and save job with marker to Firestore
+      jobRepo.requestForAdmin = true;
       try {
         await callDatabaseUpdateJob(context, jobRepo.jobModelData);
+        debugPrint('Step 2: Job saved with requestForAdmin=true and marker');
       } catch (e) {
+        debugPrint('Step 2 failed: $e');
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -167,14 +165,17 @@ void showPaidUnpaid(BuildContext context, JobModelRepository jobRepo) {
             final cleanRemarks = jobRepo.selectedRemarksVar.text
                 .replaceAll(insertingMarker, '')
                 .trim();
-            await recordCashPaymentAtomicTransaction(
+
+            // Record supplies WITHOUT modifying requestForAdmin (managed in steps 2 & 5)
+            await recordCashPaymentSuppliesOnly(
               context,
               jobRepo,
               delta,
               cleanRemarks,
             );
+            debugPrint('Step 3: Supplies recorded successfully');
           } catch (e) {
-            debugPrint('Error recording supplies: $e');
+            debugPrint('Step 3 failed: $e');
             if (context.mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
@@ -203,9 +204,12 @@ void showPaidUnpaid(BuildContext context, JobModelRepository jobRepo) {
           .trim();
       jobRepo.remarks = jobRepo.selectedRemarksVar.text;
 
-      // Step 5: Save job without marker to Firestore
+      // Step 5: Set requestForAdmin = false and save job without marker to Firestore
+      jobRepo.requestForAdmin = false;
       try {
         await callDatabaseUpdateJob(context, jobRepo.jobModelData);
+        debugPrint(
+            'Step 5: Job saved with requestForAdmin=false - flow completed');
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -216,7 +220,7 @@ void showPaidUnpaid(BuildContext context, JobModelRepository jobRepo) {
           );
         }
       } catch (e) {
-        debugPrint('Failed to update job after supplies recording: $e');
+        debugPrint('Step 5 failed: $e');
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
