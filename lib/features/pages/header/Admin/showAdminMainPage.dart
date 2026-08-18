@@ -17,6 +17,7 @@ import 'package:laundry_firebase/features/pages/header/Admin/rider/show_rider_ma
 import 'package:laundry_firebase/features/pages/header/Admin/reports/monthly_analytics/monthly_analytics_page.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/other_item_admin/showOtherItemsMaintenance.dart';
+import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/search_history_page.dart';
 
 class ShowAdminMainPage extends StatefulWidget {
   const ShowAdminMainPage({super.key});
@@ -556,6 +557,41 @@ class _ShowAdminMainPageState extends State<ShowAdminMainPage> {
                       context,
                       MaterialPageRoute(
                         builder: (_) => const BleItemsPage(),
+                      ),
+                    );
+                  },
+                ),
+              ),
+
+            const SizedBox(height: 40),
+
+            if (isAdmin)
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.indigo.shade100,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: ListTile(
+                  leading: const Icon(Icons.history_edu, color: Colors.indigo),
+                  title: Text(
+                    "Search History",
+                    style: TextStyle(
+                      color: Colors.indigo.shade900,
+                    ),
+                  ),
+                  subtitle: Text(
+                    "View staff search activity - Customer Name, Staff Name, Date & Time",
+                    style: TextStyle(
+                      color: Colors.indigo.shade700,
+                    ),
+                  ),
+                  trailing: const Icon(Icons.arrow_forward_ios),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const SearchHistoryPage(),
                       ),
                     );
                   },

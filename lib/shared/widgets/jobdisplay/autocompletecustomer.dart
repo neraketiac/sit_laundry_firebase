@@ -7,6 +7,7 @@ import 'package:laundry_firebase/features/items/repository/supplies_hist_reposit
 import 'package:laundry_firebase/core/global/variables.dart';
 import 'package:laundry_firebase/core/global/variables_oth.dart';
 import 'package:laundry_firebase/core/services/search_history_service.dart';
+import 'package:laundry_firebase/features/admin/services/search_history_firestore_service.dart';
 
 class AutoCompleteCustomer extends StatefulWidget {
   final JobModelRepository jobRepo;
@@ -292,7 +293,7 @@ class _AutoCompleteCustomerState extends State<AutoCompleteCustomer> {
     widget.jobRepo.selectedCustomerNameVar.text = selected.name;
     widget.jobRepo.selectedCustomerId = selected.customerId;
 
-    // Save to search history
+    // Save to local search history
     _historyService
         .addToHistory(
       SearchHistoryItem(
@@ -306,6 +307,14 @@ class _AutoCompleteCustomerState extends State<AutoCompleteCustomer> {
       // Reload recent searches for next time
       _loadRecentSearches();
     });
+
+    // Save to Firestore search history for admin review
+    SearchHistoryFirestoreService().saveSearchHistory(
+      customerId: selected.customerId,
+      customerName: selected.name,
+      staffName: mapEmpId[empIdGlobal] ?? empIdGlobal,
+      staffId: empIdGlobal,
+    );
 
     // Guard jobModel-dependent setters — jobModel may not be initialized
     // when AutoCompleteCustomer is used outside a job context (e.g. funds/supplies)
