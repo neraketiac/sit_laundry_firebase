@@ -75,6 +75,7 @@ class GCashRepository {
   bool get isPendingFundsUntilPaid => gM.isPendingFundsUntilPaid;
   bool get recordCashOutFeeInFunds => gM.recordCashOutFeeInFunds;
   int get cashOutFeeAmount => gM.cashOutFeeAmount;
+  bool get failedInsertSupplies => gM.failedInsertSupplies;
 
   /////////////////////////////////////////////////////////////
   //                          SETTER                         //
@@ -110,6 +111,7 @@ class GCashRepository {
   set isPendingFundsUntilPaid(bool value) => gM.isPendingFundsUntilPaid = value;
   set recordCashOutFeeInFunds(bool value) => gM.recordCashOutFeeInFunds = value;
   set cashOutFeeAmount(int value) => gM.cashOutFeeAmount = value;
+  set failedInsertSupplies(bool value) => gM.failedInsertSupplies = value;
 
   /////////////////////////////////////////////////////////////
   //                          SETTER                         //

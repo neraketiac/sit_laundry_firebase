@@ -171,8 +171,16 @@ void showGCashPending(BuildContext context) async {
 
     // If CashOut and picture is uploaded, set status to 0.75
     final isCashOut = gRepo.selectedFundCode == menuOthUniqIdCashOut;
+    final isCashIn = gRepo.selectedFundCode == menuOthUniqIdCashIn;
+    final isLoad = gRepo.selectedFundCode == menuOthUniqIdLoad;
+
     if (isCashOut && gRepo.cashOutImageUrl.isNotEmpty) {
       gRepo.gCashStatus = 0.75;
+    }
+
+    // Set failedInsertSupplies = true before initial insert for Cash-In and Load
+    if ((isCashIn || isLoad) && !skipSuppliesThisSave) {
+      gRepo.failedInsertSupplies = true;
     }
 
     // Initial insert — this creates the Firestore document with a new ID
@@ -209,8 +217,6 @@ void showGCashPending(BuildContext context) async {
     );
 
     // Check if staff is selected for Cash-In or Load
-    final isCashIn = gRepo.selectedFundCode == menuOthUniqIdCashIn;
-    final isLoad = gRepo.selectedFundCode == menuOthUniqIdLoad;
     final staffSelected = (isCashIn || isLoad) && isStaffSelected();
 
     // Only generate Supplies Hist/Curr for Cash-In and Load, NOT for Cash-Out
@@ -250,6 +256,7 @@ void showGCashPending(BuildContext context) async {
 
           // Step 3: Remove insertion marker
           gRepo.remarks = gRepo.remarks.replaceAll(insertingMarker, '').trim();
+          gRepo.failedInsertSupplies = false;
           await databaseGCashPending.updateBool(gRepo.getModel()!);
 
           isGcashCredit = false;
@@ -307,6 +314,7 @@ void showGCashPending(BuildContext context) async {
 
           // Step 3: Remove insertion marker after successful supplies insert
           gRepo.remarks = gRepo.remarks.replaceAll(insertingMarker, '').trim();
+          gRepo.failedInsertSupplies = false;
           await databaseGCashPending.updateBool(gRepo.getModel()!);
 
           if (context.mounted) {
@@ -364,6 +372,9 @@ void showGCashPending(BuildContext context) async {
           );
           await DatabaseSuppliesCurrent().addSuppliesCurr(feeSMH);
         }
+      } else {
+        // skipSuppliesThisSave is true, so no supplies insertion needed
+        gRepo.failedInsertSupplies = false;
       }
     } else if (isCashOut && recordCashOutFeeInFunds) {
       // Cash-Out with fee recording enabled: record fee in Funds In

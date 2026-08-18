@@ -6,6 +6,7 @@ import 'package:laundry_firebase/features/jobs/repository/jobmodel_repository.da
 import 'package:laundry_firebase/features/items/repository/supplies_hist_repository.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
 import 'package:laundry_firebase/core/global/variables_oth.dart';
+import 'package:laundry_firebase/core/services/search_history_service.dart';
 
 class AutoCompleteCustomer extends StatefulWidget {
   final JobModelRepository jobRepo;
@@ -23,6 +24,24 @@ class AutoCompleteCustomer extends StatefulWidget {
 
 class _AutoCompleteCustomerState extends State<AutoCompleteCustomer> {
   String _currentQuery = "";
+  late SearchHistoryService _historyService;
+  List<SearchHistoryItem> _recentSearches = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _historyService = SearchHistoryService();
+    _loadRecentSearches();
+  }
+
+  Future<void> _loadRecentSearches() async {
+    final recent = await _historyService.getRecentSearches(limit: 10);
+    if (mounted) {
+      setState(() {
+        _recentSearches = recent;
+      });
+    }
+  }
 
   static String _displayString(CustomerModel option) =>
       "${option.name} • ${option.address} • ${option.customerId}";
@@ -57,7 +76,17 @@ class _AutoCompleteCustomerState extends State<AutoCompleteCustomer> {
             widget.dialogSetState();
           }
 
-          return const Iterable<CustomerModel>.empty();
+          // Return recent searches when field is empty
+          return _recentSearches
+              .map((item) => CustomerModel(
+                    customerId: item.customerId,
+                    name: item.name,
+                    address: item.address,
+                    contact: '',
+                    remarks: '',
+                    loyaltyCount: 0,
+                  ))
+              .toList();
         }
 
         final query = value.text.toLowerCase();
@@ -259,6 +288,21 @@ class _AutoCompleteCustomerState extends State<AutoCompleteCustomer> {
 
     widget.jobRepo.selectedCustomerNameVar.text = selected.name;
     widget.jobRepo.selectedCustomerId = selected.customerId;
+
+    // Save to search history
+    _historyService
+        .addToHistory(
+      SearchHistoryItem(
+        name: selected.name,
+        address: selected.address,
+        customerId: selected.customerId,
+        timestamp: DateTime.now(),
+      ),
+    )
+        .then((_) {
+      // Reload recent searches for next time
+      _loadRecentSearches();
+    });
 
     // Guard jobModel-dependent setters — jobModel may not be initialized
     // when AutoCompleteCustomer is used outside a job context (e.g. funds/supplies)

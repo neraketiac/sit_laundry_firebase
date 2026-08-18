@@ -53,25 +53,35 @@ Widget readDataGCashPending() {
 
               // Different background when Pending Funds In is enabled (isPendingFundsUntilPaid = true)
               // Orange background shows from the start for pending funds, regardless of status
+              // Red background for failed supplies insertion
               final isPending = gRepo.isPendingFundsUntilPaid;
+              final hasFailedSupplies = gRepo.failedInsertSupplies;
+
               final cardBg = isSelected
                   ? (isDark
                       ? Colors.deepPurple.shade900
                       : Colors.deepPurple.shade100)
-                  : isPending
+                  : hasFailedSupplies
                       ? (isDark
-                          ? Colors.orange.shade900.withValues(alpha: 0.3)
-                          : Colors.orange.shade500)
-                      : (isDark ? const Color(0xFF1E1E2E) : Colors.white);
+                          ? Colors.red.shade900.withValues(alpha: 0.4)
+                          : Colors.red.shade50)
+                      : isPending
+                          ? (isDark
+                              ? Colors.orange.shade900.withValues(alpha: 0.3)
+                              : Colors.orange.shade500)
+                          : (isDark ? const Color(0xFF1E1E2E) : Colors.white);
+
               final borderCol = isSelected
                   ? Colors.deepPurple
-                  : isPending
-                      ? (isDark
-                          ? Colors.orange.shade700
-                          : Colors.orange.shade300)
-                      : (isDark
-                          ? Colors.deepPurple.shade800
-                          : Colors.grey.shade300);
+                  : hasFailedSupplies
+                      ? (isDark ? Colors.red.shade700 : Colors.red.shade300)
+                      : isPending
+                          ? (isDark
+                              ? Colors.orange.shade700
+                              : Colors.orange.shade300)
+                          : (isDark
+                              ? Colors.deepPurple.shade800
+                              : Colors.grey.shade300);
               final primaryText = isSelected
                   ? (isDark ? Colors.deepPurple.shade200 : Colors.deepPurple)
                   : (isDark ? Colors.white : Colors.black87);

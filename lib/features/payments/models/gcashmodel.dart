@@ -22,6 +22,7 @@ class GCashModel {
   bool isPendingFundsUntilPaid; // true = pause funds recording until paid
   bool recordCashOutFeeInFunds; // true = record cash out fee in Funds In
   int cashOutFeeAmount; // amount of fee if recordCashOutFeeInFunds is true
+  bool failedInsertSupplies; // true = supplies insertion failed, needs retry
 
   GCashModel(
       {required this.docId,
@@ -42,7 +43,8 @@ class GCashModel {
       required this.cashOutImageUrl,
       this.isPendingFundsUntilPaid = false,
       this.recordCashOutFeeInFunds = false,
-      this.cashOutFeeAmount = 0});
+      this.cashOutFeeAmount = 0,
+      this.failedInsertSupplies = false});
 
   GCashModel.fromJson(Map<String, dynamic> json)
       : this(
@@ -67,6 +69,8 @@ class GCashModel {
           recordCashOutFeeInFunds:
               (json['RecordCashOutFeeInFunds'] as bool?) ?? false,
           cashOutFeeAmount: (json['CashOutFeeAmount'] as int?) ?? 0,
+          failedInsertSupplies:
+              (json['FailedInsertSupplies'] as bool?) ?? false,
         );
 
   GCashModel copyWith({
@@ -89,6 +93,7 @@ class GCashModel {
     bool? isPendingFundsUntilPaid,
     bool? recordCashOutFeeInFunds,
     int? cashOutFeeAmount,
+    bool? failedInsertSupplies,
   }) {
     return GCashModel(
       docId: docId ?? this.docId,
@@ -112,6 +117,7 @@ class GCashModel {
       recordCashOutFeeInFunds:
           recordCashOutFeeInFunds ?? this.recordCashOutFeeInFunds,
       cashOutFeeAmount: cashOutFeeAmount ?? this.cashOutFeeAmount,
+      failedInsertSupplies: failedInsertSupplies ?? this.failedInsertSupplies,
     );
   }
 
@@ -135,5 +141,6 @@ class GCashModel {
         'IsPendingFundsUntilPaid': isPendingFundsUntilPaid,
         'RecordCashOutFeeInFunds': recordCashOutFeeInFunds,
         'CashOutFeeAmount': cashOutFeeAmount,
+        'FailedInsertSupplies': failedInsertSupplies,
       };
 }
