@@ -234,9 +234,10 @@ class _AutoCompleteCustomerState extends State<AutoCompleteCustomer> {
   /// HIGHLIGHT MATCH
   Widget _highlightMatch(String text, String query) {
     if (query.isEmpty) {
-      return const Text(
-        "",
-        style: TextStyle(color: Colors.white),
+      // Show full text when query is empty (recent searches)
+      return Text(
+        text,
+        style: const TextStyle(color: Colors.white, fontSize: 14),
       );
     }
 
@@ -245,7 +246,8 @@ class _AutoCompleteCustomerState extends State<AutoCompleteCustomer> {
     final start = lowerText.indexOf(lowerQuery);
 
     if (start == -1) {
-      return Text(text, style: const TextStyle(color: Colors.white));
+      return Text(text,
+          style: const TextStyle(color: Colors.white, fontSize: 14));
     }
 
     final end = start + query.length;
@@ -255,18 +257,19 @@ class _AutoCompleteCustomerState extends State<AutoCompleteCustomer> {
         children: [
           TextSpan(
             text: text.substring(0, start),
-            style: const TextStyle(color: Colors.white),
+            style: const TextStyle(color: Colors.white, fontSize: 14),
           ),
           TextSpan(
             text: text.substring(start, end),
             style: const TextStyle(
               color: Colors.cyanAccent,
               fontWeight: FontWeight.bold,
+              fontSize: 14,
             ),
           ),
           TextSpan(
             text: text.substring(end),
-            style: const TextStyle(color: Colors.white),
+            style: const TextStyle(color: Colors.white, fontSize: 14),
           ),
         ],
       ),
