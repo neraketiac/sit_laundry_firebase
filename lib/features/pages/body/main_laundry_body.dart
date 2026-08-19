@@ -61,6 +61,7 @@ import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/other_item
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/other_item_admin/showBleItemsMaintenance.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/AutoSalaryDateOneTimeBatch.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/batch_remove_promo_disabled_days.dart';
+import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/search_history_page.dart';
 import 'package:laundry_firebase/core/utils/fs_usage_tracker.dart';
 // ── Core ───────────────────────────────────────────────────────
 import 'package:laundry_firebase/core/utils/sharedMethods.dart';
@@ -675,6 +676,13 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                           MenuItemButton(
                             onPressed: () => showSalaryMaintenance(context),
                             child: const Text('💸 Salary Correction'),
+                          ),
+                          MenuItemButton(
+                            onPressed: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (_) => const SearchHistoryPage())),
+                            child: const Text('🔍 Search History'),
                           ),
                           MenuItemButton(
                             onPressed: () => Navigator.push(
