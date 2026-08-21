@@ -42,6 +42,20 @@ void showFundCheck(BuildContext context) {
   /// Lunch (12:00 - 16:00): Set lunchCheck = true
   /// Dinner (>= 16:00): Set dinnerCheck = true
   Future<void> _saveFundCheck() async {
+    // 🔴 Check if there are pending cash-outs
+    if (hasPendingCashOut) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('❌ Please finish all cash-out first to fund check'),
+            backgroundColor: Colors.orange,
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
+      return; // Exit without saving
+    }
+
     try {
       final today = DateTime.now();
       final todayStr =

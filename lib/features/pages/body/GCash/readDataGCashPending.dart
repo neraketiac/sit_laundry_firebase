@@ -34,6 +34,12 @@ Widget readDataGCashPending() {
       FsUsageTracker.instance
           .track('readDataGCashPending', snapshotDatas.length);
 
+      // 🔄 Update global pending cash-out flag
+      // Check if ANY cash-out record exists in pending collection (not completed yet)
+      hasPendingCashOut = snapshotDatas.any((model) =>
+          model.itemUniqueId == menuOthUniqIdCashOut &&
+          model.gCashStatus < 1.0);
+
       return StatefulBuilder(
         builder: (context, setState) {
           return ListView.builder(

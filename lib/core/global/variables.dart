@@ -89,6 +89,12 @@ final GCashModel finalGCashModel = GCashModel(
     cashOutImageUrl: "");
 String empIdGlobal = "";
 
+// Track if there are any pending/active cash-outs that need to be completed
+// Updated from readDataGCashPending stream data (no extra Firestore queries)
+// Set to true when cash-out exists in GCash_pending (status < 1.0)
+// Set to false automatically when cash-out is removed from GCash_pending (moved to GCash_done)
+bool hasPendingCashOut = false;
+
 // Create a DateTime for Jan 1, 1900
 final oldDate = DateTime(1900, 1, 1);
 
