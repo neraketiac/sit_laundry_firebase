@@ -293,6 +293,12 @@ class _AutoCompleteCustomerState extends State<AutoCompleteCustomer> {
     widget.jobRepo.selectedCustomerNameVar.text = selected.name;
     widget.jobRepo.selectedCustomerId = selected.customerId;
 
+    // 🟢 Populate job remarks with customer loyalty remarks if available
+    if (selected.remarks.isNotEmpty) {
+      widget.jobRepo.selectedRemarksVar.text = selected.remarks;
+      debugPrint('✅ Loaded customer remarks: ${selected.remarks}');
+    }
+
     // Save to local search history
     _historyService
         .addToHistory(
