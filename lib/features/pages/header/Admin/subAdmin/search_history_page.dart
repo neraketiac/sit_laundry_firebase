@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:laundry_firebase/features/admin/models/search_history_model.dart';
 import 'package:laundry_firebase/features/admin/services/search_history_firestore_service.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
@@ -16,7 +17,13 @@ class _SearchHistoryPageState extends State<SearchHistoryPage> {
   List<SearchHistoryModel> _searchHistory = [];
   bool _isLoading = true;
   String _filterStaffId = '';
-  TextEditingController _searchController = TextEditingController();
+  final TextEditingController _searchController = TextEditingController();
+
+  // Pagination variables
+  DocumentSnapshot? _lastDocument;
+  bool _hasMoreData = true;
+  bool _isLoadingMore = false;
+  static const int _pageSize = 20;
 
   @override
   void initState() {
@@ -26,12 +33,42 @@ class _SearchHistoryPageState extends State<SearchHistoryPage> {
   }
 
   Future<void> _loadSearchHistory() async {
-    setState(() => _isLoading = true);
-    final history = await _firestoreService.getSearchHistoryPage(limit: 500);
     setState(() {
-      _searchHistory = history;
-      _isLoading = false;
+      _isLoading = true;
+      _searchHistory = [];
+      _lastDocument = null;
+      _hasMoreData = true;
     });
+    await _loadMoreSearchHistory();
+  }
+
+  Future<void> _loadMoreSearchHistory() async {
+    if (_isLoadingMore || !_hasMoreData) return;
+
+    setState(() => _isLoadingMore = true);
+
+    try {
+      final result = await _firestoreService.getSearchHistoryPageWithDoc(
+        limit: _pageSize,
+        startAfter: _lastDocument,
+      );
+
+      setState(() {
+        final newHistory = result['items'] as List<SearchHistoryModel>;
+        final lastDoc = result['lastDocument'] as DocumentSnapshot?;
+
+        _searchHistory.addAll(newHistory);
+        _lastDocument = lastDoc;
+        _hasMoreData = newHistory.length == _pageSize;
+        _isLoading = false;
+        _isLoadingMore = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _isLoadingMore = false;
+      });
+    }
   }
 
   List<SearchHistoryModel> get _filteredHistory {
@@ -182,12 +219,38 @@ class _SearchHistoryPageState extends State<SearchHistoryPage> {
                           ],
                         ),
                       )
-                    : ListView.builder(
-                        itemCount: _filteredHistory.length,
-                        itemBuilder: (context, index) {
-                          final item = _filteredHistory[index];
-                          return _buildSearchHistoryTile(item);
+                    : NotificationListener<ScrollNotification>(
+                        onNotification: (notification) {
+                          if (notification is ScrollEndNotification &&
+                              notification.metrics.extentAfter == 0) {
+                            // User scrolled to the bottom
+                            if (_hasMoreData && !_isLoadingMore) {
+                              _loadMoreSearchHistory();
+                            }
+                          }
+                          return false;
                         },
+                        child: ListView.builder(
+                          itemCount: _filteredHistory.length +
+                              (_isLoadingMore ? 1 : 0),
+                          itemBuilder: (context, index) {
+                            // Show loading indicator at the end
+                            if (index == _filteredHistory.length) {
+                              return Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 16),
+                                child: Center(
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                ),
+                              );
+                            }
+
+                            final item = _filteredHistory[index];
+                            return _buildSearchHistoryTile(item);
+                          },
+                        ),
                       ),
           ),
         ],

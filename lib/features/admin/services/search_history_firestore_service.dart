@@ -45,7 +45,7 @@ class SearchHistoryFirestoreService {
     });
   }
 
-  /// Get search history with pagination
+  /// Get search history with pagination (returns items and last document for cursor)
   Future<List<SearchHistoryModel>> getSearchHistoryPage({
     int limit = 50,
     DocumentSnapshot? startAfter,
@@ -67,6 +67,39 @@ class SearchHistoryFirestoreService {
     } catch (e) {
       print('Error getting search history page: $e');
       return [];
+    }
+  }
+
+  /// Get search history with pagination (returns items and last document snapshot)
+  Future<Map<String, dynamic>> getSearchHistoryPageWithDoc({
+    int limit = 20,
+    DocumentSnapshot? startAfter,
+  }) async {
+    try {
+      Query query = _firestore
+          .collection(_collectionName)
+          .orderBy('searchedAt', descending: true)
+          .limit(limit);
+
+      if (startAfter != null) {
+        query = query.startAfterDocument(startAfter);
+      }
+
+      final snapshot = await query.get();
+      final items = snapshot.docs
+          .map((doc) => SearchHistoryModel.fromFirestore(doc))
+          .toList();
+
+      return {
+        'items': items,
+        'lastDocument': snapshot.docs.isNotEmpty ? snapshot.docs.last : null,
+      };
+    } catch (e) {
+      print('Error getting search history page with doc: $e');
+      return {
+        'items': <SearchHistoryModel>[],
+        'lastDocument': null,
+      };
     }
   }
 
