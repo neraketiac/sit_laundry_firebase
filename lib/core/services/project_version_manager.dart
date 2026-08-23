@@ -4,16 +4,26 @@ import 'package:laundry_firebase/core/global/app_version.dart';
 import 'package:laundry_firebase/features/fund_check/services/fund_check_service.dart';
 import 'package:laundry_firebase/features/fund_check/models/fund_check_model.dart';
 import 'dart:html' as html;
+import 'dart:async';
 
 /// Global variable that captures the app version when page loads
 /// This won't change during the session, ensuring consistent version checking
 late String sessionAppVersion;
 
 /// Manages project version checking against Firestore
-/// Checks version only on login and main button click (no periodic checking)
+/// Checks version only once on login (cached for entire session)
 class ProjectVersionManager {
   ProjectVersionManager._();
   static final ProjectVersionManager instance = ProjectVersionManager._();
+
+  // Cache the remote version with date
+  static String? _cachedRemoteVersion;
+  static DateTime? _lastVersionCheckDate;
+
+  // Cache fund check for 2 hours to reduce Firestore calls
+  static FundCheckModel? _cachedFundCheck;
+  static DateTime? _lastFundCheckTime;
+  static const Duration _fundCheckCacheDuration = Duration(hours: 2);
 
   /// Initialize session version on app startup
   /// Call this once when the app first loads
@@ -23,12 +33,19 @@ class ProjectVersionManager {
   }
 
   /// Check version when entering laundry (after login)
-  /// Fetches from Firestore and compares with session version
-  /// Shows message if outdated
+  /// Fetches from Firestore and caches with today's date
+  /// Will re-check only if it's a new day
   Future<void> checkVersionOnLogin(BuildContext context) async {
     try {
       final remoteVersion = await _fetchVersionFromFirestore();
+
+      // Cache the version and today's date
+      _cachedRemoteVersion = remoteVersion;
+      _lastVersionCheckDate = DateTime.now();
+
       if (remoteVersion != null) {
+        debugPrint(
+            '✅ Version checked at login: $remoteVersion (will re-check tomorrow)');
         if (_isOutdated(remoteVersion)) {
           _showVersionMessage(context, remoteVersion);
         }
@@ -40,16 +57,36 @@ class ProjectVersionManager {
   }
 
   /// Check version when main button is clicked
-  /// Fetches fresh version from Firestore every time
-  /// Shows message if outdated
+  /// Only fetches if:
+  /// 1. No version cached yet, OR
+  /// 2. Current date is different from cached date (new day)
+  /// This ensures users get critical updates daily while avoiding unnecessary checks
   Future<bool> checkVersionOnMainButton(BuildContext context) async {
     try {
-      final remoteVersion = await _fetchVersionFromFirestore();
-      if (remoteVersion != null) {
-        if (_isOutdated(remoteVersion)) {
-          _showVersionMessage(context, remoteVersion);
-          return false; // Block action if version outdated
+      // Check if we should re-fetch version (new day check)
+      if (_shouldCheckVersionAgain()) {
+        debugPrint('📅 New day detected, re-checking version from Firestore');
+        final remoteVersion = await _fetchVersionFromFirestore();
+
+        if (remoteVersion != null) {
+          // Update cache and date
+          _cachedRemoteVersion = remoteVersion;
+          _lastVersionCheckDate = DateTime.now();
+          debugPrint('✅ Version checked today: $remoteVersion');
+
+          if (_isOutdated(remoteVersion)) {
+            _showVersionMessage(context, remoteVersion);
+            return false; // Block action if outdated
+          }
         }
+      } else if (_cachedRemoteVersion != null &&
+          _isOutdated(_cachedRemoteVersion!)) {
+        // Version was outdated, still show message
+        debugPrint('⚠️ Version still outdated, blocking action');
+        _showVersionMessage(context, _cachedRemoteVersion!);
+        return false;
+      } else if (_cachedRemoteVersion != null) {
+        debugPrint('✅ Using cached version: $_cachedRemoteVersion (same day)');
       }
 
       // Version is good, proceed to fund check validation
@@ -59,6 +96,34 @@ class ProjectVersionManager {
       debugPrint('Version check failed: $e');
       return true;
     }
+  }
+
+  /// Determine if version should be re-checked
+  /// Returns true if today's date is different from cached date
+  static bool _shouldCheckVersionAgain() {
+    if (_lastVersionCheckDate == null) {
+      return true; // Never checked, do it now
+    }
+
+    final today = DateTime.now();
+    final cachedDate = _lastVersionCheckDate!;
+
+    // Compare only year, month, day (ignore time)
+    return today.year != cachedDate.year ||
+        today.month != cachedDate.month ||
+        today.day != cachedDate.day;
+  }
+
+  /// Determine if fund check should be re-fetched
+  /// Returns true if more than 2 hours have passed since last check
+  static bool _shouldCheckFundAgain() {
+    if (_lastFundCheckTime == null) {
+      return true; // Never checked, do it now
+    }
+
+    final now = DateTime.now();
+    final timeSinceLastCheck = now.difference(_lastFundCheckTime!);
+    return timeSinceLastCheck > _fundCheckCacheDuration;
   }
 
   /// Check if it's a new day and reset fund checks if needed
@@ -187,13 +252,24 @@ class ProjectVersionManager {
     }
   }
 
-  /// Fetch today's fund check record from Firestore
+  /// Fetch today's fund check record from Firestore with timeout
+  /// Uses efficient timestamp-based query
+  /// Caches result for 2 hours to reduce Firestore calls
   Future<FundCheckModel?> _fetchFundCheck() async {
     try {
-      final today = DateTime.now();
-      final todayStr =
-          '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
+      // Check if we should use cached fund check (2 hour cache)
+      if (!_shouldCheckFundAgain() && _cachedFundCheck != null) {
+        final timeSinceCache =
+            DateTime.now().difference(_lastFundCheckTime!).inMinutes;
+        debugPrint(
+            '✅ Using cached fund check (${timeSinceCache} min old, cache valid for 120 min)');
+        return _cachedFundCheck;
+      }
 
+      debugPrint('📡 Fetching fund check from Firestore...');
+      final today = DateTime.now();
+
+      // Query using a single efficient timestamp range
       final querySnapshot = await FirebaseFirestore.instance
           .collection('fund_checks')
           .where('logDate',
@@ -202,19 +278,39 @@ class ProjectVersionManager {
               ))
           .where('logDate',
               isLessThan: Timestamp.fromDate(
-                DateTime(today.year, today.month, today.day, 23, 59, 59),
+                DateTime(today.year, today.month, today.day + 1, 0, 0, 0),
               ))
           .limit(1)
-          .get();
+          .get(const GetOptions(source: Source.server))
+          .timeout(
+            const Duration(seconds: 5),
+            onTimeout: () => throw TimeoutException('Fund check fetch timeout'),
+          );
 
       if (querySnapshot.docs.isEmpty) {
+        // Cache the null result too
+        _cachedFundCheck = null;
+        _lastFundCheckTime = DateTime.now();
+        debugPrint('✅ Fund check: No record found (cached for 2 hours)');
         return null;
       }
 
       final doc = querySnapshot.docs.first;
-      return FundCheckModel.fromJson(doc.data(), doc.id);
+      final fundCheck = FundCheckModel.fromJson(doc.data(), doc.id);
+
+      // Cache the result
+      _cachedFundCheck = fundCheck;
+      _lastFundCheckTime = DateTime.now();
+      debugPrint('✅ Fund check fetched and cached for 2 hours');
+
+      return fundCheck;
     } catch (e) {
       debugPrint('Failed to fetch fund check: $e');
+      // Return cached version if available, even if query failed
+      if (_cachedFundCheck != null) {
+        debugPrint('⚠️ Using stale cached fund check due to network error');
+        return _cachedFundCheck;
+      }
       return null;
     }
   }

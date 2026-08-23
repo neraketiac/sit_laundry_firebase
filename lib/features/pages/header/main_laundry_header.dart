@@ -26,6 +26,8 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader>
 
   late String _sEmpId;
   bool _isOpen = false;
+  bool _isLoading = false; // Track loading state
+  DateTime? _lastButtonPress; // Debounce multiple clicks
 
   @override
   void initState() {
@@ -240,30 +242,65 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader>
                   child: FloatingActionButton(
                     heroTag: 'main',
                     mini: mini,
-                    backgroundColor: _isOpen ? Colors.red : Colors.deepPurple,
+                    backgroundColor: _isLoading
+                        ? Colors.grey
+                        : (_isOpen ? Colors.red : Colors.deepPurple),
                     elevation: 12,
-                    onPressed: () async {
-                      // Check version on main button click
-                      // Returns false if version is outdated or fund check fails
-                      final canProceed = await ProjectVersionManager.instance
-                          .checkVersionOnMainButton(context);
+                    onPressed: _isLoading
+                        ? null
+                        : () async {
+                            // Debounce: prevent rapid clicks
+                            final now = DateTime.now();
+                            if (_lastButtonPress != null &&
+                                now
+                                        .difference(_lastButtonPress!)
+                                        .inMilliseconds <
+                                    500) {
+                              return;
+                            }
+                            _lastButtonPress = now;
 
-                      if (canProceed) {
-                        if (_isOpen) {
-                          setState(() => _isOpen = false);
-                        } else {
-                          setState(() => _isOpen = true);
-                        }
-                      }
-                    },
-                    child: AnimatedRotation(
-                      duration: const Duration(milliseconds: 250),
-                      turns: _isOpen ? 0.125 : 0,
-                      child: Icon(
-                        _isOpen ? Icons.close : Icons.add,
-                        size: iconSize,
-                      ),
-                    ),
+                            // Show loading state only when trying to open
+                            if (!_isOpen) {
+                              setState(() => _isLoading = true);
+                            }
+
+                            try {
+                              // Check version and fund requirements on main button click
+                              final canProceed = await ProjectVersionManager
+                                  .instance
+                                  .checkVersionOnMainButton(context);
+
+                              if (mounted) {
+                                if (canProceed) {
+                                  setState(() => _isOpen = !_isOpen);
+                                }
+                              }
+                            } finally {
+                              if (mounted) {
+                                setState(() => _isLoading = false);
+                              }
+                            }
+                          },
+                    child: _isLoading
+                        ? SizedBox(
+                            width: iconSize,
+                            height: iconSize,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.white.withValues(alpha: 0.8),
+                              ),
+                            ),
+                          )
+                        : AnimatedRotation(
+                            duration: const Duration(milliseconds: 250),
+                            turns: _isOpen ? 0.125 : 0,
+                            child: Icon(
+                              _isOpen ? Icons.close : Icons.add,
+                              size: iconSize,
+                            ),
+                          ),
                   ),
                 ),
               ),
