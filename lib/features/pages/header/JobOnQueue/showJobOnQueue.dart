@@ -28,6 +28,9 @@ void showJobOnQueue(BuildContext context, JobModelRepository jobRepo) async {
   await CustomerRepository.instance.loadOnce();
 
   Future<void> saveButtonSetRepository() async {
+    // 🟢 Sync remarks from text controller to repository before saving
+    jobRepo.remarks = jobRepo.selectedRemarksVar.text;
+
     jobRepo.dateQ = Timestamp.now();
     jobRepo.createdBy = empIdGlobal;
     jobRepo.currentEmpId = empIdGlobal;
