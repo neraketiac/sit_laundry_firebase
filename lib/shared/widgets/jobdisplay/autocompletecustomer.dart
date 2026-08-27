@@ -281,10 +281,6 @@ class _AutoCompleteCustomerState extends State<AutoCompleteCustomer> {
   void _onCustomerSelected(CustomerModel selected) {
     autocompleteSelected = selected;
 
-    if (mounted) {
-      widget.dialogSetState();
-    }
-
     SuppliesHistRepository.instance.setCustomerName(selected.name);
 
     debugPrint(
@@ -330,5 +326,11 @@ class _AutoCompleteCustomerState extends State<AutoCompleteCustomer> {
         widget.jobRepo.items.remove(promoFree);
       }
     } catch (_) {}
+
+    // 🟢 Trigger dialog state update AFTER all customer data is loaded
+    // This ensures the remarks UI displays the loaded customer remarks
+    if (mounted) {
+      widget.dialogSetState();
+    }
   }
 }
