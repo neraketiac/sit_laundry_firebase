@@ -8,7 +8,7 @@ import 'package:laundry_firebase/core/utils/sharedMethods.dart';
 import 'package:laundry_firebase/features/items/repository/supplies_hist_repository.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
 import 'package:laundry_firebase/core/global/variables_supplies.dart';
-import 'package:laundry_firebase/features/fund_check/services/fund_check_service.dart';
+import 'dart:html' as html;
 
 void showFundCheck(BuildContext context) {
   final s = AppScale.of(context);
@@ -116,6 +116,19 @@ void showFundCheck(BuildContext context) {
         debugPrint('✅ New fund check record created for $todayStr');
       }
 
+      // Update local storage to mark fund check as completed for this period
+      try {
+        final currentPeriod = currentHour < 12
+            ? 'morning'
+            : (currentHour >= 12 && currentHour < 16 ? 'lunch' : 'dinner');
+        html.window.localStorage['fund_check_completed'] = 'true';
+        html.window.localStorage['fund_check_completed_period'] = currentPeriod;
+        debugPrint(
+            '✅ Local storage updated: $currentPeriod fund check completed');
+      } catch (e) {
+        debugPrint('Warning: Could not update local storage: $e');
+      }
+
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -136,44 +149,6 @@ void showFundCheck(BuildContext context) {
           ),
         );
       }
-    }
-  }
-
-  /// Reset all checks to false at midnight for a new day
-  /// Called automatically when a new day is detected
-  Future<void> _resetDailyChecks() async {
-    try {
-      final today = DateTime.now();
-      final todayStr =
-          '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
-
-      final querySnapshot = await FirebaseFirestore.instance
-          .collection('fund_checks')
-          .where('logDate',
-              isGreaterThanOrEqualTo: Timestamp.fromDate(
-                DateTime(today.year, today.month, today.day, 0, 0, 0),
-              ))
-          .where('logDate',
-              isLessThan: Timestamp.fromDate(
-                DateTime(today.year, today.month, today.day, 23, 59, 59),
-              ))
-          .limit(1)
-          .get();
-
-      if (querySnapshot.docs.isNotEmpty) {
-        final doc = querySnapshot.docs.first;
-        await FirebaseFirestore.instance
-            .collection('fund_checks')
-            .doc(doc.id)
-            .update({
-          'morningCheck': false,
-          'lunchCheck': false,
-          'dinnerCheck': false,
-        });
-        debugPrint('✅ Daily fund checks reset for new day ($todayStr)');
-      }
-    } catch (e) {
-      debugPrint('Error resetting daily checks: $e');
     }
   }
 

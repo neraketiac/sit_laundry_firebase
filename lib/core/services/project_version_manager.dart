@@ -20,10 +20,10 @@ class ProjectVersionManager {
   static String? _cachedRemoteVersion;
   static DateTime? _lastVersionCheckDate;
 
-  // Cache fund check for 2 hours to reduce Firestore calls
+  // Cache fund check for 1 hour to reduce Firestore calls
   static FundCheckModel? _cachedFundCheck;
   static DateTime? _lastFundCheckTime;
-  static const Duration _fundCheckCacheDuration = Duration(hours: 2);
+  static const Duration _fundCheckCacheDuration = Duration(hours: 1);
 
   /// Initialize session version on app startup
   /// Call this once when the app first loads
@@ -115,7 +115,7 @@ class ProjectVersionManager {
   }
 
   /// Determine if fund check should be re-fetched
-  /// Returns true if more than 2 hours have passed since last check
+  /// Returns true if more than 1 hour has passed since last check
   static bool _shouldCheckFundAgain() {
     if (_lastFundCheckTime == null) {
       return true; // Never checked, do it now
@@ -124,6 +124,114 @@ class ProjectVersionManager {
     final now = DateTime.now();
     final timeSinceLastCheck = now.difference(_lastFundCheckTime!);
     return timeSinceLastCheck > _fundCheckCacheDuration;
+  }
+
+  /// Get today's date string for tracking
+  static String _getTodayString() {
+    final today = DateTime.now();
+    return '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
+  }
+
+  /// Get current time period (morning/lunch/dinner)
+  static String _getCurrentPeriod() {
+    return FundCheckService.getCurrentTimePeriod();
+  }
+
+  /// Check if period has changed from local storage
+  static bool _hasPeriodChanged() {
+    try {
+      final storedPeriod =
+          html.window.localStorage['fund_check_last_check_period'];
+      final currentPeriod = _getCurrentPeriod();
+      return storedPeriod != currentPeriod;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// Check if new day (date changed)
+  static bool _isNewDay() {
+    try {
+      final storedDate = html.window.localStorage['fund_check_last_check_date'];
+      final today = _getTodayString();
+      return storedDate != today;
+    } catch (_) {
+      return true; // Treat as new day if can't read
+    }
+  }
+
+  /// Check if current period is already marked as completed in local storage
+  static bool _isCurrentPeriodCompleted() {
+    try {
+      final isCompleted =
+          html.window.localStorage['fund_check_completed'] == 'true';
+      final completedPeriod =
+          html.window.localStorage['fund_check_completed_period'];
+      final currentPeriod = _getCurrentPeriod();
+      return isCompleted && completedPeriod == currentPeriod;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// Check if 1 hour has passed since last check
+  static bool _isOneHourPassed() {
+    try {
+      final lastCheckTimeStr =
+          html.window.localStorage['fund_check_last_check_time'];
+      if (lastCheckTimeStr == null) {
+        return true; // Never checked, consider 1 hour passed
+      }
+
+      final lastCheckTime = int.tryParse(lastCheckTimeStr);
+      if (lastCheckTime == null) {
+        return true;
+      }
+
+      final now = DateTime.now().millisecondsSinceEpoch;
+      final oneHourMs = 60 * 60 * 1000;
+      return (now - lastCheckTime) >= oneHourMs;
+    } catch (_) {
+      return true;
+    }
+  }
+
+  /// Save fund check tracking to local storage
+  static void _saveFundCheckTracking({bool? completed, bool? updateTimestamp}) {
+    try {
+      final today = _getTodayString();
+      final currentPeriod = _getCurrentPeriod();
+
+      if (updateTimestamp ?? false) {
+        html.window.localStorage['fund_check_last_check_time'] =
+            DateTime.now().millisecondsSinceEpoch.toString();
+      }
+
+      html.window.localStorage['fund_check_last_check_period'] = currentPeriod;
+      html.window.localStorage['fund_check_last_check_date'] = today;
+
+      if (completed ?? false) {
+        html.window.localStorage['fund_check_completed'] = 'true';
+        html.window.localStorage['fund_check_completed_period'] = currentPeriod;
+        debugPrint(
+            '✅ Local storage: Fund check marked as completed for $currentPeriod');
+      }
+    } catch (e) {
+      debugPrint('Error saving fund check tracking: $e');
+    }
+  }
+
+  /// Clear fund check tracking from local storage
+  static void _clearFundCheckTracking() {
+    try {
+      html.window.localStorage.remove('fund_check_last_check_time');
+      html.window.localStorage.remove('fund_check_last_check_period');
+      html.window.localStorage.remove('fund_check_completed');
+      html.window.localStorage.remove('fund_check_completed_period');
+      debugPrint('✅ Local storage: Fund check tracking cleared');
+    } catch (e) {
+      debugPrint('Error clearing fund check tracking: $e');
+    }
   }
 
   /// Check if it's a new day and reset fund checks if needed
@@ -164,29 +272,71 @@ class ProjectVersionManager {
     }
   }
 
-  /// Validate fund check requirements
-  /// Returns true if all requirements are met
-  /// Returns false if fund check is required but not completed
+  /// Validate fund check requirements with 1-hour priority-based checking
+  /// Only stops checking if fund check is DONE and we're still in that period
+  /// Returns true if allowed to proceed
+  /// Returns false if fund check is required and not completed
   Future<bool> _validateFundCheck(BuildContext context) async {
     try {
-      // Check and reset daily fund checks if needed
+      // Step 1: Check for new day - clear tracking if it's a new day
+      if (_isNewDay()) {
+        debugPrint('📅 New day detected, clearing fund check tracking');
+        _clearFundCheckTracking();
+        _cachedFundCheck = null;
+        _lastFundCheckTime = null;
+      }
+
+      // Step 2: Check and reset daily fund checks if needed
       await _checkAndResetDailyFundChecks();
 
-      // Fetch current fund check from Firestore
+      // Step 3: Check if period has changed
+      final currentPeriod = _getCurrentPeriod();
+      final periodChanged = _hasPeriodChanged();
+
+      if (periodChanged) {
+        debugPrint(
+            '🔄 Period changed, resetting completion tracking (now: $currentPeriod)');
+        // Keep timestamp but reset completion flag
+        html.window.localStorage['fund_check_completed'] = 'false';
+        html.window.localStorage.remove('fund_check_completed_period');
+      }
+
+      // Step 4: Check if current period is already completed
+      if (_isCurrentPeriodCompleted()) {
+        debugPrint(
+            '✅ $currentPeriod fund check already completed, allowing proceed');
+        return true; // Allow proceed - fund check done for this period
+      }
+
+      // Step 5: Check if 1 hour has passed since last check
+      final oneHourPassed = _isOneHourPassed();
+
+      if (!oneHourPassed) {
+        debugPrint(
+            '⏱️ Within 1 hour of last check, blocking proceed (message already shown)');
+        // Block proceed but don't show message again
+        return false;
+      }
+
+      // Step 6: 1 hour passed or first time - Fetch current fund check from Firestore
       final fundCheck = await _fetchFundCheck();
 
       if (fundCheck == null) {
         // No fund check record found, allow to proceed
+        _saveFundCheckTracking(updateTimestamp: true);
         return true;
       }
 
-      // Validate time-based fund check
+      // Step 7: Validate time-based fund check
       final errorMessage =
           FundCheckService.validateTimeBasedFundCheck(fundCheck);
 
       if (errorMessage != null) {
-        // Show validation failure dialog
+        // Fund check not completed - show validation failure dialog
         if (context.mounted) {
+          // Update timestamp before showing dialog
+          _saveFundCheckTracking(updateTimestamp: true);
+
           final result = await showDialog<bool>(
             context: context,
             barrierDismissible: false,
@@ -243,7 +393,9 @@ class ProjectVersionManager {
         return false;
       }
 
-      // All checks passed
+      // All checks passed - fund check is completed for current period
+      debugPrint('✅ $currentPeriod fund check validated and completed');
+      _saveFundCheckTracking(completed: true, updateTimestamp: true);
       return true;
     } catch (e) {
       debugPrint('Fund check validation failed: $e');
@@ -254,15 +406,15 @@ class ProjectVersionManager {
 
   /// Fetch today's fund check record from Firestore with timeout
   /// Uses efficient timestamp-based query
-  /// Caches result for 2 hours to reduce Firestore calls
+  /// Caches result for 1 hour to reduce Firestore calls
   Future<FundCheckModel?> _fetchFundCheck() async {
     try {
-      // Check if we should use cached fund check (2 hour cache)
+      // Check if we should use cached fund check (1 hour cache)
       if (!_shouldCheckFundAgain() && _cachedFundCheck != null) {
         final timeSinceCache =
             DateTime.now().difference(_lastFundCheckTime!).inMinutes;
         debugPrint(
-            '✅ Using cached fund check (${timeSinceCache} min old, cache valid for 120 min)');
+            '✅ Using cached fund check ($timeSinceCache min old, cache valid for 60 min)');
         return _cachedFundCheck;
       }
 
@@ -291,7 +443,7 @@ class ProjectVersionManager {
         // Cache the null result too
         _cachedFundCheck = null;
         _lastFundCheckTime = DateTime.now();
-        debugPrint('✅ Fund check: No record found (cached for 2 hours)');
+        debugPrint('✅ Fund check: No record found (cached for 1 hour)');
         return null;
       }
 
@@ -301,7 +453,7 @@ class ProjectVersionManager {
       // Cache the result
       _cachedFundCheck = fundCheck;
       _lastFundCheckTime = DateTime.now();
-      debugPrint('✅ Fund check fetched and cached for 2 hours');
+      debugPrint('✅ Fund check fetched and cached for 1 hour');
 
       return fundCheck;
     } catch (e) {
