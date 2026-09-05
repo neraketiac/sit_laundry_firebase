@@ -130,8 +130,8 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader>
   Widget build(BuildContext context) {
     final s = AppScale.of(context);
     final double base = 16;
-    final double step = s.isTablet ? 90.0 : 70.0;
-    final double horizontalStep = s.isTablet ? 90.0 : 70.0;
+    final double step = s.isTablet ? 90.0 : 75.0;
+    final double horizontalStep = s.isTablet ? 90.0 : 75.0;
     final double iconSize = s.isTablet ? 26.0 : 20.0;
     final double labelSize = s.isTablet ? 15.0 : 13.0;
     final bool mini = !s.isTablet; // full-size FAB on iPad
@@ -140,10 +140,11 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader>
       body: MyMainLaundryBody(_sEmpId),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       floatingActionButton: SizedBox(
-        width: s.isTablet ? 520 : 400,
-        height: s.isTablet ? 580 : 450,
+        width: s.isTablet ? 520 : 450,
+        height: s.isTablet ? 580 : 500,
         child: Stack(
           clipBehavior: Clip.none,
+          alignment: Alignment.bottomRight,
           children: [
             /// Laundry Payment
             // if (_isOpen && isAdmin && empIdGlobal == 'DonF')
@@ -266,16 +267,19 @@ class _MyMainLaundryHeaderState extends State<MyMainLaundryHeader>
                             }
 
                             try {
-                              // Check version and fund requirements on main button click
-                              final canProceed = await ProjectVersionManager
-                                  .instance
-                                  .checkVersionOnMainButton(context);
-
-                              if (mounted) {
-                                if (canProceed) {
-                                  setState(() => _isOpen = !_isOpen);
-                                }
+                              // Always toggle the menu open
+                              if (!_isOpen) {
+                                setState(() => _isOpen = true);
+                              } else {
+                                setState(() => _isOpen = false);
                               }
+
+                              // Run checks in background (don't block UI)
+                              ProjectVersionManager.instance
+                                  .checkVersionOnMainButton(context)
+                                  .catchError((e) {
+                                debugPrint('Background check error: $e');
+                              });
                             } finally {
                               if (mounted) {
                                 setState(() => _isLoading = false);

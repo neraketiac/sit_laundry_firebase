@@ -83,7 +83,6 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
   late DatabaseEmployeeSetup databaseEmployeeSetup;
   late EmployeeSetupModel empSetup;
   String _memoryUsage = "0MB";
-  late Timer _memoryUpdateTimer;
 
   bool get _isDarkMode => empSetup.darkMode;
   Color get _scaffoldColor =>
@@ -467,18 +466,10 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
     messaging.onTokenRefresh.listen((newToken) async {
       await saveTokenToFirestore(empIdGlobal, newToken);
     });
-
-    // Initialize memory update timer - updates every 2 seconds
-    _memoryUpdateTimer = Timer.periodic(const Duration(seconds: 2), (_) {
-      setState(() {
-        _memoryUsage = _getMemoryUsageString();
-      });
-    });
   }
 
   @override
   void dispose() {
-    _memoryUpdateTimer.cancel();
     super.dispose();
   }
 
