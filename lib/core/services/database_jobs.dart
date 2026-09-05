@@ -5,6 +5,9 @@ import 'package:laundry_firebase/core/services/database_loyalty.dart';
 import 'package:laundry_firebase/core/services/firebase_service.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/promo_day_checker.dart';
+import 'package:laundry_firebase/features/items/models/suppliesmodelhist.dart';
+import 'package:laundry_firebase/features/items/models/otheritemmodel.dart';
+import 'package:laundry_firebase/core/services/database_supplies_current.dart';
 
 /// 🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦
 /// 🔹 COLLECTION REFERENCES
@@ -369,6 +372,82 @@ Future<void> moveQueueToOngoing(String docId) async {
   });
 }
 
+/// Record Det and Fab items from completed job to Inventory Check (SuppliesCurr & ItemsHist)
+/// This automates the manual inventory tracking by recording consumed items
+/// Uses the SAME function as manual Inventory Check: DatabaseSuppliesCurrent().addItemsCurr()
+Future<void> recordJobItemsToInventory(
+    Map<String, dynamic> jobData, String docId) async {
+  try {
+    // Extract items from jobData
+    final List<dynamic> itemsJson = jobData['items'] ?? [];
+
+    if (itemsJson.isEmpty) {
+      print('ℹ️ No items to record for job $docId');
+      return;
+    }
+
+    // Count Det and Fab items by uniqueId
+    Map<int, Map<String, dynamic>> itemCounts = {};
+
+    for (var itemJson in itemsJson) {
+      try {
+        final item = OtherItemModel.fromJson(itemJson as Map<String, dynamic>);
+
+        // Only process Det and Fab items
+        if (item.itemGroup == 'Det' || item.itemGroup == 'Fab') {
+          if (!itemCounts.containsKey(item.itemUniqueId)) {
+            itemCounts[item.itemUniqueId] = {
+              'item': item,
+              'count': 0,
+            };
+          }
+          itemCounts[item.itemUniqueId]!['count'] =
+              (itemCounts[item.itemUniqueId]!['count'] as int) + 1;
+        }
+      } catch (e) {
+        print('⚠️ Error processing item in job $docId: $e');
+        continue;
+      }
+    }
+
+    // Record each unique Det/Fab item to inventory (same as manual Inventory Check)
+    for (var entry in itemCounts.entries) {
+      try {
+        final itemData = entry.value;
+        final item = itemData['item'] as OtherItemModel;
+        final count = itemData['count'] as int;
+
+        final sMH = SuppliesModelHist(
+          docId: '',
+          countId: 0,
+          itemId: item.itemId,
+          itemUniqueId: item.itemUniqueId,
+          itemName: item.itemName,
+          currentCounter: -count, // Negative indicates consumption
+          currentStocks: 0, // Automatically computed by addItemsCurr()
+          logDate: Timestamp.now(),
+          empId: empIdGlobal,
+          customerId: 0,
+          customerName: '',
+          remarks: 'auto via job completed',
+        );
+
+        // Record to SuppliesCurr & ItemsHist (same function as manual Inventory Check)
+        await DatabaseSuppliesCurrent().addItemsCurr(sMH);
+        print('✅ Recorded $count x ${item.itemName} to inventory');
+      } catch (e) {
+        print('⚠️ Failed to record item inventory for job $docId: $e');
+        // Continue with other items even if one fails
+      }
+    }
+
+    print('✅ Job $docId items recorded to inventory');
+  } catch (e) {
+    print('❌ Error in recordJobItemsToInventory: $e');
+    // Don't rethrow - failure to record inventory shouldn't block job completion
+  }
+}
+
 /// ▶ Ongoing → Done
 /// Now uses atomic transaction to prevent race conditions
 Future<void> moveOngoingToDone(
@@ -457,6 +536,11 @@ Future<void> moveOngoingToDone(
     }
 
     print("✅ Job $docId successfully moved to Jobs_done!");
+
+    // Step 6: Record job items to inventory (Det and Fab items)
+    print("📦 Recording items to inventory...");
+    await recordJobItemsToInventory(jobData, docId);
+    print("✅ Inventory recording completed");
   } catch (e) {
     print("❌ Exception in moveOngoingToDone: $e");
     rethrow;

@@ -220,6 +220,30 @@ void showJobOnQueue(BuildContext context, JobModelRepository jobRepo) async {
                           visAddBle(context, () => setState(() {}), jobRepo),
                           visAddWash(context, () => setState(() {}), jobRepo),
                           visAddSpin(context, () => setState(() {}), jobRepo),
+                          // Item remarks summary (Det and Fab items)
+                          if (jobRepo.selectedItems.isNotEmpty)
+                            Container(
+                              margin: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 8),
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(8),
+                                color: Colors.amber.shade100
+                                    .withValues(alpha: 0.6),
+                                border: Border.all(
+                                  color: Colors.amber.shade400,
+                                  width: 1,
+                                ),
+                              ),
+                              child: Text(
+                                buildItemRemarksFromJob(jobRepo.selectedItems),
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.amber.shade900,
+                                ),
+                              ),
+                            ),
                           conRemarks(context, () => setState(() {}),
                               jobRepo.selectedRemarksVar),
                         ],

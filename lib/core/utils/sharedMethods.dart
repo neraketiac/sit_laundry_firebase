@@ -1383,3 +1383,37 @@ Future<void> computeBonus(
     debugPrint('Error computing bonus: $e');
   }
 }
+
+/// Build item remarks summary from job items (Det and Fab items)
+/// Returns a string like "2-Ariel 1-Fab-WKL(any SOF)" with qty-itemName format
+String buildItemRemarksFromJob(List<OtherItemModel> items) {
+  if (items.isEmpty) {
+    return '';
+  }
+
+  // Count items by group and name
+  Map<String, int> detCounts = {};
+  Map<String, int> fabCounts = {};
+
+  for (var item in items) {
+    if (item.itemGroup == 'Det') {
+      detCounts[item.itemName] = (detCounts[item.itemName] ?? 0) + 1;
+    } else if (item.itemGroup == 'Fab') {
+      fabCounts[item.itemName] = (fabCounts[item.itemName] ?? 0) + 1;
+    }
+  }
+
+  List<String> result = [];
+
+  // Add Det items
+  detCounts.forEach((name, qty) {
+    result.add('$qty-$name');
+  });
+
+  // Add Fab items
+  fabCounts.forEach((name, qty) {
+    result.add('$qty-$name');
+  });
+
+  return result.join(' ');
+}
