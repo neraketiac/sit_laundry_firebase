@@ -17,20 +17,20 @@ final addFabAnyItemModel = OtherItemModel(
   logDate: timestamp1900,
 );
 
-final addFabDowny36mlModel = OtherItemModel(
-  docId: "",
-  itemId: menuFabDowny36mlDVal,
-  itemUniqueId: menuFabDowny36mlDVal,
-  itemGroup: groupFab,
-  itemName: "Downy 36ml",
-  itemPrice: 10,
-  stocksAlert: 5,
-  stocksType: "pcs",
-  logDate: timestamp1900,
-);
+// final addFabDowny36mlModel = OtherItemModel(
+//   docId: "",
+//   itemId: menuFabDowny36mlDVal,
+//   itemUniqueId: menuFabDowny36mlDVal,
+//   itemGroup: groupFab,
+//   itemName: "Downy 36ml",
+//   itemPrice: 10,
+//   stocksAlert: 5,
+//   stocksType: "pcs",
+//   logDate: timestamp1900,
+// );
 
 void addlistFabItemsFB() {
   //detItems
   listFabItemsFB.add(addFabAnyItemModel);
-  listFabItemsFB.add(addFabDowny36mlModel);
+  // listFabItemsFB.add(addFabDowny36mlModel);
 }
