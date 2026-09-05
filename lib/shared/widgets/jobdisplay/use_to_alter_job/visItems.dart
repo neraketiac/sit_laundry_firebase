@@ -58,32 +58,32 @@ Widget visItemsOnly(
       child: Column(
         children: [
           /// SHORTCUTS - Hidden in showItemsInOut (displayed in Quick Add section)
-          Visibility(
-            visible: false,
-            child: Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: listOthersItems.map((shortcut) {
-                return glassShortcutButton(
-                  label: getShortcutLabel(shortcut),
-                  onTap: () {
-                    if (shortcut == menuFabWKLDValAny8ml) {
-                      addOtherItem(jobRepo, addFabAnyItemModel,
-                          context: context);
-                    } else if (shortcut == menuDetWKL15) {
-                      addOtherItem(jobRepo, detWKL15, context: context);
-                    } else if (shortcut == menuDetArielDVal) {
-                      addOtherItem(jobRepo, detAriel15, context: context);
-                    } else if (shortcut == menuFabDowny36mlDVal) {
-                      addOtherItem(jobRepo, addFabDowny36mlModel,
-                          context: context);
-                    }
-                    dialogSetState();
-                  },
-                );
-              }).toList(),
-            ),
-          ),
+          // Visibility(
+          //   visible: false,
+          //   child: Wrap(
+          //     spacing: 8,
+          //     runSpacing: 8,
+          //     children: listOthersItems.map((shortcut) {
+          //       return glassShortcutButton(
+          //         label: getShortcutLabel(shortcut),
+          //         onTap: () {
+          //           if (shortcut == menuFabWKLDValAny8ml) {
+          //             addOtherItem(jobRepo, addFabAnyItemModel,
+          //                 context: context);
+          //           } else if (shortcut == menuDetWKL15) {
+          //             addOtherItem(jobRepo, detWKL15, context: context);
+          //           } else if (shortcut == menuDetArielDVal) {
+          //             addOtherItem(jobRepo, detAriel15, context: context);
+          //           } else if (shortcut == menuFabDowny36mlDVal) {
+          //             addOtherItem(jobRepo, addFabDowny36mlModel,
+          //                 context: context);
+          //           }
+          //           dialogSetState();
+          //         },
+          //       );
+          //     }).toList(),
+          //   ),
+          // ),
 
           const SizedBox(height: 16),
 
