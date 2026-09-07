@@ -530,9 +530,11 @@ Widget readDataGCashPending() {
                                   child: CircularProgressIndicator(
                                     value: gRepo.gCashStatus,
                                     strokeWidth: 4,
-                                    color: isSelected
-                                        ? Colors.deepPurple
-                                        : Colors.deepPurple.shade300,
+                                    color: gRepo.failedInsertSupplies
+                                        ? Colors.red
+                                        : (isSelected
+                                            ? Colors.deepPurple
+                                            : Colors.deepPurple.shade300),
                                     backgroundColor: Colors.grey.shade200,
                                   ),
                                 ),

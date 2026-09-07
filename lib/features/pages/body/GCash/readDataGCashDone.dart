@@ -344,7 +344,9 @@ class _GCashDoneWidgetState extends State<_GCashDoneWidget> {
                     '${gRepo.itemName} : ${DateFormat('MM/dd hh:mm a').format(gRepo.logDate.toDate())} : ${gRepo.logBy} : ${gRepo.remarks}',
                     style: TextStyle(
                       fontSize: 10,
-                      color: secondaryText,
+                      color: gRepo.failedInsertSupplies
+                          ? Colors.red
+                          : secondaryText,
                     ),
                     overflow: TextOverflow.ellipsis,
                     maxLines: 1,
