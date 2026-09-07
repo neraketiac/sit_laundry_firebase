@@ -417,6 +417,16 @@ Future<void> recordJobItemsToInventory(
         final item = itemData['item'] as OtherItemModel;
         final count = itemData['count'] as int;
 
+        // Exclude WKL items from auto deduction (both Det-WKL and Fab-WKL)
+        if (item.itemUniqueId == 2103 || // Fab-WKL
+            item.itemUniqueId == 109 || // Det-WKL15
+            item.itemUniqueId == 106) {
+          // Det-WKL
+          print(
+              '⏭️ Skipped $count x ${item.itemName} (excluded from auto deduction)');
+          continue;
+        }
+
         final sMH = SuppliesModelHist(
           docId: '',
           countId: 0,

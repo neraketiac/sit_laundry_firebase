@@ -28,7 +28,11 @@ InkWell visIconArea(BuildContext context, JobModelRepository jobRepo,
             child: CircularProgressIndicator(
               value: jobRepo.allStatus,
               strokeWidth: strokeWidth,
-              color: jobRepo.riderPickup ? Colors.green : Colors.deepPurple,
+              color: job.requestForAdmin
+                  ? Colors.red // RED for admin approval needed
+                  : jobRepo.riderPickup
+                      ? Colors.green // GREEN for rider pickup/delivery
+                      : Colors.deepPurple, // PURPLE for sorting/default
             ),
           ),
           AnimatedRotation(
