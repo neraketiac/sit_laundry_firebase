@@ -69,7 +69,7 @@ void showDeliverOrCustomerPickup(
 
     jobRepo.paymentReceivedBy = empIdGlobal;
 
-    const insertingMarker = '[Inserting to Supplies]';
+    final insertingMarker = '[Inserting to Supplies ${jobRepo.paidCashAmount}]';
 
     // ============ STAFF SALARY DEDUCTION LOGIC ============
     // Handle staff salary deduction if enabled, regardless of payment method

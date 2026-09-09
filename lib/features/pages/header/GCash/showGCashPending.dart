@@ -232,7 +232,8 @@ void showGCashPending(BuildContext context) async {
 
         // Record as employee salary deduction only
         // Uses cross-database pattern with insertion marker
-        const insertingMarker = '[Inserting to Supplies]';
+        final insertingMarker =
+            '[Inserting to Supplies ${gRepo.customerAmount}]';
 
         try {
           // Step 1: Mark GCash as inserting to supplies
@@ -285,7 +286,8 @@ void showGCashPending(BuildContext context) async {
       } else if (!skipSuppliesThisSave) {
         // Normal funds recording for Cash-In and Load (non-staff only)
         // Uses cross-database pattern with insertion marker
-        const insertingMarker = '[Inserting to Supplies]';
+        final insertingMarker =
+            '[Inserting to Supplies ${gRepo.customerAmount}]';
 
         try {
           // Step 1: Mark GCash as inserting to supplies (cross-database operation)

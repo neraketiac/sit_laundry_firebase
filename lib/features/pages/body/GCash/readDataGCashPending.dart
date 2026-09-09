@@ -164,8 +164,8 @@ Widget readDataGCashPending() {
                                   // Record funds now as regular Funds In/Cash In/Load
                                   isGcashCredit = false;
 
-                                  const insertingMarker =
-                                      '[Inserting to Supplies]';
+                                  final insertingMarker =
+                                      '[Inserting to Supplies ${gRepo.customerAmount}]';
 
                                   try {
                                     // Step 1: Mark GCash as inserting to supplies (cross-database operation)

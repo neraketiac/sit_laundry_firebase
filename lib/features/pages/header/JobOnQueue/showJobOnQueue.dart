@@ -55,7 +55,7 @@ void showJobOnQueue(BuildContext context, JobModelRepository jobRepo) async {
       rethrow;
     }
 
-    const insertingMarker = '[Inserting to Supplies]';
+    final insertingMarker = '[Inserting to Supplies ${jobRepo.paidCashAmount}]';
 
     if (jobRepo.paidCash && jobRepo.paidCashAmount > 0) {
       // Step 1: Add marker to remarks

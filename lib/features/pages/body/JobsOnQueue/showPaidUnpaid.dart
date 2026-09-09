@@ -67,7 +67,7 @@ void showPaidUnpaid(BuildContext context, JobModelRepository jobRepo) {
 
     jobRepo.paymentReceivedBy = empIdGlobal;
 
-    const insertingMarker = '[Inserting to Supplies]';
+    final insertingMarker = '[Inserting to Supplies ${jobRepo.paidCashAmount}]';
 
     if (jobRepo.paidCash) {
       // ============ STAFF SALARY DEDUCTION LOGIC ============
