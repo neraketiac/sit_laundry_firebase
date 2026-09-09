@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:laundry_firebase/core/constants/sharedConstantsFinal.dart';
 import 'package:laundry_firebase/core/global/variables_all_codes.dart';
 import 'package:laundry_firebase/core/utils/sharedMethods.dart';
@@ -55,7 +56,8 @@ void showJobOnQueue(BuildContext context, JobModelRepository jobRepo) async {
       rethrow;
     }
 
-    final insertingMarker = '[Inserting to Supplies ${jobRepo.paidCashAmount}]';
+    final insertingMarker =
+        '[Inserting to Supplies ${jobRepo.paidCashAmount} ${DateFormat('MMM d hh:mm a').format(jobRepo.paidD.toDate())}]';
 
     if (jobRepo.paidCash && jobRepo.paidCashAmount > 0) {
       // Step 1: Add marker to remarks

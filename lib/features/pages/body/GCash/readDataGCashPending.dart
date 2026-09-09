@@ -165,7 +165,7 @@ Widget readDataGCashPending() {
                                   isGcashCredit = false;
 
                                   final insertingMarker =
-                                      '[Inserting to Supplies ${gRepo.customerAmount}]';
+                                      '[Inserting to Supplies ${gRepo.customerAmount} ${DateFormat('MMM d hh:mm a').format(gRepo.logDate.toDate())}]';
 
                                   try {
                                     // Step 1: Mark GCash as inserting to supplies (cross-database operation)

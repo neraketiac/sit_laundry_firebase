@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:laundry_firebase/core/utils/sharedMethods.dart';
 import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_alter_job/conRemarks.dart';
 import 'package:laundry_firebase/core/utils/sharedmethodsdatabase.dart';
@@ -67,7 +68,8 @@ void showPaidUnpaid(BuildContext context, JobModelRepository jobRepo) {
 
     jobRepo.paymentReceivedBy = empIdGlobal;
 
-    final insertingMarker = '[Inserting to Supplies ${jobRepo.paidCashAmount}]';
+    final insertingMarker =
+        '[Inserting to Supplies ${jobRepo.paidCashAmount} ${DateFormat('MMM d hh:mm a').format(jobRepo.paidD.toDate())}]';
 
     if (jobRepo.paidCash) {
       // ============ STAFF SALARY DEDUCTION LOGIC ============

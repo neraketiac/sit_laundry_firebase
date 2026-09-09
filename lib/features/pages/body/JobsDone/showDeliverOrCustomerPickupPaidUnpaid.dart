@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 import 'package:laundry_firebase/core/utils/sharedMethods.dart';
 import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_alter_job/conRemarks.dart';
 
@@ -69,7 +70,8 @@ void showDeliverOrCustomerPickupPaidUnpaid(
 
     jobRepo.paymentReceivedBy = empIdGlobal;
 
-    final insertingMarker = '[Inserting to Supplies ${jobRepo.paidCashAmount}]';
+    final insertingMarker =
+        '[Inserting to Supplies ${jobRepo.paidCashAmount} ${DateFormat('MMM d hh:mm a').format(jobRepo.paidD.toDate())}]';
 
     // ============ STAFF SALARY DEDUCTION LOGIC ============
     // Handle staff salary deduction if enabled, regardless of payment method

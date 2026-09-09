@@ -1,6 +1,7 @@
 //floating button new record  ###########################################################
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:laundry_firebase/core/global/variables_all_codes.dart';
 import 'package:laundry_firebase/core/constants/sharedConstantsFinal.dart';
 import 'package:laundry_firebase/core/utils/sharedMethods.dart';
@@ -233,7 +234,7 @@ void showGCashPending(BuildContext context) async {
         // Record as employee salary deduction only
         // Uses cross-database pattern with insertion marker
         final insertingMarker =
-            '[Inserting to Supplies ${gRepo.customerAmount}]';
+            '[Inserting to Supplies ${gRepo.customerAmount} ${DateFormat('MMM d hh:mm a').format(gRepo.logDate.toDate())}]';
 
         try {
           // Step 1: Mark GCash as inserting to supplies
@@ -287,7 +288,7 @@ void showGCashPending(BuildContext context) async {
         // Normal funds recording for Cash-In and Load (non-staff only)
         // Uses cross-database pattern with insertion marker
         final insertingMarker =
-            '[Inserting to Supplies ${gRepo.customerAmount}]';
+            '[Inserting to Supplies ${gRepo.customerAmount} ${DateFormat('MMM d hh:mm a').format(gRepo.logDate.toDate())}]';
 
         try {
           // Step 1: Mark GCash as inserting to supplies (cross-database operation)
