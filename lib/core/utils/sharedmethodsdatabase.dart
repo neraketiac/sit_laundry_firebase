@@ -429,7 +429,6 @@ Future<void> callDatabaseUpdateJob(BuildContext context, JobModel jM) async {
     context: context,
     operation: doUpdate,
     successMessage: 'Job updated',
-    onRetry: () => callDatabaseUpdateJob(context, jM),
   );
 }
 

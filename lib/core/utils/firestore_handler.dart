@@ -94,7 +94,6 @@ class FsHandler {
     String? successMessage,
     String? loadingMessage,
     VoidCallback? onSuccess,
-    VoidCallback? onRetry,
     bool showLoading = false,
   }) async {
     OverlayEntry? loadingOverlay;
@@ -131,13 +130,11 @@ class FsHandler {
 
       final error = _classify(e);
       final message = _message(error);
-      final canRetry =
-          error == _FsError.timeout || error == _FsError.noInternet;
 
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Row(children: [
           Icon(
-            canRetry ? Icons.wifi_off : Icons.error_outline,
+            Icons.error_outline,
             color: Colors.white,
             size: 16,
           ),
@@ -145,15 +142,8 @@ class FsHandler {
           Expanded(child: Text(message)),
         ]),
         backgroundColor: _color(error),
-        duration: Duration(seconds: canRetry ? 6 : 4),
+        duration: const Duration(seconds: 4),
         behavior: SnackBarBehavior.floating,
-        action: (canRetry && onRetry != null)
-            ? SnackBarAction(
-                label: 'Retry',
-                textColor: Colors.white,
-                onPressed: onRetry,
-              )
-            : null,
       ));
 
       return false;

@@ -318,8 +318,24 @@ void showFundsInFundsOut(BuildContext context) async {
                       jobRepo.selectedCustomerNameVar.text = '123# Ket';
                     }
                     // Funds In validation passed, save and return true
-                    await saveButtonSetRepository();
-                    return true;
+                    try {
+                      await saveButtonSetRepository();
+                      return true;
+                    } catch (e) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: const Text(
+                              'Failed to save. Please try again later.',
+                            ),
+                            backgroundColor: Colors.red,
+                            duration: const Duration(seconds: 4),
+                          ),
+                        );
+                      }
+                      debugPrint('Funds In save error: $e');
+                      return false;
+                    }
                   } else if (ifMenuUniqueIsFundsOut(
                           SuppliesHistRepository.instance.suppliesModelHist!) &&
                       remarksSuppliesVar.text.isEmpty) {
@@ -344,8 +360,24 @@ void showFundsInFundsOut(BuildContext context) async {
                     return false;
                   } else {
                     if (fundTypeCodes3rdLayer.contains(selectedFundCode)) {
-                      await saveButtonSetRepository();
-                      return true;
+                      try {
+                        await saveButtonSetRepository();
+                        return true;
+                      } catch (e) {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: const Text(
+                                'Failed to save. Please try again later.',
+                              ),
+                              backgroundColor: Colors.red,
+                              duration: const Duration(seconds: 4),
+                            ),
+                          );
+                        }
+                        debugPrint('Funds save error: $e');
+                        return false;
+                      }
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(

@@ -10,7 +10,6 @@ import 'package:laundry_firebase/core/global/variables.dart';
 import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_alter_job/visItems.dart';
 import 'package:laundry_firebase/core/global/variables_oth.dart';
 import 'package:laundry_firebase/core/global/variables_fab.dart';
-import 'package:laundry_firebase/core/global/variables_det.dart';
 
 void showItemsInOut(BuildContext context) {
   JobModelRepository jobRepo = JobModelRepository();
@@ -70,7 +69,6 @@ void showItemsInOut(BuildContext context) {
       context: context,
       operation: () => DatabaseSuppliesCurrent().addItemsCurr(sMH),
       successMessage: 'Saved',
-      onRetry: () => callDBCurrHist(context, sMH),
     );
   }
 

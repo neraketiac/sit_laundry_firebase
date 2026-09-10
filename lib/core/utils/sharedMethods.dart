@@ -762,8 +762,6 @@ Future<void> setSuppliesRepository(BuildContext context,
         callDatabaseSuppliesCurrentAdd(sMH, autoSalaryDate: autoSalaryDate),
     successMessage: 'Saved successfully',
     onSuccess: resetAfterInsert,
-    onRetry: () =>
-        setSuppliesRepository(context, autoSalaryDate: autoSalaryDate),
   );
 }
 

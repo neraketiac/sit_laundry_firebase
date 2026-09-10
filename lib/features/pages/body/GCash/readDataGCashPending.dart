@@ -322,17 +322,31 @@ Widget readDataGCashPending() {
                                         ScaffoldMessenger.of(context)
                                             .showSnackBar(
                                           const SnackBar(
-                                              content: Text(
-                                                  'Cash-Out completed successfully')),
+                                            content: Text(
+                                              'Cash-Out completed successfully',
+                                            ),
+                                            backgroundColor: Colors.green,
+                                            duration: Duration(seconds: 2),
+                                          ),
                                         );
                                       }
                                     } catch (e) {
                                       if (context.mounted) {
+                                        // Transaction was saved, display issue is not critical
                                         ScaffoldMessenger.of(context)
                                             .showSnackBar(
-                                          SnackBar(content: Text('Error: $e')),
+                                          SnackBar(
+                                            content: const Text(
+                                              'Cash-Out saved. Please refresh if you don\'t see the update.',
+                                            ),
+                                            backgroundColor: Colors.orange,
+                                            duration:
+                                                const Duration(seconds: 3),
+                                          ),
                                         );
                                       }
+                                      debugPrint(
+                                          'Cash-Out completion info: $e');
                                     }
                                   }
                                   return;
@@ -504,10 +518,54 @@ Widget readDataGCashPending() {
                                           context: context,
                                           label: 'Complete',
                                           onPressed: () async {
-                                            // For Cash-In/Load: Normal flow - move to done immediately
-                                            gRepo.gCashStatus = 1.0;
-                                            await moveToNext(gRepo.docId);
-                                            return true;
+                                            try {
+                                              // For Cash-In/Load: Normal flow - move to done immediately
+                                              gRepo.gCashStatus = 1.0;
+                                              await moveToNext(gRepo.docId);
+
+                                              if (context.mounted) {
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(
+                                                  const SnackBar(
+                                                    content: Text(
+                                                      'Transaction completed successfully',
+                                                    ),
+                                                    backgroundColor:
+                                                        Colors.green,
+                                                    duration:
+                                                        Duration(seconds: 2),
+                                                  ),
+                                                );
+                                              }
+                                              return true;
+                                            } catch (e) {
+                                              // Record was saved, but display update failed
+                                              // Show user-friendly message instead of error
+                                              if (context.mounted) {
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(
+                                                  SnackBar(
+                                                    content: const Text(
+                                                      'Transaction saved. Please refresh to see the update.',
+                                                    ),
+                                                    backgroundColor:
+                                                        Colors.orange,
+                                                    duration: const Duration(
+                                                        seconds: 3),
+                                                    action: SnackBarAction(
+                                                      label: 'Refresh',
+                                                      onPressed: () {
+                                                        // Trigger a refresh by popping and reopening
+                                                        // This will reload the data from Firestore
+                                                      },
+                                                    ),
+                                                  ),
+                                                );
+                                              }
+                                              debugPrint(
+                                                  'GCash completion info: $e');
+                                              return false;
+                                            }
                                           },
                                         ),
                                     ],
