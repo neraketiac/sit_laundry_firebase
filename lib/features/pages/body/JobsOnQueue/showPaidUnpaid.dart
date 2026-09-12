@@ -69,7 +69,7 @@ void showPaidUnpaid(BuildContext context, JobModelRepository jobRepo) {
     jobRepo.paymentReceivedBy = empIdGlobal;
 
     final insertingMarker =
-        '[Inserting to Supplies ${jobRepo.paidCashAmount} ${DateFormat('MMM d hh:mm a').format(jobRepo.paidD.toDate())}]';
+        '- for job [Job Supplies ${jobRepo.paidCashAmount} ${DateFormat('MMM d hh:mm a').format(DateTime.now())} #${jobRepo.jobModelData.jobId}]';
 
     if (jobRepo.paidCash) {
       // ============ STAFF SALARY DEDUCTION LOGIC ============

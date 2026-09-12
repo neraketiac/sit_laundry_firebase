@@ -57,7 +57,7 @@ void showJobOnQueue(BuildContext context, JobModelRepository jobRepo) async {
     }
 
     final insertingMarker =
-        '[Inserting to Supplies ${jobRepo.paidCashAmount} ${DateFormat('MMM d hh:mm a').format(jobRepo.paidD.toDate())}]';
+        '- for job [Job Supplies ${jobRepo.paidCashAmount} ${DateFormat('MMM d hh:mm a').format(DateTime.now())} #${jobRepo.jobModelData.jobId}]';
 
     if (jobRepo.paidCash && jobRepo.paidCashAmount > 0) {
       // Step 1: Add marker to remarks

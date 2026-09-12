@@ -234,7 +234,7 @@ void showGCashPending(BuildContext context) async {
         // Record as employee salary deduction only
         // Uses cross-database pattern with insertion marker
         final insertingMarker =
-            '[Inserting to Supplies ${gRepo.customerAmount} ${DateFormat('MMM d hh:mm a').format(gRepo.logDate.toDate())}]';
+            '- for gcash [GCash Supplies ${gRepo.customerAmount} ${DateFormat('MMM d hh:mm a').format(DateTime.now())}]';
 
         try {
           // Step 1: Mark GCash as inserting to supplies
@@ -288,7 +288,7 @@ void showGCashPending(BuildContext context) async {
         // Normal funds recording for Cash-In and Load (non-staff only)
         // Uses cross-database pattern with insertion marker
         final insertingMarker =
-            '[Inserting to Supplies ${gRepo.customerAmount} ${DateFormat('MMM d hh:mm a').format(gRepo.logDate.toDate())}]';
+            '- for gcash [GCash Supplies ${gRepo.customerAmount} ${DateFormat('MMM d hh:mm a').format(DateTime.now())}]';
 
         try {
           // Step 1: Mark GCash as inserting to supplies (cross-database operation)

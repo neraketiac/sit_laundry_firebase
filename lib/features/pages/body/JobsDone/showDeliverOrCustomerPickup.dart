@@ -71,7 +71,7 @@ void showDeliverOrCustomerPickup(
     jobRepo.paymentReceivedBy = empIdGlobal;
 
     final insertingMarker =
-        '[Inserting to Supplies ${jobRepo.paidCashAmount} ${DateFormat('MMM d hh:mm a').format(jobRepo.paidD.toDate())}]';
+        '- for job [Job Supplies ${jobRepo.paidCashAmount} ${DateFormat('MMM d hh:mm a').format(DateTime.now())} #${jobRepo.jobModelData.jobId}]';
 
     // ============ STAFF SALARY DEDUCTION LOGIC ============
     // Handle staff salary deduction if enabled, regardless of payment method
