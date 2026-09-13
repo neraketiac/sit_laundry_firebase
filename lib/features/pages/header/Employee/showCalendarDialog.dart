@@ -570,25 +570,166 @@ Future<Map<DateTime, DaySelection>?> showCalendarDialog(BuildContext context) {
                                       return;
                                     }
 
-                                    final affectedDays = allChangedDays
-                                        .where((r) => r.amountEarned != 0)
-                                        .toList();
-                                    final formattedDays = affectedDays.map((r) {
-                                      final ds = r.coverageDate.toString();
-                                      return '${r.empId} ${DateFormat('MMM dd').format(DateTime(
-                                        int.parse(ds.substring(0, 4)),
-                                        int.parse(ds.substring(4, 6)),
-                                        int.parse(ds.substring(6, 8)),
-                                      ))}';
-                                    }).join('\n');
+                                    // Build summary: calculate total earned per employee and fetch current utang
+                                    final Map<String, int> totalEarnedPerEmp =
+                                        {};
+                                    final Map<String, int> currentUtangPerEmp =
+                                        {};
+
+                                    // Calculate total earned per employee
+                                    for (final record in allChangedDays) {
+                                      if (record.amountEarned != 0) {
+                                        totalEarnedPerEmp.update(
+                                          record.empId,
+                                          (val) => val + record.amountEarned,
+                                          ifAbsent: () => record.amountEarned,
+                                        );
+                                      }
+                                    }
+
+                                    // Fetch current stocks for each employee that was generated
+                                    for (final empName
+                                        in totalEarnedPerEmp.keys) {
+                                      final empId = empNameToId.entries
+                                          .firstWhere(
+                                            (e) => e.value == empName,
+                                            orElse: () =>
+                                                const MapEntry('', ''),
+                                          )
+                                          .key;
+
+                                      if (empId.isNotEmpty) {
+                                        try {
+                                          final querySnapshot =
+                                              await FirebaseFirestore.instance
+                                                  .collection('EmployeeCurr')
+                                                  .where('EmpId',
+                                                      isEqualTo: empId)
+                                                  .limit(1)
+                                                  .get();
+
+                                          if (querySnapshot.docs.isNotEmpty) {
+                                            final doc =
+                                                querySnapshot.docs.first;
+                                            currentUtangPerEmp[empName] =
+                                                doc['CurrentStocks'] as int? ??
+                                                    0;
+                                          } else {
+                                            currentUtangPerEmp[empName] = 0;
+                                          }
+                                        } catch (e) {
+                                          currentUtangPerEmp[empName] = 0;
+                                        }
+                                      }
+                                    }
+
+                                    // Build summary text
+                                    final List<String> summaryLines = [];
+                                    for (final empName
+                                        in totalEarnedPerEmp.keys) {
+                                      final utang =
+                                          currentUtangPerEmp[empName] ?? 0;
+                                      final earned =
+                                          totalEarnedPerEmp[empName] ?? 0;
+                                      summaryLines.add(
+                                        '$empName - Current utang (₱$utang) / Kinita ngayon (₱$earned)',
+                                      );
+                                    }
 
                                     showDialog(
                                       context: context,
                                       builder: (_) => AlertDialog(
                                         title: const Text('Done'),
                                         content: SingleChildScrollView(
-                                          child: Text(
-                                              'Updated ${affectedDays.length} day(s):\n$formattedDays'),
+                                          child: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              ...summaryLines.map((line) {
+                                                // Check if this line has negative utang
+                                                final parts = line.split(' - ');
+                                                if (parts.length == 2) {
+                                                  final empName = parts[0];
+                                                  final detailsPart = parts[1];
+
+                                                  // Extract utang value
+                                                  final utangMatch = RegExp(
+                                                          r'₱(-?\d+)')
+                                                      .firstMatch(detailsPart);
+                                                  final isNegativeUtang =
+                                                      utangMatch != null &&
+                                                          int.tryParse(utangMatch
+                                                                      .group(
+                                                                          1) ??
+                                                                  '') !=
+                                                              null &&
+                                                          int.parse(utangMatch
+                                                                  .group(1)!) <
+                                                              0;
+
+                                                  return RichText(
+                                                    text: TextSpan(
+                                                      children: [
+                                                        TextSpan(
+                                                          text: '$empName - ',
+                                                          style:
+                                                              const TextStyle(
+                                                                  color: Colors
+                                                                      .black),
+                                                        ),
+                                                        if (isNegativeUtang)
+                                                          TextSpan(
+                                                            text:
+                                                                'Current utang (',
+                                                            style:
+                                                                const TextStyle(
+                                                                    color: Colors
+                                                                        .black),
+                                                          )
+                                                        else
+                                                          TextSpan(
+                                                            text:
+                                                                'Current utang (',
+                                                            style:
+                                                                const TextStyle(
+                                                                    color: Colors
+                                                                        .black),
+                                                          ),
+                                                        TextSpan(
+                                                          text: utangMatch
+                                                                  ?.group(0) ??
+                                                              '₱0',
+                                                          style: TextStyle(
+                                                            color:
+                                                                isNegativeUtang
+                                                                    ? Colors.red
+                                                                    : Colors
+                                                                        .black,
+                                                            fontWeight:
+                                                                isNegativeUtang
+                                                                    ? FontWeight
+                                                                        .bold
+                                                                    : FontWeight
+                                                                        .normal,
+                                                          ),
+                                                        ),
+                                                        TextSpan(
+                                                          text:
+                                                              ') / ${detailsPart.substring(detailsPart.indexOf('/') + 1)}',
+                                                          style:
+                                                              const TextStyle(
+                                                                  color: Colors
+                                                                      .black),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  );
+                                                }
+                                                return Text(line);
+                                              }).toList(),
+                                            ],
+                                          ),
                                         ),
                                         actions: [
                                           TextButton(
