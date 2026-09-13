@@ -51,12 +51,23 @@ Widget _buildQueueList(BuildContext context, List<JobModel> jobs) {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text("⏳ QUEUE",
-                  style: TextStyle(
-                    color: Theme.of(context).brightness == Brightness.dark
-                        ? Colors.white70
-                        : null,
-                  ))
+              Builder(builder: (context) {
+                // Calculate total finalLoad and finalLoadForBonus from all jobs
+                final totalFinalLoad = jobs.fold<int>(
+                  0,
+                  (sum, job) => sum + job.finalLoad,
+                );
+                final totalFinalLoadForBonus = jobs.fold<int>(
+                  0,
+                  (sum, job) => sum + job.finalLoadForBonus,
+                );
+                return Text("⏳ QUEUE($totalFinalLoad/$totalFinalLoadForBonus)",
+                    style: TextStyle(
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? Colors.white70
+                          : null,
+                    ));
+              })
             ],
           ),
           ReorderableListView(

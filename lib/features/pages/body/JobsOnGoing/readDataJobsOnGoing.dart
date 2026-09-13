@@ -59,13 +59,17 @@ Widget _buildQueueList(BuildContext context, List<JobModel> jobs) {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Builder(builder: (context) {
-            // Calculate total finalLoad from all jobs
-            final totalLoad = jobs.fold<int>(
+            // Calculate total finalLoad and finalLoadForBonus from all jobs
+            final totalFinalLoad = jobs.fold<int>(
               0,
               (sum, job) => sum + job.finalLoad,
             );
+            final totalFinalLoadForBonus = jobs.fold<int>(
+              0,
+              (sum, job) => sum + job.finalLoadForBonus,
+            );
             return Text(
-              "🔄 ON-GOING($totalLoad)",
+              "🔄 ON-GOING($totalFinalLoad/$totalFinalLoadForBonus)",
               style: TextStyle(
                 color: Theme.of(context).brightness == Brightness.dark
                     ? Colors.white70
