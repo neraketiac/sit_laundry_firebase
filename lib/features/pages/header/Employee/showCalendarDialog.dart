@@ -576,11 +576,13 @@ Future<Map<DateTime, DaySelection>?> showCalendarDialog(BuildContext context) {
                                             await dbEmployeeCurrent
                                                 .addEmployeeCurr(employeeModel);
 
-                                            // Compute and record bonus for the employee
-                                            await computeBonus(
-                                                empNameToId[r.empId]!,
-                                                r.coverageDate.toString(),
-                                                coverageDateTime);
+                                            // Compute and record bonus only if full day (absent == 0)
+                                            if (r.absent == 0) {
+                                              await computeBonus(
+                                                  empNameToId[r.empId]!,
+                                                  r.coverageDate.toString(),
+                                                  coverageDateTime);
+                                            }
                                           }
                                         }
                                         allChangedDays.addAll(changedDays);
