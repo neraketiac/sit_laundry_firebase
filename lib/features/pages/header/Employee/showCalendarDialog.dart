@@ -8,6 +8,7 @@ import 'package:laundry_firebase/core/utils/sharedMethods.dart';
 import 'package:laundry_firebase/core/services/database_coverage.dart';
 import 'package:laundry_firebase/core/services/database_employee_current.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
+import 'package:laundry_firebase/core/services/firebase_service.dart';
 
 class DaySelection {
   bool a;
@@ -601,7 +602,8 @@ Future<Map<DateTime, DaySelection>?> showCalendarDialog(BuildContext context) {
                                       if (empId.isNotEmpty) {
                                         try {
                                           final querySnapshot =
-                                              await FirebaseFirestore.instance
+                                              await FirebaseService
+                                                  .employeeFirestore
                                                   .collection('EmployeeCurr')
                                                   .where('EmpId',
                                                       isEqualTo: empId)
