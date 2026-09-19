@@ -390,6 +390,37 @@ Future<Map<DateTime, DaySelection>?> showCalendarDialog(BuildContext context) {
                                     final List<CoverageRecordModel>
                                         allChangedDays = [];
 
+                                    // Fetch current utang for all employees BEFORE generation
+                                    final Map<String, int> currentUtangPerEmp =
+                                        {};
+                                    for (final empKey in empKeys) {
+                                      final empName = mapEmpId[empKey]!;
+                                      final empId = empKey;
+
+                                      try {
+                                        final querySnapshot =
+                                            await FirebaseService
+                                                .employeeFirestore
+                                                .collection('EmployeeCurr')
+                                                .where('EmpId',
+                                                    isEqualTo: empId)
+                                                .orderBy('LogDate',
+                                                    descending: true)
+                                                .limit(1)
+                                                .get();
+
+                                        if (querySnapshot.docs.isNotEmpty) {
+                                          final doc = querySnapshot.docs.first;
+                                          currentUtangPerEmp[empName] =
+                                              doc['CurrentStocks'] as int? ?? 0;
+                                        } else {
+                                          currentUtangPerEmp[empName] = 0;
+                                        }
+                                      } catch (e) {
+                                        currentUtangPerEmp[empName] = 0;
+                                      }
+                                    }
+
                                     for (final empKey in empKeys) {
                                       final empName = mapEmpId[empKey]!;
                                       final rate = mapEmpIdRates[empKey] ?? 0;
@@ -571,10 +602,8 @@ Future<Map<DateTime, DaySelection>?> showCalendarDialog(BuildContext context) {
                                       return;
                                     }
 
-                                    // Build summary: calculate total earned per employee and fetch current utang
+                                    // Build summary: calculate total earned per employee
                                     final Map<String, int> totalEarnedPerEmp =
-                                        {};
-                                    final Map<String, int> currentUtangPerEmp =
                                         {};
 
                                     // Calculate total earned per employee
@@ -585,43 +614,6 @@ Future<Map<DateTime, DaySelection>?> showCalendarDialog(BuildContext context) {
                                           (val) => val + record.amountEarned,
                                           ifAbsent: () => record.amountEarned,
                                         );
-                                      }
-                                    }
-
-                                    // Fetch current stocks for each employee that was generated
-                                    for (final empName
-                                        in totalEarnedPerEmp.keys) {
-                                      final empId = empNameToId.entries
-                                          .firstWhere(
-                                            (e) => e.value == empName,
-                                            orElse: () =>
-                                                const MapEntry('', ''),
-                                          )
-                                          .key;
-
-                                      if (empId.isNotEmpty) {
-                                        try {
-                                          final querySnapshot =
-                                              await FirebaseService
-                                                  .employeeFirestore
-                                                  .collection('EmployeeCurr')
-                                                  .where('EmpId',
-                                                      isEqualTo: empId)
-                                                  .limit(1)
-                                                  .get();
-
-                                          if (querySnapshot.docs.isNotEmpty) {
-                                            final doc =
-                                                querySnapshot.docs.first;
-                                            currentUtangPerEmp[empName] =
-                                                doc['CurrentStocks'] as int? ??
-                                                    0;
-                                          } else {
-                                            currentUtangPerEmp[empName] = 0;
-                                          }
-                                        } catch (e) {
-                                          currentUtangPerEmp[empName] = 0;
-                                        }
                                       }
                                     }
 
