@@ -391,11 +391,14 @@ Future<Map<DateTime, DaySelection>?> showCalendarDialog(BuildContext context) {
                                         allChangedDays = [];
 
                                     // Fetch current utang for all employees BEFORE generation
+                                    // Utang = sum of all CurrentCounter values for salary payments (itemUniqueId == menuOthSalaryPayment)
+                                    // empKey is the employee code (e.g., '#3131'), which is stored in EmployeeCurr.EmpId
                                     final Map<String, int> currentUtangPerEmp =
                                         {};
                                     for (final empKey in empKeys) {
                                       final empName = mapEmpId[empKey]!;
-                                      final empId = empKey;
+                                      final empId =
+                                          empKey; // empKey is the code like '#3131'
 
                                       try {
                                         final querySnapshot =
@@ -404,18 +407,20 @@ Future<Map<DateTime, DaySelection>?> showCalendarDialog(BuildContext context) {
                                                 .collection('EmployeeCurr')
                                                 .where('EmpId',
                                                     isEqualTo: empId)
-                                                .orderBy('LogDate',
-                                                    descending: true)
-                                                .limit(1)
+                                                .where('ItemUniqueId',
+                                                    isEqualTo:
+                                                        menuOthSalaryPayment)
                                                 .get();
 
-                                        if (querySnapshot.docs.isNotEmpty) {
-                                          final doc = querySnapshot.docs.first;
-                                          currentUtangPerEmp[empName] =
-                                              doc['CurrentStocks'] as int? ?? 0;
-                                        } else {
-                                          currentUtangPerEmp[empName] = 0;
+                                        int totalUtang = 0;
+                                        for (final doc in querySnapshot.docs) {
+                                          final amount =
+                                              doc['CurrentCounter'] as int? ??
+                                                  0;
+                                          totalUtang += amount;
                                         }
+                                        currentUtangPerEmp[empName] =
+                                            totalUtang;
                                       } catch (e) {
                                         currentUtangPerEmp[empName] = 0;
                                       }
@@ -604,14 +609,14 @@ Future<Map<DateTime, DaySelection>?> showCalendarDialog(BuildContext context) {
                                       return;
                                     }
 
-                                    // Build summary: calculate total earned per employee
-                                    final Map<String, int> totalEarnedPerEmp =
-                                        {};
+                                    // Build summary: calculate total generated amount per employee (salary + bonuses)
+                                    final Map<String, int>
+                                        totalGeneratedPerEmp = {};
 
-                                    // Calculate total earned per employee
+                                    // Sum amountEarned from coverage records (salary for full/half days)
                                     for (final record in allChangedDays) {
                                       if (record.amountEarned != 0) {
-                                        totalEarnedPerEmp.update(
+                                        totalGeneratedPerEmp.update(
                                           record.empId,
                                           (val) => val + record.amountEarned,
                                           ifAbsent: () => record.amountEarned,
@@ -619,16 +624,57 @@ Future<Map<DateTime, DaySelection>?> showCalendarDialog(BuildContext context) {
                                       }
                                     }
 
+                                    // Fetch bonus amounts generated in this batch
+                                    // Bonuses are recorded with itemUniqueId == menuOthSalaryPayment and remarks containing "Loads"
+                                    final Map<String, int> bonusPerEmp = {};
+                                    for (final empKey in empKeys) {
+                                      final empName = mapEmpId[empKey]!;
+                                      try {
+                                        final bonusSnapshot =
+                                            await FirebaseService
+                                                .employeeFirestore
+                                                .collection('EmployeeCurr')
+                                                .where('EmpId',
+                                                    isEqualTo: empKey)
+                                                .where('ItemUniqueId',
+                                                    isEqualTo:
+                                                        menuOthSalaryPayment)
+                                                .orderBy('LogDate',
+                                                    descending: true)
+                                                .limit(50) // Get recent records
+                                                .get();
+
+                                        int bonusTotal = 0;
+                                        // Only count entries with "Loads" in remarks (these are bonuses from jobs)
+                                        for (final doc in bonusSnapshot.docs) {
+                                          final remarks =
+                                              doc['Remarks']?.toString() ?? '';
+                                          if (remarks.contains('Loads')) {
+                                            final amount =
+                                                doc['CurrentCounter'] as int? ??
+                                                    0;
+                                            bonusTotal += amount;
+                                          }
+                                        }
+                                        bonusPerEmp[empName] = bonusTotal;
+                                      } catch (e) {
+                                        bonusPerEmp[empName] = 0;
+                                      }
+                                    }
+
                                     // Build summary text
                                     final List<String> summaryLines = [];
                                     for (final empName
-                                        in totalEarnedPerEmp.keys) {
-                                      final utang =
+                                        in totalGeneratedPerEmp.keys) {
+                                      final currentUtang =
                                           currentUtangPerEmp[empName] ?? 0;
-                                      final earned =
-                                          totalEarnedPerEmp[empName] ?? 0;
+                                      final salary =
+                                          totalGeneratedPerEmp[empName] ?? 0;
+                                      final bonus = bonusPerEmp[empName] ?? 0;
+                                      final totalGenerated = salary + bonus;
+
                                       summaryLines.add(
-                                        '$empName - Current utang (₱$utang) / Kinita ngayon (₱$earned)',
+                                        '$empName - Current utang (₱$currentUtang) / Generated (₱$totalGenerated)',
                                       );
                                     }
 
