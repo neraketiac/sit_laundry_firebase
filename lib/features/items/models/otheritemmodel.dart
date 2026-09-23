@@ -83,7 +83,7 @@ class OtherItemModel {
       'ItemPrice': itemPrice,
       'StocksAlert': stocksAlert,
       'StocksType': stocksType,
-      'LogDate': logDate,
+      'LogDate': logDate.toDate().toIso8601String(),
     };
   }
 

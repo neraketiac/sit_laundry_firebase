@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:laundry_firebase/features/customers/models/customermodel.dart';
 import 'package:laundry_firebase/features/customers/repository/customer_repository.dart';
 import 'package:laundry_firebase/features/jobs/repository/jobmodel_repository.dart';
@@ -49,6 +50,7 @@ class _AutoCompleteCustomerState extends State<AutoCompleteCustomer> {
 
   @override
   Widget build(BuildContext context) {
+    // Use repository customers directly (live reference)
     final customers = CustomerRepository.instance.customers;
 
     return Autocomplete<CustomerModel>(
@@ -92,13 +94,36 @@ class _AutoCompleteCustomerState extends State<AutoCompleteCustomer> {
 
         final query = value.text.toLowerCase();
 
-        return customers.where((customer) {
+        debugPrint(
+            '🔍 Autocomplete query: "$query", customers count: ${customers.length}');
+
+        // If customers list is empty, show recent searches as fallback
+        if (customers.isEmpty && _recentSearches.isNotEmpty) {
+          debugPrint('⚠️ Customers empty, using recent searches as fallback');
+          return _recentSearches
+              .map((item) => CustomerModel(
+                    customerId: item.customerId,
+                    name: item.name,
+                    address: item.address,
+                    contact: '',
+                    remarks: '',
+                    loyaltyCount: 0,
+                  ))
+              .toList();
+        }
+
+        final filtered = customers.where((customer) {
           final searchable =
               "${customer.name} ${customer.address} ${customer.customerId}"
                   .toLowerCase();
 
           return searchable.contains(query);
-        });
+        }).toList();
+
+        debugPrint(
+            '🔍 Autocomplete filtered: ${filtered.length} results for "$query"');
+
+        return filtered;
       },
 
       /// DROPDOWN VIEW
@@ -126,16 +151,17 @@ class _AutoCompleteCustomerState extends State<AutoCompleteCustomer> {
           padding: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20),
-            color: Colors.black.withOpacity(0.25),
+            color: Colors.black.withValues(alpha: 0.25),
             border: Border.all(
-              color:
-                  isFocused ? Colors.cyanAccent : Colors.white.withOpacity(0.2),
+              color: isFocused
+                  ? Colors.cyanAccent
+                  : Colors.white.withValues(alpha: 0.2),
               width: isFocused ? 2 : 1,
             ),
             boxShadow: isFocused
                 ? [
                     BoxShadow(
-                      color: Colors.cyanAccent.withOpacity(0.7),
+                      color: Colors.cyanAccent.withValues(alpha: 0.7),
                       blurRadius: 20,
                       spreadRadius: 2,
                     )
@@ -194,9 +220,9 @@ class _AutoCompleteCustomerState extends State<AutoCompleteCustomer> {
                 constraints: const BoxConstraints(maxHeight: 260),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(20),
-                  color: Colors.black.withOpacity(0.6),
+                  color: Colors.black.withValues(alpha: 0.6),
                   border: Border.all(
-                    color: Colors.cyanAccent.withOpacity(0.3),
+                    color: Colors.cyanAccent.withValues(alpha: 0.3),
                   ),
                 ),
                 child: ListView.builder(
@@ -290,9 +316,19 @@ class _AutoCompleteCustomerState extends State<AutoCompleteCustomer> {
     widget.jobRepo.selectedCustomerId = selected.customerId;
 
     // 🟢 Populate job remarks with customer loyalty remarks if available
+    debugPrint('🔍 Customer remarks from DB: "${selected.remarks}"');
+    debugPrint('🔍 Is remarks empty: ${selected.remarks.isEmpty}');
+    debugPrint('🔍 Remarks length: ${selected.remarks.length}');
+
     if (selected.remarks.isNotEmpty) {
       widget.jobRepo.selectedRemarksVar.text = selected.remarks;
       debugPrint('✅ Loaded customer remarks: ${selected.remarks}');
+      debugPrint(
+          '✅ Remarks var now contains: ${widget.jobRepo.selectedRemarksVar.text}');
+    } else {
+      debugPrint('⚠️ Customer remarks are empty - skipped population');
+      // Clear remarks if customer has no remarks
+      widget.jobRepo.selectedRemarksVar.clear();
     }
 
     // Save to local search history

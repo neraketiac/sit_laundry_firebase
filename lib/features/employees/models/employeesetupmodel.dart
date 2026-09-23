@@ -84,7 +84,7 @@ class EmployeeSetupModel {
         'DocId': docId,
         'EmpId': empId,
         'EmpName': empName,
-        'LogDate': logDate,
+        'LogDate': logDate.toDate().toIso8601String(),
         'LogBy': logBy,
         'Remarks': remarks,
         'ShowLaundry': showLaundry,

@@ -87,7 +87,7 @@ class CustomerRepository {
                 name: doc['Name'],
                 address: doc['Address'],
                 contact: doc['Name'],
-                remarks: doc['C5_Remarks'] ?? '',
+                remarks: doc['Name'],
                 loyaltyCount: doc['Count'],
               ))
           .toList();
@@ -118,7 +118,6 @@ class CustomerRepository {
         'id': c.customerId,
         'n': c.name,
         'a': c.address,
-        'r': c.remarks,
         'lc': c.loyaltyCount,
       };
 
@@ -127,7 +126,7 @@ class CustomerRepository {
         name: m['n'] as String,
         address: m['a'] as String,
         contact: m['n'] as String,
-        remarks: m['r'] as String? ?? '',
+        remarks: '',
         loyaltyCount: m['lc'] as int,
       );
 }

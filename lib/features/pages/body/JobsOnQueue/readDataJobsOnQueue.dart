@@ -141,35 +141,45 @@ Widget _buildQueueList(BuildContext context, List<JobModel> jobs) {
                           colors: isSelected
                               ? isDark
                                   ? [
-                                      const Color(0xFF4A3F6B),
-                                      const Color(0xFF3D3357),
+                                      const Color(0xFF4A6B8F),
+                                      const Color(0xFF3D5775),
                                     ]
                                   : [
-                                      Colors.deepPurple.shade200,
-                                      Colors.deepPurple.shade100,
+                                      Colors.lightBlue.shade200,
+                                      Colors.lightBlue.shade100,
                                     ]
-                              : isDark
-                                  ? [
-                                      const Color(0xFF2A2535),
-                                      const Color(0xFF2A2535),
-                                    ]
-                                  : [
-                                      Colors.deepPurple.shade50,
-                                      Colors.deepPurple.shade50,
-                                    ],
+                              : (job.riderPickup && !job.forSorting)
+                                  ? isDark
+                                      ? [
+                                          const Color(0xFF3D5C7C),
+                                          const Color(0xFF3D5C7C),
+                                        ]
+                                      : [
+                                          Colors.lightBlue.shade100,
+                                          Colors.lightBlue.shade100,
+                                        ]
+                                  : isDark
+                                      ? [
+                                          const Color(0xFF2A4560),
+                                          const Color(0xFF2A4560),
+                                        ]
+                                      : [
+                                          Colors.lightBlue.shade50,
+                                          Colors.lightBlue.shade50,
+                                        ],
                         ),
                         border: Border.all(
                           color: isSelected
-                              ? Colors.deepPurple
+                              ? Colors.lightBlue
                               : isDark
-                                  ? Colors.deepPurple.withValues(alpha: 0.3)
-                                  : Colors.deepPurple.withValues(alpha: 0.1),
+                                  ? Colors.lightBlue.withValues(alpha: 0.3)
+                                  : Colors.lightBlue.withValues(alpha: 0.1),
                           width: isSelected ? 1.5 : 1,
                         ),
                         boxShadow: [
                           if (isSelected)
                             BoxShadow(
-                              color: Colors.deepPurple
+                              color: Colors.lightBlue
                                   .withValues(alpha: isDark ? 0.6 : 0.4),
                               blurRadius: 14,
                               offset: const Offset(0, 6),
