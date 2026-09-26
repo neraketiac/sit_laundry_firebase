@@ -169,16 +169,15 @@ Widget visAmountOthersOnly(
                               context: context,
                             );
                           } else if (shortcut == menuOthW9t10) {
-                            // DISABLED - Button 260 functionality is disabled
-                            // addOtherItemBundle(
-                            //   jobRepo,
-                            //   [
-                            //     reg155ItemModel,
-                            //     listOthItems.firstWhere(
-                            //         (i) => i.itemId == menuOthW9t10),
-                            //   ],
-                            //   context: context,
-                            // );
+                            addOtherItemBundle(
+                              jobRepo,
+                              [
+                                reg155ItemModel,
+                                listOthItems.firstWhere(
+                                    (i) => i.itemId == menuOthW9t10),
+                              ],
+                              context: context,
+                            );
                           }
                           dialogSetState();
                         },
