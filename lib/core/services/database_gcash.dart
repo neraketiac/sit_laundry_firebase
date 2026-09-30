@@ -6,6 +6,7 @@ import 'package:laundry_firebase/core/utils/firestore_timeout.dart';
 import 'package:laundry_firebase/core/global/variables_all_codes.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
 import 'package:laundry_firebase/features/payments/models/gcashmodel.dart';
+import 'package:laundry_firebase/features/items/models/suppliesmodelhist.dart';
 import 'package:laundry_firebase/core/utils/sharedMethods.dart';
 import 'package:laundry_firebase/core/utils/sharedmethodsdatabase.dart';
 import 'package:laundry_firebase/features/items/repository/supplies_hist_repository.dart';
@@ -292,6 +293,31 @@ Future<void> _generateCashOutSuppliesRecordsAfterCompletion(
     await callDatabaseSuppliesCurrentAdd(
         SuppliesHistRepository.instance.suppliesModelHist!);
 
+    // 🔥 NEW: Create audit record for Cash-Out with NEGATIVE amount
+    final auditDocId =
+        'audit_${docId}_${DateTime.now().millisecondsSinceEpoch}';
+    final auditRef = firestore.collection('SuppliesHist_Audit').doc(auditDocId);
+
+    // Create audit with NEGATIVE amount (same as SuppliesHist)
+    final auditSMH = SuppliesModelHist(
+      docId: auditDocId,
+      countId: 0,
+      itemId: menuOthCashInOutFunds,
+      itemUniqueId: menuOthUniqIdCashOut,
+      itemName: 'GCash Cash-Out',
+      currentCounter: -(data['CustomerAmount'] ?? 0), // ← NEGATIVE for Cash-Out
+      currentStocks: 0,
+      logDate: Timestamp.now(),
+      empId: data['LogBy'] ?? '',
+      customerId: 0,
+      customerName: data['CustomerName'] ?? '',
+      remarks: 'GCash ${data['ItemName'] ?? ''} ${data['Remarks'] ?? ''}',
+    );
+
+    await auditRef.set(auditSMH.toJson());
+    debugPrint(
+        '📝 AUDIT: Inserted SuppliesHist_Audit for Cash-Out with docId: $auditDocId (Negative: -₱${data['CustomerAmount'] ?? 0})');
+
     // Check if fee should be recorded in Funds In (backward compatible - defaults to false)
     final recordFee = (data['RecordCashOutFeeInFunds'] as bool?) ?? false;
     if (recordFee) {
@@ -316,6 +342,31 @@ Future<void> _generateCashOutSuppliesRecordsAfterCompletion(
 
           await callDatabaseSuppliesCurrentAdd(
               SuppliesHistRepository.instance.suppliesModelHist!);
+
+          // 🔥 NEW: Create audit record for fee
+          final feeAuditDocId =
+              'audit_${docId}_fee_${DateTime.now().millisecondsSinceEpoch}';
+          final feeAuditRef =
+              firestore.collection('SuppliesHist_Audit').doc(feeAuditDocId);
+
+          final feeAuditSMH = SuppliesModelHist(
+            docId: feeAuditDocId,
+            countId: 0,
+            itemId: menuOthCashInOutFunds,
+            itemUniqueId: menuOthUniqIdFee,
+            itemName: 'Gcash Fee',
+            currentCounter: feeAmount,
+            currentStocks: 0,
+            logDate: Timestamp.now(),
+            empId: data['LogBy'] ?? '',
+            customerId: 0,
+            customerName: data['CustomerName'] ?? '',
+            remarks: 'GCash ${data['ItemName'] ?? ''} ${data['Remarks'] ?? ''}',
+          );
+
+          await feeAuditRef.set(feeAuditSMH.toJson());
+          debugPrint(
+              '📝 AUDIT: Inserted SuppliesHist_Audit for Cash-Out fee with docId: $feeAuditDocId (₱$feeAmount)');
 
           debugPrint('✅ Cash-Out fee (₱$feeAmount) recorded successfully');
         } catch (e) {

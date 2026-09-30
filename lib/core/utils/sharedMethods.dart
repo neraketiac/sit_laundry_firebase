@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:image_picker/image_picker.dart';
@@ -832,11 +833,14 @@ Future<void> revertLaundryPaymentSuppliesHistory(
 /// Atomically update job payment and record supplies using Firestore Transaction
 /// Record cash payment to supplies history and current - WITHOUT modifying requestForAdmin flag
 /// This is used when requestForAdmin is managed externally in 3-step flow
+/// Also records to SuppliesHist_Audit in the same database as the job (atomic transaction)
 Future<void> recordCashPaymentSuppliesOnly(
   BuildContext context,
   JobModelRepository jobRepo,
   int delta, [
   String? cleanRemarks,
+  FirebaseFirestore? jobDatabase,
+  String? jobCollectionRef,
 ]) async {
   if (!jobRepo.paidCash || delta <= 0) return;
 
@@ -861,7 +865,27 @@ Future<void> recordCashPaymentSuppliesOnly(
       expenseAmount: 0,
     );
 
+    // If jobDatabase and jobCollectionRef provided, record to SuppliesHist_Audit atomically
+    if (jobDatabase != null && jobCollectionRef != null) {
+      debugPrint('Recording to SuppliesHist_Audit in job database');
+      await jobDatabase.runTransaction((tx) async {
+        // Insert to SuppliesHist_Audit in job database (atomic)
+        final docId =
+            'audit_${jobRepo.docId}_${DateTime.now().millisecondsSinceEpoch}';
+        final auditRef = jobDatabase.collection(jobCollectionRef).doc(docId);
+
+        debugPrint('Setting SuppliesHist_Audit document: ${auditRef.path}');
+        debugPrint('Document data: ${sMH.toJson()}');
+        tx.set(auditRef, sMH.toJson());
+        debugPrint('SuppliesHist_Audit tx.set() called');
+      }).catchError((error) {
+        debugPrint('Transaction error: $error');
+        throw error;
+      });
+    }
+
     // Call directly without going through setSuppliesRepository which overwrites fields
+    // This writes to the central Supplies DB (separate, not atomic)
     await callDatabaseSuppliesCurrentAdd(sMH);
 
     // Success - show snackbar
@@ -978,6 +1002,7 @@ Future<void> recordCashPaymentAtomicTransaction(
 }
 
 /// Record GCash payment to supplies after checking markers
+/// Also records to SuppliesHist_Audit in the same database as GCash (atomic transaction)
 Future<void> recordGCashPaymentAtomicTransaction(
   BuildContext context,
   GCashModel gCashModel,
@@ -988,6 +1013,11 @@ Future<void> recordGCashPaymentAtomicTransaction(
   String? cleanRemarks,
 ]) async {
   try {
+    debugPrint('=== START recordGCashPaymentAtomicTransaction ===');
+    debugPrint('GCash DocId: ${gCashModel.docId}');
+    debugPrint('Amount: $customerAmount');
+    debugPrint('Customer: $customerName');
+
     // Use cleanRemarks if provided, otherwise use remarks
     final suppliersRemarks = cleanRemarks ?? remarks;
 
@@ -1008,8 +1038,59 @@ Future<void> recordGCashPaymentAtomicTransaction(
       expenseAmount: 0,
     );
 
+    debugPrint('SuppliesModelHist created: ${sMH.toJson()}');
+
+    // Record to SuppliesHist_Audit in GCash database
+    final gcashFirestore = FirebaseService.gcashPendingDoneFirestore;
+    debugPrint(
+        '📍 STEP 1: Getting GCash Firestore instance - Project: gcashpendingdoneonly');
+
+    final docId =
+        'audit_${gCashModel.docId}_${DateTime.now().millisecondsSinceEpoch}';
+    debugPrint('📍 STEP 3: Generated docId: $docId');
+
+    final auditRef = gcashFirestore.collection('SuppliesHist_Audit').doc(docId);
+    debugPrint('📍 STEP 5: Document reference path: ${auditRef.path}');
+
+    // Update sMH with the actual docId that will be used in Firestore
+    sMH.docId = docId;
+    debugPrint('📍 STEP 6: Updated SuppliesModelHist.docId to: $docId');
+
+    try {
+      debugPrint(
+          '🟡 INSERTING TO AUDIT: About to insert SuppliesHist_Audit in GCash DB');
+      await auditRef.set(sMH.toJson()).timeout(
+        const Duration(seconds: 10),
+        onTimeout: () {
+          debugPrint('❌ TIMEOUT: Write to SuppliesHist_Audit took too long');
+          throw TimeoutException('Write timeout');
+        },
+      );
+      debugPrint('✅ AUDIT INSERTED: SuppliesHist_Audit created successfully');
+    } on FirebaseException catch (fbe) {
+      debugPrint('❌ FIREBASE ERROR writing to SuppliesHist_Audit');
+      debugPrint('   Code: ${fbe.code}');
+      debugPrint('   Message: ${fbe.message}');
+      debugPrint('   Plugin: ${fbe.plugin}');
+      // Log but continue - don't block Supplies DB write
+    } catch (e) {
+      debugPrint('❌ GENERIC ERROR writing to SuppliesHist_Audit');
+      debugPrint('   Type: ${e.runtimeType}');
+      debugPrint('   Message: $e');
+      // Log but continue - don't block Supplies DB write
+    }
+
     // Call directly without going through setSuppliesRepository which overwrites fields
-    await callDatabaseSuppliesCurrentAdd(sMH);
+    // This writes to the central Supplies DB (separate, not atomic)
+    debugPrint(
+        '🟡 INSERTING TO SUPPLIES: About to insert SuppliesHist in Supplies DB');
+    try {
+      await callDatabaseSuppliesCurrentAdd(sMH);
+      debugPrint('✅ SUPPLIES INSERTED: SuppliesHist created successfully');
+    } catch (suppliesError) {
+      debugPrint('❌ Supplies DB write FAILED: $suppliesError');
+      rethrow;
+    }
 
     // Success - show snackbar
     if (context.mounted) {
@@ -1021,7 +1102,10 @@ Future<void> recordGCashPaymentAtomicTransaction(
         ),
       );
     }
+
+    debugPrint('=== END recordGCashPaymentAtomicTransaction SUCCESS ===');
   } catch (e) {
+    debugPrint('=== END recordGCashPaymentAtomicTransaction ERROR ===');
     debugPrint('GCash supplies recording failed: $e');
 
     if (context.mounted) {

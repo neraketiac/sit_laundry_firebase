@@ -1,4 +1,5 @@
 //floating button new record  ###########################################################
+import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -14,6 +15,7 @@ import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_alter_job/cust
 import 'package:laundry_firebase/shared/widgets/actions/fundTypeToggle.dart';
 import 'package:laundry_firebase/core/utils/sharedmethodsdatabase.dart';
 import 'package:laundry_firebase/core/services/database_gcash.dart';
+import 'package:laundry_firebase/core/services/firebase_service.dart';
 import 'package:laundry_firebase/features/payments/repository/gcash_repository.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
 import 'package:laundry_firebase/shared/widgets/actions/showUploadedImage.dart';
@@ -184,10 +186,90 @@ void showGCashPending(BuildContext context) async {
       gRepo.failedInsertSupplies = true;
     }
 
-    // Initial insert — this creates the Firestore document with a new ID
+    // Step 1: Atomic Transaction - Insert GCash_Pending and SuppliesHist_Audit in same database
     final initialModel = gRepo.getModel()!;
-    DatabaseGCashPending databaseGCashPending = DatabaseGCashPending();
-    if (!await databaseGCashPending.addBool(initialModel)) {
+    final gcashFirestore = FirebaseService.gcashPendingDoneFirestore;
+
+    try {
+      await gcashFirestore.runTransaction((tx) async {
+        // Generate doc ID
+        final gcashRef = gcashFirestore.collection('GCash_pending').doc();
+        initialModel.docId = gcashRef.id;
+
+        // Step 1a: Insert GCash_Pending
+        tx.set(gcashRef, initialModel.toJson());
+        debugPrint(
+            '📝 ATOMIC: Inserted GCash_Pending with docId: ${gcashRef.id}');
+
+        // Step 1b: Create audit record ONLY for Cash-In and Load (NOT for Cash-Out)
+        // Cash-Out audit will be created later when supplies records are generated
+        if (!isCashOut) {
+          final auditDocId =
+              'audit_${gcashRef.id}_${DateTime.now().millisecondsSinceEpoch}';
+          final auditRef =
+              gcashFirestore.collection('SuppliesHist_Audit').doc(auditDocId);
+
+          // Create SuppliesModelHist for audit
+          final auditSMH = SuppliesModelHist(
+            docId: auditDocId,
+            countId: 0,
+            itemId: gRepo.itemId,
+            itemUniqueId: gRepo.itemUniqueId,
+            itemName: gRepo.itemName,
+            currentCounter: gRepo.customerAmount,
+            currentStocks: 0,
+            logDate: gRepo.logDate,
+            empId: gRepo.logBy,
+            customerId: 0,
+            customerName: gRepo.customerName,
+            remarks: 'GCash ${gRepo.itemName} ${gRepo.remarks}',
+          );
+
+          tx.set(auditRef, auditSMH.toJson());
+          debugPrint(
+              '📝 ATOMIC: Inserted SuppliesHist_Audit with docId: $auditDocId');
+        } else {
+          debugPrint(
+              '⏭️ SKIPPED: Cash-Out audit will be created when supplies records are generated');
+        }
+      }).timeout(
+        const Duration(seconds: 10),
+        onTimeout: () {
+          throw TimeoutException('Atomic transaction timeout');
+        },
+      );
+
+      // Store the docId for subsequent updates
+      gRepo.docId = initialModel.docId;
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('GCash record created successfully'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+
+      notifyAllUsers(
+        title: initialModel.itemName,
+        body: "${initialModel.customerName} ₱${initialModel.customerAmount}",
+        url:
+            "https://wash-ko-lang-sit.web.app/#/scan?empId=${initialModel.logBy}",
+        sound: 'gcash-pending',
+      );
+    } on FirebaseException catch (fbe) {
+      debugPrint(
+          '❌ FIREBASE ERROR in atomic transaction: ${fbe.code} - ${fbe.message}');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: ${fbe.message}')),
+        );
+      }
+      return;
+    } catch (e) {
+      debugPrint('❌ ERROR in atomic transaction: $e');
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Error insert GCash Pending.')),
@@ -195,27 +277,6 @@ void showGCashPending(BuildContext context) async {
       }
       return;
     }
-
-    // Store the docId for subsequent updates
-    gRepo.docId = initialModel.docId;
-
-    if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('GCash record created successfully'),
-          backgroundColor: Colors.green,
-          duration: Duration(seconds: 2),
-        ),
-      );
-    }
-
-    notifyAllUsers(
-      title: initialModel.itemName,
-      body: "${initialModel.customerName} ₱${initialModel.customerAmount}",
-      url:
-          "https://wash-ko-lang-sit.web.app/#/scan?empId=${initialModel.logBy}",
-      sound: 'gcash-pending',
-    );
 
     // Check if staff is selected for Cash-In or Load
     final staffSelected = (isCashIn || isLoad) && isStaffSelected();
@@ -373,7 +434,27 @@ void showGCashPending(BuildContext context) async {
             customerName: gRepo.customerName,
             remarks: gRepo.remarksVar.text,
           );
+
+          // Record fee to SuppliesHist/Curr
           await DatabaseSuppliesCurrent().addSuppliesCurr(feeSMH);
+
+          // Also create audit record for fee in GCash database
+          try {
+            final gcashFirestore = FirebaseService.gcashPendingDoneFirestore;
+            final feeAuditDocId =
+                'audit_${gRepo.docId}_fee_${DateTime.now().millisecondsSinceEpoch}';
+            final feeAuditRef = gcashFirestore
+                .collection('SuppliesHist_Audit')
+                .doc(feeAuditDocId);
+
+            feeSMH.docId = feeAuditDocId;
+            await feeAuditRef.set(feeSMH.toJson());
+            debugPrint(
+                '📝 AUDIT: Inserted SuppliesHist_Audit for fee with docId: $feeAuditDocId');
+          } catch (e) {
+            debugPrint('⚠️ WARNING: Failed to create fee audit record: $e');
+            // Don't fail the entire process if audit fails
+          }
         }
       } else {
         // skipSuppliesThisSave is true, so no supplies insertion needed

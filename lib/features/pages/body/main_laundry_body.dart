@@ -29,6 +29,7 @@ import 'package:laundry_firebase/features/pages/body/JobsDone/readDataJobsDone.d
 import 'package:laundry_firebase/features/pages/body/rider/show_rider_orders.dart';
 import 'package:laundry_firebase/features/pages/body/Supplies/readSuppliesCurrent.dart';
 import 'package:laundry_firebase/features/pages/body/Supplies/readSuppliesHist.dart';
+import 'package:laundry_firebase/features/pages/body/Supplies/readFundsAudit.dart';
 import 'package:laundry_firebase/features/pages/body/Unpaid/readUnpaidLaundry.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/copy_to_loyalty_db.dart';
 import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/show_enable_promo.dart';
@@ -202,7 +203,7 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
       }
 
       // ============ showFunds ============
-      // Includes: readSuppliesCurrent, readSuppliesHist, readItemsHist
+      // Includes: readSuppliesCurrent, readSuppliesHist, readItemsHist, readFundsAudit
       if (empSetup.showFunds) {
         final suppliesCurrentCount =
             FsUsageTracker.instance.getTrackedCount('readSuppliesCurrent');
@@ -210,13 +211,17 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
             FsUsageTracker.instance.getTrackedCount('readSuppliesHist');
         final itemsHistoryCount =
             FsUsageTracker.instance.getTrackedCount('readItemsHist');
+        final fundsAuditCount =
+            FsUsageTracker.instance.getTrackedCount('readFundsAudit');
 
-        final fundsTotalRecords =
-            suppliesCurrentCount + suppliesHistoryCount + itemsHistoryCount;
+        final fundsTotalRecords = suppliesCurrentCount +
+            suppliesHistoryCount +
+            itemsHistoryCount +
+            fundsAuditCount;
         estimatedMB +=
             (fundsTotalRecords * bytesPerRecord / 1024); // Convert KB to MB
         debugPrint(
-            'Funds records: $fundsTotalRecords (Current: $suppliesCurrentCount, History: $suppliesHistoryCount, Items: $itemsHistoryCount)');
+            'Funds records: $fundsTotalRecords (Current: $suppliesCurrentCount, History: $suppliesHistoryCount, Audit: $fundsAuditCount, Items: $itemsHistoryCount)');
       }
 
       // ============ showEmployee ============
@@ -1073,6 +1078,15 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
                             visible: empSetup.showFunds,
                             width: pw(550),
                             child: readDataSuppliesHistory(),
+                            color: _isDarkMode
+                                ? const Color(0xFF3B2F12)
+                                : cFundsInFundsOut,
+                          ),
+                        if (empSetup.showFunds)
+                          animatedPanel(
+                            visible: empSetup.showFunds,
+                            width: pw(550),
+                            child: readDataFundsAudit(),
                             color: _isDarkMode
                                 ? const Color(0xFF3B2F12)
                                 : cFundsInFundsOut,

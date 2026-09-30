@@ -519,7 +519,17 @@ Widget readDataGCashPending() {
                                           label: 'Complete',
                                           onPressed: () async {
                                             try {
-                                              // For Cash-In/Load: Normal flow - move to done immediately
+                                              // For Cash-In/Load: Record supplies BEFORE moving to done
+                                              await recordGCashPaymentAtomicTransaction(
+                                                context,
+                                                gRepo.getModel()!,
+                                                gRepo.itemName,
+                                                gRepo.customerAmount,
+                                                gRepo.customerName,
+                                                gRepo.remarks,
+                                              );
+
+                                              // Then move to done
                                               gRepo.gCashStatus = 1.0;
                                               await moveToNext(gRepo.docId);
 

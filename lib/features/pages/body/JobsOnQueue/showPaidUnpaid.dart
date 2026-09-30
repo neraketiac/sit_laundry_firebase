@@ -169,11 +169,14 @@ void showPaidUnpaid(BuildContext context, JobModelRepository jobRepo) {
                 .trim();
 
             // Record supplies WITHOUT modifying requestForAdmin (managed in steps 2 & 5)
+            // Also records to SuppliesHist_Audit atomically in Primary DB
             await recordCashPaymentSuppliesOnly(
               context,
               jobRepo,
               delta,
               cleanRemarks,
+              FirebaseFirestore.instance,
+              'SuppliesHist_Audit',
             );
             debugPrint('Step 3: Supplies recorded successfully');
           } catch (e) {

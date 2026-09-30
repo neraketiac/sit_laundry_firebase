@@ -80,8 +80,14 @@ void showJobOnQueue(BuildContext context, JobModelRepository jobRepo) async {
       // Step 3: Record to SuppliesHist/Curr
       try {
         // Record supplies WITHOUT modifying requestForAdmin (managed in steps 2 & 5)
+        // Also records to SuppliesHist_Audit atomically in Primary DB
         await recordCashPaymentSuppliesOnly(
-            context, jobRepo, jobRepo.paidCashAmount, jobRepo.remarks);
+            context,
+            jobRepo,
+            jobRepo.paidCashAmount,
+            jobRepo.remarks,
+            FirebaseFirestore.instance,
+            'SuppliesHist_Audit');
         debugPrint('Step 3: Supplies recorded successfully');
 
         if (context.mounted) {
