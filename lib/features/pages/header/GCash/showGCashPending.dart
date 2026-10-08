@@ -190,6 +190,10 @@ void showGCashPending(BuildContext context) async {
     final initialModel = gRepo.getModel()!;
     final gcashFirestore = FirebaseService.gcashPendingDoneFirestore;
 
+    // Store audit docIds to update after supplies insert
+    String mainAuditDocId = '';
+    String feeAuditDocId = '';
+
     try {
       await gcashFirestore.runTransaction((tx) async {
         // Generate doc ID
@@ -204,14 +208,15 @@ void showGCashPending(BuildContext context) async {
         // Step 1b: Create audit record ONLY for Cash-In and Load (NOT for Cash-Out)
         // Cash-Out audit will be created later when supplies records are generated
         if (!isCashOut) {
-          final auditDocId =
+          mainAuditDocId =
               'audit_${gcashRef.id}_${DateTime.now().millisecondsSinceEpoch}';
-          final auditRef =
-              gcashFirestore.collection('SuppliesHist_Audit').doc(auditDocId);
+          final auditRef = gcashFirestore
+              .collection('SuppliesHist_Audit')
+              .doc(mainAuditDocId);
 
           // Create SuppliesModelHist for audit
           final auditSMH = SuppliesModelHist(
-            docId: auditDocId,
+            docId: mainAuditDocId,
             countId: 0,
             itemId: gRepo.itemId,
             itemUniqueId: gRepo.itemUniqueId,
@@ -223,11 +228,12 @@ void showGCashPending(BuildContext context) async {
             customerId: 0,
             customerName: gRepo.customerName,
             remarks: 'GCash ${gRepo.itemName} ${gRepo.remarks}',
+            backend_tag: 'Y',
           );
 
           tx.set(auditRef, auditSMH.toJson());
           debugPrint(
-              '📝 ATOMIC: Inserted SuppliesHist_Audit with docId: $auditDocId');
+              '📝 ATOMIC: Inserted SuppliesHist_Audit with docId: $mainAuditDocId (backend_tag=Y)');
 
           // Step 1c: Create fee audit record in same transaction (if fee exists and not staff selected)
           final staffSelected = isStaffSelected();
@@ -235,7 +241,7 @@ void showGCashPending(BuildContext context) async {
             final fee =
                 int.tryParse(feeController.text.replaceAll(',', '')) ?? 0;
             if (fee >= 0) {
-              final feeAuditDocId =
+              feeAuditDocId =
                   'audit_${gcashRef.id}_fee_${DateTime.now().millisecondsSinceEpoch}';
               final feeAuditRef = gcashFirestore
                   .collection('SuppliesHist_Audit')
@@ -254,11 +260,12 @@ void showGCashPending(BuildContext context) async {
                 customerId: 0,
                 customerName: gRepo.customerName,
                 remarks: gRepo.remarksVar.text,
+                backend_tag: 'Y',
               );
 
               tx.set(feeAuditRef, feeAuditSMH.toJson());
               debugPrint(
-                  '📝 ATOMIC: Inserted SuppliesHist_Audit for fee with docId: $feeAuditDocId (₱$fee)');
+                  '📝 ATOMIC: Inserted SuppliesHist_Audit for fee with docId: $feeAuditDocId (backend_tag=Y, ₱$fee)');
             }
           }
         } else {
@@ -414,6 +421,21 @@ void showGCashPending(BuildContext context) async {
           gRepo.failedInsertSupplies = false;
           await databaseGCashPending.updateBool(gRepo.getModel()!);
 
+          // Step 3b: Update main audit backend_tag to 'N' after successful supplies insert
+          if (mainAuditDocId.isNotEmpty) {
+            try {
+              await gcashFirestore
+                  .collection('SuppliesHist_Audit')
+                  .doc(mainAuditDocId)
+                  .update({'BackendTag': 'N'});
+              debugPrint(
+                  '✅ Main audit backend_tag updated to N after supplies insert');
+            } catch (e) {
+              debugPrint(
+                  '⚠️ WARNING: Failed to update main audit backend_tag: $e');
+            }
+          }
+
           if (context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
@@ -470,6 +492,21 @@ void showGCashPending(BuildContext context) async {
 
           // Record fee to SuppliesHist/Curr (audit was already created in Step 1c)
           await DatabaseSuppliesCurrent().addSuppliesCurr(feeSMH);
+
+          // Step 4: After successful supplies insert, update fee audit backend_tag to 'N'
+          if (feeAuditDocId.isNotEmpty) {
+            try {
+              await gcashFirestore
+                  .collection('SuppliesHist_Audit')
+                  .doc(feeAuditDocId)
+                  .update({'BackendTag': 'N'});
+              debugPrint(
+                  '✅ Fee audit backend_tag updated to N after supplies insert');
+            } catch (e) {
+              debugPrint(
+                  '⚠️ WARNING: Failed to update fee audit backend_tag: $e');
+            }
+          }
         }
       } else {
         // skipSuppliesThisSave is true, so no supplies insertion needed

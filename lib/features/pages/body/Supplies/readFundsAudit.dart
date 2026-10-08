@@ -17,6 +17,10 @@ Widget _buildAuditRow(SuppliesModelHist sMH) {
   // Determine if this is Funds In transaction
   final isFundsIn = sMH.itemUniqueId == 4403;
 
+  // Determine if backend_tag is 'Y' (red highlight)
+  final isBackendTagY = sMH.backend_tag == 'Y';
+  final textColor = isBackendTagY ? Colors.red : Color(0xFF263238);
+
   if (ifMenuUniqueIsEOD(sMH)) {
     // Determine if fund check was done in morning (before 12nn) or afternoon
     final logTime = sMH.logDate.toDate();
@@ -66,10 +70,10 @@ Widget _buildAuditRow(SuppliesModelHist sMH) {
                   child: Text(
                     "${sMH.itemName} by ${sMH.empId}",
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF263238),
+                      color: textColor,
                     ),
                   ),
                 ),
@@ -161,10 +165,10 @@ Widget _buildAuditRow(SuppliesModelHist sMH) {
                 child: Text(
                   "${sMH.itemName} ${ifMenuUniqueIsCashIn(sMH) ? 'to' : 'by'} ${sMH.customerName}",
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF263238),
+                    color: textColor,
                   ),
                 ),
               ),
@@ -173,7 +177,7 @@ Widget _buildAuditRow(SuppliesModelHist sMH) {
                 style: TextStyle(
                     fontSize: 8,
                     fontWeight: FontWeight.w600,
-                    color: Colors.grey[800]),
+                    color: isBackendTagY ? Colors.red : Colors.grey[800]),
               ),
               Text(
                 "pCF ₱${value.format(sMH.currentStocks)}",
@@ -215,10 +219,10 @@ Widget _buildAuditRow(SuppliesModelHist sMH) {
                 child: Text(
                   "${sMH.itemName} ${ifMenuUniqueIsCashIn(sMH) ? 'to' : 'by'} ${sMH.customerName}",
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF263238),
+                    color: textColor,
                   ),
                 ),
               ),

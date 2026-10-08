@@ -14,6 +14,8 @@ class SuppliesModelHist {
   String customerName;
   String remarks;
   int? expenseAmount;
+  String
+      backend_tag; // 'Y' for new records created by backend, 'N' for old data or missing
 
   SuppliesModelHist({
     required this.docId,
@@ -29,6 +31,7 @@ class SuppliesModelHist {
     required this.customerName,
     required this.remarks,
     this.expenseAmount,
+    this.backend_tag = 'Y', // Default to 'Y' for new records
   });
 
   SuppliesModelHist.fromJson(Map<String, dynamic> json)
@@ -46,6 +49,8 @@ class SuppliesModelHist {
           customerName: json['CustomerName']! as String,
           remarks: json['Remarks']! as String,
           expenseAmount: json['ExpenseAmount'] as int?,
+          backend_tag: (json['BackendTag'] as String?) ??
+              'N', // Default to 'N' for old data
         );
 
   SuppliesModelHist copyWith({
@@ -62,6 +67,7 @@ class SuppliesModelHist {
     String? customerName,
     String? remarks,
     int? expenseAmount,
+    String? backend_tag,
   }) {
     return SuppliesModelHist(
       docId: docId ?? this.docId,
@@ -77,6 +83,7 @@ class SuppliesModelHist {
       customerName: customerName ?? this.customerName,
       remarks: remarks ?? this.remarks,
       expenseAmount: expenseAmount ?? this.expenseAmount,
+      backend_tag: backend_tag ?? this.backend_tag,
     );
   }
 
@@ -94,5 +101,6 @@ class SuppliesModelHist {
         'CustomerName': customerName,
         'Remarks': remarks,
         'ExpenseAmount': expenseAmount ?? 0,
+        'BackendTag': backend_tag,
       };
 }

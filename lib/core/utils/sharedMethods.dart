@@ -863,21 +863,27 @@ Future<void> recordCashPaymentSuppliesOnly(
       customerName: jobRepo.customerName,
       remarks: 'auto via paid $suppliersRemarks',
       expenseAmount: 0,
+      backend_tag: 'Y',
     );
+
+    // Store audit docId to update after supplies insert
+    String auditDocId = '';
 
     // If jobDatabase and jobCollectionRef provided, record to SuppliesHist_Audit atomically
     if (jobDatabase != null && jobCollectionRef != null) {
       debugPrint('Recording to SuppliesHist_Audit in job database');
       await jobDatabase.runTransaction((tx) async {
         // Insert to SuppliesHist_Audit in job database (atomic)
-        final docId =
+        auditDocId =
             'audit_${jobRepo.docId}_${DateTime.now().millisecondsSinceEpoch}';
-        final auditRef = jobDatabase.collection(jobCollectionRef).doc(docId);
+        final auditRef =
+            jobDatabase.collection(jobCollectionRef).doc(auditDocId);
 
+        sMH.docId = auditDocId;
         debugPrint('Setting SuppliesHist_Audit document: ${auditRef.path}');
         debugPrint('Document data: ${sMH.toJson()}');
         tx.set(auditRef, sMH.toJson());
-        debugPrint('SuppliesHist_Audit tx.set() called');
+        debugPrint('SuppliesHist_Audit tx.set() called with backend_tag=Y');
       }).catchError((error) {
         debugPrint('Transaction error: $error');
         throw error;
@@ -887,6 +893,22 @@ Future<void> recordCashPaymentSuppliesOnly(
     // Call directly without going through setSuppliesRepository which overwrites fields
     // This writes to the central Supplies DB (separate, not atomic)
     await callDatabaseSuppliesCurrentAdd(sMH);
+
+    // Step 3: After successful supplies insert, update audit backend_tag to 'N'
+    if (auditDocId.isNotEmpty &&
+        jobDatabase != null &&
+        jobCollectionRef != null) {
+      try {
+        await jobDatabase
+            .collection(jobCollectionRef)
+            .doc(auditDocId)
+            .update({'BackendTag': 'N'});
+        debugPrint(
+            '✅ Audit backend_tag updated to N after supplies insert: $auditDocId');
+      } catch (e) {
+        debugPrint('⚠️ WARNING: Failed to update audit backend_tag: $e');
+      }
+    }
 
     // Success - show snackbar
     if (context.mounted) {
