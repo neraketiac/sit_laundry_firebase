@@ -228,6 +228,39 @@ void showGCashPending(BuildContext context) async {
           tx.set(auditRef, auditSMH.toJson());
           debugPrint(
               '📝 ATOMIC: Inserted SuppliesHist_Audit with docId: $auditDocId');
+
+          // Step 1c: Create fee audit record in same transaction (if fee exists and not staff selected)
+          final staffSelected = isStaffSelected();
+          if (!staffSelected) {
+            final fee =
+                int.tryParse(feeController.text.replaceAll(',', '')) ?? 0;
+            if (fee >= 0) {
+              final feeAuditDocId =
+                  'audit_${gcashRef.id}_fee_${DateTime.now().millisecondsSinceEpoch}';
+              final feeAuditRef = gcashFirestore
+                  .collection('SuppliesHist_Audit')
+                  .doc(feeAuditDocId);
+
+              final feeAuditSMH = SuppliesModelHist(
+                docId: feeAuditDocId,
+                countId: 0,
+                itemId: menuOthCashInOutFunds,
+                itemUniqueId: menuOthUniqIdFee,
+                itemName: 'Gcash Fee',
+                currentCounter: fee,
+                currentStocks: 0,
+                logDate: gRepo.logDate,
+                empId: gRepo.logBy,
+                customerId: 0,
+                customerName: gRepo.customerName,
+                remarks: gRepo.remarksVar.text,
+              );
+
+              tx.set(feeAuditRef, feeAuditSMH.toJson());
+              debugPrint(
+                  '📝 ATOMIC: Inserted SuppliesHist_Audit for fee with docId: $feeAuditDocId (₱$fee)');
+            }
+          }
         } else {
           debugPrint(
               '⏭️ SKIPPED: Cash-Out audit will be created when supplies records are generated');
@@ -415,7 +448,7 @@ void showGCashPending(BuildContext context) async {
           }
         }
 
-        // Fee record (only if main recording succeeded and NOT staff selected)
+        // Fee record to SuppliesHist/Curr (only if main recording succeeded and NOT staff selected)
         // Staff selections should never have fees recorded in SuppliesHist/Curr
         // Record fee even if it's 0
         final fee = int.tryParse(feeController.text.replaceAll(',', '')) ?? 0;
@@ -435,26 +468,8 @@ void showGCashPending(BuildContext context) async {
             remarks: gRepo.remarksVar.text,
           );
 
-          // Record fee to SuppliesHist/Curr
+          // Record fee to SuppliesHist/Curr (audit was already created in Step 1c)
           await DatabaseSuppliesCurrent().addSuppliesCurr(feeSMH);
-
-          // Also create audit record for fee in GCash database
-          try {
-            final gcashFirestore = FirebaseService.gcashPendingDoneFirestore;
-            final feeAuditDocId =
-                'audit_${gRepo.docId}_fee_${DateTime.now().millisecondsSinceEpoch}';
-            final feeAuditRef = gcashFirestore
-                .collection('SuppliesHist_Audit')
-                .doc(feeAuditDocId);
-
-            feeSMH.docId = feeAuditDocId;
-            await feeAuditRef.set(feeSMH.toJson());
-            debugPrint(
-                '📝 AUDIT: Inserted SuppliesHist_Audit for fee with docId: $feeAuditDocId');
-          } catch (e) {
-            debugPrint('⚠️ WARNING: Failed to create fee audit record: $e');
-            // Don't fail the entire process if audit fails
-          }
         }
       } else {
         // skipSuppliesThisSave is true, so no supplies insertion needed
