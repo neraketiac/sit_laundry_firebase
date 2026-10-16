@@ -224,9 +224,15 @@ class DatabaseJobsDone {
   late final CollectionReference<Map<String, dynamic>> _ref =
       _firestore.collection(JOBS_DONE_REF);
 
-  /// 🔄 Stream completed jobs
+  /// 🔄 Stream completed jobs (filtered to July 2026 onwards)
   Stream<List<JobModel>> streamAll() {
-    return _ref.orderBy('A05_DateD', descending: true).snapshots().map(
+    final julyFirst2026 = Timestamp.fromDate(DateTime(2026, 7, 1));
+
+    return _ref
+        .where('A05_DateD', isGreaterThanOrEqualTo: julyFirst2026)
+        .orderBy('A05_DateD', descending: true)
+        .snapshots()
+        .map(
           (s) => s.docs.map((d) => JobModel.fromJson(d.data())).toList(),
         );
   }

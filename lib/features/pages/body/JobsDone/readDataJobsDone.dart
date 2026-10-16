@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:laundry_firebase/features/jobs/models/jobmodel.dart';
 import 'package:laundry_firebase/features/pages/body/JobsCompleted/readDataJobsCompleted.dart';
 import 'package:laundry_firebase/features/pages/body/JobsDone/showDeliverOrCustomerPickup.dart';
@@ -22,10 +21,22 @@ import 'package:laundry_firebase/features/customers/repository/customer_reposito
 Widget readDataJobsDone(VoidCallback dialogSetState) {
   DatabaseJobsDone databaseJobsDone = DatabaseJobsDone();
 
+  // Filter: Only include jobs from July 2026 onwards
+  bool _isJobInJuly2026OrLater(JobModel job) {
+    try {
+      final jobDate = job.dateD.toDate();
+      final julyFirst2026 = DateTime(2026, 7, 1);
+      return jobDate.isAtSameMomentAs(julyFirst2026) ||
+          jobDate.isAfter(julyFirst2026);
+    } catch (e) {
+      return false;
+    }
+  }
+
   Future<void> sortOriginal(BuildContext context) async {
     sortedJobsDone
       ..clear()
-      ..addAll(originalJobsDone);
+      ..addAll(originalJobsDone.where(_isJobInJuly2026OrLater));
 
     selectedCustomerIdCompleted = 0;
     selectedPickDate = null;
@@ -48,9 +59,12 @@ Widget readDataJobsDone(VoidCallback dialogSetState) {
           originalJobsDone.where((job) {
             final d = job.dateD.toDate();
 
-            return d.year == selectedDay.year &&
+            final isInJuly2026Plus = _isJobInJuly2026OrLater(job);
+            final isSameDay = d.year == selectedDay.year &&
                 d.month == selectedDay.month &&
                 d.day == selectedDay.day;
+
+            return isInJuly2026Plus && isSameDay;
           }),
         );
 
@@ -164,6 +178,7 @@ Widget readDataJobsDone(VoidCallback dialogSetState) {
       ..addAll(
         originalJobsDone.where(
           (job) =>
+              _isJobInJuly2026OrLater(job) &&
               job.unpaid &&
               job.paidGCash &&
               (job.isCustomerPickedUp || job.isDeliveredToCustomer) &&
@@ -210,7 +225,9 @@ Widget readDataJobsDone(VoidCallback dialogSetState) {
                   ..clear()
                   ..addAll(
                     originalJobsDone.where(
-                      (job) => job.customerId == jobRepox.selectedCustomerId,
+                      (job) =>
+                          _isJobInJuly2026OrLater(job) &&
+                          job.customerId == jobRepox.selectedCustomerId,
                     ),
                   );
 
@@ -294,7 +311,7 @@ Widget readDataJobsDone(VoidCallback dialogSetState) {
       if (originalJobsDone.length != snapshot.data!.length) {
         originalJobsDone
           ..clear()
-          ..addAll(snapshot.data!);
+          ..addAll(snapshot.data!.where(_isJobInJuly2026OrLater));
         FsUsageTracker.instance
             .track('readDataJobsDone', snapshot.data!.length);
 
@@ -307,6 +324,7 @@ Widget readDataJobsDone(VoidCallback dialogSetState) {
           ..addAll(
             originalJobsDone.where(
               (job) =>
+                  _isJobInJuly2026OrLater(job) &&
                   job.unpaid &&
                   !job.paidGCash &&
                   (job.isCustomerPickedUp || job.isDeliveredToCustomer),
@@ -318,6 +336,7 @@ Widget readDataJobsDone(VoidCallback dialogSetState) {
           ..addAll(
             originalJobsDone.where(
               (job) =>
+                  _isJobInJuly2026OrLater(job) &&
                   job.unpaid &&
                   job.paidGCash &&
                   (job.isCustomerPickedUp || job.isDeliveredToCustomer),
@@ -328,7 +347,10 @@ Widget readDataJobsDone(VoidCallback dialogSetState) {
           ..clear()
           ..addAll(
             originalJobsDone.where(
-              (job) => !job.isCustomerPickedUp && !job.isDeliveredToCustomer,
+              (job) =>
+                  _isJobInJuly2026OrLater(job) &&
+                  !job.isCustomerPickedUp &&
+                  !job.isDeliveredToCustomer,
             ),
           );
 
@@ -337,6 +359,7 @@ Widget readDataJobsDone(VoidCallback dialogSetState) {
           ..addAll(
             originalJobsDone.where(
               (job) =>
+                  _isJobInJuly2026OrLater(job) &&
                   job.riderPickup &&
                   !job.isCustomerPickedUp &&
                   !job.isDeliveredToCustomer,
@@ -351,7 +374,8 @@ Widget readDataJobsDone(VoidCallback dialogSetState) {
         sortedJobsDoneAdminRequest
           ..clear()
           ..addAll(
-            originalJobsDone.where((job) => job.requestForAdmin),
+            originalJobsDone.where(
+                (job) => _isJobInJuly2026OrLater(job) && job.requestForAdmin),
           );
         intJobsDoneAdminRequest = sortedJobsDoneAdminRequest.length;
       }
