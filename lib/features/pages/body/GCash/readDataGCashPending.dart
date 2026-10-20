@@ -519,15 +519,8 @@ Widget readDataGCashPending() {
                                           label: 'Complete',
                                           onPressed: () async {
                                             try {
-                                              // For Cash-In/Load: Record supplies BEFORE moving to done
-                                              await recordGCashPaymentAtomicTransaction(
-                                                context,
-                                                gRepo.getModel()!,
-                                                gRepo.itemName,
-                                                gRepo.customerAmount,
-                                                gRepo.customerName,
-                                                gRepo.remarks,
-                                              );
+                                              // For Cash-In/Load: Supplies already recorded in showGCashPending
+                                              // Just move to done without duplicate recording
 
                                               // Then move to done
                                               gRepo.gCashStatus = 1.0;

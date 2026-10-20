@@ -146,6 +146,8 @@ void putEntries() {
   remarksSuppliesVar.text = "";
 }
 
+//** add new employess, add in nameMap, mapEmpId, mapEmpIdRates and add in employee setup manually firestore*/
+
 const Map<String, String> nameMap = {
   'rowell': 'Rowell',
   'ella': 'Ella',
@@ -179,6 +181,8 @@ const Map<String, String> mapEmpId = {
 const Map<String, int> mapEmpIdRates = {
   '#0707': 400,
   '#0808': 400,
+  '#5858': 400,
+  '#7878': 400,
   '#2929': 400,
   '#151515': 400,
   '#121212': 450,
