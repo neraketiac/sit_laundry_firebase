@@ -421,7 +421,163 @@ Widget readDataGCashPending() {
                                           style: TextButton.styleFrom(
                                             foregroundColor: Colors.red,
                                           ),
-                                          child: const Text('Delete'),
+                                          child: const Text(
+                                              'Delete, no Funds Out'),
+                                        ),
+                                      // Delete with Funds Out - records the funds out in SuppliesHist/Curr
+                                      if (isAdmin && gRepo.gCashStatus <= 0.5)
+                                        TextButton(
+                                          onPressed: () async {
+                                            final confirmDelete =
+                                                await showDialog<bool>(
+                                              context: context,
+                                              builder: (context) {
+                                                return AlertDialog(
+                                                  title: const Text(
+                                                    'Delete with Funds Out',
+                                                    style:
+                                                        TextStyle(fontSize: 14),
+                                                  ),
+                                                  content: Text(
+                                                    'Delete this GCash record and record funds out?\nThis action cannot be undone.',
+                                                    style:
+                                                        TextStyle(fontSize: 12),
+                                                  ),
+                                                  actions: [
+                                                    TextButton(
+                                                      onPressed: () =>
+                                                          Navigator.pop(
+                                                              context, false),
+                                                      child:
+                                                          const Text('Cancel'),
+                                                    ),
+                                                    TextButton(
+                                                      onPressed: () =>
+                                                          Navigator.pop(
+                                                              context, true),
+                                                      style:
+                                                          TextButton.styleFrom(
+                                                        foregroundColor:
+                                                            Colors.red,
+                                                      ),
+                                                      child:
+                                                          const Text('Delete'),
+                                                    ),
+                                                  ],
+                                                );
+                                              },
+                                            );
+
+                                            if (confirmDelete == true &&
+                                                context.mounted) {
+                                              try {
+                                                // Record the funds out in SuppliesHist/Curr
+                                                SuppliesHistRepository.instance
+                                                    .setItemName(getItemNameOnly(
+                                                        menuOthCashInOutFunds,
+                                                        gRepo.itemUniqueId));
+                                                SuppliesHistRepository.instance
+                                                    .setItemId(
+                                                        menuOthCashInOutFunds);
+                                                SuppliesHistRepository.instance
+                                                    .setItemUniqueId(
+                                                        gRepo.itemUniqueId);
+                                                // Negative amount for funds out
+                                                SuppliesHistRepository.instance
+                                                    .setCurrentCounter(
+                                                        -gRepo.customerAmount);
+                                                SuppliesHistRepository.instance
+                                                    .setCustomerName(
+                                                        gRepo.customerName);
+                                                SuppliesHistRepository.instance
+                                                    .setCustomerId(0);
+                                                SuppliesHistRepository.instance
+                                                    .setRemarks(
+                                                        'GCash ${gRepo.itemName} ${gRepo.remarks} [DELETED]');
+                                                await setSuppliesRepository(
+                                                    context);
+
+                                                // If fee was recorded, reverse it
+                                                if (gRepo
+                                                        .recordCashOutFeeInFunds &&
+                                                    gRepo.cashOutFeeAmount >
+                                                        0) {
+                                                  SuppliesHistRepository
+                                                      .instance
+                                                      .reset();
+                                                  SuppliesHistRepository
+                                                      .instance
+                                                      .setItemName('Gcash Fee');
+                                                  SuppliesHistRepository
+                                                      .instance
+                                                      .setItemId(
+                                                          menuOthCashInOutFunds);
+                                                  SuppliesHistRepository
+                                                      .instance
+                                                      .setItemUniqueId(
+                                                          menuOthUniqIdFee);
+                                                  // Negative fee amount to reverse
+                                                  SuppliesHistRepository
+                                                      .instance
+                                                      .setCurrentCounter(-gRepo
+                                                          .cashOutFeeAmount);
+                                                  SuppliesHistRepository
+                                                      .instance
+                                                      .setCustomerName(
+                                                          gRepo.customerName);
+                                                  SuppliesHistRepository
+                                                      .instance
+                                                      .setCustomerId(0);
+                                                  SuppliesHistRepository
+                                                      .instance
+                                                      .setRemarks(
+                                                          'GCash ${gRepo.itemName} ${gRepo.remarks} [DELETED - FEE REVERSAL]');
+                                                  await setSuppliesRepository(
+                                                      context);
+                                                }
+
+                                                // Delete the GCash record
+                                                await dbGCashPending.deleteVoid(
+                                                    gRepo.getModel()!);
+
+                                                if (context.mounted) {
+                                                  ScaffoldMessenger.of(context)
+                                                      .showSnackBar(
+                                                    const SnackBar(
+                                                      content: Text(
+                                                        'GCash record deleted and funds out recorded',
+                                                      ),
+                                                      backgroundColor:
+                                                          Colors.green,
+                                                      duration:
+                                                          Duration(seconds: 2),
+                                                    ),
+                                                  );
+                                                  Navigator.pop(context, true);
+                                                }
+                                              } catch (e) {
+                                                if (context.mounted) {
+                                                  ScaffoldMessenger.of(context)
+                                                      .showSnackBar(
+                                                    SnackBar(
+                                                      content: Text(
+                                                        'Error: $e',
+                                                      ),
+                                                      backgroundColor:
+                                                          Colors.red,
+                                                      duration: const Duration(
+                                                          seconds: 3),
+                                                    ),
+                                                  );
+                                                }
+                                              }
+                                            }
+                                          },
+                                          style: TextButton.styleFrom(
+                                            foregroundColor: Colors.deepOrange,
+                                          ),
+                                          child: const Text(
+                                              'Delete with Funds Out'),
                                         ),
                                       // Revert from 0.85 back to 0.75 for Pending Funds In (admin only)
                                       if (isAdmin &&
