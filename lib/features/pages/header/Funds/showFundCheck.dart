@@ -342,12 +342,51 @@ void showFundCheck(BuildContext context) {
         }
       });
 
-      // Add clothes still here count
+      // Add job status counts
+      // D - Done (all clothes)
+      if (intJobsDoneDefault > 0) {
+        parts.add('D*$intJobsDoneDefault');
+      }
+      // C - Clothes still here
       if (intJobsDoneClothesHere > 0) {
         parts.add('C*$intJobsDoneClothesHere');
       }
+      // GC - GCash pending
+      if (intJobsDoneClothesGoneGCash > 0) {
+        parts.add('GC*$intJobsDoneClothesGoneGCash');
+      }
+      // G - Gone unpaid (cash)
+      if (intJobsDoneClothesGoneCash > 0) {
+        parts.add('G*$intJobsDoneClothesGoneCash');
+      }
+      // A - Admin request
+      if (intJobsDoneAdminRequest > 0) {
+        parts.add('A*$intJobsDoneAdminRequest');
+      }
 
-      return parts.join(',');
+      // Build final string with space separator before job status counts
+      String moneyText = '';
+      List<String> moneyDenom = [];
+      List<String> jobStatus = [];
+
+      for (var part in parts) {
+        if (part.startsWith('D*') ||
+            part.startsWith('C*') ||
+            part.startsWith('GC*') ||
+            part.startsWith('G*') ||
+            part.startsWith('A*')) {
+          jobStatus.add(part);
+        } else {
+          moneyDenom.add(part);
+        }
+      }
+
+      moneyText = moneyDenom.join(',');
+      if (jobStatus.isNotEmpty) {
+        moneyText += ' ' + jobStatus.join(',');
+      }
+
+      return moneyText;
     }
 
     SuppliesHistRepository.instance.setItemName(
