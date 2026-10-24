@@ -342,6 +342,11 @@ void showFundCheck(BuildContext context) {
         }
       });
 
+      // Add clothes still here count
+      if (intJobsDoneClothesHere > 0) {
+        parts.add('C*$intJobsDoneClothesHere');
+      }
+
       return parts.join(',');
     }
 
