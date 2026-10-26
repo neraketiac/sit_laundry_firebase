@@ -405,6 +405,39 @@ void showFundCheck(BuildContext context) {
   showDialog(
     context: context,
     builder: (BuildContext context) {
+      // Helper function to build legend badges
+      Widget _legendBadge(
+          String label, String description, Color bgColor, Color fgColor) {
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(
+            color: bgColor,
+            borderRadius: BorderRadius.circular(6),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  color: fgColor,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 11,
+                ),
+              ),
+              const SizedBox(width: 4),
+              Text(
+                description,
+                style: TextStyle(
+                  color: fgColor,
+                  fontSize: 10,
+                ),
+              ),
+            ],
+          ),
+        );
+      }
+
       return StatefulBuilder(builder: (context, setState) {
         final dialogBg = isDarkMode ? const Color(0xFF0D1117) : cFundsEOD;
         final borderColor =
@@ -431,28 +464,49 @@ void showFundCheck(BuildContext context) {
           insetPadding: s.isTablet
               ? const EdgeInsets.symmetric(horizontal: 80, vertical: 40)
               : const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
-          title: Text.rich(
-            TextSpan(
-              children: [
+          title: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text.rich(
                 TextSpan(
-                  text: "Funds Maintenance\n",
-                  style: TextStyle(
-                    fontSize: s.headline,
-                    fontWeight: FontWeight.bold,
-                    color: textColor,
-                  ),
+                  children: [
+                    TextSpan(
+                      text: "Funds Maintenance\n",
+                      style: TextStyle(
+                        fontSize: s.headline,
+                        fontWeight: FontWeight.bold,
+                        color: textColor,
+                      ),
+                    ),
+                    TextSpan(
+                      text: "Bilangain ang kasalukuyang funds\n",
+                      style: TextStyle(fontSize: s.small, color: textColor),
+                    ),
+                    TextSpan(
+                      text: "tuwing 9am / 12nn / 7pm",
+                      style: TextStyle(fontSize: s.small, color: textColor),
+                    ),
+                  ],
                 ),
-                TextSpan(
-                  text: "Bilangain ang kasalukuyang funds\n",
-                  style: TextStyle(fontSize: s.small, color: textColor),
-                ),
-                TextSpan(
-                  text: "tuwing 9am / 12nn / 7pm",
-                  style: TextStyle(fontSize: s.small, color: textColor),
-                ),
-              ],
-            ),
-            textAlign: TextAlign.center,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 12),
+              // Legend with colored badges
+              Wrap(
+                spacing: 12,
+                runSpacing: 8,
+                children: [
+                  _legendBadge('D', 'Done', Colors.green, Colors.white),
+                  _legendBadge(
+                      'C', 'Clothes here', Colors.amber.shade700, Colors.white),
+                  _legendBadge('GC', 'GCash', Colors.blue, Colors.white),
+                  _legendBadge('G', 'Gone Unpaid', Colors.red, Colors.white),
+                  if (intJobsDoneAdminRequest > 0)
+                    _legendBadge('A', 'Admin', Colors.orange, Colors.white),
+                ],
+              ),
+            ],
           ),
           content: SingleChildScrollView(
             scrollDirection: Axis.vertical,
