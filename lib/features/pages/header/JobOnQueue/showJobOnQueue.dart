@@ -59,6 +59,8 @@ void showJobOnQueue(BuildContext context, JobModelRepository jobRepo) async {
     final insertingMarker =
         '- for job [Job Supplies ${jobRepo.paidCashAmount} ${DateFormat('MMM d hh:mm a').format(DateTime.now())} #${jobRepo.jobModelData.jobId}]';
 
+    // TODO: Payment recording logic hidden for now
+    /*
     if (jobRepo.paidCash && jobRepo.paidCashAmount > 0) {
       // Step 1: Add marker to remarks
       if (!jobRepo.remarks.contains(insertingMarker)) {
@@ -151,6 +153,7 @@ void showJobOnQueue(BuildContext context, JobModelRepository jobRepo) async {
         }
       }
     }
+    */
   }
 
   // Capture dark mode from the calling context BEFORE showDialog opens
@@ -210,8 +213,9 @@ void showJobOnQueue(BuildContext context, JobModelRepository jobRepo) async {
                               context, () => setState(() {}), jobRepo),
                           visAmountOthersOnly(
                               context, () => setState(() {}), jobRepo),
-                          visPaidUnPaid(
-                              context, () => setState(() {}), jobRepo),
+                          // TODO: Payment feature hidden for now
+                          // visPaidUnPaid(
+                          //     context, () => setState(() {}), jobRepo),
                           Text('Other Options',
                               style:
                                   TextStyle(fontSize: 11, color: labelColor)),
