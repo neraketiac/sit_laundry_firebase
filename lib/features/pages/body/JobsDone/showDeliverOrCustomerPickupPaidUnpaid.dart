@@ -155,13 +155,62 @@ void showDeliverOrCustomerPickupPaidUnpaid(
         jobRepo.remarks = jobRepo.selectedRemarksVar.text;
       }
 
-      // Step 2: Set requestForAdmin = true and save job with marker to Firestore
+      // SWAPPED: Step 2 - Record audit FIRST (unless skip is enabled)
+      if (!skipSuppliesThisJob) {
+        final delta = jobRepo.paidCashAmount - previousPaidCash;
+        if (delta > 0) {
+          try {
+            final cleanRemarks = jobRepo.selectedRemarksVar.text
+                .replaceAll(insertingMarker, '')
+                .trim();
+
+            // Record audit FIRST - atomically in Jobs Done DB
+            await recordCashPaymentSuppliesOnly(
+              context,
+              jobRepo,
+              delta,
+              cleanRemarks,
+              FirebaseService.jobsDoneFirestore,
+              'SuppliesHist_Audit',
+            );
+            debugPrint('Step 2: Audit recorded successfully');
+          } catch (e) {
+            debugPrint('Step 2 failed: $e');
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Failed to record audit: $e'),
+                  backgroundColor: Colors.red,
+                  duration: const Duration(seconds: 5),
+                ),
+              );
+            }
+            return;
+          }
+        }
+      } else {
+        // Step 2b: Add skip recording remark if skip is enabled
+        final skipRecordingRemark = 'Skip funds recording by $empIdGlobal';
+        if (!jobRepo.remarks.contains('Skip funds recording')) {
+          jobRepo.selectedRemarksVar.text =
+              '${jobRepo.selectedRemarksVar.text} $skipRecordingRemark'.trim();
+          jobRepo.remarks = jobRepo.selectedRemarksVar.text;
+        }
+      }
+
+      // Step 3: Remove marker from remarks
+      jobRepo.selectedRemarksVar.text = jobRepo.selectedRemarksVar.text
+          .replaceAll(insertingMarker, '')
+          .trim();
+      jobRepo.remarks = jobRepo.selectedRemarksVar.text;
+
+      // Step 4: Set requestForAdmin = true and save job with marker to Firestore
       jobRepo.requestForAdmin = true;
       try {
         await callDatabaseUpdateJob(context, jobRepo.jobModelData);
-        debugPrint('Step 2: Job saved with requestForAdmin=true and marker');
+        debugPrint('Step 4: Job saved with requestForAdmin=true and marker');
       } catch (e) {
-        debugPrint('Step 2 failed: $e');
+        debugPrint('Step 4 failed: $e');
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -172,56 +221,6 @@ void showDeliverOrCustomerPickupPaidUnpaid(
         }
         rethrow;
       }
-
-      // Step 3: Record to SuppliesHist/Curr (unless skip is enabled)
-      if (!skipSuppliesThisJob) {
-        final delta = jobRepo.paidCashAmount - previousPaidCash;
-        if (delta > 0) {
-          try {
-            final cleanRemarks = jobRepo.selectedRemarksVar.text
-                .replaceAll(insertingMarker, '')
-                .trim();
-
-            // Record supplies WITHOUT modifying requestForAdmin (managed in steps 2 & 5)
-            // Also records to SuppliesHist_Audit atomically in Jobs Done DB
-            await recordCashPaymentSuppliesOnly(
-              context,
-              jobRepo,
-              delta,
-              cleanRemarks,
-              FirebaseService.jobsDoneFirestore,
-              'SuppliesHist_Audit',
-            );
-            debugPrint('Step 3: Supplies recorded successfully');
-          } catch (e) {
-            debugPrint('Step 3 failed: $e');
-            if (context.mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Failed to record supplies: $e'),
-                  backgroundColor: Colors.red,
-                  duration: const Duration(seconds: 5),
-                ),
-              );
-            }
-            return;
-          }
-        }
-      } else {
-        // Step 3b: Add skip recording remark if skip is enabled
-        final skipRecordingRemark = 'Skip funds recording by $empIdGlobal';
-        if (!jobRepo.remarks.contains('Skip funds recording')) {
-          jobRepo.selectedRemarksVar.text =
-              '${jobRepo.selectedRemarksVar.text} $skipRecordingRemark'.trim();
-          jobRepo.remarks = jobRepo.selectedRemarksVar.text;
-        }
-      }
-
-      // Step 4: Remove marker from remarks
-      jobRepo.selectedRemarksVar.text = jobRepo.selectedRemarksVar.text
-          .replaceAll(insertingMarker, '')
-          .trim();
-      jobRepo.remarks = jobRepo.selectedRemarksVar.text;
 
       // Step 5: Set requestForAdmin = false and save job without marker to Firestore
       jobRepo.requestForAdmin = false;
