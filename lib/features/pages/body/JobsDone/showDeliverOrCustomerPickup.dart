@@ -12,6 +12,7 @@ import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_alter_job/visR
 
 import 'package:laundry_firebase/features/employees/models/employeemodel.dart';
 import 'package:laundry_firebase/core/services/database_employee_current.dart';
+import 'package:laundry_firebase/core/services/firebase_service.dart';
 
 // ============ HELPER FUNCTION: Create Salary Correction ============
 Future<void> recordSalaryCorrection({
