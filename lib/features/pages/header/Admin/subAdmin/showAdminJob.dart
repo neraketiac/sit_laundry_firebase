@@ -129,6 +129,41 @@ class _AdminJobRepoViewerState extends State<AdminJobRepoViewer> {
     return v.toString();
   }
 
+  /// Format admin remarks audit log for display
+  /// Input: fieldName:(MMDDYYYY HH:MM:SS/person/value)fieldName:(...)...
+  /// Output: Pretty-printed with line breaks and formatting
+  String _formatAdminRemarks(String adminRemarks) {
+    if (adminRemarks.isEmpty) return 'No changes recorded';
+
+    // Parse the compact format and make it readable
+    final buffer = StringBuffer();
+    int i = 0;
+
+    while (i < adminRemarks.length) {
+      // Find field name (ends at ':')
+      int colonIdx = adminRemarks.indexOf(':', i);
+      if (colonIdx == -1) break;
+
+      final fieldName = adminRemarks.substring(i, colonIdx);
+
+      // Find matching parentheses
+      int openParen = adminRemarks.indexOf('(', colonIdx);
+      if (openParen == -1) break;
+
+      int closeParen = adminRemarks.indexOf(')', openParen);
+      if (closeParen == -1) break;
+
+      final entryContent = adminRemarks.substring(openParen + 1, closeParen);
+
+      // Format as readable line
+      buffer.writeln('$fieldName: ($entryContent)');
+
+      i = closeParen + 1;
+    }
+
+    return buffer.toString().trim();
+  }
+
   Widget _buildFieldRow(String label, dynamic repo, dynamic selected) {
     final isMobile = MediaQuery.of(context).size.width < 600;
     return Padding(
@@ -718,6 +753,41 @@ class _AdminJobRepoViewerState extends State<AdminJobRepoViewer> {
               _buildSection("Remarks", [
                 _buildFieldRow(
                     "remarks", jobRepo.remarks, jobRepo.selectedRemarksVar),
+              ]),
+              _buildSection("Admin Remarks (Audit Log)", [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.blue.shade300),
+                    borderRadius: BorderRadius.circular(6),
+                    color: Colors.blue.shade50,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Change History (Read-Only)',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 12),
+                      ),
+                      const SizedBox(height: 8),
+                      if (jobRepo.adminRemarks.isEmpty)
+                        const Text(
+                          'No changes recorded yet',
+                          style: TextStyle(
+                              color: Colors.grey,
+                              fontSize: 12,
+                              fontStyle: FontStyle.italic),
+                        )
+                      else
+                        Text(
+                          _formatAdminRemarks(jobRepo.adminRemarks),
+                          style: const TextStyle(
+                              fontSize: 11, fontFamily: 'monospace'),
+                        ),
+                    ],
+                  ),
+                ),
               ]),
               _buildSection("Items", [
                 Padding(

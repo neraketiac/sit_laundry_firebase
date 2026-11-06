@@ -65,6 +65,7 @@ class JobModelRepository {
       paymentReceivedBy: '',
       gcashReceiptUrl: '',
       remarks: '',
+      adminRemarks: '',
       items: [],
       processStep: '',
       allStatus: 0,
@@ -164,6 +165,7 @@ class JobModelRepository {
   String get paymentReceivedBy => jobModel.paymentReceivedBy;
   String get gcashReceiptUrl => jobModel.gcashReceiptUrl;
   String get remarks => jobModel.remarks;
+  String get adminRemarks => jobModel.adminRemarks;
   List<OtherItemModel> get items => jobModel.items;
   String get processStep => jobModel.processStep;
   double get allStatus => jobModel.allStatus;
@@ -231,6 +233,7 @@ class JobModelRepository {
   bool get requestForAdmin => jobModel.requestForAdmin;
   set requestForAdmin(bool value) => jobModel.requestForAdmin = value;
   set remarks(String value) => jobModel.remarks = value;
+  set adminRemarks(String value) => jobModel.adminRemarks = value;
   set items(List<OtherItemModel> value) => jobModel.items = value;
   set processStep(String value) => jobModel.processStep = value;
   set allStatus(double value) => jobModel.allStatus = value;

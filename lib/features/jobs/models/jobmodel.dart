@@ -103,6 +103,8 @@ class JobModel {
 
   /// 🟣 Remarks
   String remarks;
+  String
+      adminRemarks; // Admin audit log: fieldName: (MMDDYYYY HH:MI:SS/person/value)...
 
   /// 🟢 Items (LIST VERSION 🔥)
   List<OtherItemModel> items;
@@ -261,6 +263,7 @@ class JobModel {
     required this.paymentReceivedBy,
     required this.gcashReceiptUrl,
     required this.remarks,
+    required this.adminRemarks,
     required this.items,
     required this.processStep,
     required this.allStatus,
@@ -318,6 +321,7 @@ class JobModel {
       paymentReceivedBy: '',
       gcashReceiptUrl: '',
       remarks: '',
+      adminRemarks: '',
       items: [],
       processStep: '',
       allStatus: 0,
@@ -376,6 +380,7 @@ class JobModel {
     String? paymentReceivedBy,
     String? gcashReceiptUrl,
     String? remarks,
+    String? adminRemarks,
     List<OtherItemModel>? items,
     String? processStep,
     double? allStatus,
@@ -432,6 +437,7 @@ class JobModel {
       paymentReceivedBy: paymentReceivedBy ?? this.paymentReceivedBy,
       gcashReceiptUrl: gcashReceiptUrl ?? this.gcashReceiptUrl,
       remarks: remarks ?? this.remarks,
+      adminRemarks: adminRemarks ?? this.adminRemarks,
       items: items ?? this.items,
       processStep: processStep ?? this.processStep,
       allStatus: allStatus ?? this.allStatus,
@@ -500,6 +506,7 @@ class JobModel {
         isSyncToDB2: json['Z00_IsSyncToDB2'] ?? false,
         promoErrorCode: json['Z01_PromoErrorCode'] ?? 0,
         requestForAdmin: json['Z02_RequestForAdmin'] ?? false,
+        adminRemarks: json['R03_AdminRemarks'] ?? '',
       );
 
   factory JobModel.fromFirestore(
@@ -543,6 +550,7 @@ class JobModel {
         'Q13_Ebag': ebag,
         'Q14_Sako': sako,
         'R00_Remarks': remarks,
+        'R03_AdminRemarks': adminRemarks,
         'P00_Unpaid': unpaid,
         'P01_PaidCash': paidCash,
         'P02_PaidGCash': paidGCash,

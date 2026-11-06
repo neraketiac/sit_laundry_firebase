@@ -8,6 +8,7 @@ import 'package:laundry_firebase/features/pages/header/Admin/subAdmin/promo_day_
 import 'package:laundry_firebase/features/items/models/suppliesmodelhist.dart';
 import 'package:laundry_firebase/features/items/models/otheritemmodel.dart';
 import 'package:laundry_firebase/core/services/database_supplies_current.dart';
+import 'package:laundry_firebase/core/services/admin_remarks_tracker.dart';
 
 /// 🟦🟦🟦🟦🟦🟦🟦🟦🟦🟦
 /// 🔹 COLLECTION REFERENCES
@@ -99,10 +100,26 @@ class DatabaseJobsQueue {
   }
 
   Future<void> updatePaidUnpaid(JobModel jM) async {
+    // Track changes to admin remarks before updating
+    JobModel? oldJob = await get(jM.docId);
+    if (oldJob != null) {
+      jM.adminRemarks = AdminRemarksTracker.trackChanges(
+        oldJob: oldJob,
+        newJob: jM,
+      );
+    }
     await _ref.doc(jM.docId).update(jM.toJson()).withFsTimeout();
   }
 
   Future<void> update(JobModel jM) async {
+    // Track changes to admin remarks before updating
+    JobModel? oldJob = await get(jM.docId);
+    if (oldJob != null) {
+      jM.adminRemarks = AdminRemarksTracker.trackChanges(
+        oldJob: oldJob,
+        newJob: jM,
+      );
+    }
     await _ref.doc(jM.docId).update(jM.toJson()).withFsTimeout();
   }
 }
@@ -134,6 +151,15 @@ class DatabaseJobsOngoing {
   }
 
   Future<void> update(JobModel jM) async {
+    // Track changes to admin remarks before updating
+    final doc = await _ref.doc(jM.docId).get().withFsTimeout();
+    if (doc.exists && doc.data() != null) {
+      JobModel oldJob = JobModel.fromJson(doc.data()!);
+      jM.adminRemarks = AdminRemarksTracker.trackChanges(
+        oldJob: oldJob,
+        newJob: jM,
+      );
+    }
     await _ref.doc(jM.docId).update(jM.toJson()).withFsTimeout();
   }
 
@@ -238,6 +264,15 @@ class DatabaseJobsDone {
   }
 
   Future<void> update(JobModel jM) async {
+    // Track changes to admin remarks before updating
+    final doc = await _ref.doc(jM.docId).get().withFsTimeout();
+    if (doc.exists && doc.data() != null) {
+      JobModel oldJob = JobModel.fromJson(doc.data()!);
+      jM.adminRemarks = AdminRemarksTracker.trackChanges(
+        oldJob: oldJob,
+        newJob: jM,
+      );
+    }
     jM.isSyncToDB2 = false;
     await _ref
         .doc(jM.docId)
