@@ -14,6 +14,8 @@ import 'package:laundry_firebase/shared/widgets/actions/showUploadedImage.dart';
 import 'package:laundry_firebase/core/utils/fs_usage_tracker.dart';
 import 'package:laundry_firebase/features/items/repository/supplies_hist_repository.dart';
 import 'package:laundry_firebase/core/utils/sharedmethodsdatabase.dart';
+import 'package:laundry_firebase/features/items/models/suppliesmodelhist.dart';
+import 'package:laundry_firebase/core/services/firebase_service.dart';
 
 Widget readDataGCashPending() {
   DatabaseGCashPending dbGCashPending = DatabaseGCashPending();
@@ -162,20 +164,57 @@ Widget readDataGCashPending() {
 
                                 if (payNow == true && context.mounted) {
                                   // Record funds now as regular Funds In/Cash In/Load
+                                  // AUDIT FIRST pattern (like Jobs)
                                   isGcashCredit = false;
 
                                   final insertingMarker =
                                       '- for gcash [GCash Supplies ${gRepo.customerAmount} ${DateFormat('MMM d hh:mm a').format(DateTime.now())}]';
 
                                   try {
-                                    // Step 1: Mark GCash as inserting to supplies (cross-database operation)
+                                    // Step 1: Record AUDIT FIRST in GCash database
+                                    final gcashFirestore = FirebaseService
+                                        .gcashPendingDoneFirestore;
+                                    String auditDocId = '';
+
+                                    await gcashFirestore
+                                        .runTransaction((tx) async {
+                                      // Create audit record FIRST
+                                      auditDocId =
+                                          'audit_${gRepo.docId}_${DateTime.now().millisecondsSinceEpoch}';
+                                      final auditRef = gcashFirestore
+                                          .collection('SuppliesHist_Audit')
+                                          .doc(auditDocId);
+
+                                      final auditSMH = SuppliesModelHist(
+                                        docId: auditDocId,
+                                        countId: 0,
+                                        itemId: menuOthCashInOutFunds,
+                                        itemUniqueId: gRepo.itemUniqueId,
+                                        itemName: gRepo.itemName,
+                                        currentCounter: gRepo.customerAmount,
+                                        currentStocks: 0,
+                                        logDate: Timestamp.now(),
+                                        empId: empIdGlobal,
+                                        customerId: 0,
+                                        customerName: gRepo.customerName,
+                                        remarks:
+                                            'GCash ${gRepo.itemName} ${gRepo.remarks}',
+                                        backend_tag: 'Y',
+                                      );
+
+                                      tx.set(auditRef, auditSMH.toJson());
+                                      debugPrint(
+                                          '📝 AUDIT FIRST: Inserted SuppliesHist_Audit with docId: $auditDocId (backend_tag=Y)');
+                                    });
+
+                                    // Step 2: Mark GCash as inserting to supplies (cross-database operation)
                                     gRepo.remarks =
                                         '${gRepo.remarks} $insertingMarker'
                                             .trim();
                                     await DatabaseGCashPending()
                                         .updateVoid(gRepo.getModel()!);
 
-                                    // Step 2: Insert to supplies in DB-B
+                                    // Step 3: Insert to supplies in DB-B
                                     await recordGCashPaymentAtomicTransaction(
                                       context,
                                       gRepo.getModel()!,
@@ -188,12 +227,27 @@ Widget readDataGCashPending() {
                                           .trim(),
                                     );
 
-                                    // Step 3: Remove insertion marker after successful supplies insert
+                                    // Step 4: Remove insertion marker after successful supplies insert
                                     gRepo.remarks = gRepo.remarks
                                         .replaceAll(insertingMarker, '')
                                         .trim();
                                     await DatabaseGCashPending()
                                         .updateVoid(gRepo.getModel()!);
+
+                                    // Step 5: After successful supplies insert, update audit backend_tag to 'N'
+                                    if (auditDocId.isNotEmpty) {
+                                      try {
+                                        await gcashFirestore
+                                            .collection('SuppliesHist_Audit')
+                                            .doc(auditDocId)
+                                            .update({'BackendTag': 'N'});
+                                        debugPrint(
+                                            '✅ Audit backend_tag updated to N after supplies insert: $auditDocId');
+                                      } catch (e) {
+                                        debugPrint(
+                                            '⚠️ WARNING: Failed to update audit backend_tag: $e');
+                                      }
+                                    }
 
                                     if (context.mounted) {
                                       ScaffoldMessenger.of(context)
