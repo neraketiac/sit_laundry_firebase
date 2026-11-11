@@ -292,18 +292,8 @@ Widget readDataGCashPending() {
 
                               // Cash-Out specific flow
                               if (gRepo.itemUniqueId == menuOthUniqIdCashOut) {
-                                // Initial state (0 - 0.75): Admin clicks to show "Pede na I-Bigay ang Cash?"
+                                // Initial state (0 - 0.75): Anyone (admin/staff) can approve to show "Pede na I-Bigay ang Cash?"
                                 if (gRepo.gCashStatus <= 0.75) {
-                                  if (!isAdmin) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text(
-                                            'Only admin can initiate cash-out'),
-                                      ),
-                                    );
-                                    return;
-                                  }
-
                                   if (!context.mounted) return;
                                   final confirmCashOut = await showDialog<bool>(
                                     context: context,
