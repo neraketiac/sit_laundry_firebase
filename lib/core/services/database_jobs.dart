@@ -80,8 +80,14 @@ class DatabaseJobsQueue {
   }
 
   /// 🔄 Stream all queued jobs
+  /// Sorted by: forSorting=false & riderPickup=true first (priority), then by JobId
   Stream<List<JobModel>> streamAll() {
-    return _ref.orderBy('A00_JobId').snapshots().map(
+    return _ref
+        .orderBy('Q00_ForSorting', descending: true)
+        .orderBy('Q01_RiderPickup', descending: true)
+        .orderBy('A00_JobId')
+        .snapshots()
+        .map(
           (s) => s.docs.map((d) => JobModel.fromJson(d.data())).toList(),
         );
   }
