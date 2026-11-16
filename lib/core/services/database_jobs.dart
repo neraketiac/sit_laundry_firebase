@@ -81,15 +81,28 @@ class DatabaseJobsQueue {
 
   /// 🔄 Stream all queued jobs
   /// Sorted by: forSorting=false & riderPickup=true first (priority), then by JobId
+  /// Note: Doing in-memory sort instead of Firestore orderBy to avoid index requirements
   Stream<List<JobModel>> streamAll() {
-    return _ref
-        .orderBy('Q00_ForSorting', descending: true)
-        .orderBy('Q01_RiderPickup', descending: true)
-        .orderBy('A00_JobId')
-        .snapshots()
-        .map(
-          (s) => s.docs.map((d) => JobModel.fromJson(d.data())).toList(),
-        );
+    return _ref.orderBy('A00_JobId').snapshots().map((snapshot) {
+      final jobs =
+          snapshot.docs.map((d) => JobModel.fromJson(d.data())).toList();
+
+      // Sort in-memory: prioritize forSorting=false & riderPickup=true
+      jobs.sort((a, b) {
+        // First, compare forSorting (false comes first when descending)
+        if (a.forSorting != b.forSorting) {
+          return a.forSorting ? 1 : -1;
+        }
+        // Then, compare riderPickup (true comes first when descending)
+        if (a.riderPickup != b.riderPickup) {
+          return a.riderPickup ? -1 : 1;
+        }
+        // Finally, sort by JobId (ascending)
+        return a.jobId.compareTo(b.jobId);
+      });
+
+      return jobs;
+    });
   }
 
   // Stream<QuerySnapshot> getAllJobsOnQueue() {
