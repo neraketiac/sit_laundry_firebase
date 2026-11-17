@@ -5,7 +5,6 @@ import 'package:laundry_firebase/core/constants/sharedConstantsFinal.dart';
 import 'package:laundry_firebase/core/global/variables_all_codes.dart';
 import 'package:laundry_firebase/core/utils/sharedMethods.dart';
 import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_alter_job/visAddBle.dart';
-import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_alter_job/visPaidUnPaid.dart';
 import 'package:laundry_firebase/shared/widgets/jobdisplay/use_to_alter_job/conRemarks.dart';
 import 'package:laundry_firebase/core/utils/sharedmethodsdatabase.dart';
 import 'package:laundry_firebase/features/jobs/repository/jobmodel_repository.dart';
@@ -59,8 +58,9 @@ void showJobOnQueue(BuildContext context, JobModelRepository jobRepo) async {
     final insertingMarker =
         '- for job [Job Supplies ${jobRepo.paidCashAmount} ${DateFormat('MMM d hh:mm a').format(DateTime.now())} #${jobRepo.jobModelData.jobId}]';
 
-    // TODO: Payment recording logic hidden for now
-    /*
+    // Capture old paidCashAmount BEFORE any changes
+    final previousPaidCash = jobRepo.paidCashAmount;
+
     if (jobRepo.paidCash && jobRepo.paidCashAmount > 0) {
       // Step 1: Add marker to remarks
       if (!jobRepo.remarks.contains(insertingMarker)) {
@@ -69,57 +69,62 @@ void showJobOnQueue(BuildContext context, JobModelRepository jobRepo) async {
         jobRepo.remarks = jobRepo.selectedRemarksVar.text;
       }
 
-      // Step 2: Set requestForAdmin = true and save job with marker to Firestore
-      jobRepo.requestForAdmin = true;
-      try {
-        await callDatabaseUpdateJob(context, jobRepo.jobModelData);
-        debugPrint('Step 2: Job saved with requestForAdmin=true and marker');
-      } catch (e) {
-        debugPrint('Step 2 failed: $e');
-        return;
-      }
+      // SWAPPED: Step 2 - Record audit FIRST (before saving job)
+      final delta = jobRepo.paidCashAmount - previousPaidCash;
+      if (delta > 0) {
+        try {
+          final cleanRemarks = jobRepo.selectedRemarksVar.text
+              .replaceAll(insertingMarker, '')
+              .trim();
 
-      // Step 3: Record to SuppliesHist/Curr
-      try {
-        // Record supplies WITHOUT modifying requestForAdmin (managed in steps 2 & 5)
-        // Also records to SuppliesHist_Audit atomically in Primary DB
-        await recordCashPaymentSuppliesOnly(
+          // Record audit FIRST - atomically in Primary DB
+          await recordCashPaymentSuppliesOnly(
             context,
             jobRepo,
-            jobRepo.paidCashAmount,
-            jobRepo.remarks,
+            delta,
+            cleanRemarks,
             FirebaseFirestore.instance,
-            'SuppliesHist_Audit');
-        debugPrint('Step 3: Supplies recorded successfully');
-
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Supplies recorded successfully'),
-              backgroundColor: Colors.green,
-              duration: Duration(seconds: 2),
-            ),
+            'SuppliesHist_Audit',
           );
+          debugPrint('Step 2: Audit recorded successfully');
+        } catch (e) {
+          debugPrint('Step 2 failed: $e');
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Failed to record audit: $e'),
+                backgroundColor: Colors.red,
+                duration: const Duration(seconds: 5),
+              ),
+            );
+          }
+          return;
         }
-      } catch (e) {
-        debugPrint('Step 3 failed: $e');
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Failed to record supplies: $e'),
-              backgroundColor: Colors.red,
-              duration: const Duration(seconds: 5),
-            ),
-          );
-        }
-        return;
       }
 
-      // Step 4: Remove marker from remarks
+      // Step 3: Remove marker from remarks
       jobRepo.selectedRemarksVar.text = jobRepo.selectedRemarksVar.text
           .replaceAll(insertingMarker, '')
           .trim();
       jobRepo.remarks = jobRepo.selectedRemarksVar.text;
+
+      // Step 4: Set requestForAdmin = true and save job with marker to Firestore
+      jobRepo.requestForAdmin = true;
+      try {
+        await callDatabaseUpdateJob(context, jobRepo.jobModelData);
+        debugPrint('Step 4: Job saved with requestForAdmin=true and marker');
+      } catch (e) {
+        debugPrint('Step 4 failed: $e');
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('Failed to update job payment'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        rethrow;
+      }
 
       // Step 5: Set requestForAdmin = false and save job without marker to Firestore
       jobRepo.requestForAdmin = false;
@@ -130,7 +135,7 @@ void showJobOnQueue(BuildContext context, JobModelRepository jobRepo) async {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Job and supplies recorded successfully'),
+              content: Text('Payment recorded successfully'),
               backgroundColor: Colors.green,
               duration: Duration(seconds: 2),
             ),
@@ -153,7 +158,6 @@ void showJobOnQueue(BuildContext context, JobModelRepository jobRepo) async {
         }
       }
     }
-    */
   }
 
   // Capture dark mode from the calling context BEFORE showDialog opens
