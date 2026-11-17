@@ -68,6 +68,18 @@ final promoFree = OtherItemModel(
   logDate: timestamp1900,
 );
 
+final promoFree125 = OtherItemModel(
+  docId: "",
+  itemId: menuOthFree125,
+  itemUniqueId: menuOthFree125,
+  itemGroup: groupOth,
+  itemName: "Free125",
+  itemPrice: -125,
+  stocksAlert: 5,
+  stocksType: "pcs",
+  logDate: timestamp1900,
+);
+
 final reg125ItemModel = OtherItemModel(
   docId: "",
   itemId: menuOth125,
@@ -339,4 +351,5 @@ void addListOthItems() {
   //   logDate: timestamp1900,
   // ));
   if (isAdmin) listOthItems.add(promoFree);
+  if (isAdmin) listOthItems.add(promoFree125);
 }

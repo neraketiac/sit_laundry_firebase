@@ -830,10 +830,92 @@ Future<void> revertLaundryPaymentSuppliesHistory(
   }
 }
 
-/// Atomically update job payment and record supplies using Firestore Transaction
-/// Record cash payment to supplies history and current - WITHOUT modifying requestForAdmin flag
-/// This is used when requestForAdmin is managed externally in 3-step flow
-/// Also records to SuppliesHist_Audit in the same database as the job (atomic transaction)
+/// STEP 1: Create SuppliesModelHist object with all proper fields
+SuppliesModelHist _createSuppliesModel(
+  JobModelRepository jobRepo,
+  int delta,
+  String suppliersRemarks,
+) {
+  return SuppliesModelHist(
+    docId: '',
+    countId: 0,
+    itemId: menuOthCashInOutFunds,
+    itemUniqueId: menuOthLaundryPayment,
+    itemName: getItemNameOnly(menuOthCashInOutFunds, menuOthLaundryPayment),
+    currentCounter: delta,
+    currentStocks: 0,
+    logDate: Timestamp.now(),
+    empId: empIdGlobal,
+    customerId: jobRepo.customerId,
+    customerName: jobRepo.customerName,
+    remarks: 'auto via paid $suppliersRemarks',
+    expenseAmount: 0,
+    backend_tag: 'Y',
+  );
+}
+
+/// STEP 2: Record audit to SuppliesHist_Audit atomically in job database
+/// Returns auditDocId for later backend_tag update
+Future<String> _recordAuditToJobDatabase(
+  SuppliesModelHist sMH,
+  JobModelRepository jobRepo,
+  FirebaseFirestore jobDatabase,
+  String jobCollectionRef,
+) async {
+  String auditDocId = '';
+
+  debugPrint('Recording to SuppliesHist_Audit in job database');
+  await jobDatabase.runTransaction((tx) async {
+    auditDocId =
+        'audit_${jobRepo.docId}_${DateTime.now().millisecondsSinceEpoch}';
+    final auditRef = jobDatabase.collection(jobCollectionRef).doc(auditDocId);
+
+    sMH.docId = auditDocId;
+    debugPrint('Setting SuppliesHist_Audit document: ${auditRef.path}');
+    debugPrint('Document data: ${sMH.toJson()}');
+    tx.set(auditRef, sMH.toJson());
+    debugPrint('SuppliesHist_Audit tx.set() called with backend_tag=Y');
+  }).catchError((error) {
+    debugPrint('Transaction error: $error');
+    throw error;
+  });
+
+  return auditDocId;
+}
+
+/// STEP 3: Record supplies to central Supplies DB (SuppliesHist + SuppliesCurr)
+Future<void> _recordSuppliesToCentralDB(SuppliesModelHist sMH) async {
+  debugPrint('Recording to central Supplies DB (SuppliesHist + SuppliesCurr)');
+  await callDatabaseSuppliesCurrentAdd(sMH);
+}
+
+/// STEP 4: Update audit backend_tag to 'N' after supplies insert succeeds
+Future<void> _updateAuditBackendTag(
+  String auditDocId,
+  FirebaseFirestore jobDatabase,
+  String jobCollectionRef,
+) async {
+  if (auditDocId.isEmpty) return;
+
+  try {
+    await jobDatabase
+        .collection(jobCollectionRef)
+        .doc(auditDocId)
+        .update({'BackendTag': 'N'});
+    debugPrint(
+        '✅ Audit backend_tag updated to N after supplies insert: $auditDocId');
+  } catch (e) {
+    debugPrint('⚠️ WARNING: Failed to update audit backend_tag: $e');
+  }
+}
+
+/// Main caller: Orchestrates all steps for recording cash payment to supplies and audit
+/// Step 1: Create SuppliesModelHist
+/// Step 2: Record to SuppliesHist_Audit (if jobDatabase provided) - ALWAYS recorded
+/// Step 3: Record to central Supplies DB (SuppliesHist + SuppliesCurr) - skipped if skipSupplies=true
+/// Step 4: Update audit backend_tag
+///
+/// [skipSupplies] - If true, skips ONLY Step 3 (supplies recording) but audit is still recorded
 Future<void> recordCashPaymentSuppliesOnly(
   BuildContext context,
   JobModelRepository jobRepo,
@@ -841,6 +923,7 @@ Future<void> recordCashPaymentSuppliesOnly(
   String? cleanRemarks,
   FirebaseFirestore? jobDatabase,
   String? jobCollectionRef,
+  bool skipSupplies = false,
 ]) async {
   if (!jobRepo.paidCash || delta <= 0) return;
 
@@ -848,66 +931,33 @@ Future<void> recordCashPaymentSuppliesOnly(
     // Use cleanRemarks if provided, otherwise use jobRepo.remarks
     final suppliersRemarks = cleanRemarks ?? jobRepo.remarks;
 
-    // Create the SuppliesModelHist with all proper fields
-    final sMH = SuppliesModelHist(
-      docId: '',
-      countId: 0,
-      itemId: menuOthCashInOutFunds,
-      itemUniqueId: menuOthLaundryPayment,
-      itemName: getItemNameOnly(menuOthCashInOutFunds, menuOthLaundryPayment),
-      currentCounter: delta,
-      currentStocks: 0,
-      logDate: Timestamp.now(),
-      empId: empIdGlobal,
-      customerId: jobRepo.customerId,
-      customerName: jobRepo.customerName,
-      remarks: 'auto via paid $suppliersRemarks',
-      expenseAmount: 0,
-      backend_tag: 'Y',
-    );
-
-    // Store audit docId to update after supplies insert
+    // ========== STEP 1: Create SuppliesModelHist ==========
+    final sMH = _createSuppliesModel(jobRepo, delta, suppliersRemarks);
     String auditDocId = '';
 
-    // If jobDatabase and jobCollectionRef provided, record to SuppliesHist_Audit atomically
+    // ========== STEP 2: Record audit to job database ==========
+    // ALWAYS recorded, regardless of skipSupplies flag
     if (jobDatabase != null && jobCollectionRef != null) {
-      debugPrint('Recording to SuppliesHist_Audit in job database');
-      await jobDatabase.runTransaction((tx) async {
-        // Insert to SuppliesHist_Audit in job database (atomic)
-        auditDocId =
-            'audit_${jobRepo.docId}_${DateTime.now().millisecondsSinceEpoch}';
-        final auditRef =
-            jobDatabase.collection(jobCollectionRef).doc(auditDocId);
-
-        sMH.docId = auditDocId;
-        debugPrint('Setting SuppliesHist_Audit document: ${auditRef.path}');
-        debugPrint('Document data: ${sMH.toJson()}');
-        tx.set(auditRef, sMH.toJson());
-        debugPrint('SuppliesHist_Audit tx.set() called with backend_tag=Y');
-      }).catchError((error) {
-        debugPrint('Transaction error: $error');
-        throw error;
-      });
+      auditDocId = await _recordAuditToJobDatabase(
+        sMH,
+        jobRepo,
+        jobDatabase,
+        jobCollectionRef,
+      );
     }
 
-    // Call directly without going through setSuppliesRepository which overwrites fields
-    // This writes to the central Supplies DB (separate, not atomic)
-    await callDatabaseSuppliesCurrentAdd(sMH);
+    // ========== STEP 3: Record supplies to central DB ==========
+    // SKIPPED if skipSupplies=true, but audit (Step 2) is still recorded
+    if (!skipSupplies) {
+      await _recordSuppliesToCentralDB(sMH);
+    } else {
+      debugPrint('⏭️ SKIPPING Step 3: Supplies recording (skipSupplies=true)');
+      debugPrint('✅ But audit was recorded in Step 2');
+    }
 
-    // Step 3: After successful supplies insert, update audit backend_tag to 'N'
-    if (auditDocId.isNotEmpty &&
-        jobDatabase != null &&
-        jobCollectionRef != null) {
-      try {
-        await jobDatabase
-            .collection(jobCollectionRef)
-            .doc(auditDocId)
-            .update({'BackendTag': 'N'});
-        debugPrint(
-            '✅ Audit backend_tag updated to N after supplies insert: $auditDocId');
-      } catch (e) {
-        debugPrint('⚠️ WARNING: Failed to update audit backend_tag: $e');
-      }
+    // ========== STEP 4: Update audit backend_tag ==========
+    if (jobDatabase != null && jobCollectionRef != null) {
+      await _updateAuditBackendTag(auditDocId, jobDatabase, jobCollectionRef);
     }
 
     // Success - show snackbar

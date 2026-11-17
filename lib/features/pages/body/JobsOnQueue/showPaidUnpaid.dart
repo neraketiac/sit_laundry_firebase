@@ -141,41 +141,43 @@ void showPaidUnpaid(BuildContext context, JobModelRepository jobRepo) {
         jobRepo.remarks = jobRepo.selectedRemarksVar.text;
       }
 
-      // SWAPPED: Step 2 - Record audit FIRST (unless skip is enabled)
-      if (!skipSuppliesThisJob) {
-        final delta = jobRepo.paidCashAmount - previousPaidCash;
-        if (delta > 0) {
-          try {
-            final cleanRemarks = jobRepo.selectedRemarksVar.text
-                .replaceAll(insertingMarker, '')
-                .trim();
+      // Step 2: Record audit and supplies (supplies recording can be skipped)
+      final delta = jobRepo.paidCashAmount - previousPaidCash;
+      if (delta > 0) {
+        try {
+          final cleanRemarks = jobRepo.selectedRemarksVar.text
+              .replaceAll(insertingMarker, '')
+              .trim();
 
-            // Record audit FIRST - atomically in Primary DB
-            await recordCashPaymentSuppliesOnly(
-              context,
-              jobRepo,
-              delta,
-              cleanRemarks,
-              FirebaseFirestore.instance,
-              'SuppliesHist_Audit',
+          // Record audit + supplies (audit is always recorded, supplies skipped if skipSuppliesThisJob=true)
+          await recordCashPaymentSuppliesOnly(
+            context,
+            jobRepo,
+            delta,
+            cleanRemarks,
+            FirebaseFirestore.instance,
+            'SuppliesHist_Audit',
+            skipSuppliesThisJob, // Pass skip flag - only skips supplies, not audit
+          );
+          debugPrint(
+              'Step 2: Audit and supplies recorded (skip=$skipSuppliesThisJob)');
+        } catch (e) {
+          debugPrint('Step 2 failed: $e');
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Failed to record: $e'),
+                backgroundColor: Colors.red,
+                duration: const Duration(seconds: 5),
+              ),
             );
-            debugPrint('Step 2: Audit recorded successfully');
-          } catch (e) {
-            debugPrint('Step 2 failed: $e');
-            if (context.mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Failed to record audit: $e'),
-                  backgroundColor: Colors.red,
-                  duration: const Duration(seconds: 5),
-                ),
-              );
-            }
-            return;
           }
+          return;
         }
-      } else {
-        // Step 2b: Add skip recording remark if skip is enabled
+      }
+
+      // Add skip recording remark if skip is enabled
+      if (skipSuppliesThisJob) {
         final skipRecordingRemark = 'Skip funds recording by $empIdGlobal';
         if (!jobRepo.remarks.contains('Skip funds recording')) {
           jobRepo.selectedRemarksVar.text =
