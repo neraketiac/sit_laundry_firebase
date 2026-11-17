@@ -249,6 +249,7 @@ Future<void> moveToNext(String docId,
 }
 
 /// Generate supplies records for Cash-Out after transaction completion
+/// AUDIT FIRST pattern: Create audit → Move Pending→Done → Insert Supplies → Update Audit
 Future<void> _generateCashOutSuppliesRecordsAfterCompletion(
     String docId) async {
   try {
@@ -270,6 +271,46 @@ Future<void> _generateCashOutSuppliesRecordsAfterCompletion(
       return;
     }
 
+    debugPrint(
+        '📝 Generating supplies records for Cash-Out: ${data['CustomerName']} - ₱${data['CustomerAmount']}');
+
+    // ═══════════════════════════════════════════════════════════════════
+    // STEP 1: Create AUDIT FIRST [DB: gcashpendingdoneonly]
+    // ═══════════════════════════════════════════════════════════════════
+    final auditDocId =
+        'audit_${docId}_${DateTime.now().millisecondsSinceEpoch}';
+    final auditRef = firestore.collection('SuppliesHist_Audit').doc(auditDocId);
+
+    final auditSMH = SuppliesModelHist(
+      docId: auditDocId,
+      countId: 0,
+      itemId: menuOthCashInOutFunds,
+      itemUniqueId: menuOthUniqIdCashOut,
+      itemName: 'GCash Cash-Out',
+      currentCounter: -(data['CustomerAmount'] ?? 0), // ← NEGATIVE for Cash-Out
+      currentStocks: 0,
+      logDate: Timestamp.now(),
+      empId: data['LogBy'] ?? '',
+      customerId: 0,
+      customerName: data['CustomerName'] ?? '',
+      remarks: 'GCash ${data['ItemName'] ?? ''} ${data['Remarks'] ?? ''}',
+      backend_tag: 'Y', // ← Mark as "inserting"
+    );
+
+    await auditRef.set(auditSMH.toJson());
+    debugPrint(
+        '📝 STEP 1 - AUDIT FIRST: Created SuppliesHist_Audit [DB: gcashpendingdoneonly] with backend_tag=Y, docId: $auditDocId (Negative: -₱${data['CustomerAmount'] ?? 0})');
+
+    // ═══════════════════════════════════════════════════════════════════
+    // STEP 2: Move Pending → Done (ATOMIC) [DB: gcashpendingdoneonly]
+    // (Already done in moveToNext before this function is called)
+    // ═══════════════════════════════════════════════════════════════════
+    debugPrint(
+        '📝 STEP 2 - MOVE: Already completed in moveToNext [DB: gcashpendingdoneonly] (GCash_pending → GCash_done)');
+
+    // ═══════════════════════════════════════════════════════════════════
+    // STEP 3: Insert SUPPLIES [DB: supplies]
+    // ═══════════════════════════════════════════════════════════════════
     // Use SuppliesHistRepository to properly create the record
     // This ensures all the proper database calls and employee updates happen
     SuppliesHistRepository.instance.reset();
@@ -285,65 +326,37 @@ Future<void> _generateCashOutSuppliesRecordsAfterCompletion(
         .setRemarks('GCash ${data['ItemName'] ?? ''} ${data['Remarks'] ?? ''}');
     SuppliesHistRepository.instance.setLogDate(Timestamp.now());
 
-    debugPrint(
-        '📝 Generating supplies records for Cash-Out: ${data['CustomerName']} - ₱${data['CustomerAmount']}');
-
     // Call the proper database function to add supplies records
     // This applies negation for cash-out and handles all employee updates
     await callDatabaseSuppliesCurrentAdd(
         SuppliesHistRepository.instance.suppliesModelHist!);
 
-    // 🔥 NEW: Create audit record for Cash-Out with NEGATIVE amount
-    final auditDocId =
-        'audit_${docId}_${DateTime.now().millisecondsSinceEpoch}';
-    final auditRef = firestore.collection('SuppliesHist_Audit').doc(auditDocId);
-
-    // Create audit with NEGATIVE amount (same as SuppliesHist)
-    final auditSMH = SuppliesModelHist(
-      docId: auditDocId,
-      countId: 0,
-      itemId: menuOthCashInOutFunds,
-      itemUniqueId: menuOthUniqIdCashOut,
-      itemName: 'GCash Cash-Out',
-      currentCounter: -(data['CustomerAmount'] ?? 0), // ← NEGATIVE for Cash-Out
-      currentStocks: 0,
-      logDate: Timestamp.now(),
-      empId: data['LogBy'] ?? '',
-      customerId: 0,
-      customerName: data['CustomerName'] ?? '',
-      remarks: 'GCash ${data['ItemName'] ?? ''} ${data['Remarks'] ?? ''}',
-    );
-
-    await auditRef.set(auditSMH.toJson());
     debugPrint(
-        '📝 AUDIT: Inserted SuppliesHist_Audit for Cash-Out with docId: $auditDocId (Negative: -₱${data['CustomerAmount'] ?? 0})');
+        '✅ STEP 3 - SUPPLIES INSERTED: [DB: supplies] SuppliesHist + SuppliesCurr created with negative amount');
 
-    // Check if fee should be recorded in Funds In (backward compatible - defaults to false)
+    // ═══════════════════════════════════════════════════════════════════
+    // STEP 4: Update AUDIT backend_tag='Y' → 'N' [DB: gcashpendingdoneonly]
+    // ═══════════════════════════════════════════════════════════════════
+    try {
+      await auditRef.update({'BackendTag': 'N'});
+      debugPrint(
+          '✅ STEP 4 - AUDIT UPDATED: [DB: gcashpendingdoneonly] SuppliesHist_Audit backend_tag updated to N');
+    } catch (e) {
+      debugPrint('⚠️ WARNING: Failed to update main audit backend_tag: $e');
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // STEP 5: Handle FEE (if enabled)
+    // ═══════════════════════════════════════════════════════════════════
     final recordFee = (data['RecordCashOutFeeInFunds'] as bool?) ?? false;
     if (recordFee) {
-      // Use the stored fee amount
       final feeAmount = (data['CashOutFeeAmount'] as int?) ?? 0;
 
       if (feeAmount > 0) {
         try {
           debugPrint('💰 Recording Cash-Out fee in Funds In: ₱$feeAmount');
 
-          SuppliesHistRepository.instance.reset();
-          SuppliesHistRepository.instance.setItemName('Gcash Fee');
-          SuppliesHistRepository.instance.setItemId(menuOthCashInOutFunds);
-          SuppliesHistRepository.instance.setItemUniqueId(menuOthUniqIdFee);
-          SuppliesHistRepository.instance.setCurrentCounter(feeAmount);
-          SuppliesHistRepository.instance
-              .setCustomerName(data['CustomerName'] ?? '');
-          SuppliesHistRepository.instance.setCustomerId(0);
-          SuppliesHistRepository.instance.setRemarks(
-              'GCash ${data['ItemName'] ?? ''} ${data['Remarks'] ?? ''}');
-          SuppliesHistRepository.instance.setLogDate(Timestamp.now());
-
-          await callDatabaseSuppliesCurrentAdd(
-              SuppliesHistRepository.instance.suppliesModelHist!);
-
-          // 🔥 NEW: Create audit record for fee
+          // Step 5a: Create FEE AUDIT FIRST [DB: gcashpendingdoneonly]
           final feeAuditDocId =
               'audit_${docId}_fee_${DateTime.now().millisecondsSinceEpoch}';
           final feeAuditRef =
@@ -362,11 +375,36 @@ Future<void> _generateCashOutSuppliesRecordsAfterCompletion(
             customerId: 0,
             customerName: data['CustomerName'] ?? '',
             remarks: 'GCash ${data['ItemName'] ?? ''} ${data['Remarks'] ?? ''}',
+            backend_tag: 'Y', // ← Mark as "inserting"
           );
 
           await feeAuditRef.set(feeAuditSMH.toJson());
           debugPrint(
-              '📝 AUDIT: Inserted SuppliesHist_Audit for Cash-Out fee with docId: $feeAuditDocId (₱$feeAmount)');
+              '📝 STEP 5a - FEE AUDIT FIRST: [DB: gcashpendingdoneonly] SuppliesHist_Audit created with backend_tag=Y, docId: $feeAuditDocId (₱$feeAmount)');
+
+          // Step 5b: Insert FEE SUPPLIES [DB: supplies]
+          SuppliesHistRepository.instance.reset();
+          SuppliesHistRepository.instance.setItemName('Gcash Fee');
+          SuppliesHistRepository.instance.setItemId(menuOthCashInOutFunds);
+          SuppliesHistRepository.instance.setItemUniqueId(menuOthUniqIdFee);
+          SuppliesHistRepository.instance.setCurrentCounter(feeAmount);
+          SuppliesHistRepository.instance
+              .setCustomerName(data['CustomerName'] ?? '');
+          SuppliesHistRepository.instance.setCustomerId(0);
+          SuppliesHistRepository.instance.setRemarks(
+              'GCash ${data['ItemName'] ?? ''} ${data['Remarks'] ?? ''}');
+          SuppliesHistRepository.instance.setLogDate(Timestamp.now());
+
+          await callDatabaseSuppliesCurrentAdd(
+              SuppliesHistRepository.instance.suppliesModelHist!);
+
+          debugPrint(
+              '✅ STEP 5b - FEE SUPPLIES INSERTED: [DB: supplies] SuppliesCurr created (₱$feeAmount)');
+
+          // Step 5c: Update FEE AUDIT backend_tag='Y' → 'N' [DB: gcashpendingdoneonly]
+          await feeAuditRef.update({'BackendTag': 'N'});
+          debugPrint(
+              '✅ STEP 5c - FEE AUDIT UPDATED: [DB: gcashpendingdoneonly] SuppliesHist_Audit backend_tag updated to N');
 
           debugPrint('✅ Cash-Out fee (₱$feeAmount) recorded successfully');
         } catch (e) {
