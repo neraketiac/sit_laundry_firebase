@@ -163,7 +163,7 @@ Widget _buildAuditRow(SuppliesModelHist sMH) {
               const SizedBox(width: 4),
               Expanded(
                 child: Text(
-                  "${sMH.itemName} ${ifMenuUniqueIsCashIn(sMH) ? 'to' : 'by'} ${sMH.customerName}",
+                  "${sMH.itemName} : ${ifMenuUniqueIsCashIn(sMH) ? 'to' : 'by'} ${sMH.customerName} : ${sMH.remarks}",
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     fontSize: 10,
@@ -217,7 +217,7 @@ Widget _buildAuditRow(SuppliesModelHist sMH) {
               const SizedBox(width: 4),
               Expanded(
                 child: Text(
-                  "${sMH.itemName} ${ifMenuUniqueIsCashIn(sMH) ? 'to' : 'by'} ${sMH.customerName}",
+                  "${sMH.itemName} : ${ifMenuUniqueIsCashIn(sMH) ? 'to' : 'by'} ${sMH.customerName} : ${sMH.remarks}",
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     fontSize: 10,
