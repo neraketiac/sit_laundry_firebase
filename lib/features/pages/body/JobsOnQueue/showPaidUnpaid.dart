@@ -141,6 +141,16 @@ void showPaidUnpaid(BuildContext context, JobModelRepository jobRepo) {
         jobRepo.remarks = jobRepo.selectedRemarksVar.text;
       }
 
+      // Step 1b: Add skip recording remark if skip is enabled (before audit recording)
+      if (skipSuppliesThisJob) {
+        final skipRecordingRemark = 'Skip funds recording by $empIdGlobal';
+        if (!jobRepo.remarks.contains('Skip funds recording')) {
+          jobRepo.selectedRemarksVar.text =
+              '${jobRepo.selectedRemarksVar.text} $skipRecordingRemark'.trim();
+          jobRepo.remarks = jobRepo.selectedRemarksVar.text;
+        }
+      }
+
       // Step 2: Record audit and supplies (supplies recording can be skipped)
       final delta = jobRepo.paidCashAmount - previousPaidCash;
       if (delta > 0) {
@@ -173,16 +183,6 @@ void showPaidUnpaid(BuildContext context, JobModelRepository jobRepo) {
             );
           }
           return;
-        }
-      }
-
-      // Add skip recording remark if skip is enabled
-      if (skipSuppliesThisJob) {
-        final skipRecordingRemark = 'Skip funds recording by $empIdGlobal';
-        if (!jobRepo.remarks.contains('Skip funds recording')) {
-          jobRepo.selectedRemarksVar.text =
-              '${jobRepo.selectedRemarksVar.text} $skipRecordingRemark'.trim();
-          jobRepo.remarks = jobRepo.selectedRemarksVar.text;
         }
       }
 
