@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:laundry_firebase/core/global/variables_all_codes.dart';
 import 'package:laundry_firebase/core/utils/sharedmethodsdatabase.dart';
@@ -30,6 +31,15 @@ void showJobOnQueueEdit(BuildContext context, JobModelRepository jobRepo) {
       jobRepo.selectedAllStatus = 0.20;
     }
     jobRepo.syncSelectedToRepoAll(jobRepo);
+
+    /// 🔵 Update paidD when payment is marked as paid
+    if (jobRepo.paidCash || (jobRepo.paidGCash && jobRepo.paidGCashVerified)) {
+      if (!useAdminTimestampDateD) {
+        adminTimestampDateD = Timestamp.now();
+      }
+      jobRepo.paidD = adminTimestampDateD;
+    }
+
     await callDatabaseUpdateJob(context, jobRepo.getJobsModel()!);
   }
 
