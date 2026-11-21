@@ -54,15 +54,17 @@ void showPaidUnpaid(BuildContext context, JobModelRepository jobRepo) {
   Future<void> saveButtonSetRepository() async {
     jobRepo.currentEmpId = empIdGlobal;
 
-    // Capture old paidCashAmount and paidCash BEFORE any modifications
+    // Capture old state BEFORE any modifications
     final previousPaidCash = jobRepo.paidCashAmount;
     final previousPaidCashFlag = jobRepo.paidCash;
+    final previousPaidD = jobRepo.paidD;
+    final previousPaidGCash = jobRepo.paidGCash;
+    final previousPaidGCashVerified = jobRepo.paidGCashVerified;
 
-    // ⚠️ DO NOT sync yet - only use selected values until audit succeeds
-    // jobRepo.syncSelectedToRepoMin(jobRepo);  // ← DEFERRED
+    // Sync selected to repo NOW (so audit recording can check paidCash flag)
+    jobRepo.syncSelectedToRepoMin(jobRepo);
 
-    if (jobRepo.selectedPaidCash ||
-        (jobRepo.selectedPaidGCash && jobRepo.selectedPaidGCashVerified)) {
+    if (jobRepo.paidCash || (jobRepo.paidGCash && jobRepo.paidGCashVerified)) {
       if (!useAdminTimestampDateD) {
         adminTimestampDateD = Timestamp.now();
       }
@@ -72,9 +74,9 @@ void showPaidUnpaid(BuildContext context, JobModelRepository jobRepo) {
     jobRepo.paymentReceivedBy = empIdGlobal;
 
     final insertingMarker =
-        '- for job [Job Supplies ${jobRepo.selectedPaidCashAmount} ${DateFormat('MMM d hh:mm a').format(DateTime.now())} #${jobRepo.jobModelData.jobId}]';
+        '- for job [Job Supplies ${jobRepo.paidCashAmount} ${DateFormat('MMM d hh:mm a').format(DateTime.now())} #${jobRepo.jobModelData.jobId}]';
 
-    if (jobRepo.selectedPaidCash) {
+    if (jobRepo.paidCash) {
       // ============ STAFF SALARY DEDUCTION LOGIC ============
       if (useStaffSalaryDeduction &&
           isAdmin &&
@@ -127,8 +129,8 @@ void showPaidUnpaid(BuildContext context, JobModelRepository jobRepo) {
             }
 
             // Mark job as fully paid
-            jobRepo.selectedPaidCashAmount = jobRepo.selectedFinalPrice;
-            jobRepo.selectedUnpaid = false; // Mark as paid
+            jobRepo.paidCashAmount = jobRepo.selectedFinalPrice;
+            jobRepo.unpaid = false; // Mark as paid
 
             // AUTO-SKIP funds recording for staff salary deduction
             skipSuppliesThisJob = true;
@@ -155,7 +157,7 @@ void showPaidUnpaid(BuildContext context, JobModelRepository jobRepo) {
       }
 
       // Step 2: Record audit and supplies (supplies recording can be skipped)
-      final delta = jobRepo.selectedPaidCashAmount - previousPaidCash;
+      final delta = jobRepo.paidCashAmount - previousPaidCash;
       if (delta > 0) {
         try {
           final cleanRemarks = jobRepo.selectedRemarksVar.text
@@ -192,6 +194,9 @@ void showPaidUnpaid(BuildContext context, JobModelRepository jobRepo) {
           // ❌ Restore original state if audit failed
           jobRepo.paidCash = previousPaidCashFlag;
           jobRepo.paidCashAmount = previousPaidCash;
+          jobRepo.paidD = previousPaidD;
+          jobRepo.paidGCash = previousPaidGCash;
+          jobRepo.paidGCashVerified = previousPaidGCashVerified;
           debugPrint('❌ Restored original payment state due to audit failure');
           return;
         }
