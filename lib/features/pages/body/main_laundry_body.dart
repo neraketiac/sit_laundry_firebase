@@ -14,6 +14,7 @@ import 'package:laundry_firebase/core/global/variables_oth.dart';
 import 'package:laundry_firebase/core/global/variables_supplies.dart';
 import 'package:laundry_firebase/core/utils/LaundryColors.dart';
 import 'package:laundry_firebase/features/employees/models/employeesetupmodel.dart';
+import 'package:laundry_firebase/features/items/models/otheritemmodel.dart';
 import 'package:laundry_firebase/features/items/repository/other_item_repository.dart';
 import 'package:laundry_firebase/features/pages/body/GCash/readDataGCashDone.dart';
 import 'package:laundry_firebase/features/pages/body/GCash/readDataGCashPending.dart';
@@ -395,9 +396,40 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
           detCache != null &&
           fabCache != null &&
           bleCache != null) {
-        // Decode all items
-        // Note: You'll need to implement proper JSON decoding based on your OtherItemModel structure
-        // This is a simplified version - adjust based on your actual model
+        // Decode and populate all Firebase lists from cache
+        listOthItemsFB = (jsonDecode(othCache) as List)
+            .map(
+                (item) => OtherItemModel.fromJson(item as Map<String, dynamic>))
+            .toList();
+
+        listDetItemsFB = (jsonDecode(detCache) as List)
+            .map(
+                (item) => OtherItemModel.fromJson(item as Map<String, dynamic>))
+            .toList();
+        addlistDetItemsFB();
+
+        listFabItemsFB = (jsonDecode(fabCache) as List)
+            .map(
+                (item) => OtherItemModel.fromJson(item as Map<String, dynamic>))
+            .toList();
+        addlistFabItemsFB();
+
+        listBleItemsFB = (jsonDecode(bleCache) as List)
+            .map(
+                (item) => OtherItemModel.fromJson(item as Map<String, dynamic>))
+            .toList();
+
+        // Populate stocks lookup from cached data
+        listAllItemsFB.clear();
+        listAllItemsFB.addAll(listOthItemsFB);
+        listAllItemsFB.addAll(listDetItemsFB);
+        listAllItemsFB.addAll(listFabItemsFB);
+        listAllItemsFB.addAll(listBleItemsFB);
+
+        for (var item in listAllItemsFB) {
+          stocksTypeLookup[(item.itemId, item.itemUniqueId)] = item.stocksType;
+        }
+
         debugPrint('Loaded items from cache');
         return true;
       }
@@ -420,10 +452,13 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
       }
     });
 
+    // Load items from cache and populate Firebase lists
     await _loadItemsCache();
 
+    // Now that Firebase lists are populated (from cache), build supplies list
     putEntries();
 
+    // Build stocks lookup from supplies
     for (var item in listSuppItemsAll) {
       stocksTypeLookup[(item.itemId, item.itemUniqueId)] = item.stocksType;
     }
@@ -442,7 +477,9 @@ class _MyMainLaundryBodyState extends State<MyMainLaundryBody> {
     _loadItemsFB().then((_) {
       if (mounted) {
         setState(() {
-          // Items updated, UI will rebuild with fresh data
+          // Items updated, refresh supplies list with fresh data
+          putEntries();
+          // UI will rebuild with fresh data
         });
       }
     }).catchError((e) {

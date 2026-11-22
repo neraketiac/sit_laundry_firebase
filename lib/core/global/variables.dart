@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
@@ -234,11 +232,16 @@ BoxDecoration decoLightBlue() {
 }
 
 String getItemNameOnly(int itemId, int itemUniqueId) {
+  // If supplies list is empty, it means data is still loading
+  if (listSuppItemsAll.isEmpty) {
+    return "Loading...";
+  }
+
   String thisItemName = "no data(pls logout)";
   for (var thisData in listSuppItemsAll) {
     if (thisData.itemId == itemId && thisData.itemUniqueId == itemUniqueId) {
       thisItemName = thisData.itemName;
-      exit;
+      break; // Fixed: was 'exit' which is incorrect
     }
   }
   return thisItemName;

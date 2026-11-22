@@ -71,7 +71,19 @@ class _ReadDataSuppliesCurrentState extends State<ReadDataSuppliesCurrent> {
               }).toList();
 
               if (filteredSupplies.isEmpty) {
-                return const Center(child: Text('No supplies data'));
+                return const Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CircularProgressIndicator(),
+                      SizedBox(height: 16),
+                      Text(
+                        'Loading supplies data...',
+                        style: TextStyle(fontSize: 14),
+                      ),
+                    ],
+                  ),
+                );
               }
 
               return ListView.builder(
