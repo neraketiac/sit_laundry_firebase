@@ -841,7 +841,7 @@ SuppliesModelHist _createSuppliesModel(
     countId: 0,
     itemId: menuOthCashInOutFunds,
     itemUniqueId: menuOthLaundryPayment,
-    itemName: getItemNameOnly(menuOthCashInOutFunds, menuOthLaundryPayment),
+    itemName: 'Laundry Payment #${jobRepo.jobId}',
     currentCounter: delta,
     currentStocks: 0,
     logDate: Timestamp.now(),
