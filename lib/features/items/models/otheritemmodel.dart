@@ -28,6 +28,18 @@ class OtherItemModel {
   /// ---------------------------
 
   factory OtherItemModel.fromJson(Map<String, dynamic> json) {
+    // Handle both old format (Timestamp) and new format (milliseconds)
+    dynamic logDateData = json['LogDate'] ?? Timestamp.now();
+    Timestamp logDate;
+
+    if (logDateData is Timestamp) {
+      logDate = logDateData;
+    } else if (logDateData is int) {
+      logDate = Timestamp.fromMillisecondsSinceEpoch(logDateData);
+    } else {
+      logDate = Timestamp.now();
+    }
+
     return OtherItemModel(
       docId: json['DocId'] ?? '',
       itemId: (json['ItemId'] ?? 0) as int,
@@ -37,7 +49,7 @@ class OtherItemModel {
       itemPrice: (json['ItemPrice'] ?? 0) as int,
       stocksAlert: (json['StocksAlert'] ?? 0) as int,
       stocksType: (json['StocksType'] ?? 'pcs') as String,
-      logDate: (json['LogDate'] ?? Timestamp.now()) as Timestamp,
+      logDate: logDate,
     );
   }
 
@@ -83,7 +95,7 @@ class OtherItemModel {
       'ItemPrice': itemPrice,
       'StocksAlert': stocksAlert,
       'StocksType': stocksType,
-      'LogDate': logDate,
+      'LogDate': logDate.millisecondsSinceEpoch,
     };
   }
 
