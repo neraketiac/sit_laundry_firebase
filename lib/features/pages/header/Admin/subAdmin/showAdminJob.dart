@@ -3,9 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:laundry_firebase/core/global/variables_oth.dart';
 import 'package:laundry_firebase/core/global/variables_all_codes.dart';
+import 'package:laundry_firebase/core/global/variables_det.dart';
+import 'package:laundry_firebase/core/global/variables_fab.dart';
+import 'package:laundry_firebase/core/global/variables_ble.dart';
 import 'package:laundry_firebase/core/utils/sharedmethodsdatabase.dart';
 import 'package:laundry_firebase/core/services/database_loyalty.dart';
 import 'package:laundry_firebase/features/jobs/repository/jobmodel_repository.dart';
+import 'package:laundry_firebase/features/items/models/otheritemmodel.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
 
 class AdminJobRepoViewer extends StatefulWidget {
@@ -21,6 +25,7 @@ class AdminJobRepoViewer extends StatefulWidget {
 
 class _AdminJobRepoViewerState extends State<AdminJobRepoViewer> {
   late JobModelRepository jobRepo;
+  late int _selectedCategory;
 
   Future<void> saveButtonSetRepository() async {
     // Admin override — assign all fields directly, no recalculation
@@ -71,6 +76,7 @@ class _AdminJobRepoViewerState extends State<AdminJobRepoViewer> {
     if (listOthItems.isEmpty) {
       addListOthItems();
     }
+    _selectedCategory = menuOthDVal;
   }
 
   /// Recalculate finalLoad and finalDry based on selectedItems and package
@@ -119,6 +125,19 @@ class _AdminJobRepoViewerState extends State<AdminJobRepoViewer> {
               .length) +
           (jobRepo.selectedItems.where((v) => v.itemId == menuOthWD98).length) +
           (jobRepo.selectedItems.where((v) => v.itemId == menuOthDry).length);
+    }
+  }
+
+  List<OtherItemModel> _getCategoryItems() {
+    switch (_selectedCategory) {
+      case menuDetDVal:
+        return listDetItemsFB;
+      case menuFabDVal:
+        return listFabItemsFB;
+      case menuBleDVal:
+        return listBleItems;
+      default:
+        return listOthItems;
     }
   }
 
@@ -528,6 +547,48 @@ class _AdminJobRepoViewerState extends State<AdminJobRepoViewer> {
               const Text('Add Items:',
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
               const SizedBox(height: 10),
+              // ════════ CATEGORY TOGGLE (OTH/DET/FAB/BLE) ════════
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                  color: Colors.grey.shade200,
+                  border: Border.all(color: Colors.grey.shade400),
+                ),
+                child: ToggleButtons(
+                  isSelected: [
+                    _selectedCategory == menuOthDVal,
+                    _selectedCategory == menuDetDVal,
+                    _selectedCategory == menuFabDVal,
+                    _selectedCategory == menuBleDVal,
+                  ],
+                  onPressed: (index) {
+                    setState(() {
+                      _selectedCategory = [
+                        menuOthDVal,
+                        menuDetDVal,
+                        menuFabDVal,
+                        menuBleDVal
+                      ][index];
+                    });
+                  },
+                  borderRadius: BorderRadius.circular(8),
+                  selectedColor: Colors.white,
+                  fillColor: Colors.blue,
+                  color: Colors.black87,
+                  borderColor: Colors.grey.shade400,
+                  selectedBorderColor: Colors.blue,
+                  constraints:
+                      const BoxConstraints(minWidth: 60, minHeight: 32),
+                  children: const [
+                    Text('Oth'),
+                    Text('Det'),
+                    Text('Fab'),
+                    Text('Ble'),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 10),
               Row(
                 children: [
                   ElevatedButton.icon(
@@ -555,31 +616,16 @@ class _AdminJobRepoViewerState extends State<AdminJobRepoViewer> {
                 spacing: 6,
                 runSpacing: 6,
                 children: [
-                  ElevatedButton(
-                    onPressed: () {
-                      setState(() {
-                        jobRepo.selectedItems.add(promoFree);
-                        _recalculateLoads();
-                      });
-                    },
-                    style:
-                        ElevatedButton.styleFrom(backgroundColor: Colors.green),
-                    child: Text(
-                        '${promoFree.itemName} (₱${promoFree.itemPrice})',
-                        style: const TextStyle(fontSize: 11)),
-                  ),
-                  ...listOthItems
-                      .where((item) => item.itemId != promoFree.itemId)
-                      .map((item) => ElevatedButton(
-                            onPressed: () {
-                              setState(() {
-                                jobRepo.selectedItems.add(item);
-                                _recalculateLoads();
-                              });
-                            },
-                            child: Text('${item.itemName} (₱${item.itemPrice})',
-                                style: const TextStyle(fontSize: 11)),
-                          )),
+                  ..._getCategoryItems().map((item) => ElevatedButton(
+                        onPressed: () {
+                          setState(() {
+                            jobRepo.selectedItems.add(item);
+                            _recalculateLoads();
+                          });
+                        },
+                        child: Text('${item.itemName} (₱${item.itemPrice})',
+                            style: const TextStyle(fontSize: 11)),
+                      )),
                 ],
               ),
             ],
