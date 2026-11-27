@@ -4,16 +4,51 @@ import 'package:intl/intl.dart';
 import 'package:laundry_firebase/core/global/variables_all_codes.dart';
 import 'package:laundry_firebase/features/employees/models/coveragerecordmodel.dart';
 import 'package:laundry_firebase/features/employees/models/employeemodel.dart';
+import 'package:laundry_firebase/features/employees/models/task_rate_model.dart';
 import 'package:laundry_firebase/core/utils/sharedMethods.dart';
 import 'package:laundry_firebase/core/services/database_coverage.dart';
 import 'package:laundry_firebase/core/services/database_employee_current.dart';
+import 'package:laundry_firebase/core/services/task_rates_service.dart';
 import 'package:laundry_firebase/core/global/variables.dart';
 import 'package:laundry_firebase/core/services/firebase_service.dart';
+
+class TaskItem {
+  int taskId;
+  bool selected;
+  int amount;
+
+  TaskItem({
+    required this.taskId,
+    this.selected = false,
+    this.amount = 0,
+  });
+
+  Map<String, dynamic> toMap() {
+    return {
+      'selected': selected,
+      'amount': amount,
+    };
+  }
+
+  factory TaskItem.fromMap(Map<String, dynamic> map) {
+    return TaskItem(
+      taskId: map['taskId'] ?? 0,
+      selected: map['selected'] ?? false,
+      amount: map['amount'] ?? 0,
+    );
+  }
+}
 
 class DaySelection {
   bool a;
   bool b;
-  DaySelection({this.a = false, this.b = false});
+  Map<int, TaskItem> tasks;
+
+  DaySelection({
+    this.a = false,
+    this.b = false,
+    Map<int, TaskItem>? tasks,
+  }) : tasks = tasks ?? {};
 }
 
 class _W extends StatelessWidget {
@@ -31,6 +66,262 @@ class _W extends StatelessWidget {
   }
 }
 
+// Helper function to get task label
+String _getTaskLabel(int taskId) {
+  const labels = {
+    1: 'Sundo c-anne sa school',
+    2: 'Sundo caito sa school',
+    3: 'Hatid c-anne kay titser noreen',
+    4: 'Hatid caito kay titser noreen',
+    5: 'Sundo c-anne kay titser noreen',
+    6: 'Sundo caito kay titser noreen',
+    7: 'Pickup/Delivery',
+  };
+  return labels[taskId] ?? 'Task $taskId';
+}
+
+// Task Tracking Dialog
+Future<void> _showTaskTrackingDialog(
+  BuildContext context,
+  DaySelection daySelection,
+  Map<int, TaskRate> currentRates,
+  StateSetter setState,
+  bool isLocked,
+) async {
+  Map<int, TaskItem> tempTasks = Map.from(daySelection.tasks);
+
+  // Initialize any missing tasks
+  for (int i = 1; i <= 7; i++) {
+    tempTasks.putIfAbsent(i, () => TaskItem(taskId: i));
+  }
+
+  await showDialog(
+    context: context,
+    builder: (dialogContext) {
+      return StatefulBuilder(
+        builder: (innerContext, innerSetState) {
+          return Dialog(
+            child: SizedBox(
+              width: MediaQuery.of(context).size.width * 0.9,
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text(
+                        'Daily Tasks',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      ...List.generate(7, (index) {
+                        final taskId = index + 1;
+                        final task = tempTasks[taskId]!;
+                        final rate = currentRates[taskId]?.rate ?? 0;
+                        final label = _getTaskLabel(taskId);
+
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          child: Row(
+                            children: [
+                              Checkbox(
+                                value: task.selected,
+                                onChanged: isLocked
+                                    ? null
+                                    : (value) {
+                                        innerSetState(() {
+                                          if (value == true) {
+                                            // Fetch current rate when checked
+                                            task.selected = true;
+                                            task.amount = rate;
+                                          } else {
+                                            task.selected = false;
+                                            task.amount = 0;
+                                          }
+                                        });
+                                      },
+                              ),
+                              Expanded(
+                                child: Text(label),
+                              ),
+                              SizedBox(
+                                width: 80,
+                                child: TextField(
+                                  enabled: false,
+                                  textAlign: TextAlign.right,
+                                  controller: TextEditingController(
+                                    text: task.selected
+                                        ? task.amount.toString()
+                                        : '',
+                                  ),
+                                  decoration: const InputDecoration(
+                                    border: OutlineInputBorder(),
+                                    contentPadding:
+                                        EdgeInsets.symmetric(horizontal: 8),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }),
+                      const SizedBox(height: 20),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(dialogContext),
+                            child: const Text('Cancel'),
+                          ),
+                          const SizedBox(width: 8),
+                          ElevatedButton(
+                            onPressed: () {
+                              Navigator.pop(dialogContext);
+                            },
+                            child: const Text('Save'),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      );
+    },
+  );
+
+  // Update the day selection with temporary tasks
+  setState(() {
+    daySelection.tasks = tempTasks;
+  });
+}
+
+// Task Rates Dialog (Admin only)
+Future<void> _showTaskRatesDialog(
+  BuildContext context,
+  Map<int, TaskRate> currentRates,
+) async {
+  // Ensure rates are loaded
+  Map<int, TaskRate> ratesToEdit = currentRates.isNotEmpty
+      ? currentRates
+      : TaskRatesService.getDefaultRates();
+
+  final tempRates = Map<int, int>.from(
+    ratesToEdit.map((k, v) => MapEntry(k, v.rate)),
+  );
+
+  await showDialog(
+    context: context,
+    builder: (dialogContext) {
+      return StatefulBuilder(
+        builder: (innerContext, innerSetState) {
+          return Dialog(
+            child: SizedBox(
+              width: MediaQuery.of(context).size.width * 0.9,
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text(
+                        'Task Default Rates',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      ...List.generate(7, (index) {
+                        final taskId = index + 1;
+                        final label = _getTaskLabel(taskId);
+                        final controller = TextEditingController(
+                          text: tempRates[taskId]!.toString(),
+                        );
+
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                flex: 2,
+                                child: Text(
+                                  label,
+                                  style: const TextStyle(fontSize: 14),
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: TextField(
+                                  controller: controller,
+                                  keyboardType: TextInputType.number,
+                                  decoration: const InputDecoration(
+                                    border: OutlineInputBorder(),
+                                    contentPadding: EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 10),
+                                    hintText: '0',
+                                  ),
+                                  onChanged: (value) {
+                                    tempRates[taskId] =
+                                        int.tryParse(value) ?? 0;
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }),
+                      const SizedBox(height: 20),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(dialogContext),
+                            child: const Text('Cancel'),
+                          ),
+                          const SizedBox(width: 8),
+                          ElevatedButton(
+                            onPressed: () async {
+                              try {
+                                final service = TaskRatesService();
+                                for (int i = 1; i <= 7; i++) {
+                                  final oldRate = ratesToEdit[i]?.rate ?? 0;
+                                  if (tempRates[i] != oldRate) {
+                                    await service.updateTaskRate(
+                                        i, tempRates[i]!);
+                                  }
+                                }
+                                Navigator.pop(dialogContext);
+                              } catch (e) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Error saving rates: $e'),
+                                  ),
+                                );
+                              }
+                            },
+                            child: const Text('Save'),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      );
+    },
+  );
+}
+
 Widget _buildDayCell(
   int day,
   DateTime date,
@@ -40,6 +331,7 @@ Widget _buildDayCell(
   bool isLocked,
   StateSetter setState,
   Color? overrideColor,
+  VoidCallback? onTaskButtonPressed,
 ) {
   final color = overrideColor ??
       (isPastWeek
@@ -85,6 +377,25 @@ Widget _buildDayCell(
             Text('pm'),
           ],
         ),
+        // Task tracking button
+        SizedBox(
+          height: 20,
+          child: Center(
+            child: IconButton(
+              icon: Icon(
+                Icons.local_shipping,
+                size: 14,
+                color: (isLocked || onTaskButtonPressed == null)
+                    ? Colors.grey
+                    : Colors.blue,
+              ),
+              onPressed: onTaskButtonPressed,
+              visualDensity: const VisualDensity(horizontal: -4, vertical: -4),
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(minWidth: 24, minHeight: 24),
+            ),
+          ),
+        ),
       ],
     ),
   );
@@ -98,6 +409,8 @@ Future<Map<DateTime, DaySelection>?> showCalendarDialog(BuildContext context) {
   bool initialized = false;
   bool isGenerating = false;
   bool isSaving = false;
+  Map<int, TaskRate> currentRates = {};
+  bool ratesLoaded = false;
 
   Future<void> queryDropDown(VoidCallback dialogSetState, String v) async {
     selectedEmp = v;
@@ -130,7 +443,22 @@ Future<Map<DateTime, DaySelection>?> showCalendarDialog(BuildContext context) {
           pm = false;
           break;
       }
-      selections[date] = DaySelection(a: am, b: pm);
+
+      // Initialize tasks from coverage record
+      final daySelection = DaySelection(a: am, b: pm);
+      if (r.tasks != null) {
+        for (int i = 1; i <= 7; i++) {
+          final taskData = r.tasks![i.toString()];
+          if (taskData != null) {
+            daySelection.tasks[i] = TaskItem(
+              taskId: i,
+              selected: taskData['selected'] ?? false,
+              amount: taskData['amount'] ?? 0,
+            );
+          }
+        }
+      }
+      selections[date] = daySelection;
     }
     dialogSetState();
   }
@@ -149,8 +477,25 @@ Future<Map<DateTime, DaySelection>?> showCalendarDialog(BuildContext context) {
 
           if (!initialized) {
             initialized = true;
-            Future.microtask(() {
+            Future.microtask(() async {
               queryDropDown(() => setState(() {}), empNameToId[empIdGlobal]!);
+              // Load task rates
+              if (!ratesLoaded) {
+                ratesLoaded = true;
+                final service = TaskRatesService();
+
+                // Initialize default rates if they don't exist
+                try {
+                  await service.initializeDefaultRates();
+                } catch (e) {
+                  print('Error initializing rates: $e');
+                }
+
+                final rates = await service.loadAllTaskRates();
+                setState(() {
+                  currentRates = rates;
+                });
+              }
             });
           }
 
@@ -228,14 +573,24 @@ Future<Map<DateTime, DaySelection>?> showCalendarDialog(BuildContext context) {
                           final isLocked = !isAdmin && isPastWeek;
                           selections.putIfAbsent(date, () => DaySelection());
                           return _buildDayCell(
-                              day,
-                              date,
-                              selections[date]!,
-                              isPastWeek,
-                              false,
-                              isLocked,
-                              setState,
-                              Colors.grey.shade300);
+                            day,
+                            date,
+                            selections[date]!,
+                            isPastWeek,
+                            false,
+                            isLocked,
+                            setState,
+                            Colors.grey.shade300,
+                            selectedEmp == null || selectedEmp == 'ALL'
+                                ? null
+                                : () => _showTaskTrackingDialog(
+                                      context,
+                                      selections[date]!,
+                                      currentRates,
+                                      setState,
+                                      isLocked,
+                                    ),
+                          );
                         }
 
                         final day = i - offset + 1;
@@ -252,14 +607,24 @@ Future<Map<DateTime, DaySelection>?> showCalendarDialog(BuildContext context) {
                           final isLocked = !isAdmin && isPastWeek;
                           selections.putIfAbsent(date, () => DaySelection());
                           return _buildDayCell(
-                              nextDay,
-                              date,
-                              selections[date]!,
-                              isPastWeek,
-                              false,
-                              isLocked,
-                              setState,
-                              Colors.grey.shade300);
+                            nextDay,
+                            date,
+                            selections[date]!,
+                            isPastWeek,
+                            false,
+                            isLocked,
+                            setState,
+                            Colors.grey.shade300,
+                            selectedEmp == null || selectedEmp == 'ALL'
+                                ? null
+                                : () => _showTaskTrackingDialog(
+                                      context,
+                                      selections[date]!,
+                                      currentRates,
+                                      setState,
+                                      isLocked,
+                                    ),
+                          );
                         }
 
                         final date = DateTime(month.year, month.month, day);
@@ -274,8 +639,25 @@ Future<Map<DateTime, DaySelection>?> showCalendarDialog(BuildContext context) {
                             date.month == today.month &&
                             date.day == today.day;
                         selections.putIfAbsent(date, () => DaySelection());
-                        return _buildDayCell(day, date, selections[date]!,
-                            isPastWeek, isToday, isLocked, setState, null);
+                        return _buildDayCell(
+                          day,
+                          date,
+                          selections[date]!,
+                          isPastWeek,
+                          isToday,
+                          isLocked,
+                          setState,
+                          null,
+                          selectedEmp == null || selectedEmp == 'ALL'
+                              ? null
+                              : () => _showTaskTrackingDialog(
+                                    context,
+                                    selections[date]!,
+                                    currentRates,
+                                    setState,
+                                    isLocked,
+                                  ),
+                        );
                       },
                     ),
                   ),
@@ -586,6 +968,74 @@ Future<Map<DateTime, DaySelection>?> showCalendarDialog(BuildContext context) {
                                           }
                                         }
                                         allChangedDays.addAll(changedDays);
+
+                                        // ════════════════════════════════════════════════════════════════
+                                        // GENERATE TASK ENTRIES FROM TASK TRACKING DATA
+                                        // ════════════════════════════════════════════════════════════════
+                                        if (selectedEmp != 'ALL') {
+                                          final allRecords =
+                                              await db.getAll(empName);
+                                          for (final record in allRecords) {
+                                            if (record.tasks == null ||
+                                                record.tasks!.isEmpty) {
+                                              continue;
+                                            }
+
+                                            final ds =
+                                                record.coverageDate.toString();
+                                            final coverageDateTime = DateTime(
+                                              int.parse(ds.substring(0, 4)),
+                                              int.parse(ds.substring(4, 6)),
+                                              int.parse(ds.substring(6, 8)),
+                                            );
+
+                                            // Process each task
+                                            for (int taskId = 1;
+                                                taskId <= 7;
+                                                taskId++) {
+                                              final taskKey = taskId.toString();
+                                              final taskData =
+                                                  record.tasks![taskKey];
+
+                                              if (taskData != null &&
+                                                  (taskData['selected'] ??
+                                                      false) &&
+                                                  (taskData['amount'] ?? 0) >
+                                                      0) {
+                                                final taskAmount =
+                                                    taskData['amount'] as int;
+                                                final taskLabel =
+                                                    _getTaskLabel(taskId);
+
+                                                final taskEmployeeModel =
+                                                    EmployeeModel(
+                                                  docId: '',
+                                                  countId: 0,
+                                                  empId: empNameToId[empName]!,
+                                                  empName: empName,
+                                                  itemId: menuOthCashInOutFunds,
+                                                  itemUniqueId: 100 + taskId,
+                                                  itemName: taskLabel,
+                                                  currentCounter: taskAmount,
+                                                  currentStocks: 0,
+                                                  logDate: Timestamp.now(),
+                                                  logBy: empIdGlobal,
+                                                  remarks:
+                                                      'Task: $taskLabel - $taskAmount',
+                                                  autoSalaryDate:
+                                                      Timestamp.fromDate(
+                                                          coverageDateTime),
+                                                );
+
+                                                final dbEmployeeCurrent =
+                                                    DatabaseEmployeeCurrent();
+                                                await dbEmployeeCurrent
+                                                    .addEmployeeCurr(
+                                                        taskEmployeeModel);
+                                              }
+                                            }
+                                          }
+                                        }
                                       }
                                     }
 
@@ -746,6 +1196,24 @@ Future<Map<DateTime, DaySelection>?> showCalendarDialog(BuildContext context) {
                                   )
                                 : const Text('Generate'),
                           ),
+                          const SizedBox(width: 10),
+                          ElevatedButton(
+                            onPressed: () async {
+                              await _showTaskRatesDialog(
+                                context,
+                                currentRates,
+                              );
+                              // Reload rates after saving
+                              if (sfContext.mounted) {
+                                final service = TaskRatesService();
+                                final rates = await service.loadAllTaskRates();
+                                setState(() {
+                                  currentRates = rates;
+                                });
+                              }
+                            },
+                            child: const Text('Change Rates'),
+                          ),
                         ],
                       ],
                     ),
@@ -798,6 +1266,7 @@ Future<Map<DateTime, DaySelection>?> showCalendarDialog(BuildContext context) {
 
                                       if (!sel.a &&
                                           !sel.b &&
+                                          sel.tasks.isEmpty &&
                                           !existingDates.contains(coverageDate))
                                         continue;
 
@@ -811,6 +1280,15 @@ Future<Map<DateTime, DaySelection>?> showCalendarDialog(BuildContext context) {
                                       else
                                         absent = 3;
 
+                                      // Convert tasks to map format for storage
+                                      final tasksMap = <String, dynamic>{};
+                                      for (int i = 1; i <= 7; i++) {
+                                        final task = sel.tasks[i];
+                                        if (task != null) {
+                                          tasksMap[i.toString()] = task.toMap();
+                                        }
+                                      }
+
                                       toSave.add(CoverageRecordModel(
                                         docId: '',
                                         coverageDate: coverageDate,
@@ -819,6 +1297,9 @@ Future<Map<DateTime, DaySelection>?> showCalendarDialog(BuildContext context) {
                                         empId: empName,
                                         remarks: '',
                                         isGenerated: false,
+                                        tasks: tasksMap.isNotEmpty
+                                            ? tasksMap
+                                            : null,
                                       ));
                                     }
 

@@ -10,6 +10,7 @@ class CoverageRecordModel {
   final String remarks;
   final bool isGenerated;
   final Timestamp? createdAt;
+  final Map<String, dynamic>? tasks; // NEW: tasks tracking
 
   CoverageRecordModel({
     required this.docId,
@@ -20,6 +21,7 @@ class CoverageRecordModel {
     required this.remarks,
     required this.isGenerated,
     this.createdAt,
+    this.tasks,
   });
 
   Map<String, dynamic> toMap() {
@@ -31,6 +33,7 @@ class CoverageRecordModel {
       "remarks": remarks,
       "isGenerated": isGenerated,
       "createdAt": createdAt ?? FieldValue.serverTimestamp(),
+      if (tasks != null) "tasks": tasks,
     };
   }
 
@@ -46,6 +49,7 @@ class CoverageRecordModel {
       remarks: d["remarks"] ?? "",
       isGenerated: d["isGenerated"] ?? false,
       createdAt: d["createdAt"],
+      tasks: d["tasks"],
     );
   }
 }
